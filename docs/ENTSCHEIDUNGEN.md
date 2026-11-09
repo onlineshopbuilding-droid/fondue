@@ -30,7 +30,7 @@ Schwerkraft 3400 px/s² statt des gemessenen, höheren Werts, damit Würfe lesba
 ZzFX wirft ohne AudioContext Fehler und umgeht den Limiter. Darum eigene Synthese. Das Paket wurde entfernt.
 
 ## E-008 – Kein TURN-Dienst
-Es gibt keinen verlässlichen kostenlosen TURN-Dienst ohne Konto. Stattdessen STUN plus Plan B (eigener Relay und cloudflared). Plan B wurde über einen echten Tunnel getestet.
+Recherche am 09.11.2026: Alle gefundenen kostenlosen TURN-Dienste (Open Relay/Metered, ExpressTURN, Turnix, Xirsys, Cloudflare) verlangen ein Konto, und Konten dürfen nicht angelegt werden. Stattdessen STUN plus Plan B (eigener Relay und cloudflared). Plan B wurde über einen echten Tunnel getestet.
 
 ## E-009 – Ein zuverlässiger Datenkanal
 Snapshots laufen wie alle Nachrichten über einen zuverlässigen, geordneten Kanal. Das ist einfacher und reicht auf der kurzen Strecke; bei Paketverlust entstehen kleine Ruckler. Ein zweiter unzuverlässiger Kanal wäre die nächste Stufe.
