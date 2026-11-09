@@ -231,7 +231,8 @@ for (const size of [SIZES[0], SIZES[1]]) {
     await page.waitForTimeout(250);
     await page.screenshot({ path: `mobile-screenshots/hook-hanging-${size.name}.png` });
     // The game clock falls behind real time at the low frame rates of a software renderer.
-    await waitFor(() => page.evaluate(`${sim}.s.enemies[0]?.t < 0.5`), (b) => b === true, 15000, 20);
+    // On a slow machine the screenshot above can take longer than the whole meal, so "gone" counts too.
+    await waitFor(() => page.evaluate(`(${sim}.s.enemies[0]?.t ?? 0) < 0.5`), (b) => b === true, 15000, 20);
     await page.screenshot({ path: `mobile-screenshots/hook-eagle-${size.name}.png` });
     await waitFor(() => gameState(page), (v) => v!.offerings === 1, 15000);
     expect(errors).toEqual([]);
