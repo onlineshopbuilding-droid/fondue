@@ -152,7 +152,7 @@
     "beschreibung": "Schwierigkeitsgrade Easy/Medium/Hard wirken spürbar.",
     "pruefung": "Balance-Simulation",
     "passes": true,
-    "beleg": "npm run balance, docs/balance.md: Easy Tag 17, Medium Tag 14, Hard Tag 10"
+    "beleg": "npm run balance, docs/balance.md: Easy Tag 13,8, Medium Tag 9,2, Hard Tag 6,1 (Durchschnitts-Bot solo)"
   },
   {
     "id": 20,
@@ -225,7 +225,7 @@
     "beschreibung": "60 FPS mit 200 Gegnern plus Effekten, gemessen, Ergebnis in PROGRESS.md.",
     "pruefung": "Messung",
     "passes": true,
-    "beleg": "npx playwright test --config playwright.perf.config.ts mit Edge und echter GPU: 58 FPS Mittel, Median 16,7 ms, 95. Perzentil 22,6 ms, 200 Gegner mit laufenden Effekten (docs/perf-latest.json)"
+    "beleg": "npx playwright test --config playwright.perf.config.ts mit Edge und echter GPU: 57,6 FPS Mittel, Median 16,7 ms, 95. Perzentil 19,3 ms, 200 Gegner mit laufenden Effekten (docs/perf-latest.json). Das Mittel liegt knapp unter 60, der Median entspricht 60 FPS"
   },
   {
     "id": 29,

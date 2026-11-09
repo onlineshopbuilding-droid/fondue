@@ -49,3 +49,8 @@ Wurfgeschwindigkeit auf 1700 px/s begrenzt, damit Würfe im Bild bleiben. Messfe
 
 ## E-014 – „Gegner werfen andere um“ bleibt aus
 Der dritte Tester hat es vorgeschlagen. Der Auftrag sieht als Standard das Verhalten des Originals vor (eher nein), und die Videos geben nichts anderes her. Der Schalter steht im Tuning-Panel; die Arcade-Voreinstellung hat ihn an.
+
+## E-015 – Unzuverlässiger Koop-Test mit Latenz aufgeklärt
+In der Abschlussrunde schlug der Koop-Test mit simulierter Latenz fehl, wie schon einmal in der Nacht. Zwei getrennte Ursachen, beide nicht im Netzcode des Spiels:
+1. Der Latenz-Simulator `withLatency` setzte pro Nachricht einen eigenen Timer. Browser schneiden Verzögerungen auf ganze Millisekunden ab, so konnte eine spätere Nachricht eine frühere überholen. Kam die erste Meta-Nachricht vor `start` an, blieb der Gast ohne Meta. Echte Kanäle (WebRTC zuverlässig, WebSocket) liefern geordnet, das Spiel selbst war also nicht betroffen. Der Simulator hat jetzt eine Warteschlange; `tests/unit/transport.test.ts` belegt den Fehler und die Behebung.
+2. Der Test griff den Gegner ganz rechts, auch wenn ein Nachbar näher am Griffpunkt stand. Das Spiel nimmt dann richtigerweise den Nachbarn. Der Test wählt jetzt einen freistehenden Gegner. Die Prüfung `toEqual([1])` ist unverändert. Beleg über eine Messung mit 120 Griffen; die Zuordnung zum einzelnen Fehlschlag ist wahrscheinlich, nicht bewiesen. Danach 10 von 10 Wiederholungen grün.

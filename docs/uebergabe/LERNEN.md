@@ -86,3 +86,6 @@ npm run balance
 ```
 
 Neuer Gegner in vier Schritten: Typ und Werte in `config/enemies.ts`, Verhalten in `Sim.updateEnemy`, Figur in `src/art/characters/`, Test in `tests/unit/sim.test.ts`.
+
+## Timer in Browsern überholen sich
+`setTimeout` schneidet Verzögerungen auf ganze Millisekunden ab. Wer pro Nachricht einen eigenen Timer setzt, kann die Reihenfolge verlieren, auch wenn die Zielzeiten aufsteigen. Für alles, was geordnet ankommen muss, gehört eine Warteschlange mit einem einzigen Timer her (`orderedDelivery` in `src/net/transport.ts`).

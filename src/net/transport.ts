@@ -44,25 +44,48 @@ export function withLatency(inner: Transport, o: LatencyOptions): Transport {
     if (Math.random() < o.loss) d += o.latencyMs * 2;
     return d;
   };
-  let lastOut = 0;
-  let lastIn = 0;
+  const out = orderedDelivery(delay);
+  const incoming = orderedDelivery(delay);
   const wrapped: Transport = {
     onMessage: () => {},
     onClose: () => {},
-    send(msg) {
-      // Reliable channels deliver in order, so a late packet holds up the ones behind it.
-      lastOut = Math.max(lastOut, performance.now() + delay());
-      setTimeout(() => inner.send(msg), lastOut - performance.now());
-    },
+    send(msg) { out(() => inner.send(msg)); },
     close() { inner.close(); },
     congested: () => inner.congested?.() ?? false,
   };
-  inner.onMessage = (msg) => {
-    lastIn = Math.max(lastIn, performance.now() + delay());
-    setTimeout(() => wrapped.onMessage(msg), lastIn - performance.now());
-  };
+  inner.onMessage = (msg) => { incoming(() => wrapped.onMessage(msg)); };
   inner.onClose = () => wrapped.onClose();
   return wrapped;
+}
+
+/**
+ * Runs jobs after a delay, strictly in the order they were queued, like a reliable channel: a late
+ * packet holds up the ones behind it. One timer per job would not do, because browsers truncate
+ * timer delays to whole milliseconds and a later job aiming at the same moment could overtake.
+ */
+function orderedDelivery(delay: () => number) {
+  const queue: { at: number; job: () => void }[] = [];
+  let last = 0;
+  let armed = false;
+  const arm = () => {
+    if (armed || queue.length === 0) return;
+    armed = true;
+    setTimeout(pump, Math.ceil(Math.max(0, queue[0].at - performance.now())));
+  };
+  const pump = () => {
+    armed = false;
+    try {
+      const now = performance.now();
+      while (queue.length > 0 && queue[0].at <= now) queue.shift()!.job();
+    } finally {
+      arm();
+    }
+  };
+  return (job: () => void) => {
+    last = Math.max(last, performance.now() + delay());
+    queue.push({ at: last, job });
+    arm();
+  };
 }
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no O/0, no I/1

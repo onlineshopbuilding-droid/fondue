@@ -63,9 +63,11 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await grabAndFling(host, onScreen(s)[0]);
     await waitFor(() => gameState(host), (v) => v!.gold >= 10, 6000);
 
-    s = await waitFor(() => gameState(guest), (v) => onScreen(v).length >= 1, 25000);
+    // A free-standing target: a neighbour right at the grab point would rightly be taken instead.
+    const freeStanding = (v: any) => onScreen(v).filter((e: any) => v.enemies.every((o: any) => o.id === e.id || Math.abs(o.x - (e.x - 10)) > 60));
+    s = await waitFor(() => gameState(guest), (v) => freeStanding(v).length >= 1, 25000);
     const before = (await gameState(host))!.gold;
-    const target = onScreen(s).sort((a: any, b: any) => b.x - a.x)[0];
+    const target = freeStanding(s).sort((a: any, b: any) => b.x - a.x)[0];
     // The guest sees its grab immediately, without waiting for the host.
     await guest.mouse.move(target.x - 10, target.y - 44);
     await guest.mouse.down();

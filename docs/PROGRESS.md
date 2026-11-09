@@ -21,3 +21,9 @@
 - Belege: `npx vitest run` 84/84 grün; `npx playwright test` 16/16 grün; `playwright.perf.config.ts` 57,6 FPS Mittel bei 200 Gegnern (docs/perf-latest.json); Live-Tests Chrome und Edge grün; Tunnel-Test grün.
 - Offen: Firefox nicht automatisch testbar (ENTSCHEIDUNGEN E-011), Sound nicht angehört, Wurfgefühl nicht von Menschen geprüft.
 - Nächster Schritt: Abschlussrunden ab 12:00 Uhr.
+
+## 2026-11-09 12:27 – Qualitätsrunde 1 (nach 12:00)
+- Zeit per Get-Date: 12:00:40 beim Start der Runde.
+- `npx playwright test`: 1 von 16 rot (Koop mit Latenz, Gast ohne Meta). Das war eine sinnvolle Verbesserung, die Runde zählt nicht als „ohne Befund“.
+- Ursachen und Behebung: ENTSCHEIDUNGEN E-015. Neuer Unit-Test war auf dem alten Code rot, auf dem neuen grün.
+- Belege: `npx playwright test ... -g "simulated latency" --repeat-each=10` 10/10 grün; `npx vitest run` 88/88 grün; `npx playwright test` 16/16 grün; FPS 57,6 Mittel, Median 16,7 ms, p95 19,3 ms.
