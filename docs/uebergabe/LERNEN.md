@@ -42,7 +42,7 @@ Zufall kommt aus einem Generator mit Startwert (`src/sim/rng.ts`). Gleicher Star
 
 Während des Haltens zieht eine **gedämpfte Feder** die Figur zur Hand: `a = k * (ziel - pos) - c * v`. Daher hängt sie leicht nach und schwingt.
 
-Das gute Gefühl entsteht zum großen Teil außerhalb der Physik: Beim Aufprall friert das Bild kurz ein (Hitstop), der Bildschirm wackelt, Teile fliegen, der Körper wird flach, es klatscht. Der Hitstop ist reine Darstellung (`src/render/scene.ts`), die Simulation läuft weiter.
+Das gute Gefühl entsteht zum großen Teil außerhalb der Physik: Beim Aufprall friert das Bild kurz ein (Hitstop), der Bildschirm wackelt, Teile fliegen, der Körper wird flach, es klatscht. Allein hält der Hitstop die Simulation wirklich kurz an, im Koop ist er reine Darstellung, weil das Spiel für den anderen weiterlaufen muss (`GameScene.update` in `src/render/scene.ts`).
 
 ## 4. Online-Koop
 ### Host-autoritativ
@@ -85,7 +85,7 @@ npm run test:e2e
 npm run balance
 ```
 
-Neuer Gegner in vier Schritten: Typ und Werte in `config/enemies.ts`, Verhalten in `Sim.updateEnemy`, Figur in `src/art/characters/`, Test in `tests/unit/sim.test.ts`.
+Neuer Gegner in vier Schritten: Typ und Werte in `config/enemies.ts`, Verhalten in `Sim.updateEnemy`, Figur in `src/art/characters/`, Test in `tests/unit/sim.test.ts`. Alle Rezepte und Fallen stehen in `docs/HANDBUCH.md`.
 
 ## Timer in Browsern überholen sich
 `setTimeout` schneidet Verzögerungen auf ganze Millisekunden ab. Wer pro Nachricht einen eigenen Timer setzt, kann die Reihenfolge verlieren, auch wenn die Zielzeiten aufsteigen. Für alles, was geordnet ankommen muss, gehört eine Warteschlange mit einem einzigen Timer her (`orderedDelivery` in `src/net/transport.ts`).

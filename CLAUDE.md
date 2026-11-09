@@ -2,6 +2,7 @@
 
 Vollständiger Auftrag: docs/AUFTRAG.md. Fortschritt: docs/PROGRESS.md. Abnahmeliste: docs/features.json.
 Nach jeder Kontext-Zusammenfassung zuerst diese drei lesen, dazu docs/ENTSCHEIDUNGEN.md.
+Vor jeder Änderung am Spiel docs/HANDBUCH.md lesen: Aufbau, wo was liegt, Rezepte, Fallen. Wenn sich Aufbau oder Abläufe ändern, das Handbuch im selben Zug nachziehen.
 
 ## Grenze für das ganze Projekt (hat Vorrang vor docs/AUFTRAG.md)
 Fondue ist ein eigenständiges Spiel mit ähnlichen Mechaniken, keine Nachbildung von Knights Onrush.
