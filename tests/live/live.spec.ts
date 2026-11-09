@@ -6,6 +6,7 @@ test('published game loads and a day starts', async ({ page }) => {
   await page.goto('./?seed=5');
   await page.waitForSelector('.overlay .panel', { timeout: 60_000 });
   await expect(page.locator('.version')).toContainText('build');
+  if (process.env.EXPECT_BUILD) await expect(page.locator('.version')).toContainText(process.env.EXPECT_BUILD);
   await page.click('button[data-a="play"]');
   await page.click('button[data-a="solo"]');
   await page.waitForFunction(() => (window as any).__fondue.session.view()?.phase === 'battle', null, { timeout: 30_000 });

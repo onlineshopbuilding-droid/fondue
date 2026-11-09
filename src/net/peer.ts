@@ -22,6 +22,7 @@ class PeerLink extends BaseTransport {
     if (this.conn.open) void this.conn.send(msg);
   }
   close() { this.conn.close(); }
+  congested() { return (this.conn.dataChannel?.bufferedAmount ?? 0) > 128_000; }
 }
 
 export const peerTransport: TransportKind = {

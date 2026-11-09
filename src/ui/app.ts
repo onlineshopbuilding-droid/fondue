@@ -64,6 +64,12 @@ export class App {
   private tipShownDay = 0;
   private loadingTip = LOADING_TIPS[0];
   private lastGuestName = '';
+  private lastSavedRun = '';
+  private lastPurse = '';
+  private lostToastShown = false;
+  /** Bumped whenever the lobby is left, so that slow connection attempts know they are stale. */
+  private lobbyToken = 0;
+  private joining = false;
 
   constructor() {
     this.ui = document.getElementById('ui')!;
@@ -85,10 +91,29 @@ export class App {
     });
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
+    window.addEventListener('pagehide', () => this.session?.dispose());
+    this.startBackgroundTicker();
     window.addEventListener('pointerdown', () => {
       this.audio.resume();
       if (!this.session) this.audio.startMusic('menu');
     });
+  }
+
+  /** Browsers stop drawing hidden tabs; a co-op game must keep running for the other player. */
+  private startBackgroundTicker() {
+    if (typeof Worker === 'undefined') return;
+    const code = 'setInterval(() => postMessage(0), 33);';
+    const worker = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
+    let last = performance.now();
+    worker.onmessage = () => {
+      const now = performance.now();
+      const dt = Math.min(100, now - last);
+      last = now;
+      const s = this.session;
+      if (!document.hidden || !s || s.role === 'solo') return;
+      s.update(dt);
+      s.drainEvents();
+    };
   }
 
   async boot() {
@@ -178,6 +203,11 @@ export class App {
       this.lastMetaRev = meta.rev;
       if (this.screen === 'results' || this.screen === 'shop') this.show(this.screen);
     }
+    const purse = `${view.gold}/${view.offerings}`;
+    if (purse !== this.lastPurse) {
+      this.lastPurse = purse;
+      if (this.screen === 'shop') this.show('shop');
+    }
     this.syncPause(view, meta);
     this.syncConnection();
     if (view.phase === 'banner' && meta && this.tipShownDay !== view.day) {
@@ -201,8 +231,9 @@ export class App {
         break;
       case 'gameover':
         this.audio.stopMusic();
-        if (meta && !this.scoreSaved) {
+        if (meta && !this.scoreSaved && this.runKey(meta, view) !== this.lastSavedRun) {
           this.scoreSaved = true;
+          this.lastSavedRun = this.runKey(meta, view);
           addScore({
             names: meta.names.join(' & '), coop: meta.names.length > 1, day: view.day,
             score: meta.totalScore, kills: meta.totalKills, difficulty: meta.difficulty,
@@ -214,16 +245,23 @@ export class App {
     }
   }
 
+  private runKey(meta: Meta, view: ViewState) { return `${meta.names.join()}-${view.day}-${meta.totalScore}-${meta.totalKills}`; }
+
   private syncPause(view: ViewState, meta: Meta | null) {
     const isLoss = meta?.pausedBy === 'Connection lost';
     if (view.paused && !isLoss && this.screen === 'none') this.show('pause');
-    if (!view.paused && this.screen === 'pause') this.show('none');
+    if (view.paused && isLoss && this.session?.role === 'host' && (this.screen === 'none' || this.screen === 'pause')) this.show('lostHost');
+    if (!view.paused && (this.screen === 'pause' || this.screen === 'lostHost')) this.show('none');
   }
 
   private syncConnection() {
     const s = this.session;
     if (!s) return;
-    if (s.role === 'host' && s.connection() === 'lost' && this.screen === 'none') this.show('lostHost');
+    if (s.role === 'host' && s.connection() === 'connected') this.lostToastShown = false;
+    if (s.role === 'host' && s.connection() === 'lost' && !this.lostToastShown && (this.screen === 'results' || this.screen === 'shop')) {
+      this.lostToastShown = true;
+      this.toast('Your friend dropped out. You can carry on; they can rejoin with the room code.', '', 5000);
+    }
     if (s.role === 'host' && s.connection() === 'connected' && this.screen === 'lostHost') this.show('none');
     if (s.role === 'guest' && s.connection() === 'lost' && this.screen !== 'lostGuest' && this.screen !== 'main') this.show('lostGuest');
   }
@@ -290,6 +328,9 @@ export class App {
   }
 
   startSolo() {
+    this.room?.close();
+    this.room = null;
+    this.lobbyLink = null;
     this.useSession(new HostSession({
       seed: this.seed(), difficulty: this.settings.difficulty, names: [this.playerName()], tuning: this.settings.tuning, coop: false,
     }));
@@ -298,6 +339,8 @@ export class App {
   private playerName(): string { return this.settings.name.trim() || 'Player'; }
 
   private leaveToMenu() {
+    this.lobbyToken++;
+    this.joining = false;
     if (this.session?.role === 'host') this.lobbyLink?.send({ k: 'leftGame' });
     this.lobbyLink?.close();
     this.joinLink?.close();
@@ -317,16 +360,19 @@ export class App {
   // Host side ------------------------------------------------------------------
 
   async openRoom() {
+    const token = ++this.lobbyToken;
     this.code = makeRoomCode();
     this.lobbyStatus = 'Opening room...';
     this.lobbyError = false;
     this.show('host');
     try {
-      this.room = await this.transport().host(
+      const room = await this.transport().host(
         this.code,
         (raw) => this.onGuestLink(this.shaped(raw)),
         (msg) => { this.lobbyStatus = msg; this.lobbyError = true; if (this.screen === 'host') this.show('host'); },
       );
+      if (token !== this.lobbyToken) { room.close(); return; }
+      this.room = room;
       this.lobbyStatus = 'Waiting for your friend...';
     } catch (err) {
       this.lobbyStatus = (err as Error).message;
@@ -342,10 +388,22 @@ export class App {
         link.send({ k: 'reject', reason: 'version', hostVer: BUILD });
         return;
       }
-      this.guestName = m.name || 'Guest';
+      const name = m.name || 'Guest';
+      const s = this.session;
+      const occupied = s instanceof HostSession ? s.connection() === 'connected' : this.lobbyLink !== null;
+      // The same name again is a reload whose old link has not timed out yet.
+      if (occupied && name !== this.guestName) {
+        link.send({ k: 'reject', reason: 'full', hostVer: BUILD });
+        return;
+      }
+      if (!(s instanceof HostSession) && this.lobbyLink && this.lobbyLink !== link) {
+        const old = this.lobbyLink;
+        old.onClose = () => {};
+        old.close();
+      }
+      this.guestName = name;
       this.lastGuestName = this.guestName;
       this.lobbyLink = link;
-      const s = this.session;
       if (s instanceof HostSession && s.role === 'host') {
         link.send({ k: 'welcome', names: s.sim.s.meta.names, inGame: true, difficulty: s.sim.s.meta.difficulty });
         s.attach(link);
@@ -356,6 +414,7 @@ export class App {
       this.lobbyStatus = `${this.guestName} joined!`;
       this.lobbyError = false;
       link.onClose = () => {
+        if (this.lobbyLink !== link) return;
         this.lobbyLink = null;
         this.guestName = '';
         this.lobbyStatus = 'Your friend left. Waiting...';
@@ -392,18 +451,26 @@ export class App {
 
   async joinRoom(rawCode: string) {
     const code = normalizeRoomCode(rawCode);
-    if (!code) return;
+    if (!code || this.joining) return;
+    this.joinLink?.close();
+    this.joinLink = null;
+    this.joining = true;
+    const token = ++this.lobbyToken;
     this.code = code;
     this.lobbyStatus = 'Connecting...';
     this.lobbyError = false;
     this.show('join', code);
     try {
       const link = this.shaped(await this.transport().join(code));
+      if (token !== this.lobbyToken) { link.close(); return; }
+      this.joining = false;
       this.joinLink = link;
       link.onClose = () => { this.lobbyStatus = 'Connection closed.'; this.lobbyError = true; if (this.screen === 'join') this.show('join', code); };
       link.onMessage = (m) => this.onHostMessage(m, link, code);
       link.send({ k: 'hello', ver: BUILD, name: this.playerName() });
     } catch (err) {
+      this.joining = false;
+      if (token !== this.lobbyToken) return;
       this.lobbyStatus = (err as Error).message;
       this.lobbyError = true;
       if (this.screen === 'join') this.show('join', code);
@@ -419,7 +486,9 @@ export class App {
         this.show('join', code);
         break;
       case 'reject':
-        this.lobbyStatus = 'Your game version differs from the host. Please reload the page (Ctrl+F5) on both sides.';
+        this.lobbyStatus = m.reason === 'full'
+          ? 'This room already has two players.'
+          : 'Your game version differs from the host. Please reload the page (Ctrl+F5) on both sides.';
         this.lobbyError = true;
         this.show('join', code);
         link.close();
@@ -529,8 +598,8 @@ export class App {
           <div class="stack"><button data-a="aloneOn">Continue alone</button><button class="alt" data-a="quit">Quit to menu</button></div></div>`;
       case 'lostGuest':
         return `<div class="panel narrow"><h2>Connection lost</h2>
-          <p style="text-align:center">The link to the host broke.</p>
-          <div class="stack"><button data-a="rejoin">Rejoin</button><button class="alt" data-a="quit">Quit to menu</button></div></div>`;
+          <p style="text-align:center">${(this.session as GuestSession | null)?.hostLeft ? 'The host ended the game.' : 'The link to the host broke.'}</p>
+          <div class="stack">${(this.session as GuestSession | null)?.hostLeft ? '' : '<button data-a="rejoin">Rejoin</button>'}<button class="alt" data-a="quit">Quit to menu</button></div></div>`;
       default:
         return '';
     }
@@ -737,6 +806,9 @@ export class App {
         this.toast('Invite link copied');
         break;
       case 'reopen':
+        this.lobbyLink?.close();
+        this.lobbyLink = null;
+        this.guestName = '';
         this.room?.close();
         this.room = null;
         void this.openRoom();

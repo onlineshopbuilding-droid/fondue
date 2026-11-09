@@ -56,4 +56,7 @@ wss.on('connection', (ws, req) => {
   });
 });
 
+// Quiet connections through a tunnel get dropped, so keep every socket busy.
+setInterval(() => { for (const ws of wss.clients) if (ws.readyState === 1) ws.ping(); }, 20_000);
+
 http.listen(port, () => console.log(`Fondue relay listening on port ${port}`));

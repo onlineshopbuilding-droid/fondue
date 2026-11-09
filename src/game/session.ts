@@ -29,8 +29,12 @@ export interface Session {
   dispose(): void;
 }
 
-const SNAPSHOT_EVERY_TICKS = 2; // 30 Hz
+const SNAPSHOT_EVERY_STEPS = 2; // 30 Hz
 const MAX_CATCHUP_TICKS = 6;
+/** No message from the other side for this long means the link is gone. */
+const SILENCE_LIMIT_MS = 4000;
+/** Long event lists are split so that no message exceeds the data channel limit. */
+const MAX_EVENTS_PER_MESSAGE = 60;
 
 /** Runs the simulation: single player, or the host of a co-op game. */
 export class HostSession implements Session {
@@ -45,6 +49,9 @@ export class HostSession implements Session {
   private netEvents: SimEvent[] = [];
   private ping = 0;
   private pingTimer = 0;
+  private lastHeard = 0;
+  /** Counts steps even while paused, so that a paused game keeps sending its state. */
+  private stepCounter = 0;
 
   constructor(opts: { seed: number; difficulty: Difficulty; names: string[]; tuning: Tuning; coop: boolean }) {
     this.role = opts.coop ? 'host' : 'solo';
@@ -53,19 +60,29 @@ export class HostSession implements Session {
 
   /** Attaches the guest connection. Works mid-game for reconnects. */
   attach(link: Transport) {
+    if (this.link && this.link !== link) {
+      const old = this.link;
+      this.link = null;
+      old.onClose = () => {};
+      old.onMessage = () => {};
+      old.close();
+    }
     this.link = link;
     this.linkLost = false;
     this.lastMetaRev = -1;
+    this.lastHeard = performance.now();
     this.sim.setConnected(1, true);
     if (this.sim.s.paused && this.sim.s.meta.pausedBy === 'Connection lost') {
       this.sim.s.paused = false;
       this.sim.s.meta.pausedBy = null;
     }
-    link.onMessage = (m) => this.onNet(m);
-    link.onClose = () => this.onLinkLost();
+    link.onMessage = (m) => { if (this.link === link) this.onNet(m); };
+    link.onClose = () => { if (this.link === link) this.onLinkLost(); };
   }
 
   private onLinkLost() {
+    const dead = this.link;
+    if (dead) { dead.onClose = () => {}; dead.onMessage = () => {}; dead.close(); }
     this.link = null;
     this.linkLost = true;
     this.sim.setConnected(1, false);
@@ -74,14 +91,14 @@ export class HostSession implements Session {
 
   /** The host decides to carry on without the guest. */
   continueAlone() {
-    if (this.sim.s.meta.pausedBy === 'Connection lost') {
-      this.sim.s.paused = false;
-      this.sim.s.meta.pausedBy = null;
-    }
+    this.sim.s.paused = false;
+    this.sim.s.meta.pausedBy = null;
+    this.sim.s.meta.rev++;
     this.linkLost = false;
   }
 
   private onNet(m: NetMessage) {
+    this.lastHeard = performance.now();
     switch (m.k) {
       case 'c': this.sim.command({ ...m.c, p: 1 } as Command); break;
       case 'h': this.sim.setHand(1, m.x, m.y); break;
@@ -99,7 +116,8 @@ export class HostSession implements Session {
       this.collect();
       this.acc -= DT;
       steps++;
-      if (this.link && this.sim.s.tick % SNAPSHOT_EVERY_TICKS === 0) this.broadcast();
+      this.stepCounter++;
+      if (this.link && this.stepCounter % SNAPSHOT_EVERY_STEPS === 0) this.broadcast();
     }
     if (steps === MAX_CATCHUP_TICKS) this.acc = 0;
     this.collect();
@@ -107,6 +125,7 @@ export class HostSession implements Session {
       if (this.netEvents.length > 0) this.broadcast();
       this.pingTimer += dtMs;
       if (this.pingTimer > 1000) { this.pingTimer = 0; this.link.send({ k: 'ping', t: performance.now() }); }
+      if (performance.now() - this.lastHeard > SILENCE_LIMIT_MS) this.onLinkLost();
     }
   }
 
@@ -123,11 +142,10 @@ export class HostSession implements Session {
       this.lastMetaRev = this.sim.s.meta.rev;
       this.link.send({ k: 'm', m: this.sim.s.meta });
     }
-    if (this.netEvents.length > 0) {
-      this.link.send({ k: 'ev', l: this.netEvents });
-      this.netEvents = [];
+    while (this.netEvents.length > 0) {
+      this.link.send({ k: 'ev', l: this.netEvents.splice(0, MAX_EVENTS_PER_MESSAGE) });
     }
-    this.link.send({ k: 's', s: encodeSnapshot(this.sim.s) });
+    if (!this.link.congested?.()) this.link.send({ k: 's', s: encodeSnapshot(this.sim.s) });
   }
 
   view(): ViewState { return decodeSnapshot(encodeSnapshot(this.sim.s)); }
@@ -137,7 +155,7 @@ export class HostSession implements Session {
   send(c: ClientCommand) {
     this.sim.command({ ...c, p: 0 } as Command);
     this.collect();
-    // Purchases and ready flags reach the guest even while the sim is idle.
+    // Purchases and ready flags should reach the guest without waiting for the next snapshot.
     if (this.link && this.sim.s.phase === 'intermission') this.broadcast();
   }
 
@@ -172,7 +190,13 @@ interface Prediction {
   thrown: boolean;
   lane: number;
   confirmed: boolean;
+  /** Fractional time left over from the last fixed-step update. */
+  acc: number;
 }
+
+/** Events are heard this late on the guest, so they land together with the delayed picture. */
+const EVENT_DELAY_MS = 100;
+
 
 /** Shows what the host sends and adds local prediction so that throwing feels immediate. */
 export class GuestSession implements Session {
@@ -180,8 +204,13 @@ export class GuestSession implements Session {
   readonly me = 1;
   private buffer: Timed[] = [];
   private curMeta: Meta | null = null;
-  private events: SimEvent[] = [];
+  private events: { at: number; ev: SimEvent }[] = [];
   private lost = false;
+  /** The host left on purpose, so rejoining makes no sense. */
+  hostLeft = false;
+  private lastHeard = performance.now();
+  private modeGuardUntil = 0;
+  private projReleasedAt = -Infinity;
   private ping = 0;
   private pingTimer = 0;
   private handTimer = 0;
@@ -200,6 +229,7 @@ export class GuestSession implements Session {
   }
 
   private onNet(m: NetMessage) {
+    this.lastHeard = performance.now();
     switch (m.k) {
       case 's': {
         const view = decodeSnapshot(m.s);
@@ -207,7 +237,11 @@ export class GuestSession implements Session {
         if (this.buffer.length > 40) this.buffer.shift();
         break;
       }
-      case 'ev': this.events.push(...m.l); break;
+      case 'ev': {
+        const at = performance.now() + EVENT_DELAY_MS;
+        for (const ev of m.l) this.events.push({ at, ev });
+        break;
+      }
       case 'm': this.curMeta = m.m; break;
       case 'start':
         this.buffer = [];
@@ -219,6 +253,7 @@ export class GuestSession implements Session {
         break;
       case 'leftGame':
         this.lost = true;
+        this.hostLeft = true;
         this.onDisconnect();
         break;
       case 'ping': this.link.send({ k: 'pong', t: m.t }); break;
@@ -235,6 +270,11 @@ export class GuestSession implements Session {
     }
     this.pingTimer += dtMs;
     if (this.pingTimer > 1000) { this.pingTimer = 0; this.link.send({ k: 'ping', t: performance.now() }); }
+
+    if (!this.lost && performance.now() - this.lastHeard > SILENCE_LIMIT_MS) {
+      this.lost = true;
+      this.onDisconnect();
+    }
 
     this.latest = this.computeView();
     this.stepPrediction(dtMs / 1000);
@@ -265,32 +305,44 @@ export class GuestSession implements Session {
     if (p && newest) {
       const auth = newest.enemies.find((e) => e.id === p.id);
       if (auth && auth.heldBy.includes(this.me)) p.confirmed = true;
-      // The host said no, or the enemy died in the meantime.
+      // The host said no, someone else has it, or the enemy died in the meantime.
       const giveUp = performance.now() - p.pressedAt > 450 + this.ping;
-      if (!auth || (!p.confirmed && giveUp) || (p.confirmed && !auth.heldBy.includes(this.me))) this.pred = null;
+      const takenByOther = !!auth && auth.heldBy.length > 0 && !auth.heldBy.includes(this.me);
+      if (!auth || takenByOther || (!p.confirmed && giveUp) || (p.confirmed && !auth.heldBy.includes(this.me))) this.pred = null;
     }
     if (this.pred) {
+      // Fixed steps like the host's: a spring integrated with long frames blows up.
       const q = this.pred;
-      const k = t.holdSpring;
-      const c = 2 * Math.sqrt(k) * 0.72;
-      q.vx += (k * (this.handX + q.offX - q.x) - c * q.vx) * dt;
-      q.vy += (k * (this.handY + q.offY - q.y) - c * q.vy) * dt;
-      q.x += q.vx * dt;
-      q.y += q.vy * dt;
-      const ground = WORLD.groundY + q.lane;
-      if (q.y > ground) { q.y = ground; q.vy = Math.min(0, q.vy); }
+      q.acc += Math.min(dt, 0.1);
+      while (q.acc >= DT) {
+        q.acc -= DT;
+        const k = t.holdSpring;
+        const c = 2 * Math.sqrt(k) * 0.72;
+        q.vx += (k * (this.handX + q.offX - q.x) - c * q.vx) * DT;
+        q.vy += (k * (this.handY + q.offY - q.y) - c * q.vy) * DT;
+        q.x += q.vx * DT;
+        q.y += q.vy * DT;
+        const ground = WORLD.groundY + q.lane;
+        if (q.y > ground) { q.y = ground; q.vy = Math.min(0, q.vy); }
+      }
     }
     for (const b of this.thrown) {
       b.vy += t.gravity * dt;
       b.x += b.vx * dt;
       b.y += b.vy * dt;
+      if (b.x < WORLD.gateX + 10) { b.x = WORLD.gateX + 10; b.vx = Math.abs(b.vx) * 0.35; }
+      if (b.x > WORLD.rightWallX) { b.x = WORLD.rightWallX; b.vx = -Math.abs(b.vx) * 0.4; }
       const ground = WORLD.groundY + b.lane;
       if (b.y > ground) { b.y = ground; b.vy = 0; b.vx = 0; }
     }
     if (this.thrown.length > 0 && newest) {
       this.thrown = this.thrown.filter((b) => {
         const auth = newest.enemies.find((e) => e.id === b.id);
-        return auth?.st === 'air' && performance.now() - b.pressedAt < 6000;
+        if (auth?.st === 'air') b.confirmed = true;
+        const age = performance.now() - b.pressedAt;
+        // Until the host has seen the release its snapshots still say "held": keep flying.
+        if (!b.confirmed) return age < 1000 + this.ping;
+        return auth?.st === 'air' && age < 6000;
       });
     }
   }
@@ -307,13 +359,23 @@ export class GuestSession implements Session {
       if (!p) return e;
       return { ...e, x: p.x, y: p.y, st: p.thrown ? 'air' as const : 'held' as const, heldBy: p.thrown ? [] : [this.me], rot: e.rot };
     });
-    const projectiles = v.projectiles.map((q) => (q.heldBy === this.me ? { ...q, x: this.handX, y: this.handY } : q));
+    const justLetGo = performance.now() - this.projReleasedAt < 500;
+    const projectiles = v.projectiles.map((q) => (q.heldBy === this.me && !justLetGo ? { ...q, x: this.handX, y: this.handY } : q));
     return { ...v, hands, enemies, projectiles };
   }
 
   meta() { return this.curMeta; }
-  drainEvents() { const e = this.events; this.events = []; return e; }
-  send(c: ClientCommand) { this.link.send({ k: 'c', c }); }
+  drainEvents() {
+    const now = performance.now();
+    let n = 0;
+    while (n < this.events.length && this.events[n].at <= now) n++;
+    return this.events.splice(0, n).map((q) => q.ev);
+  }
+
+  send(c: ClientCommand) {
+    if (c.k === 'activate') this.modeGuardUntil = performance.now() + 500 + this.ping;
+    this.link.send({ k: 'c', c });
+  }
   setHand(x: number, y: number) { this.handX = x; this.handY = y; }
 
   localPress(x: number, y: number) {
@@ -321,7 +383,10 @@ export class GuestSession implements Session {
     const v = this.latest;
     if (!v || v.phase !== 'battle') return;
     const me = v.hands[this.me];
-    if (me && me.mode !== 'none') return;
+    if ((me && me.mode !== 'none') || performance.now() < this.modeGuardUntil) return;
+    // Same order as the host: a bomb within reach is taken before any enemy.
+    const pad = (this.tuning()?.grabRadius ?? 30) * 0.5 + 44;
+    if (v.projectiles.some((q) => q.kind === 'bomb' && q.heldBy < 0 && Math.hypot(q.x - x, q.y - y) < pad)) return;
     const target = this.pickEnemy(v.enemies, x, y);
     if (!target) return;
     const def = ENEMIES[target.type];
@@ -329,7 +394,7 @@ export class GuestSession implements Session {
       id: target.id, x: target.x, y: target.y, vx: 0, vy: 0,
       offX: Math.max(-def.radius, Math.min(def.radius, target.x - x)),
       offY: Math.max(0, Math.min(def.height, target.y - y)),
-      pressedAt: performance.now(), thrown: false, lane: target.lane, confirmed: false,
+      pressedAt: performance.now(), thrown: false, lane: target.lane, confirmed: false, acc: 0,
     };
   }
 
@@ -344,17 +409,22 @@ export class GuestSession implements Session {
       const dx = Math.max(0, Math.abs(x - e.x) - def.radius);
       const dy = y < top ? top - y : y > e.y ? y - e.y : 0;
       const d = Math.hypot(dx, dy);
-      if (d <= pad && d < bestD) { bestD = d; best = e; }
+      const score = d + Math.abs(x - e.x) * 0.02; // same preference as the host
+      if (d <= pad && score < bestD) { bestD = score; best = e; }
     }
     return best;
   }
 
   localRelease(vx: number, vy: number) {
     this.send({ k: 'release', x: this.handX, y: this.handY, vx, vy });
+    this.projReleasedAt = performance.now();
     const t = this.tuning();
     const p = this.pred;
     this.pred = null;
     if (!p || !t) return;
+    // The host starts the throw from hand plus grip offset, not from where the spring lagged to.
+    p.x = Math.max(WORLD.gateX + 10, Math.min(WORLD.rightWallX - 10, this.handX + p.offX));
+    p.y = Math.min(this.handY + p.offY, WORLD.groundY + p.lane);
     // Mirrors the host's throw clamp so the prediction flies the same arc.
     let ax = vx * t.throwMult;
     let ay = vy * t.throwMult;
@@ -366,6 +436,7 @@ export class GuestSession implements Session {
     const flat = Math.abs(ax);
     if (groundY - p.y < 20 && flat > 250 && ay <= flat * 0.5 && ay >= -flat * 0.25) { p.y = groundY - 22; p.vy = -flat * 0.25; }
     p.thrown = true;
+    p.confirmed = false;
     p.pressedAt = performance.now();
     this.thrown.push(p);
   }

@@ -778,6 +778,16 @@ describe('disconnect handling', () => {
     expect(e.st).toBe('air');
   });
 
+  it('dropping out clears ready, and starts the day if only that player was missing', () => {
+    const sim = battleSim(['A', 'B']);
+    sim.s.dayT = DAY.seconds;
+    runUntil(sim, () => sim.s.phase === 'intermission', 400);
+    sim.command({ k: 'ready', p: 0, ready: true });
+    expect(sim.s.day).toBe(1);
+    sim.setConnected(1, false);
+    expect(sim.s.day).toBe(2);
+  });
+
   it('a disconnected player does not block ready', () => {
     const sim = battleSim(['A', 'B']);
     sim.s.dayT = DAY.seconds;

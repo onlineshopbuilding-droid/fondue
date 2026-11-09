@@ -17,6 +17,7 @@ class WsLink extends BaseTransport {
     if (this.ws.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(msg));
   }
   close() { this.closed = true; this.ws.close(); }
+  congested() { return this.ws.bufferedAmount > 128_000; }
   remoteClosed() { if (!this.closed) { this.closed = true; this.onClose(); } }
 }
 

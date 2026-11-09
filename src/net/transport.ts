@@ -6,6 +6,8 @@ export interface Transport {
   onMessage: (msg: NetMessage) => void;
   onClose: () => void;
   close(): void;
+  /** True while outgoing data is piling up; snapshots are then skipped. */
+  congested?(): boolean;
 }
 
 /** Host side: waits for guests in a room. */
@@ -53,6 +55,7 @@ export function withLatency(inner: Transport, o: LatencyOptions): Transport {
       setTimeout(() => inner.send(msg), lastOut - performance.now());
     },
     close() { inner.close(); },
+    congested: () => inner.congested?.() ?? false,
   };
   inner.onMessage = (msg) => {
     lastIn = Math.max(lastIn, performance.now() + delay());

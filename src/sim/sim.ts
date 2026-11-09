@@ -77,8 +77,17 @@ export class Sim {
       this.dropHeld(p);
       h.down = false;
       h.mode = 'none';
+      this.s.meta.ready[p] = false;
     }
     this.touchMeta();
+    if (!connected) this.startDayIfAllReady();
+  }
+
+  private startDayIfAllReady() {
+    const s = this.s;
+    if (s.phase !== 'intermission') return;
+    const present = s.hands.filter((h) => h.connected);
+    if (present.length > 0 && s.hands.every((h, i) => !h.connected || s.meta.ready[i])) this.startDay(s.day + 1);
   }
 
   command(c: Command) {
@@ -615,8 +624,7 @@ export class Sim {
     if (s.phase !== 'intermission') return;
     s.meta.ready[p] = ready;
     this.touchMeta();
-    const everyone = s.hands.every((h, i) => !h.connected || s.meta.ready[i]);
-    if (everyone) this.startDay(s.day + 1);
+    this.startDayIfAllReady();
   }
 
   private currentGateId(): string {
