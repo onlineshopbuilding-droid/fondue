@@ -1,7 +1,10 @@
-import { BEHAVIOUR, ENEMIES, type EnemyType } from '../config/enemies';
-import { DAY, DIFFICULTIES } from '../config/waves';
-import { DT, WORLD } from '../config/world';
-import { ECONOMY, GATE_HP, SHOP_ITEMS, STARTING_ITEMS, WEAPONS, WEAPON_SLOTS, type WeaponSlot } from '../config/shop';
+import { BEHAVIOUR, ENEMIES, ENEMY_TYPES, type EnemyType } from '../config/enemies';
+import { COOP, DAY, DIFFICULTIES } from '../config/waves';
+import { DT, FIELD, WORLD, fieldEntry, fieldSpeedFactor, fieldWall, perchX } from '../config/world';
+import { AIM, ECONOMY, GATE_HP, PERCH, SHOP_ITEMS, STARTING_ITEMS, WEAPONS, WEAPON_SLOTS, type HornId, type WeaponSlot } from '../config/shop';
+import { cleanFlags } from '../config/flags';
+import { quickStartFor } from '../config/quickstart';
+import { AIM_LAND_Y, aimShot, isAimSlot } from './aim';
 import { Rng } from './rng';
 import { buildDayPlan, newTypesOnDay } from './spawn';
 import type {
@@ -32,15 +35,29 @@ export class Sim {
       gateHp: 0, gateMax: 0, enemies: [], projectiles: [], flames: [],
       hands: Array.from({ length: n }, newHand),
       cooldowns: zero(), cooldownMax: zero(),
-      spawnQueue: [], spawned: 0, perchBusy: 0, nextId: 1, rngState: opts.seed,
+      spawnQueue: [], spawned: 0, perchBusy: 0, potBusy: 0, potMax: 0, nightfall: false, nextId: 1, rngState: opts.seed,
       dayKills: 0, dayGold: 0, dayOfferings: 0, dayScore: 0, paused: false, seenTypes: [],
       meta: {
         rev: 1, difficulty: opts.difficulty, owned: [...STARTING_ITEMS], hornEquipped: null,
         names: opts.names, ready: new Array(n).fill(false), lastDay: null, totalScore: 0, totalKills: 0,
         newTipTypes: [], pausedBy: null, tuning: { ...opts.tuning },
+        flags: cleanFlags(opts.flags), fieldW: Math.max(FIELD.min, Math.min(FIELD.max, opts.fieldW ?? FIELD.min)), quickStart: 0,
       },
     };
-    this.startDay(1);
+    const quick = opts.quickStart ? quickStartFor(opts.quickStart) : null;
+    if (quick) this.applyQuickStart(quick);
+    this.startDay(quick ? quick.day : 1);
+  }
+
+  private applyQuickStart(q: NonNullable<ReturnType<typeof quickStartFor>>) {
+    const s = this.s;
+    s.meta.quickStart = q.day;
+    s.meta.owned.push(...q.owned);
+    s.meta.hornEquipped = q.hornEquipped;
+    s.gold = q.gold;
+    s.offerings = q.offerings;
+    // Nobody needs the tips for everything that appeared on the skipped days.
+    s.seenTypes = ENEMY_TYPES.filter((t) => ENEMIES[t].firstDay < q.day);
   }
 
   get tuning() { return this.s.meta.tuning; }
@@ -49,6 +66,26 @@ export class Sim {
 
   /** Replaces the tuning values (host panel). */
   setTuning(t: SimState['meta']['tuning']) { this.s.meta.tuning = { ...t }; this.touchMeta(); }
+
+  flag(id: string): string { return this.s.meta.flags[id]; }
+
+  /** Replaces the experiment switches (host panel). */
+  setFlags(f: Record<string, string>) { this.s.meta.flags = cleanFlags(f); this.touchMeta(); }
+
+  get fieldW() { return this.s.meta.fieldW; }
+
+  /** Solo only: follows a rotated phone or resized window. Whoever stands outside walks back in. */
+  setFieldWidth(w: number) {
+    const v = Math.max(FIELD.min, Math.min(FIELD.max, Math.round(w)));
+    if (v === this.s.meta.fieldW) return;
+    this.s.meta.fieldW = v;
+    const wall = fieldWall(v);
+    for (const e of this.s.enemies) {
+      if (e.st === 'air' || e.st === 'held' || e.st === 'hooked') e.x = Math.min(e.x, wall - 10);
+      if (e.st === 'hooked') e.x = perchX(v);
+    }
+    this.touchMeta();
+  }
 
   drainEvents(): SimEvent[] {
     const out = this.events;
@@ -95,6 +132,7 @@ export class Sim {
       case 'press': this.press(c.p, c.x, c.y); break;
       case 'release': this.release(c.p, c.x, c.y, c.vx, c.vy); break;
       case 'activate': this.activate(c.p, c.slot); break;
+      case 'pressSlot': this.pressSlot(c.p, c.slot, c.x, c.y); break;
       case 'cancelMode': this.cancelMode(c.p); break;
       case 'buy': this.buy(c.p, c.item); break;
       case 'equip': this.equip(c.item); break;
@@ -136,12 +174,7 @@ export class Sim {
     h.pressX = x; h.pressY = y; h.pressTick = s.tick;
     if (s.phase !== 'battle' || s.paused) return;
     h.modePress = h.mode !== 'none';
-    if (h.mode === 'horn' || h.mode === 'stomper') return;
-    if (h.mode === 'comet') {
-      const c = s.projectiles.find((q) => q.id === h.holdingProj);
-      if (c) c.charge = 0;
-      return;
-    }
+    if (h.mode !== 'none') return;
     if (this.tryGrabBomb(p, x, y)) return;
     this.tryGrabEnemy(p, x, y);
   }
@@ -178,7 +211,7 @@ export class Sim {
     let best: Enemy | null = null;
     let bestD = Infinity;
     for (const e of s.enemies) {
-      if (e.dead || e.hidden || e.st === 'hooked' || e.st === 'flee') continue;
+      if (e.dead || e.hidden || e.st === 'hooked' || e.st === 'cooking' || e.st === 'flee') continue;
       if (e.heldBy.length > 0 && !(e.type === 'yeti' && !e.heldBy.includes(p))) continue;
       const d = this.grabDistance(e, x, y);
       if (d > pad) continue;
@@ -221,8 +254,9 @@ export class Sim {
     // This press began before the weapon was picked, so letting go is not an aimed shot.
     if (h.mode !== 'none' && !h.modePress) return;
 
-    if (h.mode === 'horn') { this.fireHorn(p, x, y); return; }
+    if (h.mode === 'horn' || h.mode === 'bolter') { this.fireAimed(p, h.mode, x, y); return; }
     if (h.mode === 'stomper') { this.fireStomper(p, x, vy); return; }
+    if (h.mode === 'comet') { this.fireComet(p, x); return; }
 
     if (h.holdingProj >= 0) {
       const q = s.projectiles.find((o) => o.id === h.holdingProj);
@@ -232,7 +266,6 @@ export class Sim {
         const v = this.clampThrow(vx, vy);
         q.vx = v.vx; q.vy = v.vy; q.x = x; q.y = y;
         q.landed = false;
-        if (q.kind === 'comet') { h.mode = 'none'; this.launchComet(q); }
       }
       return;
     }
@@ -266,13 +299,18 @@ export class Sim {
       }
     }
 
-    e.x = clamp(x + e.grabOffX, WORLD.gateX + 10, WORLD.rightWallX - 10);
+    e.x = clamp(x + e.grabOffX, WORLD.gateX + 10, this.wall - 10);
     e.y = Math.min(y + e.grabOffY, this.groundOf(e));
+    e.thrownBy = p;
     if (this.tryPerch(e)) return;
+    if (this.tryRearPotOnRelease(e, vx, vy)) return;
     this.throwEnemy(e, vx, vy, p);
     this.liftFlatThrow(e);
     this.applyCauldronAssist(e);
+    this.steerAtPerch(e);
   }
+
+  private get wall() { return fieldWall(this.s.meta.fieldW); }
 
   private clampThrow(vx: number, vy: number) {
     const m = this.tuning.throwMult;
@@ -304,25 +342,63 @@ export class Sim {
     e.vy = -speed * 0.25;
   }
 
-  private tryPerch(e: Enemy): boolean {
+  private tryPerch(e: Enemy, radius: number = WORLD.perch.snapRadius): boolean {
     const s = this.s;
     if (!this.owns('perch') || s.perchBusy > 0) return false;
-    const { x, hookY, snapRadius } = WORLD.perch;
-    if (Math.hypot(e.x - x, e.y - hookY - ENEMIES[e.type].height * 0.3) > snapRadius) return false;
+    const { hookY } = WORLD.perch;
+    const x = perchX(s.meta.fieldW);
+    if (Math.hypot(e.x - x, e.y - hookY - ENEMIES[e.type].height * 0.3) > radius) return false;
     if (e.type === 'siegeCart' || e.type === 'yeti') return false;
     e.st = 'hooked';
     e.x = x;
-    e.y = hookY + ENEMIES[e.type].height * 0.7;
+    e.y = hookY + ENEMIES[e.type].height * PERCH.hangDrop;
     e.vx = 0; e.vy = 0;
     e.rot = 0;
-    e.t = 2.0;
-    s.perchBusy = 2.3;
+    e.t = PERCH.hangSeconds + PERCH.eatSeconds;
+    e.heldBy = [];
+    s.perchBusy = e.t;
     return true;
+  }
+
+  private get potAtBack() { return this.flag('cauldron') === 'back'; }
+
+  private canPot(e: Enemy) { return this.owns('cauldron') && this.s.potBusy <= 0 && e.type !== 'siegeCart'; }
+
+  /** Starts melting a raider. The pot is taken until that is done and pays out at the end. */
+  private enterPot(e: Enemy, x: number, y: number) {
+    const s = this.s;
+    const seconds = this.tuning.cauldronSeconds;
+    e.st = 'cooking';
+    e.t = seconds;
+    e.x = x; e.y = y;
+    e.vx = 0; e.vy = 0; e.rotV = 0;
+    e.heldBy = [];
+    s.potBusy = seconds;
+    s.potMax = seconds;
+    this.emit({ e: 'splash', x, y: this.potAtBack ? y : WORLD.groundY, etype: e.type });
+  }
+
+  /** Distance from the middle of a raider's body to the rim of the rear pot. */
+  private rearPotDistance(e: Enemy): number {
+    const { x, rimY } = WORLD.cauldronBack;
+    return Math.hypot(e.x - x, e.y - ENEMIES[e.type].height * 0.45 - rimY);
+  }
+
+  /** Lifted to the rear pot and let go: it goes in. Thrown at it from close by: steered in. */
+  private tryRearPotOnRelease(e: Enemy, vx: number, vy: number): boolean {
+    if (!this.potAtBack || !this.canPot(e)) return false;
+    const { x, rimY, snapRadius } = WORLD.cauldronBack;
+    if (this.rearPotDistance(e) <= snapRadius && Math.hypot(vx, vy) < 900) {
+      this.enterPot(e, x, rimY);
+      return true;
+    }
+    return false;
   }
 
   /** Gentle steering so that a release close to the cauldron actually lands in it. */
   private applyCauldronAssist(e: Enemy) {
-    if (!this.owns('cauldron') || e.st !== 'air') return;
+    if (!this.owns('cauldron') || e.st !== 'air' || this.s.potBusy > 0) return;
+    if (this.potAtBack) { this.steerAtRearPot(e); return; }
     const { x: cx, halfWidth } = WORLD.cauldron;
     const g = this.tuning.gravity;
     const ground = this.groundOf(e);
@@ -333,6 +409,40 @@ export class Sim {
     if (Math.abs(landX - cx) > halfWidth + 95 || Math.abs(landX - cx) < halfWidth * 0.6) return;
     const wanted = (cx - e.x) / tLand;
     e.vx += clamp(wanted - e.vx, -280, 280);
+  }
+
+  /** A throw that is headed near the rear pot bends into it, because depth is hard to judge. */
+  private steerAtRearPot(e: Enemy) {
+    const { x, rimY, assistRadius } = WORLD.cauldronBack;
+    this.steerAt(e, x, rimY, e.y - ENEMIES[e.type].height * 0.45, assistRadius, WORLD.cauldronBack.headingCos);
+  }
+
+  /** Same for the hook: only a throw really headed for it, since gravity pulls long throws under it. */
+  private steerAtPerch(e: Enemy) {
+    if (e.st !== 'air' || !this.owns('perch') || this.s.perchBusy > 0) return;
+    if (e.type === 'siegeCart' || e.type === 'yeti') return;
+    this.steerAt(e, perchX(this.s.meta.fieldW), WORLD.perch.hookY, e.y - ENEMIES[e.type].height * 0.3, WORLD.perch.assistRadius, WORLD.perch.headingCos);
+  }
+
+  /** Bends a throw into a target if it heads that way and passes near. bodyY is the height the target is measured at. */
+  private steerAt(e: Enemy, x: number, y: number, bodyY: number, radius: number, headingCos: number) {
+    const g = this.tuning.gravity;
+    const toX = x - e.x;
+    const toY = y - bodyY;
+    const speed = Math.hypot(e.vx, e.vy);
+    const dist = Math.hypot(toX, toY);
+    if (speed < 1 || dist < 1) return;
+    // Only throws that really go towards it count, not whatever happens to fly past.
+    if ((toX * e.vx + toY * e.vy) / (speed * dist) < headingCos) return;
+    let best = Infinity;
+    let bestT = 0;
+    for (let t = 0.04; t <= 1; t += 0.04) {
+      const d = Math.hypot(e.x + e.vx * t - x, bodyY + e.vy * t + 0.5 * g * t * t - y);
+      if (d < best) { best = d; bestT = t; }
+    }
+    if (best > radius) return;
+    e.vx = toX / bestT;
+    e.vy = (toY - 0.5 * g * bestT * bestT) / bestT;
   }
 
   private dropHeld(p: number) {
@@ -351,7 +461,6 @@ export class Sim {
     h.holding = -1;
     const q = s.projectiles.find((o) => o.id === h.holdingProj);
     if (q) {
-      if (q.kind === 'comet') q.t = -1;
       q.heldBy = -1;
     }
     h.holdingProj = -1;
@@ -361,11 +470,21 @@ export class Sim {
   private cancelMode(p: number) {
     const h = this.s.hands[p];
     if (!h || h.mode === 'none') return;
-    if (h.mode === 'comet') {
-      this.s.projectiles = this.s.projectiles.filter((q) => q.id !== h.holdingProj);
-      h.holdingProj = -1;
-    }
     h.mode = 'none';
+  }
+
+  /** The hand came down on a weapon at the keep. Never grabs anything. */
+  private pressSlot(p: number, slot: WeaponSlot, x: number, y: number) {
+    const s = this.s;
+    const h = s.hands[p];
+    if (!h) return;
+    h.x = x; h.y = y; h.down = true;
+    h.pressX = x; h.pressY = y; h.pressTick = s.tick;
+    if (s.phase !== 'battle' || s.paused) return;
+    if (h.mode === slot) { this.cancelMode(p); h.modePress = false; return; }
+    this.activate(p, slot);
+    // Aiming starts with this very press; armed weapons wait for the next one.
+    h.modePress = h.mode === slot && isAimSlot(slot);
   }
 
   // ---------------------------------------------------------------------------
@@ -395,7 +514,7 @@ export class Sim {
     const h = s.hands[p];
     if (!h || s.phase !== 'battle' || s.paused) return;
     const tier = this.tierOf(slot);
-    const modeOf: Partial<Record<WeaponSlot, Hand['mode']>> = { stomper: 'stomper', comet: 'comet', horn: 'horn' };
+    const modeOf: Partial<Record<WeaponSlot, Hand['mode']>> = { stomper: 'stomper', comet: 'comet', horn: 'horn', bolter: 'bolter' };
     if (modeOf[slot] && h.mode === modeOf[slot]) { this.cancelMode(p); return; }
     if (!tier || s.cooldowns[slot] > 0) { this.emit({ e: 'denied', p }); return; }
     if (h.holding >= 0 || h.holdingProj >= 0) this.dropHeld(p);
@@ -414,75 +533,74 @@ export class Sim {
       case 'stomper':
         h.mode = 'stomper';
         break;
-      case 'comet': {
-        const q = this.spawnProjectile('comet', h.x, h.y, 0, 0);
-        const w = WEAPONS.comet[tier as 'comet1'];
-        q.size = w.radius; q.damage = w.damage; q.heldBy = p;
-        h.holdingProj = q.id;
+      case 'comet':
         h.mode = 'comet';
         break;
-      }
       case 'horn':
         h.mode = 'horn';
         break;
-      case 'bolter': {
-        const w = WEAPONS.bolter[tier as keyof typeof WEAPONS.bolter];
-        const targets = s.enemies
-          .filter((e) => !e.dead && !e.hidden && e.st !== 'held' && e.st !== 'hooked')
-          .sort((a, b) => a.x - b.x)
-          .slice(0, w.bolts);
-        if (targets.length === 0) { this.emit({ e: 'denied', p }); return; }
-        for (let i = 0; i < w.bolts; i++) {
-          const t = targets[i % targets.length];
-          const aimY = t.y - ENEMIES[t.type].height * 0.5;
-          const dx = t.x - WORLD.roof.x;
-          const dy = aimY - WORLD.roof.y;
-          const d = Math.hypot(dx, dy) || 1;
-          const speed = 1250;
-          const q = this.spawnProjectile('roofBolt', WORLD.roof.x + i * 3, WORLD.roof.y, (dx / d) * speed, (dy / d) * speed);
-          q.damage = w.damage; q.pierce = w.pierce; q.size = 8;
-        }
-        this.startCooldown(slot, w.cooldown);
-        this.emit({ e: 'bolters' });
+      case 'bolter':
+        h.mode = 'bolter';
         break;
-      }
     }
   }
 
-  private fireHorn(p: number, x: number, y: number) {
+  /** Letting go of a weapon being aimed. Too short a pull changes nothing and costs nothing. */
+  private fireAimed(p: number, slot: 'horn' | 'bolter', x: number, y: number) {
     const s = this.s;
     const h = s.hands[p];
     h.mode = 'none';
-    const id = s.meta.hornEquipped;
-    if (!id || s.cooldowns.horn > 0) { this.emit({ e: 'denied', p }); return; }
-    const w = WEAPONS.horn[id as keyof typeof WEAPONS.horn];
-    this.startCooldown('horn', w.cooldown);
-    if (w.kind === 'blast') {
-      this.launchShell(x, y, w.radius, w.damage, w.flightSeconds, p);
-    } else if (w.kind === 'freeze') {
-      this.emit({ e: 'freeze', x, y, radius: w.radius });
-      for (const e of s.enemies) {
-        if (e.dead || e.st === 'held' || e.st === 'hooked' || e.st === 'flee') continue;
-        if (e.type === 'siegeCart' || e.crow) continue;
-        if (Math.hypot(e.x - x, e.y - ENEMIES[e.type].height * 0.5 - y) > w.radius + ENEMIES[e.type].radius) continue;
-        this.freeze(e, p);
-      }
-    } else {
-      this.emit({ e: 'bellows', x, halfWidth: w.halfWidth });
-      this.addFlame(x, w.halfWidth, w.flameSeconds);
-    }
+    const horn = s.meta.hornEquipped as HornId | null;
+    if (slot === 'horn' && !horn) return;
+    const shot = aimShot(slot, horn, x, y, s.meta.fieldW, this.tuning.gravity);
+    if (!shot.ok) { this.emit({ e: 'aimHint', p, slot }); return; }
+    if (s.cooldowns[slot] > 0) { this.emit({ e: 'denied', p }); return; }
+    if (slot === 'bolter') this.fireBolter(shot);
+    else this.fireHorn(p, horn!, shot);
   }
 
-  /** Lobs a shell from the keep roof that lands on (x, y) after exactly the given time. */
-  private launchShell(x: number, y: number, radius: number, damage: number, flight: number, p: number) {
-    const { x: x0, y: y0 } = WORLD.roof;
-    const g = this.tuning.gravity;
-    // Velocity is integrated before position each step; the last term cancels the resulting offset.
-    const q = this.spawnProjectile('shell', x0, y0, (x - x0) / flight, (y - y0) / flight - (g * flight) / 2 - (g * DT) / 2);
-    q.size = radius;
-    q.damage = damage;
+  private fireBolter(shot: ReturnType<typeof aimShot>) {
+    const tier = this.tierOf('bolter');
+    if (!tier) return;
+    const w = WEAPONS.bolter[tier as keyof typeof WEAPONS.bolter];
+    const speed = Math.hypot(shot.vx, shot.vy);
+    const heading = Math.atan2(shot.vy, shot.vx);
+    const spread = (AIM.bolter.spreadDeg * Math.PI) / 180;
+    for (let i = 0; i < w.bolts; i++) {
+      const a = heading + (i - (w.bolts - 1) / 2) * spread;
+      const q = this.spawnProjectile('roofBolt', shot.x0, shot.y0, Math.cos(a) * speed, Math.sin(a) * speed);
+      q.damage = w.damage * shot.power;
+      q.pierce = w.pierce;
+      q.size = 8;
+      q.ttl = shot.flight;
+      q.rot = a;
+    }
+    this.startCooldown('bolter', w.cooldown);
+    this.emit({ e: 'bolters', x: shot.x0, y: shot.y0 });
+  }
+
+  private fireHorn(p: number, id: HornId, shot: ReturnType<typeof aimShot>) {
+    const w = WEAPONS.horn[id];
+    this.startCooldown('horn', w.cooldown);
+    const kind: ProjectileKind = w.kind === 'blast' ? 'shell' : w.kind === 'freeze' ? 'frostShell' : 'fireShell';
+    const q = this.spawnProjectile(kind, shot.x0, shot.y0, shot.vx, shot.vy);
     q.owner = p;
-    this.emit({ e: 'mortar', x: x0, y: y0 });
+    if (w.kind === 'blast') { q.size = w.radius; q.damage = w.damage; this.emit({ e: 'mortar', x: shot.x0, y: shot.y0 }); }
+    else if (w.kind === 'freeze') { q.size = w.radius; this.emit({ e: 'shoot', x: shot.x0, y: shot.y0, kind }); }
+    else { q.size = w.halfWidth; q.damage = w.flameSeconds; this.emit({ e: 'bellows', x: shot.x0, halfWidth: 30 }); }
+  }
+
+  /** A horn shell has come down. */
+  private landHorn(q: Projectile) {
+    if (q.kind === 'shell') { this.blast(q.x, q.y, q.size, q.damage, q.owner); return; }
+    if (q.kind === 'fireShell') { this.emit({ e: 'bellows', x: q.x, halfWidth: q.size }); this.addFlame(q.x, q.size, q.damage); return; }
+    this.emit({ e: 'freeze', x: q.x, y: q.y - 40, radius: q.size });
+    for (const e of this.s.enemies) {
+      if (e.dead || e.st === 'held' || e.st === 'hooked' || e.st === 'cooking' || e.st === 'flee') continue;
+      if (e.type === 'siegeCart' || e.crow) continue;
+      if (Math.hypot(e.x - q.x, e.y - ENEMIES[e.type].height * 0.5 - (q.y - 40)) > q.size + ENEMIES[e.type].radius) continue;
+      this.freeze(e, q.owner);
+    }
   }
 
   private freeze(e: Enemy, p: number) {
@@ -515,27 +633,36 @@ export class Sim {
     if (!tier || s.cooldowns.stomper > 0) { this.emit({ e: 'denied', p }); return; }
     const w = WEAPONS.stomper[tier as keyof typeof WEAPONS.stomper];
     this.startCooldown('stomper', w.cooldown);
-    const q = this.spawnProjectile('slab', clamp(x, WORLD.gateX + w.halfWidth * 0.3, WORLD.width), -180, 0, Math.max(2200, vy));
+    const q = this.spawnProjectile('slab', clamp(x, WORLD.gateX + w.halfWidth * 0.3, s.meta.fieldW), -180, 0, Math.max(2200, vy));
     q.size = w.halfWidth; q.damage = w.damage; q.heldBy = -1;
   }
 
-  private launchComet(q: Projectile) {
+  /** The sky answers a tap on the field. The comet comes in at a slant and lands right there. */
+  private fireComet(p: number, x: number) {
+    const s = this.s;
+    s.hands[p].mode = 'none';
     const tier = this.tierOf('comet');
-    if (!tier) return;
+    if (!tier || s.cooldowns.comet > 0) { this.emit({ e: 'denied', p }); return; }
     const w = WEAPONS.comet[tier as 'comet1'];
-    const bonus = clamp(q.charge / WEAPONS.comet.fullChargePath, 0, 1) * WEAPONS.comet.maxChargeBonus;
-    q.size = w.radius * (1 + bonus);
-    q.damage = w.damage * (1 + bonus);
-    q.t = 0;
-    q.landed = false;
+    // A whole number of steps, so that the landing is exact.
+    const t = Math.round(WEAPONS.comet.fallSeconds / DT) * DT;
+    const g = this.tuning.gravity;
+    const target = clamp(x, WORLD.gateX + 10, s.meta.fieldW);
+    const startX = target + 150;
+    const startY = -160;
+    // Velocity is integrated before position each step; the last term cancels the resulting offset.
+    const q = this.spawnProjectile('comet', startX, startY, (target - startX) / t, (AIM_LAND_Y + 1 - startY) / t - (g * t) / 2 - (g * DT) / 2);
+    q.size = w.radius * (1 + WEAPONS.comet.bonus);
+    q.damage = w.damage * (1 + WEAPONS.comet.bonus);
+    q.owner = p;
     this.startCooldown('comet', w.cooldown);
-    this.emit({ e: 'shoot', x: q.x, y: q.y, kind: 'comet' });
+    this.emit({ e: 'shoot', x: q.x, y: 40, kind: 'comet' });
   }
 
   private spawnProjectile(kind: ProjectileKind, x: number, y: number, vx: number, vy: number): Projectile {
     const q: Projectile = {
       id: this.s.nextId++, kind, x, y, vx, vy, rot: 0, t: 0, size: 10, damage: 0,
-      heldBy: -1, owner: -1, charge: 0, pierce: false, hit: [], maxHits: Infinity, byPlayer: false, landed: false,
+      heldBy: -1, owner: -1, pierce: false, hit: [], maxHits: Infinity, ttl: 2.5, byPlayer: false, landed: false,
     };
     this.s.projectiles.push(q);
     return q;
@@ -557,7 +684,8 @@ export class Sim {
   }
 
   private hurt(e: Enemy, amount: number, cause: DeathCause, p: number) {
-    if (e.dead) return;
+    // What is on the hook or in the pot is already spoken for.
+    if (e.dead || e.st === 'hooked' || e.st === 'cooking') return;
     e.hp -= amount;
     if (e.hp <= 1e-6) this.kill(e, cause, p);
   }
@@ -570,7 +698,7 @@ export class Sim {
     e.heldBy = [];
     const def = ENEMIES[e.type];
     const diff = DIFFICULTIES[s.meta.difficulty];
-    let gold = Math.round(def.gold * diff.gold);
+    let gold = Math.round(def.gold * diff.gold * (s.hands.length > 1 ? COOP.goldFactor : 1));
     const score = Math.round(def.score * (1 + (s.day - 1) * 0.1));
     if (cause === 'cauldron' || cause === 'eagle') {
       gold += ECONOMY.offeringGold;
@@ -655,6 +783,9 @@ export class Sim {
     s.projectiles = [];
     s.flames = [];
     s.perchBusy = 0;
+    s.potBusy = 0;
+    s.potMax = 0;
+    s.nightfall = false;
     s.dayKills = 0; s.dayGold = 0; s.dayOfferings = 0; s.dayScore = 0;
     for (const slot of WEAPON_SLOTS) { s.cooldowns[slot] = 0; s.cooldownMax[slot] = 0; }
     for (const h of s.hands) { h.mode = 'none'; h.holding = -1; h.holdingProj = -1; }
@@ -704,11 +835,18 @@ export class Sim {
           for (let p = 0; p < s.hands.length; p++) this.dropHeld(p);
           this.emit({ e: 'defeat' });
         } else if (s.dayT >= DAY.seconds) {
-          s.phase = 'victory';
-          s.phaseT = DAY.endBannerSeconds;
-          for (let p = 0; p < s.hands.length; p++) this.dropHeld(p);
-          for (const e of s.enemies) this.makeFlee(e);
-          this.emit({ e: 'victory' });
+          if (!s.nightfall) {
+            s.nightfall = true;
+            this.emit({ e: 'nightfall' });
+          }
+          const retreat = this.flag('dayEnd') === 'retreat';
+          if (retreat || s.enemies.length === 0) {
+            s.phase = 'victory';
+            s.phaseT = DAY.endBannerSeconds;
+            for (let p = 0; p < s.hands.length; p++) this.dropHeld(p);
+            if (retreat) for (const e of s.enemies) this.makeFlee(e);
+            this.emit({ e: 'victory' });
+          }
         }
         break;
       case 'victory':
@@ -739,11 +877,14 @@ export class Sim {
         }
       }
     }
-    if (s.perchBusy > 0) s.perchBusy -= DT;
+    if (s.perchBusy > 0) s.perchBusy = Math.max(0, s.perchBusy - DT);
+    if (s.potBusy > 0) s.potBusy = Math.max(0, s.potBusy - DT);
   }
 
   private spawn() {
     const s = this.s;
+    // Nightfall: whoever has not arrived yet stays home.
+    if (s.dayT >= DAY.seconds) return;
     let alive = s.enemies.length;
     while (s.spawned < s.spawnQueue.length && s.spawnQueue[s.spawned].t <= s.dayT && alive < DAY.maxAlive) {
       this.spawnEnemy(s.spawnQueue[s.spawned].type);
@@ -752,7 +893,7 @@ export class Sim {
     }
   }
 
-  spawnEnemy(type: EnemyType, x = WORLD.spawnX + this.rng.range(0, 30)): Enemy {
+  spawnEnemy(type: EnemyType, x = fieldEntry(this.s.meta.fieldW) + FIELD.offstageRun + this.rng.range(0, 30)): Enemy {
     const s = this.s;
     const def = ENEMIES[type];
     const lane = this.rng.range(WORLD.laneMin, WORLD.laneMax);
@@ -781,7 +922,8 @@ export class Sim {
 
   private speedOf(e: Enemy): number {
     const s = this.s;
-    return ENEMIES[e.type].speed * this.tuning.walkSpeed * DIFFICULTIES[s.meta.difficulty].speed * (1 + (s.day - 1) * DAY.speedGrowth);
+    return ENEMIES[e.type].speed * this.tuning.walkSpeed * DIFFICULTIES[s.meta.difficulty].speed * (1 + (s.day - 1) * DAY.speedGrowth)
+      * fieldSpeedFactor(s.meta.fieldW);
   }
 
   private makeFlee(e: Enemy) {
@@ -803,7 +945,7 @@ export class Sim {
     }
     this.updateProjectiles();
     this.updateFlames();
-    s.enemies = s.enemies.filter((e) => !e.dead && !(e.st === 'flee' && e.x > WORLD.spawnX + 40));
+    s.enemies = s.enemies.filter((e) => !e.dead && !(e.st === 'flee' && e.x > fieldEntry(s.meta.fieldW) + 40));
     s.projectiles = s.projectiles.filter((q) => q.t >= 0);
   }
 
@@ -832,6 +974,12 @@ export class Sim {
         return;
       }
     }
+    // Out of sight beyond the field's edge, raiders hurry to their starting line.
+    const entry = fieldEntry(this.s.meta.fieldW);
+    if (e.x > entry && (e.st === 'walk' || e.st === 'hop' || e.st === 'float')) {
+      e.x = Math.max(entry, e.x - FIELD.offstageSpeed * DT);
+      return;
+    }
     switch (e.st) {
       case 'walk': this.updateWalk(e); break;
       case 'attack': this.updateAttack(e); break;
@@ -850,6 +998,14 @@ export class Sim {
         break;
       case 'hooked':
         this.updateHooked(e);
+        break;
+      case 'cooking':
+        e.t -= DT;
+        if (e.t <= 0) {
+          this.s.potBusy = 0;
+          this.emit({ e: 'cheese', x: e.x, y: e.y, etype: e.type });
+          this.kill(e, 'cauldron', e.thrownBy);
+        }
         break;
       case 'flee':
         e.x += this.speedOf(e) * 1.9 * DT;
@@ -1003,7 +1159,7 @@ export class Sim {
     e.vy += (k * (ty - e.y) - c * e.vy) * DT;
     e.x += e.vx * DT;
     e.y += e.vy * DT;
-    e.x = clamp(e.x, WORLD.gateX + 10, WORLD.rightWallX - 10);
+    e.x = clamp(e.x, WORLD.gateX + 10, this.wall - 10);
     const ground = this.groundOf(e);
     if (e.y > ground) { e.y = ground; e.vy = Math.min(0, e.vy); }
     e.rot += (clamp(e.vx / 900, -0.8, 0.8) - e.rot) * 0.2;
@@ -1027,12 +1183,22 @@ export class Sim {
     e.y += e.vy * DT;
     e.rot += e.rotV * DT;
 
-    if (this.owns('cauldron') && e.vy > 0) {
-      const { x, halfWidth } = WORLD.cauldron;
-      if (Math.abs(e.x - x) < halfWidth && e.y >= this.groundOf(e) - 26 && e.type !== 'siegeCart') {
-        this.emit({ e: 'splash', x, y: WORLD.groundY, etype: e.type });
-        this.kill(e, 'cauldron', e.thrownBy);
-        return;
+    if (e.thrownBy >= 0 && this.tryPerch(e, WORLD.perch.flySnapRadius)) return;
+
+    if (this.canPot(e)) {
+      if (this.potAtBack) {
+        const { x, rimY, snapRadius } = WORLD.cauldronBack;
+        const bodyY = e.y - def.height * 0.45;
+        if (e.thrownBy >= 0 && this.rearPotDistance(e) <= snapRadius && (x - e.x) * e.vx + (rimY - bodyY) * e.vy > 0) {
+          this.enterPot(e, x, rimY);
+          return;
+        }
+      } else if (e.vy > 0) {
+        const { x, halfWidth } = WORLD.cauldron;
+        if (Math.abs(e.x - x) < halfWidth && e.y >= this.groundOf(e) - 26) {
+          this.enterPot(e, x, this.groundOf(e) - 26);
+          return;
+        }
       }
     }
 
@@ -1046,7 +1212,7 @@ export class Sim {
       this.emit({ e: 'impact', id: e.id, x: e.x, y: e.y, speed: sp, etype: e.type, lethal: false });
       e.vx = sp * 0.35;
     }
-    if (e.x > WORLD.rightWallX) { e.x = WORLD.rightWallX; e.vx = -Math.abs(e.vx) * 0.4; }
+    if (e.x > this.wall) { e.x = this.wall; e.vx = -Math.abs(e.vx) * 0.4; }
 
     const ground = this.groundOf(e);
     if (e.y < ground) return;
@@ -1104,8 +1270,8 @@ export class Sim {
     const before = e.t;
     e.t -= DT;
     e.rot = Math.sin(e.t * 9) * 0.25;
-    if (before > 0.7 && e.t <= 0.7) this.emit({ e: 'eagle', x: e.x, y: e.y, id: e.id });
-    if (e.t <= 0) this.kill(e, 'eagle', e.thrownBy);
+    if (before > PERCH.eatSeconds && e.t <= PERCH.eatSeconds) this.emit({ e: 'eagle', x: e.x, y: e.y, id: e.id });
+    if (e.t <= 0) { this.s.perchBusy = 0; this.kill(e, 'eagle', e.thrownBy); }
   }
 
   private isGrounded(e: Enemy): boolean {
@@ -1141,7 +1307,7 @@ export class Sim {
             this.hurt(e, q.damage, 'crush', -1);
             if (q.hit.length >= q.maxHits) { q.t = -1; this.emit({ e: 'explosion', x: q.x, y: q.y, radius: q.size }); break; }
           }
-          if (q.x > WORLD.width + 140) q.t = -1;
+          if (q.x > s.meta.fieldW + 140) q.t = -1;
           break;
         case 'slab':
           q.y += q.vy * DT;
@@ -1161,6 +1327,8 @@ export class Sim {
           this.updateRoofBolt(q);
           break;
         case 'shell':
+        case 'frostShell':
+        case 'fireShell':
           this.updateShell(q);
           break;
       }
@@ -1209,34 +1377,16 @@ export class Sim {
   }
 
   private updateComet(q: Projectile) {
-    const s = this.s;
-    if (q.heldBy >= 0) {
-      const h = s.hands[q.heldBy];
-      if (!h) { q.t = -1; return; }
-      if (h.down) q.charge += Math.hypot(h.x - q.x, h.y - q.y);
-      q.x = h.x; q.y = h.y;
-      q.t += DT;
-      if (q.t > WEAPONS.comet.idleCancelSeconds) {
-        h.holdingProj = -1;
-        h.mode = 'none';
-        q.t = -1;
-      }
-      return;
-    }
     if (q.t < 0) return;
     q.vy += this.tuning.gravity * DT;
     q.x += q.vx * DT;
     q.y += q.vy * DT;
     q.rot += 0.3;
-    const ground = WORLD.groundY + 22;
-    if (q.y >= ground || q.x <= WORLD.gateX) {
-      q.t = -1;
-      this.blast(q.x, Math.min(q.y, ground), q.size, q.damage, -1);
-      const tier = this.tierOf('comet');
-      if (tier) this.addFlame(q.x, q.size * 0.8, WEAPONS.comet[tier as 'comet1'].flameSeconds);
-    } else if (q.x > WORLD.rightWallX) {
-      q.t = -1;
-    }
+    if (q.y < AIM_LAND_Y) return;
+    q.t = -1;
+    this.blast(q.x, AIM_LAND_Y, q.size, q.damage, q.owner);
+    const tier = this.tierOf('comet');
+    if (tier) this.addFlame(q.x, q.size * 0.6, WEAPONS.comet[tier as 'comet1'].flameSeconds);
   }
 
   private updateShell(q: Projectile) {
@@ -1244,11 +1394,10 @@ export class Sim {
     q.x += q.vx * DT;
     q.y += q.vy * DT;
     q.rot += 0.3;
-    q.t += DT;
-    if (q.t >= WEAPONS.horn.mortar.flightSeconds - DT / 2) {
-      q.t = -1;
-      this.blast(q.x, q.y, q.size, q.damage, q.owner);
-    }
+    if (q.y < AIM_LAND_Y) return;
+    q.y = AIM_LAND_Y;
+    q.t = -1;
+    this.landHorn(q);
   }
 
   private updateRoofBolt(q: Projectile) {
@@ -1264,7 +1413,7 @@ export class Sim {
       this.hurt(e, q.damage, 'bolt', -1);
       if (!q.pierce) { q.t = -1; return; }
     }
-    if (q.y > WORLD.groundY + 30 || q.x > WORLD.width + 80 || q.t > 2.5) q.t = -1;
+    if (q.y > WORLD.groundY + 30 || q.x > this.s.meta.fieldW + 80 || q.t > q.ttl) q.t = -1;
   }
 
   private updateFlames() {

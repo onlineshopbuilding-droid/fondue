@@ -3,7 +3,7 @@ import type { WireSnapshot } from './snapshot';
 import type { Difficulty } from '../config/waves';
 
 /** Bump when messages change in a breaking way. Combined with the build hash in the version check. */
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 /** Commands without the player index; the host adds who sent it. */
 export type ClientCommand = Command extends infer C ? (C extends { p: number } ? Omit<C, 'p'> : never) : never;

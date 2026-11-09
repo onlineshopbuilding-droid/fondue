@@ -22,6 +22,8 @@ export interface Tuning {
   walkSpeed: number;
   /** Multiplies the number of enemies per day. */
   spawnRate: number;
+  /** Seconds a raider takes to melt into cheese; the pot is busy meanwhile. */
+  cauldronSeconds: number;
   /** If true, thrown enemies knock over those they land on. */
   knockOthers: boolean;
 }
@@ -38,6 +40,7 @@ export const TUNING_DEFAULT: Tuning = {
   grabRadius: 34,
   walkSpeed: 1,
   spawnRate: 1,
+  cauldronSeconds: 1.4,
   knockOthers: false,
 };
 
@@ -78,4 +81,5 @@ export const TUNING_SLIDERS: TuningSlider[] = [
   { key: 'grabRadius', label: 'Grab radius', min: 0, max: 120, step: 2 },
   { key: 'walkSpeed', label: 'Enemy walk speed', min: 0.2, max: 3, step: 0.05 },
   { key: 'spawnRate', label: 'Spawn rate', min: 0.2, max: 4, step: 0.05 },
+  { key: 'cauldronSeconds', label: 'Cauldron melt (s)', min: 0.4, max: 3, step: 0.1 },
 ];

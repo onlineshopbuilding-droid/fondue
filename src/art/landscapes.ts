@@ -333,7 +333,7 @@ const cloud = (w: number, h: number, shapes: string): Art => ({
   svg: svg(
     w,
     h,
-    `<g fill="#6f6a5f" stroke="#6f6a5f" stroke-width="6" stroke-linejoin="round" opacity=".55">${shapes}</g><g fill="#f6efdc">${shapes}</g>`,
+    `<g fill="#d9d2bf" stroke="#d9d2bf" stroke-width="5" stroke-linejoin="round">${shapes}</g><g fill="#f6efdc">${shapes}</g>`,
   ),
   w,
   h,

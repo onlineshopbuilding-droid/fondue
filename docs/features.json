@@ -266,5 +266,69 @@
     "pruefung": "Playwright mit acht Bildschirmgrößen und Touch",
     "passes": true,
     "beleg": "09.11.2026: tests/e2e/mobile.spec.ts in acht Größen von 640x320 bis 1024x768 grün. Nur in simuliertem Chrome, noch nicht auf echten Geräten"
+  },
+  {
+    "id": 34,
+    "bereich": "runde",
+    "beschreibung": "Entwickler-Menü mit Experiment-Schaltern und Schnellstart Tag 10/20/30, F1 und langes Tippen aufs Logo; Host bestimmt.",
+    "pruefung": "Unit + Playwright",
+    "passes": true,
+    "beleg": "09.11.2026: tests/unit/round.test.ts (quick start, experiment switches), tests/e2e/keep.spec.ts (developer menu)"
+  },
+  {
+    "id": 35,
+    "bereich": "runde",
+    "beschreibung": "Tag endet erst, wenn alle Gegner tot sind oder das Tor fällt; nach Sonnenuntergang keine neuen Gegner.",
+    "pruefung": "Unit",
+    "passes": true,
+    "beleg": "09.11.2026: tests/unit/round.test.ts (end of the day)"
+  },
+  {
+    "id": 36,
+    "bereich": "runde",
+    "beschreibung": "Burg immer am linken Rand; Spielfeld wird nach rechts breiter, im Koop vom Host bestimmt, gleich für beide.",
+    "pruefung": "Unit + Playwright",
+    "passes": true,
+    "beleg": "09.11.2026: tests/unit/viewport.test.ts, tests/unit/round.test.ts (field width), tests/e2e/keep.spec.ts (co-op in one browser), Balance 1280/1560/1760 in docs/balance-latest.md"
+  },
+  {
+    "id": 37,
+    "bereich": "runde",
+    "beschreibung": "Burg in 5 Ausbaustufen an die Tor-Upgrades gekoppelt, Waffen sichtbar an festen Plätzen.",
+    "pruefung": "Unit + Sichtprüfung",
+    "passes": true,
+    "beleg": "09.11.2026: tests/unit/round.test.ts (keep upgrades); drei unabhängige Prüfrunden per Screenshot, nur im Software-Renderer und auf Laptop-GPU"
+  },
+  {
+    "id": 38,
+    "bereich": "runde",
+    "beschreibung": "Waffen werden nur an der Burg bedient, Zielwaffen per Ziehen mit Vorschau, keine Fehlgriffe.",
+    "pruefung": "Unit + Playwright mit Maus und Touch",
+    "passes": true,
+    "beleg": "09.11.2026: tests/unit/round.test.ts (aiming), tests/e2e/keep.spec.ts in vier Bildschirmgrößen; noch nicht auf echten Handys"
+  },
+  {
+    "id": 39,
+    "bereich": "runde",
+    "beschreibung": "Kessel in zwei Varianten mit Verwandlung als Wartezeit, umschaltbar.",
+    "pruefung": "Unit + Playwright",
+    "passes": true,
+    "beleg": "09.11.2026: tests/unit/round.test.ts (cauldron), tests/e2e/keep.spec.ts (cauldron front/back)"
+  },
+  {
+    "id": 40,
+    "bereich": "runde",
+    "beschreibung": "Adlerhaken oben rechts, ein Gegner auf einmal, Adlerkopf frisst ihn.",
+    "pruefung": "Unit + Playwright",
+    "passes": true,
+    "beleg": "09.11.2026: tests/unit/round.test.ts (eagle hook), tests/e2e/keep.spec.ts (eagle hook)"
+  },
+  {
+    "id": 41,
+    "bereich": "runde",
+    "beschreibung": "Balancing: Bots Tag 8 / 24 / 40 auf Medium, Koop eher schwerer.",
+    "pruefung": "npm run balance",
+    "passes": true,
+    "beleg": "09.11.2026: docs/balance-latest.md: Median solo 6,5 / 22 / 38, zu zweit 7 / 25 / 34,5. Bots sind Näherungen, Spielgefühl der ersten Tage braucht Menschen"
   }
 ]

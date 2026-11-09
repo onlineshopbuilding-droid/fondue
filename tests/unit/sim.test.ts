@@ -8,6 +8,7 @@ import { WORLD } from '../../src/config/world';
 import type { Enemy, SimEvent } from '../../src/sim/types';
 import { buildDayPlan, enemyCountForDay } from '../../src/sim/spawn';
 import { Rng } from '../../src/sim/rng';
+import { aimShot, pointerFor, type AimSlot } from '../../src/sim/aim';
 import { decodeSnapshot, encodeSnapshot } from '../../src/net/snapshot';
 import { PROPS } from '../../src/art/props';
 
@@ -34,6 +35,16 @@ function flingUp(sim: Sim, e: Enemy, speed: number, p = 0) {
   grabAt(sim, p, e);
   for (let i = 0; i < 6; i++) sim.step();
   sim.command({ k: 'release', p, x: e.x, y: e.y - 40, vx: 0, vy: -speed });
+}
+
+/** Pulls a weapon on the keep so that it lands on targetX, and lets go. */
+function fireAt(sim: Sim, slot: AimSlot, targetX: number, p = 0) {
+  const horn = sim.s.meta.hornEquipped as Parameters<typeof aimShot>[1];
+  const at = pointerFor(slot, horn, targetX, sim.fieldW);
+  sim.command({ k: 'pressSlot', p, slot, x: WORLD.slots[slot].x, y: WORLD.slots[slot].y });
+  sim.setHand(p, at.x, at.y);
+  sim.command({ k: 'release', p, x: at.x, y: at.y, vx: 0, vy: 0 });
+  return aimShot(slot, horn, at.x, at.y, sim.fieldW, sim.tuning.gravity);
 }
 
 function runUntil(sim: Sim, cond: () => boolean, maxTicks = 2000): SimEvent[] {
@@ -538,28 +549,23 @@ describe('weapons', () => {
     expect(sim.s.cooldowns.stomper).toBe(0);
   });
 
-  it('comet: more swing makes a bigger blast and leaves flames', () => {
-    const blastFor = (swing: number) => {
-      const sim = armed(['comet1']);
-      place(sim, 'grunt', 650);
-      sim.command({ k: 'activate', p: 0, slot: 'comet' });
-      const q = sim.s.projectiles[0];
-      sim.setHand(0, 600, 500);
-      sim.command({ k: 'press', p: 0, x: 600, y: 500 });
-      for (let i = 0; i < 60; i++) {
-        sim.setHand(0, 600 + (i % 2 === 0 ? swing : 0), 500);
-        sim.step();
-      }
-      sim.setHand(0, 650, 500);
-      sim.command({ k: 'release', p: 0, x: 650, y: 500, vx: 0, vy: 200 });
-      const ev = runUntil(sim, () => q.t < 0, 200);
-      const blast = ev.find((x) => x.e === 'explosion');
-      return { r: blast && blast.e === 'explosion' ? blast.radius : 0, flames: sim.s.flames.length };
-    };
-    const small = blastFor(1);
-    const big = blastFor(60);
-    expect(big.r).toBeGreaterThan(small.r * 1.3);
-    expect(big.flames).toBe(1);
+  it('comet: a tap on the shrine, a tap on the road, and it falls right there with flames', () => {
+    const sim = armed(['comet1']);
+    place(sim, 'grunt', 650);
+    sim.command({ k: 'pressSlot', p: 0, slot: 'comet', x: WORLD.slots.comet.x, y: WORLD.slots.comet.y });
+    sim.command({ k: 'release', p: 0, x: WORLD.slots.comet.x, y: WORLD.slots.comet.y, vx: 0, vy: 0 });
+    expect(sim.s.hands[0].mode).toBe('comet');
+    expect(sim.s.cooldowns.comet).toBe(0);
+    sim.setHand(0, 650, 400);
+    sim.command({ k: 'press', p: 0, x: 650, y: 400 });
+    sim.command({ k: 'release', p: 0, x: 650, y: 400, vx: 0, vy: 0 });
+    expect(sim.s.hands[0].mode).toBe('none');
+    expect(sim.s.cooldowns.comet).toBeGreaterThan(0);
+    const ev = runUntil(sim, () => sim.s.projectiles.length === 0, 200);
+    const blast = ev.find((x) => x.e === 'explosion') as Extract<SimEvent, { e: 'explosion' }>;
+    expect(blast.x).toBeCloseTo(650, 0);
+    expect(blast.radius).toBeCloseTo(WEAPONS.comet.comet1.radius * (1 + WEAPONS.comet.bonus), 3);
+    expect(sim.s.flames.length).toBe(1);
   });
 
   it('gate arm aims with the press and fires on release; shared cooldown', () => {
@@ -567,54 +573,47 @@ describe('weapons', () => {
     sim.s.meta.owned.push('mortar');
     sim.s.meta.hornEquipped = 'mortar';
     const e = place(sim, 'grunt', 800);
-    sim.command({ k: 'activate', p: 0, slot: 'horn' });
-    sim.command({ k: 'press', p: 0, x: 400, y: 300 });
-    sim.setHand(0, 800, e.y - 40);
-    sim.command({ k: 'release', p: 0, x: 800, y: e.y - 40, vx: 0, vy: 0 });
-    runUntil(sim, () => e.dead, 60);
+    fireAt(sim, 'horn', 760);
+    runUntil(sim, () => e.dead, 120);
     expect(e.dead).toBe(true);
     sim.command({ k: 'activate', p: 1, slot: 'horn' });
     expect(sim.s.hands[1].mode).toBe('none');
   });
 
   describe('mortar shell', () => {
-    function fireMortar(x: number, y: number) {
+    function fireMortar(x: number) {
       const sim = battleSim();
       sim.s.meta.owned.push('mortar');
       sim.s.meta.hornEquipped = 'mortar';
       const target = place(sim, 'grunt', x + 20);
-      sim.command({ k: 'activate', p: 0, slot: 'horn' });
-      sim.command({ k: 'press', p: 0, x, y });
-      sim.setHand(0, x, y);
-      sim.command({ k: 'release', p: 0, x, y, vx: 0, vy: 0 });
-      return { sim, target };
+      const shot = fireAt(sim, 'horn', x);
+      return { sim, target, shot, flightTicks: Math.floor(shot.flight * 60) };
     }
-    const flightTicks = Math.round(WEAPONS.horn.mortar.flightSeconds * 60);
 
-    it('leaves the keep roof on release and does no damage on the way', () => {
-      const { sim, target } = fireMortar(780, 540);
+    it('leaves the mortar on release and does no damage on the way', () => {
+      const { sim, target, flightTicks } = fireMortar(780);
       expect(sim.s.projectiles.map((q) => q.kind)).toEqual(['shell']);
-      expect(sim.s.projectiles[0].x).toBe(WORLD.roof.x);
-      expect(sim.s.projectiles[0].y).toBe(WORLD.roof.y);
+      expect(sim.s.projectiles[0].x).toBe(WORLD.slots.horn.x);
+      expect(sim.s.projectiles[0].y).toBe(WORLD.slots.horn.y);
       expect(sim.s.cooldowns.horn).toBeGreaterThan(0);
-      const events = runUntil(sim, () => false, flightTicks - 1);
+      const events = runUntil(sim, () => false, flightTicks - 2);
       expect(target.dead).toBe(false);
       expect(events.some((ev) => ev.e === 'explosion')).toBe(false);
     });
 
-    it('flies in an arc and explodes exactly where it was aimed', () => {
-      const { sim, target } = fireMortar(780, 540);
+    it('flies in a high arc and explodes where the aim said it would', () => {
+      const { sim, target, shot, flightTicks } = fireMortar(780);
       let highest = Infinity;
       const events: SimEvent[] = [];
-      for (let i = 0; i < flightTicks; i++) {
+      for (let i = 0; i < flightTicks + 4; i++) {
         sim.step();
         events.push(...sim.drainEvents());
         for (const q of sim.s.projectiles) highest = Math.min(highest, q.y);
       }
-      expect(highest).toBeLessThan(WORLD.roof.y);
+      expect(highest).toBeLessThan(WORLD.slots.horn.y - 150);
       const boom = events.find((ev) => ev.e === 'explosion') as Extract<SimEvent, { e: 'explosion' }>;
-      expect(boom.x).toBeCloseTo(780, 3);
-      expect(boom.y).toBeCloseTo(540, 3);
+      // Stepped flight may overshoot the continuous prediction by a few pixels.
+      expect(Math.abs(boom.x - shot.landX)).toBeLessThan(40);
       expect(boom.radius).toBe(WEAPONS.horn.mortar.radius);
       expect(target.dead).toBe(true);
       sim.step();
@@ -626,17 +625,15 @@ describe('weapons', () => {
       sim.setTuning({ ...sim.tuning, gravity: 1200 });
       sim.s.meta.owned.push('mortar');
       sim.s.meta.hornEquipped = 'mortar';
-      sim.command({ k: 'activate', p: 0, slot: 'horn' });
-      sim.command({ k: 'press', p: 0, x: 600, y: 400 });
-      sim.command({ k: 'release', p: 0, x: 600, y: 400, vx: 0, vy: 0 });
-      const events = runUntil(sim, () => false, flightTicks);
+      const shot = fireAt(sim, 'horn', 600);
+      const events = runUntil(sim, () => sim.s.projectiles.length === 0, 400);
       const boom = events.find((ev) => ev.e === 'explosion') as Extract<SimEvent, { e: 'explosion' }>;
-      expect(boom.x).toBeCloseTo(600, 3);
-      expect(boom.y).toBeCloseTo(400, 3);
+      expect(Math.abs(boom.x - shot.landX)).toBeLessThan(40);
+      expect(Math.abs(boom.x - 600)).toBeLessThan(40);
     });
 
     it('reaches the guest in the snapshot', () => {
-      const { sim } = fireMortar(780, 540);
+      const { sim } = fireMortar(780);
       expect(decodeSnapshot(encodeSnapshot(sim.s)).projectiles[0].kind).toBe('shell');
     });
 
@@ -648,9 +645,8 @@ describe('weapons', () => {
     sim.s.meta.hornEquipped = 'frost';
     const a = place(sim, 'grunt', 800);
     const b = place(sim, 'grunt', 820);
-    sim.command({ k: 'activate', p: 0, slot: 'horn' });
-    sim.command({ k: 'press', p: 0, x: 810, y: 560 });
-    sim.command({ k: 'release', p: 0, x: 810, y: 560, vx: 0, vy: 0 });
+    fireAt(sim, 'horn', 810);
+    runUntil(sim, () => sim.s.projectiles.length === 0, 200);
     expect(a.st).toBe('frozen');
     expect(b.st).toBe('frozen');
     grabAt(sim, 0, a);
@@ -668,9 +664,8 @@ describe('weapons', () => {
     const sim = armed(['frost']);
     sim.s.meta.hornEquipped = 'frost';
     const a = place(sim, 'grunt', 800);
-    sim.command({ k: 'activate', p: 0, slot: 'horn' });
-    sim.command({ k: 'press', p: 0, x: 800, y: 560 });
-    sim.command({ k: 'release', p: 0, x: 800, y: 560, vx: 0, vy: 0 });
+    fireAt(sim, 'horn', 800);
+    runUntil(sim, () => a.st === 'frozen', 200);
     runUntil(sim, () => a.st === 'walk', 500);
     expect(a.st).toBe('walk');
   });
@@ -679,9 +674,8 @@ describe('weapons', () => {
     const sim = armed(['bellows']);
     sim.s.meta.hornEquipped = 'bellows';
     const a = place(sim, 'grunt', 800);
-    sim.command({ k: 'activate', p: 0, slot: 'horn' });
-    sim.command({ k: 'press', p: 0, x: 800, y: 500 });
-    sim.command({ k: 'release', p: 0, x: 800, y: 500, vx: 0, vy: 0 });
+    fireAt(sim, 'horn', 800);
+    runUntil(sim, () => sim.s.flames.length === 1, 200);
     expect(sim.s.flames.length).toBe(1);
     runUntil(sim, () => a.dead, 200);
     expect(a.dead).toBe(true);
@@ -691,7 +685,7 @@ describe('weapons', () => {
     const counts = ['bolter1', 'bolter2', 'bolter3'].map((id) => {
       const sim = armed([id]);
       place(sim, 'grunt', 500);
-      sim.command({ k: 'activate', p: 0, slot: 'bolter' });
+      fireAt(sim, 'bolter', 500);
       return sim.s.projectiles.filter((q) => q.kind === 'roofBolt').length;
     });
     expect(counts[1]).toBeGreaterThan(counts[0]);
@@ -701,7 +695,7 @@ describe('weapons', () => {
   it('roof bolts kill', () => {
     const sim = armed(['bolter1']);
     const e = place(sim, 'grunt', 500);
-    sim.command({ k: 'activate', p: 0, slot: 'bolter' });
+    fireAt(sim, 'bolter', 500);
     runUntil(sim, () => e.dead, 200);
     expect(e.dead).toBe(true);
   });
@@ -776,9 +770,10 @@ describe('regressions from the first playtest', () => {
     sim.s.meta.owned.push('frost');
     sim.s.meta.hornEquipped = 'frost';
     const e = place(sim, 'balloonist', 800);
-    sim.command({ k: 'activate', p: 0, slot: 'horn' });
-    sim.command({ k: 'press', p: 0, x: e.x, y: e.y - 60 });
-    sim.command({ k: 'release', p: 0, x: e.x, y: e.y - 60, vx: 0, vy: 0 });
+    e.y = WORLD.groundY - 90; // low enough for the patch of ice on the road to reach it
+    e.altitude = 90;
+    fireAt(sim, 'horn', e.x - 30);
+    runUntil(sim, () => e.st === 'air', 200);
     expect(e.st).toBe('air');
     runUntil(sim, () => e.dead, 200);
     expect(e.dead).toBe(true);
@@ -798,8 +793,9 @@ describe('regressions from the first playtest', () => {
     expect(e.vy).toBe(0);
   });
 
-  it('pogo bandits stop attacking once the day is over', () => {
+  it('with the retreat experiment, pogo bandits stop attacking once the day is over', () => {
     const sim = battleSim();
+    sim.setFlags({ dayEnd: 'retreat' });
     const e = place(sim, 'pogo', 300);
     for (let i = 0; i < 40; i++) sim.step();
     sim.s.dayT = DAY.seconds;

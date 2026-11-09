@@ -2,132 +2,12 @@
  * Environment and prop art in Fondue's folk-art felt puppet style: chunky rounded shapes, a thick
  * dark outline, flat fills and at most one simple highlight.
  */
-import { svg, type Art } from './types';
-
-const INK = '#2b2118';
-const TEAL = '#2f7f7a';
-const TEALD = '#1f5a5c';
-const RUST = '#b5502e';
-const RUSTD = '#853820';
-const MUST = '#dfa22d';
-const MUSTL = '#f3cb5e';
-const CREAM = '#f3e6c8';
-const FOREST = '#3f6b45';
-const PLUM = '#6b3a5e';
-const WOOD = '#9a6a3c';
-const WOODD = '#6e4626';
-const WOODL = '#bb8c56';
-const STONE = '#9a9484';
-const STONED = '#756f63';
-const STONEL = '#bfb9a6';
-const IRON = '#4b4f55';
-const IRONL = '#777d83';
-const RED = '#b3282d';
-const REDL = '#d9534a';
-const GLOW = '#9ff5ea';
-const WHITE = '#fbfaf6';
-
-// Small SVG writers. Shapes inherit their outline from the enclosing ink() group.
-const ink = (b: string, w = 3.5) =>
-  `<g stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round">${b}</g>`;
-const r = (x: number, y: number, w: number, h: number, f: string, rx = 3) =>
-  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${f}"/>`;
-const c = (x: number, y: number, rad: number, f: string) => `<circle cx="${x}" cy="${y}" r="${rad}" fill="${f}"/>`;
-const e = (x: number, y: number, rx: number, ry: number, f: string) =>
-  `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}"/>`;
-const p = (d: string, f: string) => `<path d="${d}" fill="${f}"/>`;
-/** An open line. */
-const l = (d: string, w?: number, col?: string) =>
-  `<path d="${d}" fill="none"${w ? ` stroke-width="${w}"` : ''}${col ? ` stroke="${col}"` : ''}/>`;
-/** A shape with no outline, for highlights. */
-const n = (d: string, f: string, o = 1) => `<path d="${d}" fill="${f}" stroke="none"${o < 1 ? ` opacity="${o}"` : ''}/>`;
-/** A stroke with no ink, for highlights and carved lines. */
-const hl = (d: string, col: string, w = 2.5, o = 1) =>
-  `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${o < 1 ? ` opacity="${o}"` : ''}/>`;
-/** Draws shapes twice so that overlapping pieces merge under one shared outline. */
-const blob = (shapes: string, f: string, w = 3.5, col = INK) =>
-  `<g fill="${col}" stroke="${col}" stroke-width="${w * 2}" stroke-linejoin="round">${shapes}</g><g fill="${f}">${shapes}</g>`;
-const art = (w: number, h: number, px: number, py: number, b: string): Art => ({ svg: svg(w, h, b), w, h, px, py });
-const centred = (w: number, h: number, b: string) => art(w, h, w / 2, h / 2, b);
-
-function starPoints(cx: number, cy: number, outer: number, inner: number, count: number, rotDeg = -90): string {
-  const out: string[] = [];
-  for (let i = 0; i < count * 2; i++) {
-    const a = ((rotDeg + (i * 180) / count) * Math.PI) / 180;
-    const rad = i % 2 === 0 ? outer : inner;
-    out.push(`${(cx + Math.cos(a) * rad).toFixed(1)} ${(cy + Math.sin(a) * rad).toFixed(1)}`);
-  }
-  return `M${out.join('L')}Z`;
-}
-
-// ---------------------------------------------------------------------------------------------
-// The keep. Art coordinates = world - (-40, 52), so the gate opening spans art x 151..225.
-// ---------------------------------------------------------------------------------------------
-
-function keepWindow(x: number, y: number): string {
-  return (
-    r(x - 14, y, 28, 46, MUSTL, 2) +
-    l(`M${x} ${y}v46M${x - 14} ${y + 22}h28`, 2.5) +
-    r(x - 31, y - 2, 17, 50, TEAL, 2) +
-    r(x + 14, y - 2, 17, 50, TEAL, 2) +
-    hl(`M${x - 25} ${y + 12}h5M${x - 25} ${y + 34}h5M${x + 20} ${y + 12}h5M${x + 20} ${y + 34}h5`, CREAM, 3) +
-    r(x - 28, y + 48, 56, 11, WOODD, 2) +
-    c(x - 18, y + 45, 5, RUST) +
-    c(x, y + 45, 5, MUST) +
-    c(x + 18, y + 45, 5, PLUM)
-  );
-}
-
-const STONES: [number, number, number, number, string][] = [
-  [24, 358, 52, 26, STONEL], [84, 358, 40, 26, STONED], [132, 356, 44, 20, STONEL], [186, 356, 34, 20, STONED],
-  [18, 394, 38, 30, STONED], [64, 394, 62, 30, STONEL],
-  [14, 434, 60, 30, STONEL], [100, 434, 28, 30, STONED],
-  [12, 474, 36, 32, STONED], [56, 474, 72, 32, STONEL],
-  [8, 516, 56, 26, STONEL], [72, 516, 58, 26, STONED],
-];
-
-const keepBody =
-  // Pennant and gabled upper storey behind the roof platform.
-  l('M120 34V4', 4) +
-  p('M122 5L150 12L122 20Z', RUST) +
-  p('M66 200V104L120 46L174 104V200Z', CREAM) +
-  l('M66 198V104M174 198V104M66 150H174M67 196L100 153M173 196L140 153', 9) +
-  hl('M66 198V104M174 198V104M66 150H174M67 196L100 153M173 196L140 153', WOOD, 4) +
-  c(120, 104, 15, TEAL) +
-  l('M120 89v30M105 104h30', 2.5) +
-  p('M102 198V168Q102 154 120 154Q138 154 138 168V198Z', RUST) +
-  c(130, 178, 2.5, MUST) +
-  p('M22 128L120 14L218 128L196 136L120 50L44 136Z', RUST) +
-  hl('M45 96l18 16M64 74l18 16M84 52l18 16M195 96l-18 16M176 74l-18 16M156 52l-18 16', RUSTD, 3) +
-  // Roof platform: the deck's top edge is the defenders' floor.
-  r(8, 172, 224, 7, WOODL, 3) +
-  [12, 58, 182, 226].map((x) => r(x, 172, 8, 26, WOODD, 2)).join('') +
-  // Middle storey.
-  r(18, 214, 204, 136, CREAM, 2) +
-  l('M24 226V344M216 226V344M120 226V344M24 344H216', 9) +
-  hl('M24 226V344M216 226V344M120 226V344M24 344H216', WOOD, 4) +
-  keepWindow(72, 256) +
-  keepWindow(168, 256) +
-  p('M6 214Q8 242 34 246V214Z', WOODD) +
-  p('M234 214Q232 242 206 246V214Z', WOODD) +
-  p('M18 212l17 16 17-16 17 16 17-16 17 16 17-16 17 16 17-16 17 16 17-16 17 16 17-16Z', TEAL) +
-  r(4, 198, 232, 16, WOOD, 3) +
-  hl('M12 204H228', WOODL, 2.5) +
-  // Stone base.
-  p('M14 348H226L238 580H2Z', STONE) +
-  `<g stroke-width="2.5">${STONES.map(([x, y, w, h, f]) => r(x, y, w, h, f, 7)).join('')}</g>` +
-  // Gate arch and the dark opening that the leaf closes.
-  r(151, 400, 74, 172, '#17110c', 0) +
-  r(137, 402, 14, 176, STONEL, 4) +
-  r(225, 402, 14, 176, STONEL, 4) +
-  p('M135 404Q137 368 187 364Q237 368 239 404Z', STONEL) +
-  l('M153 404L146 380M171 404L167 374M203 404L207 374M221 404L228 380', 2.5) +
-  p('M176 358H198L203 404H171Z', STONE) +
-  c(187, 382, 7, RUST) +
-  // Boulders around the foot.
-  e(28, 566, 30, 18, STONED) +
-  e(88, 572, 36, 16, STONE) +
-  e(136, 576, 22, 12, STONED);
+import type { Art } from './types';
+import { CASTLE_ART } from './castle';
+import {
+  INK, TEAL, TEALD, RUST, RUSTD, MUST, MUSTL, CREAM, FOREST, PLUM, WOOD, WOODD, WOODL, STONE, STONED, STONEL, IRON, IRONL,
+  RED, REDL, GLOW, WHITE, GOLD, GOLDD, ink, r, c, e, p, l, n, hl, blob, art, centred, starPoints,
+} from './draw';
 
 // ---------------------------------------------------------------------------------------------
 // Gates
@@ -174,26 +54,23 @@ const gate3 = ink(
   r(2, 2, 70, 146, '#3b3347', 4) +
     r(8, 8, 58, 134, '#4c4359', 2) +
     l('M8 52H66M8 98H66', 2.5) +
-    dots([[5, 5], [69, 5], [5, 145], [69, 145]], 4, TEAL) +
-    hl(RUNES, '#3fd6c4', 11, 0.28) +
-    hl(RUNES, '#4fe3d0', 6, 0.55) +
-    hl(RUNES, GLOW, 3),
+    hl('M5 5H69V145H5Z', GOLD, 3) +
+    dots([[5, 5], [69, 5], [5, 145], [69, 145], [37, 5], [37, 145]], 5, MUST) +
+    hl(RUNES, INK, 6, 0.6) +
+    hl(RUNES, '#7fae9f', 3),
 );
 
 const gate4 = ink(
-  r(2, 2, 70, 146, '#23282f', 3) +
-    `<g stroke-width="2.5">` +
-    p('M3 3H71L37 42Z', '#39424e') +
-    p('M3 3L37 42L3 75Z', '#2c333c') +
-    p('M71 3L37 42L71 75Z', '#1d2228') +
-    p('M3 75L37 42L71 75L37 108Z', '#4d5967') +
-    p('M3 75L37 108L3 147Z', '#343c47') +
-    p('M71 75L37 108L71 147Z', '#232930') +
-    p('M3 147L37 108L71 147Z', '#3f4955') +
-    `</g>` +
-    p('M37 58L52 75L37 92L22 75Z', '#7f8ea0') +
-    n('M37 62L46 75H28Z', '#b6c4d4') +
-    hl('M6 8L34 40M6 142L34 112', '#8fa0b2', 2),
+  r(2, 2, 70, 146, MUST, 3) +
+    hl('M6 6H68V144H6Z', MUSTL, 2) +
+    r(10, 10, 54, 130, TEALD, 2) +
+    `<g clip-path="inset(0)">${hl('M10 40L37 10L64 40M10 110L37 140L64 110M10 40L64 110M64 40L10 110M10 75H16M58 75H64', MUST, 2.5)}</g>` +
+    p('M37 42L60 51V84Q60 104 37 116Q14 104 14 84V51Z', MUST) +
+    hl('M37 48L55 55V83Q55 100 37 110Q19 100 19 83V55Z', MUSTL, 2) +
+    p('M37 54L50 59V83Q50 95 37 104Q24 95 24 83V59Z', RUST) +
+    `<g stroke-width="2.5">${p(starPoints(37, 78, 13, 6, 8), MUSTL)}${c(37, 78, 4, RED)}</g>` +
+    p('M2 22H26L20 30H2ZM72 22H48L54 30H72ZM2 128H26L20 120H2ZM72 128H48L54 120H72Z', MUSTL) +
+    dots([[10, 26], [64, 26], [10, 124], [64, 124], [37, 14], [37, 136]], 4, GOLDD),
 );
 
 // ---------------------------------------------------------------------------------------------
@@ -251,61 +128,19 @@ const cauldronFront = art(
   90,
   75,
   90,
+  `<defs><radialGradient id="cs"><stop offset="0" stop-color="#1a120a" stop-opacity=".55"/><stop offset=".7" stop-color="#1a120a" stop-opacity=".3"/><stop offset="1" stop-color="#1a120a" stop-opacity="0"/></radialGradient></defs><ellipse cx="75" cy="81" rx="75" ry="9" fill="url(#cs)"/>` +
   ink(
     p('M8 44C6 66 22 80 42 84H108C128 80 144 66 142 44C118 74 32 74 8 44Z', IRON) +
       hl('M24 70C44 80 62 81 76 81', IRONL, 3) +
       p('M4 40C24 72 126 72 146 40C150 50 148 56 142 58C118 84 32 84 8 58C2 56 0 50 4 40Z', IRONL) +
       p('M34 66C34 76 38 84 42 84C46 84 46 74 50 72Z', MUST) +
       p('M100 70C102 78 106 80 108 80C112 80 112 72 116 64Z', MUST) +
-      e(22, 84, 22, 8, STONED) +
-      e(66, 86, 20, 6, STONE) +
-      e(112, 85, 22, 7, STONED) +
-      e(142, 86, 10, 5, STONE) +
-      e(4, 86, 8, 4, STONE),
-  ),
-);
-
-// ---------------------------------------------------------------------------------------------
-// Eagle
-// ---------------------------------------------------------------------------------------------
-
-const GOLD = '#c98a2b';
-const GOLDD = '#8e5a22';
-
-const eagleBody =
-  p('M152 82L214 78L203 94L216 104L203 112L212 124L152 112Z', GOLDD) +
-  p('M108 120L102 138M128 120L126 138', MUST) +
-  l('M106 120L100 136M126 120L124 136', 7) +
-  hl('M106 120L100 136M126 120L124 136', MUST, 3) +
-  l('M90 146L100 136L104 147M112 146L124 136L128 147', 4) +
-  p('M60 74C80 52 134 52 162 74C176 86 174 104 158 112C130 126 94 124 76 106Z', GOLD) +
-  n('M66 82C76 96 96 110 118 112C92 118 78 106 66 82Z', MUSTL) +
-  p('M40 58C24 58 12 66 14 88C20 80 30 78 42 80Z', MUST) +
-  c(60, 66, 25, MUSTL) +
-  hl('M74 46L84 62M80 80L90 70', GOLDD, 3) +
-  c(50, 60, 5, INK) +
-  n('M48 58a2 2 0 1 0 .1 0Z', WHITE) +
-  l('M40 50L58 54', 4);
-
-const eagleA = centred(
-  220,
-  150,
-  ink(
-    p('M72 80C58 54 54 30 60 6L72 20L84 6L92 26L104 18L112 66Z', GOLDD) +
-      eagleBody +
-      p('M88 88C82 54 92 24 124 5L132 20L146 7L151 26L168 16L168 38L187 33L179 54C166 74 140 90 116 94Z', GOLD) +
-      hl('M104 80C108 56 118 38 130 26M118 86C128 66 144 50 160 38', GOLDD, 3),
-  ),
-);
-
-const eagleB = centred(
-  220,
-  150,
-  ink(
-    p('M68 96L46 138L66 130L74 148L90 128L108 112Z', GOLDD) +
-      eagleBody +
-      p('M88 82C120 70 162 74 178 92L172 118L158 108L152 137L136 122L124 148L112 124L96 142L90 112Z', GOLD) +
-      hl('M106 94C114 104 118 116 118 128M128 92C136 102 140 112 142 122M150 90C156 96 160 104 162 110', GOLDD, 3),
+      e(14, 75, 12, 7, STONE) +
+      e(136, 75, 12, 7, STONED) +
+      e(31, 81, 16, 7, STONED) +
+      e(59, 82, 16, 6, STONE) +
+      e(92, 82, 16, 6, STONED) +
+      e(120, 81, 16, 7, STONE),
   ),
 );
 
@@ -727,7 +562,6 @@ const iconCastle = centred(
 // ---------------------------------------------------------------------------------------------
 
 export const PROPS: Record<string, Art> = {
-  keep: art(240, 580, 0, 580, ink(keepBody)),
   gate0: art(74, 150, 0, 150, gate0),
   gate1: art(74, 150, 0, 150, gate1),
   gate2: art(74, 150, 0, 150, gate2),
@@ -738,24 +572,6 @@ export const PROPS: Record<string, Art> = {
   crack3: art(74, 150, 0, 150, crack3Body),
   cauldronBack,
   cauldronFront,
-  perch: art(
-    110,
-    250,
-    55,
-    250,
-    ink(
-      r(56, 14, 22, 228, WOOD, 4) +
-        hl('M63 24V230', WOODL, 3) +
-        r(14, 14, 66, 16, WOODD, 4) +
-        p('M78 30L56 30L78 56Z', WOODD) +
-        r(52, 60, 30, 10, IRON, 2) +
-        e(66, 244, 40, 6, STONED) +
-        l('M24 30V96C24 118 42 122 42 100', 11) +
-        hl('M24 30V96C24 118 42 122 42 100', IRONL, 5),
-    ),
-  ),
-  eagleA,
-  eagleB,
   wheel,
   slab,
   comet,
@@ -796,4 +612,5 @@ export const PROPS: Record<string, Art> = {
   iconPause,
   iconLocked,
   iconCastle,
+  ...CASTLE_ART,
 };

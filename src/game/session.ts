@@ -1,5 +1,6 @@
 import { ENEMIES } from '../config/enemies';
-import { DT, WORLD } from '../config/world';
+import { DT, WORLD, fieldWall } from '../config/world';
+import type { Flags } from '../config/flags';
 import type { Tuning } from '../config/tuning';
 import type { Difficulty } from '../config/waves';
 import type { ClientCommand, NetMessage } from '../net/protocol';
@@ -53,7 +54,7 @@ export class HostSession implements Session {
   /** Counts steps even while paused, so that a paused game keeps sending its state. */
   private stepCounter = 0;
 
-  constructor(opts: { seed: number; difficulty: Difficulty; names: string[]; tuning: Tuning; coop: boolean }) {
+  constructor(opts: { seed: number; difficulty: Difficulty; names: string[]; tuning: Tuning; coop: boolean; flags?: Flags; fieldW?: number; quickStart?: number }) {
     this.role = opts.coop ? 'host' : 'solo';
     this.sim = new Sim(opts);
   }
@@ -297,6 +298,8 @@ export class GuestSession implements Session {
 
   private tuning() { return this.curMeta?.tuning; }
 
+  private wall() { return fieldWall(this.curMeta?.fieldW ?? WORLD.width); }
+
   private stepPrediction(dt: number) {
     const t = this.tuning();
     if (!t) return;
@@ -331,7 +334,7 @@ export class GuestSession implements Session {
       b.x += b.vx * dt;
       b.y += b.vy * dt;
       if (b.x < WORLD.gateX + 10) { b.x = WORLD.gateX + 10; b.vx = Math.abs(b.vx) * 0.35; }
-      if (b.x > WORLD.rightWallX) { b.x = WORLD.rightWallX; b.vx = -Math.abs(b.vx) * 0.4; }
+      if (b.x > this.wall()) { b.x = this.wall(); b.vx = -Math.abs(b.vx) * 0.4; }
       const ground = WORLD.groundY + b.lane;
       if (b.y > ground) { b.y = ground; b.vy = 0; b.vx = 0; }
     }
@@ -373,7 +376,7 @@ export class GuestSession implements Session {
   }
 
   send(c: ClientCommand) {
-    if (c.k === 'activate') this.modeGuardUntil = performance.now() + 500 + this.ping;
+    if (c.k === 'activate' || c.k === 'pressSlot') this.modeGuardUntil = performance.now() + 500 + this.ping;
     this.link.send({ k: 'c', c });
   }
   setHand(x: number, y: number) { this.handX = x; this.handY = y; }
@@ -404,7 +407,7 @@ export class GuestSession implements Session {
     let bestD = Infinity;
     for (const e of list) {
       const def = ENEMIES[e.type];
-      if (e.hidden || e.shield || !def.grabbable || e.type === 'yeti' || e.heldBy.length > 0 || e.st === 'hooked' || e.st === 'flee') continue;
+      if (e.hidden || e.shield || !def.grabbable || e.type === 'yeti' || e.heldBy.length > 0 || e.st === 'hooked' || e.st === 'cooking' || e.st === 'flee') continue;
       const top = e.y - (e.crow ? 40 : def.height);
       const dx = Math.max(0, Math.abs(x - e.x) - def.radius);
       const dy = y < top ? top - y : y > e.y ? y - e.y : 0;
@@ -423,7 +426,7 @@ export class GuestSession implements Session {
     this.pred = null;
     if (!p || !t) return;
     // The host starts the throw from hand plus grip offset, not from where the spring lagged to.
-    p.x = Math.max(WORLD.gateX + 10, Math.min(WORLD.rightWallX - 10, this.handX + p.offX));
+    p.x = Math.max(WORLD.gateX + 10, Math.min(this.wall() - 10, this.handX + p.offX));
     p.y = Math.min(this.handY + p.offY, WORLD.groundY + p.lane);
     // Mirrors the host's throw clamp so the prediction flies the same arc.
     let ax = vx * t.throwMult;

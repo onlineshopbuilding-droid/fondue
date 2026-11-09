@@ -1,3 +1,5 @@
+import { ENEMIES } from '../../src/config/enemies';
+import { COOP } from '../../src/config/waves';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { drag, gameState, waitFor, waitForGame } from './helpers';
 
@@ -29,7 +31,10 @@ async function setupCoop(browser: Browser, query: string) {
   return { host, guest, code, errors, context };
 }
 
-const skipDay = (host: Page) => host.evaluate(() => { (window as any).__fondue.session.sim.s.dayT = 49.9; });
+/** What one Pothelm pays in a co-op game. */
+const KILL_GOLD = Math.round(ENEMIES.grunt.gold * COOP.goldFactor);
+
+const skipDay = (host: Page) => host.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.enemies = []; s.spawnQueue = []; s.dayT = 49.9; });
 
 async function grabAndFling(page: Page, target: any) {
   await drag(page, [target.x - 10, target.y - 44], [target.x - 60, 110], 10, 8);
@@ -61,7 +66,7 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     const onScreen = (s: any) => s.enemies.filter((e: any) => e.x < 1100 && e.x > 300 && e.st === 'walk');
     let s = await waitFor(() => gameState(host), (v) => onScreen(v).length >= 2, 25000);
     await grabAndFling(host, onScreen(s)[0]);
-    await waitFor(() => gameState(host), (v) => v!.gold >= 10, 6000);
+    await waitFor(() => gameState(host), (v) => v!.gold >= KILL_GOLD, 6000);
 
     // A single, almost still target placed on purpose: how a crowd spreads and how far an enemy
     // walks between two steps of this test both depend on the speed of the machine.
@@ -87,7 +92,7 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
       await guest.waitForTimeout(8);
     }
     await guest.mouse.up();
-    await waitFor(() => gameState(host), (v) => v!.gold >= before + 10, 8000);
+    await waitFor(() => gameState(host), (v) => v!.gold >= before + KILL_GOLD, 8000);
     const a = await gameState(host);
     await waitFor(() => gameState(guest), (v) => v!.gold >= a!.gold, 3000);
 

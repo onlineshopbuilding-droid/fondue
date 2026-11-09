@@ -209,8 +209,8 @@ export class Effects {
     for (let i = 0; i < 18; i++) {
       const a = -Math.PI * (0.2 + Math.random() * 0.6);
       const v = 240 + Math.random() * 460;
-      const p = this.spawn(propKey('drop1'), x + (Math.random() - 0.5) * 60, y - 30, { life: 0.7, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 1900, s0: 1.4, s1: 0.6 });
-      p?.img.setTint(0xffd166);
+      const p = this.spawn(propKey('steam'), x + (Math.random() - 0.5) * 60, y - 30, { life: 0.7, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 1900, s0: 0.42, s1: 0.16 });
+      p?.img.setTint(0xf3cb5e);
     }
   }
 

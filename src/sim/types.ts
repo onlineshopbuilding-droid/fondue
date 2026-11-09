@@ -1,3 +1,4 @@
+import type { Flags } from '../config/flags';
 import type { Tuning } from '../config/tuning';
 import type { EnemyType } from '../config/enemies';
 import type { Difficulty } from '../config/waves';
@@ -13,7 +14,8 @@ export type EnemyState =
   | 'stun' // landed softly, dazed
   | 'frozen'
   | 'hooked' // hanging on the eagle perch
-  | 'flee'; // day is over
+  | 'cooking' // melting into cheese in the cauldron
+  | 'flee'; // only with the old end-of-day rule
 
 export interface Enemy {
   id: number;
@@ -54,7 +56,7 @@ export interface Enemy {
   tugLimit: number;
 }
 
-export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell';
+export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell' | 'frostShell' | 'fireShell';
 
 export interface Projectile {
   id: number;
@@ -73,13 +75,13 @@ export interface Projectile {
   heldBy: number;
   /** Player credited with what this hits, or -1. */
   owner: number;
-  /** Comet swing path in px. */
-  charge: number;
   pierce: boolean;
   /** Enemy ids already hit by a piercing projectile. */
   hit: number[];
   /** Most enemies this may hit. */
   maxHits: number;
+  /** Seconds until a crossbow bolt is spent. */
+  ttl: number;
   /** A bomb the player has touched: only those hurt raiders. */
   byPlayer: boolean;
   landed: boolean;
@@ -93,7 +95,8 @@ export interface Flame {
   dur: number;
 }
 
-export type HandMode = 'none' | 'stomper' | 'comet' | 'horn';
+/** A weapon this hand is working with: armed for a tap on the field, or being aimed. */
+export type HandMode = 'none' | 'stomper' | 'comet' | 'horn' | 'bolter';
 
 export interface Hand {
   x: number;
@@ -141,6 +144,12 @@ export interface Meta {
   newTipTypes: EnemyType[];
   pausedBy: string | null;
   tuning: Tuning;
+  /** Experiment switches of the host. */
+  flags: Flags;
+  /** Width of the field in world units, decided by the host. */
+  fieldW: number;
+  /** Day this run was quick-started on, or 0 for a normal run. Such runs do not reach the scores. */
+  quickStart: number;
 }
 
 export interface SimState {
@@ -161,7 +170,13 @@ export interface SimState {
   cooldownMax: Record<WeaponSlot, number>;
   spawnQueue: SpawnEntry[];
   spawned: number;
+  /** Seconds until the eagle hook is free. */
   perchBusy: number;
+  /** Seconds until the cauldron is free, and how long this melt takes in total. */
+  potBusy: number;
+  potMax: number;
+  /** The sun has set: no more arrivals, the day ends when the field is clear. */
+  nightfall: boolean;
   nextId: number;
   rngState: number;
   dayKills: number;
@@ -194,9 +209,12 @@ export type SimEvent =
   | { e: 'flame'; x: number; halfWidth: number }
   | { e: 'bellows'; x: number; halfWidth: number }
   | { e: 'mortar'; x: number; y: number }
-  | { e: 'bolters' }
+  | { e: 'bolters'; x: number; y: number }
   | { e: 'eagle'; x: number; y: number; id: number }
   | { e: 'splash'; x: number; y: number; etype: EnemyType }
+  | { e: 'cheese'; x: number; y: number; etype: EnemyType }
+  | { e: 'nightfall' }
+  | { e: 'aimHint'; p: number; slot: WeaponSlot }
   | { e: 'crow'; x: number; y: number }
   | { e: 'shieldUp'; x: number; y: number }
   | { e: 'shieldBlock'; x: number; y: number }
@@ -213,6 +231,7 @@ export type Command =
   | { k: 'press'; p: number; x: number; y: number }
   | { k: 'release'; p: number; x: number; y: number; vx: number; vy: number }
   | { k: 'activate'; p: number; slot: WeaponSlot }
+  | { k: 'pressSlot'; p: number; slot: WeaponSlot; x: number; y: number }
   | { k: 'cancelMode'; p: number }
   | { k: 'buy'; p: number; item: string }
   | { k: 'equip'; p: number; item: string }
@@ -225,4 +244,10 @@ export interface SimOptions {
   difficulty: Difficulty;
   names: string[];
   tuning: Tuning;
+  /** Experiment switches; defaults apply when left out. */
+  flags?: Flags;
+  /** Width of the field; the base width when left out. */
+  fieldW?: number;
+  /** Start on this quick-start day instead of day 1. */
+  quickStart?: number;
 }

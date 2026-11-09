@@ -10,9 +10,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  unit:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,12 +22,42 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
       - run: npx vitest run
+
+  # The browser tests take most of the time, so they share the work between machines
+  # and run against the built game, which starts much faster than the dev server.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test
+      - run: npx vite build --base=/
+      - name: Serve the built game
+        run: |
+          npx vite preview --port 5199 --strictPort --base=/ &
+          npx --yes wait-on --timeout 60000 http://localhost:5199
+      - run: npx playwright test --shard=${{ matrix.shard }}/3
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mobile-screenshots
+          name: mobile-screenshots-${{ matrix.shard }}
           path: mobile-screenshots/
           if-no-files-found: ignore
           retention-days: 7
+
+  # The name main's protection waits for.
+  test:
+    if: always()
+    needs: [unit, browser]
+    runs-on: ubuntu-latest
+    steps:
+      - run: test "${{ needs.unit.result }}" = success && test "${{ needs.browser.result }}" = success

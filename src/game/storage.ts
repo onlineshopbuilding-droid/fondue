@@ -1,3 +1,4 @@
+import { cleanFlags, defaultFlags, type Flags } from '../config/flags';
 import { TUNING_DEFAULT, type Tuning } from '../config/tuning';
 import type { Difficulty } from '../config/waves';
 
@@ -9,6 +10,8 @@ export interface Settings {
   muted: boolean;
   relayAddress: string;
   tuning: Tuning;
+  /** Experiment switches, from the developer menu. */
+  flags: Flags;
 }
 
 export interface ScoreEntry {
@@ -32,6 +35,7 @@ const DEFAULTS: Settings = {
   muted: false,
   relayAddress: '',
   tuning: { ...TUNING_DEFAULT },
+  flags: defaultFlags(),
 };
 
 function read<T>(key: string): T | null {
@@ -53,7 +57,7 @@ function write(key: string, value: unknown) {
 
 export function loadSettings(): Settings {
   const s = read<Partial<Settings>>(KEY_SETTINGS) ?? {};
-  return { ...DEFAULTS, ...s, tuning: { ...TUNING_DEFAULT, ...(s.tuning ?? {}) } };
+  return { ...DEFAULTS, ...s, tuning: { ...TUNING_DEFAULT, ...(s.tuning ?? {}) }, flags: cleanFlags(s.flags) };
 }
 
 export function saveSettings(s: Settings) { write(KEY_SETTINGS, s); }

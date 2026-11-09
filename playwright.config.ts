@@ -7,7 +7,8 @@ export default defineConfig({
   testDir: 'tests/e2e',
   // GitHub's machines render the game in software several times slower than the laptop.
   timeout: process.env.CI ? 420_000 : 180_000,
-  fullyParallel: false,
+  // With one worker nothing runs at once; this makes --shard split by test instead of by whole file.
+  fullyParallel: true,
   workers: 1,
   reporter: [['list']],
   use: {

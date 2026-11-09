@@ -105,7 +105,7 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   },
   yeti: {
     name: 'Yeti',
-    speed: 40, strike: 60, strikeEvery: 2.2, range: 46, hp: 1400, radius: 78, height: 224,
+    speed: 40, strike: 40, strikeEvery: 2.2, range: 46, hp: 800, radius: 78, height: 224,
     gold: 120, score: 1500, grabbable: true, firstDay: 14, weight: 0.35, maxPerDay: 4,
     tip: 'One hand cannot lift a Yeti. With two players, grab it together. Alone, weapons will have to do.',
   },
