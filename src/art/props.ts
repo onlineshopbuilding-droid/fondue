@@ -381,6 +381,17 @@ const bomb = centred(
 
 const stone = centred(16, 16, ink(p('M3 7L7 2H12L14 8L11 14H5Z', STONE) + n('M5 7L8 4H10L6 9Z', STONEL), 2));
 
+const shell = centred(
+  30,
+  30,
+  ink(
+    c(15, 15, 11, IRON) +
+      n('M8 12a8 8 0 0 1 6-5l-1 3a5 5 0 0 0-3 3Z', IRONL) +
+      hl('M6 20Q15 25 24 20', RUST, 3.5),
+    3,
+  ),
+);
+
 const bolt = centred(
   60,
   12,
@@ -750,6 +761,7 @@ export const PROPS: Record<string, Art> = {
   comet,
   bomb,
   stone,
+  shell,
   bolt,
   roofBolt,
   reticle,

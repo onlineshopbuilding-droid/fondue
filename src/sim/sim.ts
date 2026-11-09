@@ -458,8 +458,7 @@ export class Sim {
     const w = WEAPONS.horn[id as keyof typeof WEAPONS.horn];
     this.startCooldown('horn', w.cooldown);
     if (w.kind === 'blast') {
-      this.emit({ e: 'mortar', x, y });
-      this.blast(x, y, w.radius, w.damage, p);
+      this.launchShell(x, y, w.radius, w.damage, w.flightSeconds, p);
     } else if (w.kind === 'freeze') {
       this.emit({ e: 'freeze', x, y, radius: w.radius });
       for (const e of s.enemies) {
@@ -472,6 +471,18 @@ export class Sim {
       this.emit({ e: 'bellows', x, halfWidth: w.halfWidth });
       this.addFlame(x, w.halfWidth, w.flameSeconds);
     }
+  }
+
+  /** Lobs a shell from the keep roof that lands on (x, y) after exactly the given time. */
+  private launchShell(x: number, y: number, radius: number, damage: number, flight: number, p: number) {
+    const { x: x0, y: y0 } = WORLD.roof;
+    const g = this.tuning.gravity;
+    // Velocity is integrated before position each step; the last term cancels the resulting offset.
+    const q = this.spawnProjectile('shell', x0, y0, (x - x0) / flight, (y - y0) / flight - (g * flight) / 2 - (g * DT) / 2);
+    q.size = radius;
+    q.damage = damage;
+    q.owner = p;
+    this.emit({ e: 'mortar', x: x0, y: y0 });
   }
 
   private freeze(e: Enemy, p: number) {
@@ -524,7 +535,7 @@ export class Sim {
   private spawnProjectile(kind: ProjectileKind, x: number, y: number, vx: number, vy: number): Projectile {
     const q: Projectile = {
       id: this.s.nextId++, kind, x, y, vx, vy, rot: 0, t: 0, size: 10, damage: 0,
-      heldBy: -1, charge: 0, pierce: false, hit: [], maxHits: Infinity, byPlayer: false, landed: false,
+      heldBy: -1, owner: -1, charge: 0, pierce: false, hit: [], maxHits: Infinity, byPlayer: false, landed: false,
     };
     this.s.projectiles.push(q);
     return q;
@@ -1149,6 +1160,9 @@ export class Sim {
         case 'roofBolt':
           this.updateRoofBolt(q);
           break;
+        case 'shell':
+          this.updateShell(q);
+          break;
       }
     }
   }
@@ -1222,6 +1236,18 @@ export class Sim {
       if (tier) this.addFlame(q.x, q.size * 0.8, WEAPONS.comet[tier as 'comet1'].flameSeconds);
     } else if (q.x > WORLD.rightWallX) {
       q.t = -1;
+    }
+  }
+
+  private updateShell(q: Projectile) {
+    q.vy += this.tuning.gravity * DT;
+    q.x += q.vx * DT;
+    q.y += q.vy * DT;
+    q.rot += 0.3;
+    q.t += DT;
+    if (q.t >= WEAPONS.horn.mortar.flightSeconds - DT / 2) {
+      q.t = -1;
+      this.blast(q.x, q.y, q.size, q.damage, q.owner);
     }
   }
 

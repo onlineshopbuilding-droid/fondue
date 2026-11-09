@@ -47,7 +47,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'comet2', name: 'Blazing Comet', tab: 'comets', gold: 1100, offerings: 12, requires: 'comet1', desc: 'Leaves more fire behind.' },
   { id: 'comet3', name: 'Falling Star', tab: 'comets', gold: 3000, offerings: 34, requires: 'comet2', desc: 'A piece of the sky.' },
 
-  { id: 'mortar', name: 'Gate Mortar', tab: 'horns', gold: 1400, offerings: 0, desc: 'Press and move to aim, let go to fire.' },
+  { id: 'mortar', name: 'Gate Mortar', tab: 'horns', gold: 1400, offerings: 0, desc: 'Press and move to aim, let go to fire. The shell takes a moment to land.' },
   { id: 'frost', name: 'Frost Horn', tab: 'horns', gold: 2800, offerings: 8, desc: 'Freezes a patch of enemies. Click a frozen enemy to shatter it.' },
   { id: 'bellows', name: 'Dragon Bellows', tab: 'horns', gold: 3800, offerings: 30, desc: 'Sets a long stretch of road on fire.' },
 
@@ -88,7 +88,7 @@ export const WEAPONS = {
     idleCancelSeconds: 20,
   },
   horn: {
-    mortar: { kind: 'blast', radius: 95, damage: 150, cooldown: 6 },
+    mortar: { kind: 'blast', radius: 95, damage: 150, cooldown: 6, flightSeconds: 0.6 },
     frost: { kind: 'freeze', radius: 130, cooldown: 9 },
     bellows: { kind: 'flame', halfWidth: 150, flameSeconds: 2.2, cooldown: 11 },
   },

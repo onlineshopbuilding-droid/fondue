@@ -119,7 +119,7 @@
     "beschreibung": "Drei Torwaffen mit Zielen und Loslassen; gefrorene Gegner zerbrechen bei Antippen.",
     "pruefung": "Unit-Tests + Playwright",
     "passes": true,
-    "beleg": "tests/unit/sim.test.ts 'gate arm', 'frost horn', 'dragon bellows'"
+    "beleg": "tests/unit/sim.test.ts 'gate arm', 'mortar shell', 'frost horn', 'dragon bellows'"
   },
   {
     "id": 16,
@@ -152,7 +152,7 @@
     "beschreibung": "Schwierigkeitsgrade Easy/Medium/Hard wirken spürbar.",
     "pruefung": "Balance-Simulation",
     "passes": true,
-    "beleg": "npm run balance, docs/balance.md: Easy Tag 13,8, Medium Tag 9,2, Hard Tag 6,1 (Durchschnitts-Bot solo)"
+    "beleg": "npm run balance, docs/balance.md: Easy Tag 14,1, Medium Tag 8,9, Hard Tag 5,9 (Durchschnitts-Bot solo)"
   },
   {
     "id": 20,

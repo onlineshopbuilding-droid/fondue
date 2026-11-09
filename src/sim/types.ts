@@ -54,7 +54,7 @@ export interface Enemy {
   tugLimit: number;
 }
 
-export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt';
+export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell';
 
 export interface Projectile {
   id: number;
@@ -71,6 +71,8 @@ export interface Projectile {
   damage: number;
   /** Player holding this, or -1. */
   heldBy: number;
+  /** Player credited with what this hits, or -1. */
+  owner: number;
   /** Comet swing path in px. */
   charge: number;
   pierce: boolean;

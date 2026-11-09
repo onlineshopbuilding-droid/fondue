@@ -8,6 +8,8 @@ import { WORLD } from '../../src/config/world';
 import type { Enemy, SimEvent } from '../../src/sim/types';
 import { buildDayPlan, enemyCountForDay } from '../../src/sim/spawn';
 import { Rng } from '../../src/sim/rng';
+import { decodeSnapshot, encodeSnapshot } from '../../src/net/snapshot';
+import { PROPS } from '../../src/art/props';
 
 function battleSim(names = ['A']) {
   const sim = new Sim({ seed: 42, difficulty: 'medium', names, tuning: { ...TUNING_DEFAULT } });
@@ -569,9 +571,76 @@ describe('weapons', () => {
     sim.command({ k: 'press', p: 0, x: 400, y: 300 });
     sim.setHand(0, 800, e.y - 40);
     sim.command({ k: 'release', p: 0, x: 800, y: e.y - 40, vx: 0, vy: 0 });
+    runUntil(sim, () => e.dead, 60);
     expect(e.dead).toBe(true);
     sim.command({ k: 'activate', p: 1, slot: 'horn' });
     expect(sim.s.hands[1].mode).toBe('none');
+  });
+
+  describe('mortar shell', () => {
+    function fireMortar(x: number, y: number) {
+      const sim = battleSim();
+      sim.s.meta.owned.push('mortar');
+      sim.s.meta.hornEquipped = 'mortar';
+      const target = place(sim, 'grunt', x + 20);
+      sim.command({ k: 'activate', p: 0, slot: 'horn' });
+      sim.command({ k: 'press', p: 0, x, y });
+      sim.setHand(0, x, y);
+      sim.command({ k: 'release', p: 0, x, y, vx: 0, vy: 0 });
+      return { sim, target };
+    }
+    const flightTicks = Math.round(WEAPONS.horn.mortar.flightSeconds * 60);
+
+    it('leaves the keep roof on release and does no damage on the way', () => {
+      const { sim, target } = fireMortar(780, 540);
+      expect(sim.s.projectiles.map((q) => q.kind)).toEqual(['shell']);
+      expect(sim.s.projectiles[0].x).toBe(WORLD.roof.x);
+      expect(sim.s.projectiles[0].y).toBe(WORLD.roof.y);
+      expect(sim.s.cooldowns.horn).toBeGreaterThan(0);
+      const events = runUntil(sim, () => false, flightTicks - 1);
+      expect(target.dead).toBe(false);
+      expect(events.some((ev) => ev.e === 'explosion')).toBe(false);
+    });
+
+    it('flies in an arc and explodes exactly where it was aimed', () => {
+      const { sim, target } = fireMortar(780, 540);
+      let highest = Infinity;
+      const events: SimEvent[] = [];
+      for (let i = 0; i < flightTicks; i++) {
+        sim.step();
+        events.push(...sim.drainEvents());
+        for (const q of sim.s.projectiles) highest = Math.min(highest, q.y);
+      }
+      expect(highest).toBeLessThan(WORLD.roof.y);
+      const boom = events.find((ev) => ev.e === 'explosion') as Extract<SimEvent, { e: 'explosion' }>;
+      expect(boom.x).toBeCloseTo(780, 3);
+      expect(boom.y).toBeCloseTo(540, 3);
+      expect(boom.radius).toBe(WEAPONS.horn.mortar.radius);
+      expect(target.dead).toBe(true);
+      sim.step();
+      expect(sim.s.projectiles).toEqual([]);
+    });
+
+    it('still lands on target with other gravity from the tuning panel', () => {
+      const sim = battleSim();
+      sim.setTuning({ ...sim.tuning, gravity: 1200 });
+      sim.s.meta.owned.push('mortar');
+      sim.s.meta.hornEquipped = 'mortar';
+      sim.command({ k: 'activate', p: 0, slot: 'horn' });
+      sim.command({ k: 'press', p: 0, x: 600, y: 400 });
+      sim.command({ k: 'release', p: 0, x: 600, y: 400, vx: 0, vy: 0 });
+      const events = runUntil(sim, () => false, flightTicks);
+      const boom = events.find((ev) => ev.e === 'explosion') as Extract<SimEvent, { e: 'explosion' }>;
+      expect(boom.x).toBeCloseTo(600, 3);
+      expect(boom.y).toBeCloseTo(400, 3);
+    });
+
+    it('reaches the guest in the snapshot', () => {
+      const { sim } = fireMortar(780, 540);
+      expect(decodeSnapshot(encodeSnapshot(sim.s)).projectiles[0].kind).toBe('shell');
+    });
+
+    it('has artwork', () => { expect(PROPS.shell).toBeDefined(); });
   });
 
   it('frost horn freezes; a click shatters; grabbing and throwing also shatters', () => {

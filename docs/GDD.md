@@ -62,7 +62,7 @@ Die Verhaltensarten stammen aus dem Original oder sind vom Auftrag vorgegeben, N
 | Wheels | Icon, rollt sofort über die Straße | [W] |
 | Stompers | Icon, zielen, drücken und nach unten schnippen | [M] |
 | Comets | Icon, greifen, schwingen, loslassen; mehr Schwung, größere Explosion | [M] |
-| Gate Arms (Mortar, Frost Horn, Dragon Bellows) | Icon, drücken und zielen, loslassen | [M] |
+| Gate Arms (Mortar, Frost Horn, Dragon Bellows) | Icon, drücken und zielen, loslassen. Die Mörsergranate fliegt 0,6 s vom Burgdach zum Ziel **[A]** | [M] |
 | Roof Bolters | Icon, Salve auf die nächsten Gegner | [W] |
 
 Abklingzeiten sind in den Videos nicht zu erkennen und daher **[A]**.

@@ -24,6 +24,7 @@ export const LOADING_TIPS: string[] = [
   'Frozen raiders can be picked up too.',
   'Weapons recharge for everyone at once. Agree who fires.',
   'Swing a comet before you let go.',
+  'Mortar shells take a moment to land. Aim ahead of fast raiders.',
   'Press 1 to 5 for weapons. Your other hand will thank you.',
 ];
 

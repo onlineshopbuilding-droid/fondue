@@ -27,7 +27,7 @@ export interface SceneHooks {
 
 interface HandView { img: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; reticle: Phaser.GameObjects.Image; ghost: Phaser.GameObjects.Image; }
 
-const PROJ_KEYS = { bomb: 'bomb', stone: 'stone', bolt: 'bolt', wheel: 'wheel', comet: 'comet', slab: 'slab', roofBolt: 'roofBolt' } as const;
+const PROJ_KEYS = { bomb: 'bomb', stone: 'stone', bolt: 'bolt', wheel: 'wheel', comet: 'comet', slab: 'slab', roofBolt: 'roofBolt', shell: 'shell' } as const;
 
 export class GameScene extends Phaser.Scene {
   session: Session | null = null;
@@ -462,7 +462,8 @@ export class GameScene extends Phaser.Scene {
         break;
       case 'mortar':
         this.sfx('cannon');
-        this.shake(10);
+        this.shake(5);
+        this.fx.dust(ev.x, ev.y, 0);
         break;
       case 'bolters':
         this.sfx('bolter');

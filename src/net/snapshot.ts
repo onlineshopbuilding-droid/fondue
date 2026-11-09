@@ -62,7 +62,7 @@ export interface ViewState {
 }
 
 const STATES: EnemyState[] = ['walk', 'attack', 'hop', 'float', 'held', 'air', 'stun', 'frozen', 'hooked', 'flee'];
-const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt'];
+const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt', 'shell'];
 const MODES: HandMode[] = ['none', 'stomper', 'comet', 'horn'];
 const PHASES: Phase[] = ['banner', 'battle', 'victory', 'intermission', 'defeat', 'gameover'];
 

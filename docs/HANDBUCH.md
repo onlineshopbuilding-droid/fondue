@@ -1,6 +1,6 @@
 # Fondue – Änderungshandbuch
 
-Dieses Dokument sagt, wo was liegt und was alles angefasst werden muss, wenn sich etwas ändert. Es richtet sich an Tim, Lenny und künftige Claude-Sessions. Bezeichner statt Zeilennummern, weil sich Zeilen ständig verschieben. Stand: Build `44399f5`.
+Dieses Dokument sagt, wo was liegt und was alles angefasst werden muss, wenn sich etwas ändert. Es richtet sich an Tim, Lenny und künftige Claude-Sessions. Bezeichner statt Zeilennummern, weil sich Zeilen ständig verschieben. Bezeichner werden gegen den Code geprüft.
 
 Die Erklärung der Konzepte (fester Zeitschritt, Wurfphysik, WebRTC) steht in `docs/uebergabe/LERNEN.md`, die Spielregeln und Messwerte in `docs/GDD.md`, die Begründungen in `docs/ENTSCHEIDUNGEN.md`.
 
@@ -120,7 +120,7 @@ Die Logik dazu: `velocity()` in `src/input/pointer.ts`, `release`, `clampThrow`,
 |---|---|
 | Anfangszustand eines Gegners | `spawnEnemy` |
 | Laufen, Angreifen, Springen, Schweben | `updateEnemy`, von dort `updateWalk`, `updateAttack`, `updateHop`, `updateFloat` |
-| Bomben, Steine, Räder, Kometen | `updateProjectiles`, `updateBomb`, `updateComet` |
+| Bomben, Steine, Räder, Kometen, Mörsergranaten | `updateProjectiles`, `updateBomb`, `updateComet`, `updateShell` |
 | Waffen auslösen | `activate`, `fireHorn`, `fireStomper`, `launchComet` |
 | Was beim Tod passiert (Gold, Opfergabe, Krähe) | `kill` |
 | Tagesbeginn und -ende, Tor auffüllen | `startDay`, `endDay`, Ablauf in `step` |
@@ -226,3 +226,49 @@ Die Testregeln gelten weiter: Browser-Tests laufen mit Playwright. Firefox und d
 - **Fester Zufall:** `?seed=123`.
 - **Plan B:** `npm run relay`, Adresse in den Options oder per `?relay=...`. Anleitung in `docs/uebergabe/START-HIER.md`.
 - **Browser-Konsole:** `window.__fondue` ist die App. Auf dem Host geht zum Beispiel `__fondue.session.sim.s.gold = 5000` oder `__fondue.session.sim.s.dayT = 49.9`, um einen Tag zu überspringen.
+
+## 9. Bei jeder Änderung: Stimmigkeits-Check
+
+Eine Änderung ist erst fertig, wenn das ganze Spiel danach noch zusammenpasst. Nicht jeder Punkt betrifft jede Änderung, aber jeder wird durchgedacht. Was nicht mehr passt, wird im selben Zug mitgeändert.
+
+| Bereich | Frage | Wo nachsehen |
+|---|---|---|
+| Texte | Stimmen Tipps, Shop-Beschreibungen, Hilfe-Seiten und Lade-Tipps noch? Gleicher Ton, Englisch? | `tip` in `ENEMIES`, `desc` in `SHOP_ITEMS`, `HELP_SLIDES`, `LOADING_TIPS` |
+| Regeln | Widerspricht etwas Neues einer alten Regel? Sind Sonderfälle bedacht, zum Beispiel Schild, gefrorene oder gehaltene Gegner? | `src/sim/sim.ts`, `docs/GDD.md` |
+| Wirtschaft | Bleibt die Preisleiter sinnvoll, sind höhere Stufen teurer und besser? Ist alles erreichbar? | `SHOP_ITEMS`, `WEAPONS`, `npm run balance` |
+| Schwierigkeit | Liegt der Verlauf noch im Ziel? | `docs/balance.md`; Durchschnitts-Bot solo auf Medium Tag 8 bis 12 |
+| Koop | Sieht der Gast dasselbe? Reagiert er genauso? | Abschnitt 6, Falle 4; `src/net/snapshot.ts` |
+| Bedienung | Geht es gut mit der Maus? Bleibt ein Weg für Touch offen? | Abschnitt 10 |
+| Aussehen | Passt es zum Stil: gleiche Farben, Umrisse, Schriften? Überlappt etwas, wird etwas abgeschnitten? | `PAL` in `src/art/characters/kit.ts`, `src/ui/style.css`; Screenshot ansehen |
+| Rückmeldung | Hat etwas Neues Klang, Effekt und einen Hinweis für Spielende? | `handleEvent`, `SFX_RECIPES` |
+| Leistung | Bleibt es flüssig mit 200 Gegnern? | FPS-Test |
+| Tests | Ist das Neue durch einen Test abgesichert und alles grün? | Abschnitt 7 |
+| Dokumente | Stimmen Handbuch, `docs/GDD.md`, `docs/features.json` noch? Entscheidung festgehalten? | `docs/ENTSCHEIDUNGEN.md` |
+
+Am Ende steht ein kurzer Bericht für Tim und Lenny: was geändert wurde, was dadurch mitgeändert wurde, wo es liegt, was geprüft wurde und was nur Menschen beurteilen können, etwa Spielgefühl und Klang.
+
+## 10. Endziel: App Store und Google Play
+
+Das Spiel soll in beide Stores, zuerst privat. Noch ist nichts davon gebaut.
+
+**Aktuelle Phase: Alpha am Laptop.** Tim und Lenny testen zu zweit am Laptop, Freunde kommen erst mit späteren Versionen dazu. Das Handy wird schrittweise wichtiger, sobald das Spiel größer und besser steht.
+
+**Geräte:** Tim: ASUS Zenbook (Windows), iPhone 16. Lenny: Windows-Laptop, Linux-Laptop, Android-Handy. Es gibt keinen Mac, iOS-Builds brauchen deshalb später einen Cloud-Dienst mit macOS. Getestet wird dann per TestFlight auf dem iPhone, Android direkt auf Lennys Handy.
+
+**Für neue Funktionen schon jetzt**
+- Nichts darf so gebaut werden, dass es nur mit Hover, Rechtsklick oder Tastatur überhaupt möglich ist. Eine Touch-Variante muss sich ergänzen lassen.
+- Keine neue Abhängigkeit, die nur im Desktop-Browser läuft.
+
+**Beim Übergang zum Handy dazu:** Bedienelemente groß genug für Finger, Layout im Querformat auch mit Notch, Prüfung auf echten Geräten.
+
+**Bekannte Lücken bis zur Store-Version**
+
+| Thema | Heute | Nötig |
+|---|---|---|
+| Verpackung als App | Nur Webseite | Hülle um das Web-Spiel, voraussichtlich Capacitor |
+| Bedienung ohne Maus | Touch-Grundtest vorhanden; Waffennamen nur bei Hover, Pause und Waffen auch per Taste, Abbrechen per Rechtsklick, Esc oder erneutem Tippen aufs Icon; Hilfe-Texte sind mausbezogen | Auf echten Geräten prüfen und anpassen |
+| Leistung | Nur auf dem Laptop gemessen | Auf echten Handys messen |
+| Koop über Mobilfunk | Direktverbindung über STUN, öffentlicher PeerJS-Dienst, kein TURN | Eigener Vermittlungs- und Relay-Dienst, weil Mobilnetze Direktverbindungen oft blockieren |
+| Spielstand | Nur Bestenliste und Einstellungen im `localStorage`; ein Lauf wird nicht gespeichert | Dauerhafter Speicher, Fortsetzen unterbrochener Läufe |
+| Zugang nur per Code | Fehlt | Über Store-Testkanäle oder eigene Code-Abfrage |
+| Store-Unterlagen | Fehlen | App-Icon, Name, Datenschutzerklärung, Altersfreigabe |
