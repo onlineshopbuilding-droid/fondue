@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Sim } from '../../src/sim/sim';
 import { TUNING_DEFAULT } from '../../src/config/tuning';
 import { ENEMIES, BEHAVIOUR } from '../../src/config/enemies';
-import { DAY } from '../../src/config/waves';
+import { COOP, DAY } from '../../src/config/waves';
 import { GATE_HP, SHOP_ITEMS, WEAPONS } from '../../src/config/shop';
 import { WORLD } from '../../src/config/world';
 import type { Enemy, SimEvent } from '../../src/sim/types';
@@ -193,7 +193,7 @@ describe('spawning', () => {
     expect(c(7, 'medium', 1)).toBeLessThanOrEqual(145);
     expect(c(5, 'hard', 1)).toBeGreaterThan(c(5, 'medium', 1));
     expect(c(5, 'medium', 1)).toBeGreaterThan(c(5, 'easy', 1));
-    expect(c(5, 'medium', 2)).toBe(Math.round(c(5, 'medium', 1) * 1.6));
+    expect(c(5, 'medium', 2)).toBe(Math.round(c(5, 'medium', 1) * COOP.countFactor));
   });
 
   it('introduces each type on its day and guarantees it appears', () => {

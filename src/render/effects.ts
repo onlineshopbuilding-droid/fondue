@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { propKey, TEX_SCALE } from './textures';
+import { partKey, propKey, TEX_SCALE } from './textures';
 import { WORLD } from '../config/world';
 
 const MAX_PARTICLES = 320;
@@ -17,6 +17,8 @@ interface Particle {
   s1: number;
   fade: boolean;
   bounce: boolean;
+  /** Extra vertical scale; below 1 flattens the sprite. */
+  squash: number;
   toX?: number;
   toY?: number;
   ground: number;
@@ -51,11 +53,11 @@ export class Effects {
   private spawn(tex: string, x: number, y: number, o: Partial<Particle> & { life: number }): Particle | null {
     const img = this.free.pop();
     if (!img) return null;
-    img.setTexture(tex).setVisible(true).setPosition(x, y).setAlpha(1).setRotation(0).setTint(0xffffff);
+    img.setTexture(tex).setVisible(true).setPosition(x, y).setAlpha(1).setRotation(0).setTint(0xffffff).setOrigin(0.5, 0.5);
     img.setDepth(31);
     const s0 = o.s0 ?? 1;
     img.setScale(s0 / TEX_SCALE);
-    const p: Particle = { img, vx: 0, vy: 0, g: 0, rotV: 0, max: o.life, s0, s1: s0, fade: true, bounce: false, ground: WORLD.groundY + 30, ...o };
+    const p: Particle = { img, vx: 0, vy: 0, g: 0, rotV: 0, max: o.life, s0, s1: s0, fade: true, bounce: false, squash: 1, ground: WORLD.groundY + 30, ...o };
     this.live.push(p);
     return p;
   }
@@ -83,7 +85,8 @@ export class Effects {
       }
       p.img.rotation += p.rotV * dt;
       const k = p.life / p.max;
-      p.img.setScale((p.s1 + (p.s0 - p.s1) * k) / TEX_SCALE);
+      const size = (p.s1 + (p.s0 - p.s1) * k) / TEX_SCALE;
+      p.img.setScale(size, size * p.squash);
       if (p.fade) p.img.setAlpha(Math.min(1, k * 1.8));
     }
     for (let i = this.texts.length - 1; i >= 0; i--) {
@@ -207,6 +210,18 @@ export class Effects {
   fadingProp(key: string, x: number, y: number, life: number, originY = 1) {
     const p = this.spawn(propKey(key), x, y, { life, s0: 1, s1: 1 });
     p?.img.setOrigin(0.5, originY);
-    if (p) this.scene.time.delayedCall(life * 1000 + 30, () => p.img.setOrigin(0.5, 0.5));
+  }
+
+  /** The flattened body that stays for a moment after a hard landing. */
+  flattened(rig: string, x: number, y: number) {
+    const key = partKey(rig, 'body');
+    if (!this.scene.textures.exists(key)) return;
+    const p = this.spawn(key, x, y + 4, { life: 0.32, s0: 1.5, s1: 1.15, squash: 0.32 });
+    p?.img.setOrigin(0.5, 1).setDepth(21);
+  }
+
+  /** Air streaks behind a fast-flying enemy. */
+  streak(x: number, y: number) {
+    this.spawn(propKey('dust'), x, y, { life: 0.16, s0: 0.3, s1: 0.05, g: 0 });
   }
 }

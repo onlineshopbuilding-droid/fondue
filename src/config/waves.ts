@@ -39,7 +39,7 @@ export const DAY = {
 };
 
 /** Extra enemies in co-op. */
-export const COOP = { countFactor: 1.6 };
+export const COOP = { countFactor: 1.9 };
 
 /** Landscape cycle: changes every N days. */
 export const LANDSCAPES = ['meadow', 'canyon', 'marsh', 'snowpine'] as const;

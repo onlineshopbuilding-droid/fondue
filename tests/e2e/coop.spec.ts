@@ -50,6 +50,13 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await host.screenshot({ path: 'docs/screenshots/coop-host.png' });
     await guest.screenshot({ path: 'docs/screenshots/coop-guest.png' });
 
+    // Host tuning applies to both.
+    await host.evaluate(() => {
+      const app = (window as any).__fondue;
+      app.session.sim.setTuning({ ...app.session.sim.tuning, shake: 1.7 });
+    });
+    await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().tuning.shake), (v) => v === 1.7, 5000);
+
     // Each player kills one enemy; money is shared.
     const onScreen = (s: any) => s.enemies.filter((e: any) => e.x < 1100 && e.x > 300 && e.st === 'walk');
     let s = await waitFor(() => gameState(host), (v) => onScreen(v).length >= 2, 25000);

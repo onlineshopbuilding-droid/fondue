@@ -217,6 +217,7 @@ export class GameScene extends Phaser.Scene {
       }
       v.update(e, time, dt);
       if (e.st === 'air' && v.speed > fastest) fastest = v.speed;
+      if (e.st === 'air' && v.speed > 1300 && dt > 0) this.fx.streak(e.x, e.y - 40);
     }
     for (const [id, v] of this.active) {
       if (!seen.has(id)) { v.hide(); this.pool.push(v); this.active.delete(id); }
@@ -389,6 +390,7 @@ export class GameScene extends Phaser.Scene {
   private handleEvent(ev: SimEvent, s: Session) {
     switch (ev.e) {
       case 'grab':
+        this.viewOf(ev.id)?.bump();
         this.sfx('grab');
         this.sfx('scream', 0.8);
         break;
@@ -518,6 +520,8 @@ export class GameScene extends Phaser.Scene {
     this.hitstop(power);
     this.shake(5 + power * 13);
     this.fx.splat(ev.x, ev.y, power);
+    this.fx.flattened(ev.etype, ev.x, ev.y);
+    this.fx.ring(ev.x, ev.y - 14, 50 + power * 60, 0xfff6df);
     this.sfx('impactClang', 0.55 + power * 0.45);
     this.sfx('impactSplat', 0.55 + power * 0.45);
   }

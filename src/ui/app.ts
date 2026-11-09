@@ -85,7 +85,10 @@ export class App {
     });
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
-    window.addEventListener('pointerdown', () => this.audio.resume());
+    window.addEventListener('pointerdown', () => {
+      this.audio.resume();
+      if (!this.session) this.audio.startMusic('menu');
+    });
   }
 
   async boot() {

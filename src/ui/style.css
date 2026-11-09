@@ -106,7 +106,7 @@ table.scores th, table.scores td { padding: 6px 8px; text-align: left; border-bo
 .slide img { height: 96px; margin: 6px; }
 .dots { text-align: center; font-weight: 800; }
 
-.toast-area { position: absolute; left: 0; right: 0; top: 150px; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast-area { position: absolute; left: 0; right: 0; top: 30%; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
 .toast { background: var(--ink); color: var(--cream); padding: 10px 22px; border-radius: 12px; font-weight: 800; font-size: 20px; max-width: 760px; text-align: center; animation: pop 0.18s ease-out; }
 .toast.tip { background: var(--plum); font-size: 22px; }
 
