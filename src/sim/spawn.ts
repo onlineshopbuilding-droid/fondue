@@ -8,8 +8,17 @@ export function enemyCountForDay(day: number, difficulty: Difficulty, players: n
   let n = DAY.base + DAY.perDay * (capped - 1);
   if (day > DAY.softCapDay) n += DAY.perDayAfterCap * (day - DAY.softCapDay);
   n *= DIFFICULTIES[difficulty].count * spawnRate;
-  if (players > 1) n *= COOP.countFactor;
+  if (players > 1) n = n * coopFactor(day) + (COOP.earlyAdjust[day - 1] ?? 0) * DIFFICULTIES[difficulty].count * spawnRate;
   return Math.round(n);
+}
+
+/**
+ * Two hands double the throwing but weapons are shared, so late in a run the second player adds
+ * less than early on. The factor stays high first and then eases towards its late value.
+ */
+export function coopFactor(day: number): number {
+  const u = Math.max(0, Math.min(1, (day - COOP.easeFrom) / (COOP.easeTo - COOP.easeFrom)));
+  return COOP.countFactor + (COOP.lateFactor - COOP.countFactor) * u;
 }
 
 export function unlockedTypes(day: number): EnemyType[] {
@@ -36,6 +45,10 @@ export function buildDayPlan(day: number, difficulty: Difficulty, players: numbe
   }
 
   const span = DAY.seconds - 3;
+  // Raiders come partly in packs, so the day has swells rather than a steady drip.
+  const packCount = DAY.packs + Math.floor(day / DAY.packsPerDays);
+  const packTimes: number[] = [];
+  for (let i = 0; i < packCount; i++) packTimes.push(1 + ((i + rng.next()) / packCount) * (span - DAY.packSpread - 1));
   for (let i = 0; i < total; i++) {
     let type: EnemyType;
     if (i < guaranteed.length) {
@@ -46,7 +59,8 @@ export function buildDayPlan(day: number, difficulty: Difficulty, players: numbe
     counts.set(type, (counts.get(type) ?? 0) + 1);
     // Sooner-than-linear density: more enemies late in the day.
     const u = Math.pow(rng.next(), DAY.rampPower);
-    const t = 0.5 + u * span;
+    const inPack = i >= guaranteed.length && rng.next() < DAY.packShare;
+    const t = inPack ? packTimes[Math.floor(rng.next() * packCount)] + rng.next() * DAY.packSpread : 0.5 + u * span;
     plan.push({ t, type });
   }
   plan.sort((a, b) => a.t - b.t);

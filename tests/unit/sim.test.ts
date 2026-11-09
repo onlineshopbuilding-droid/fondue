@@ -586,8 +586,6 @@ describe('weapons', () => {
       sim.s.meta.owned.push('mortar');
       sim.s.meta.hornEquipped = 'mortar';
       const target = place(sim, 'grunt', x + 20);
-      target.t = 0;
-      sim.spawnEnemy; // same target every time
       const shot = fireAt(sim, 'horn', x);
       return { sim, target, shot, flightTicks: Math.floor(shot.flight * 60) };
     }

@@ -69,3 +69,29 @@ Die Testapp nutzt Capacitor und lädt die veröffentlichte Seite (`server.url` i
 
 ## E-020 – Arbeit über Issues und Pull Requests, main geschützt
 Tim und Lenny wollen gemeinsam über GitHub-Issues arbeiten und Claude dort mit `@claude` ansprechen. Das ersetzt die direkte Arbeit auf `main` aus E-018. `main` nimmt Änderungen nur noch per Pull Request an, und die Prüfung `test` muss grün sein. Das gilt auch für Admins. Claude darf auf GitHub Pull Requests stellen, aber nie mergen. Die Regeln stehen weiter nur in `AGENTS.md`, `CLAUDE.md` verweist dorthin. Authentifiziert wird über das Abo von Tim statt über einen kostenpflichtigen API-Schlüssel.
+
+## E-021 – Spielfeld wird breiter, die Burg steht immer links
+Auftrag 4.3. Die Burg steht auf jedem Bildschirm am linken Rand (`offsetX` ist immer 0), links von ihr gibt es keine Welt mehr. Die zusätzliche Breite vergrößert das Spielfeld nach rechts, von 1280 bis 1760 Welteinheiten (`FIELD` in `src/config/world.ts`).
+
+Beide Bedingungen aus dem Auftrag sind so gelöst:
+- **Koop:** Der Bildschirm des Hosts bestimmt beim Spielstart die Feldbreite (`meta.fieldW`), beide haben exakt dasselbe Feld. Ist der Gast schmaler, sieht er das ganze Feld und oben mehr Himmel. Ist er breiter, wird oben etwas Himmel abgeschnitten, höchstens bis zu einer Sichthöhe von 600 Einheiten. Reicht das nicht, zeigt der Rest rechts Kulisse. Solo folgt das Feld dem Bildschirm auch beim Drehen des Handys.
+- **Fairness:** Gegner laufen auf breiterem Feld schneller (`fieldSpeedFactor`), sie holen aber nur die Hälfte der zusätzlichen Strecke auf (`FIELD.speedCompensation`). Bei voller Angleichung wäre die Laufzeit überall gleich gewesen, die Bots verloren dann aber auf breitem Feld ein Drittel ihrer Tage, weil schnelle Gegner schwerer zu treffen sind. Die Messung steht in `docs/balance.md`. Damit Gegner nie sichtbar auftauchen, starten sie etwas außerhalb des Felds und laufen zügig herein.
+
+Verworfen: reine Kulisse rechts bei fester Welt. Ein Viertel eines Handybildschirms wäre totes Gebiet gewesen, in dem man nichts greifen kann, mit einer unsichtbaren Wand mitten im Bild.
+
+## E-022 – Zielen: Das Band spannt sich in Schussrichtung
+Auftrag 4.5 beschreibt das Zielen „wie bei einer Schleuder“. Eine gespiegelte Schleuder geht hier nicht: Die Burg steht am linken Rand, nach links ist kein Platz zum Zurückziehen, auf dem kleinsten Handy wären es rund 50 Pixel. Deshalb zieht man von der Waffe weg in Richtung der Räuber. Das Band spannt sich zwischen Waffe und Hand, die Richtung bestimmt die Schussrichtung, die Länge bestimmt Reichweite und Tempo. Während des Ziehens zeigt eine gestrichelte Linie die Bahn und ein Ring den Einschlag. Zurück zur Waffe ziehen bricht ab. Die Regeln dazu stehen in `src/sim/aim.ts`, die Zahlen in `AIM` (`src/config/shop.ts`). Spielen Tim und Lenny das anders, lässt sich das an einer Stelle ändern.
+
+Die Armbrust trifft jetzt, wohin man zielt, die automatische Zielsuche ist weg. Frost Horn und Dragon Bellows fliegen ebenfalls als gezielte Geschosse. Die Zifferntasten 1 bis 5 bleiben auf dem Laptop als Zusatz: Bei gezielten Waffen wird die Waffe aktiviert, der nächste Klick feuert mit derselben Rechnung.
+
+## E-023 – Kometen und Stomper: zweimal tippen
+„Comets werden nur angetippt“ lässt zwei Lesarten zu. Gewählt: Tippen auf den Schrein, dann Tippen auf die Stelle der Straße. Das ist reines Tippen, nimmt aber die Entscheidung nicht weg, wo die Waffe einschlägt. Stomper funktionieren genauso. Das frühere Schwingen des Kometen entfällt; als Ausgleich sind Radius und Schaden fest um 45 % höher (`WEAPONS.comet.bonus`).
+
+## E-024 – Griffzonen an der Burg
+Eine Berührung auf einer Waffe wird auf dem Gerät erkannt und als eigener Befehl `pressSlot` geschickt. Sie greift nie einen Gegner. Die Zonen sind Kreise um die Waffen, wachsen auf kleinen Bildschirmen auf mindestens 54 Pixel Durchmesser und enden vor der Straße (`slotZoneMaxX`), sodass ein Gegner am Tor immer greifbar bleibt. Der Gast braucht dadurch keine doppelte Regel.
+
+## E-025 – Tagesende: Die Regel „Rückzug“ bleibt als Schalter
+Nach Auftrag 4.2 kämpfen die Gegner bis zum Tod. Die alte Regel ist für den Vergleich als Experiment-Schalter `dayEnd` erhalten. Noch nicht gespawnte Gegner kommen nach Sonnenuntergang nicht mehr.
+
+## E-026 – Experiment-Schalter und Schnellstart
+Schalter stehen in `src/config/flags.ts`. Ein Eintrag genügt, dann erscheinen sie im Entwickler-Menü, das Lesen in den Regeln geht über `sim.flag('id')`. Die Werte sind Teil von `Meta`, im Koop gelten also die des Hosts. Der gewählte Schnellstart-Tag lebt nur bis zum Neuladen der Seite, damit niemand versehentlich dauerhaft mit Schnellstart spielt. Solche Läufe zählen nicht für die Bestenliste.

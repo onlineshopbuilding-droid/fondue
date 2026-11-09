@@ -24,22 +24,31 @@ export const DAY = {
   bannerSeconds: 2.6,
   endBannerSeconds: 2.6,
   /** Enemies per day: base + perDay * (day - 1), slower growth after softCapDay. */
-  base: 34,
-  perDay: 12,
+  base: 40,
+  perDay: 7,
   softCapDay: 12,
   perDayAfterCap: 12,
+  /** Share of a day's raiders that arrive in packs, how many packs, and how long each one takes. */
+  packShare: 0.55,
+  packs: 3,
+  packsPerDays: 6,
+  packSpread: 3,
   /** Hard limit of living enemies; spawns wait while it is reached. */
   maxAlive: 200,
   /** Per-day growth after day 1: gate damage, walk speed, and hit points against weapons. */
   damageGrowth: 0.2,
   speedGrowth: 0.03,
-  hpGrowth: 0.12,
+  hpGrowth: 0.08,
   /** Share of the day over which spawning ramps from sparse to dense. */
   rampPower: 0.8,
 };
 
-/** Extra enemies in co-op. */
-export const COOP = { countFactor: 1.9 };
+/**
+ * Extra enemies in co-op. The factor applies from day 1 and eases to lateFactor between easeFrom
+ * and easeTo, because the second pair of hands matters less once weapons do most of the work.
+ * earlyAdjust is added on days 1, 2, ... (raiders before scaling): two weak players must survive day 1 too.
+ */
+export const COOP = { countFactor: 2.3, lateFactor: 1.4, easeFrom: 22, easeTo: 36, earlyAdjust: [-8, -6, -3, 0], goldFactor: 0.7 };
 
 /** Landscape cycle: changes every N days. */
 export const LANDSCAPES = ['meadow', 'canyon', 'marsh', 'snowpine'] as const;

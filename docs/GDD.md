@@ -15,7 +15,7 @@ Eine Alpenfestung auf der linken Seite, eine Räuberarmee kommt von rechts über
 | Himmel | Tag, ab 50 % Dämmerung, ab 75 % Nacht mit Sternen | [W] |
 | Tor zwischen den Tagen | voll aufgefüllt | [W] V9 |
 | Shop zwischen den Tagen | ja | [M] |
-| Ende des Tages | Übrige Gegner fliehen | [A] |
+| Ende des Tages | Nach Sonnenuntergang kommen keine neuen Gegner mehr. Der Tag endet, wenn alle tot sind oder das Tor fällt. | Auftrag 4.2 |
 | Niederlage | Lauf endet, Punkte in die Highscore-Liste | [A], im Video nicht zu sehen |
 
 ## Wurfphysik (Kalibrierung)
@@ -52,18 +52,22 @@ Die Verhaltensarten stammen aus dem Original oder sind vom Auftrag vorgegeben, N
 
 ## Wirtschaft
 - Gold pro Gegner 10–120, gemessen am Original etwa 15 pro Kill **[M]**.
-- Opfergabe (Offering, goldener Käse): +1 pro Opfer in Kessel oder am Haken **[M]**.
+- Opfergabe (Offering, goldener Käse): +1 pro Opfer in Kessel oder am Haken **[M]**. Der Kessel braucht für die Verwandlung in Käse 1,4 s (`cauldronSeconds`, im Tuning-Panel) und ist währenddessen belegt, kein zusätzlicher Cooldown. Der Haken nimmt einen Gegner auf einmal, die Fress-Animation ist die Wartezeit.
 - 22 Upgrades: 5 Tore, 2 Opferstätten, 9 Turmwaffen, 3 Torwaffen, 3 Dachgeschütze **[M]** bei der Struktur, Namen und Preise **[A]**.
 - Tagesgold laut Bots: etwa 340 an Tag 1, 800 an Tag 3, 1700 an Tag 7.
 
 ## Waffen
 | Waffe | Bedienung | Quelle |
 |---|---|---|
-| Wheels | Icon, rollt sofort über die Straße | [W] |
-| Stompers | Icon, zielen, drücken und nach unten schnippen | [M] |
-| Comets | Icon, greifen, schwingen, loslassen; mehr Schwung, größere Explosion | [M] |
-| Gate Arms (Mortar, Frost Horn, Dragon Bellows) | Icon, drücken und zielen, loslassen. Die Mörsergranate fliegt 0,6 s vom Burgdach zum Ziel **[A]** | [M] |
-| Roof Bolters | Icon, Salve auf die nächsten Gegner | [W] |
+Alle Waffen sind an festen Plätzen der Burg verbaut und werden dort bedient (`WORLD.slots`). Ein Ring um die Waffe zeigt das Nachladen.
+
+| Waffe | Bedienung | Quelle |
+|---|---|---|
+| Wheels | an der Mauer antippen, rollt sofort über die Straße | Auftrag 4.5 |
+| Stompers | an der Mauer antippen, dann die Stelle antippen | Auftrag 4.5 |
+| Comets | Schrein antippen, dann die Stelle antippen; fällt von oben | Auftrag 4.5 |
+| Gate Arms (Mortar, Frost Horn, Dragon Bellows) | von der Waffe wegziehen und loslassen; Mörser mit hohem Bogen, Flugzeit je nach Weite | Auftrag 4.5 |
+| Roof Bolters | von der Armbrust wegziehen und loslassen; flache, schnelle Salve. Längerer Zug: weiter, schneller, stärker | Auftrag 4.5 |
 
 Abklingzeiten sind in den Videos nicht zu erkennen und daher **[A]**.
 

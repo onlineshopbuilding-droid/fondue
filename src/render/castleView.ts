@@ -11,6 +11,8 @@ import { landscapeForDay } from './background';
 
 const FINGER_CSS = 27;
 const RING_RADIUS = 46;
+/** Where the ring of a weapon sits, if not around the middle of its art. */
+const RING_OFFSET: Partial<Record<WeaponSlot, { x: number; y: number }>> = { wheel: { x: -14, y: 2 } };
 
 /** Art of a mounted weapon when ready and when reloading. */
 const MOUNTS: Record<WeaponSlot, (m: Meta) => string> = {
@@ -32,6 +34,7 @@ export class CastleView {
   private shadow: Phaser.GameObjects.Image;
   private keep: Phaser.GameObjects.Image;
   private glow: Phaser.GameObjects.Image;
+  private weather: Phaser.GameObjects.Image;
   private gate: Phaser.GameObjects.Image;
   private cracks: Phaser.GameObjects.Image;
   private foot: Phaser.GameObjects.Image;
@@ -39,13 +42,13 @@ export class CastleView {
   private mounts: Mount[] = [];
   private gateFlash = 0;
   private view!: GameView;
-  private ownedKey = '';
   private tierName = '';
 
   constructor(scene: Phaser.Scene) {
     this.shadow = scene.add.image(-40, 668, propKey('keepShadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(7);
     this.keep = scene.add.image(-40, 640, propKey('keep0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10);
     this.glow = scene.add.image(-40, 640, propKey('keepGlow0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.1).setAlpha(0);
+    this.weather = scene.add.image(-40, 640, propKey('keepWeather_canyon')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.05).setVisible(false);
     this.gate = scene.add.image(WORLD.gateX - 74, 620, propKey('gate0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(11);
     this.cracks = scene.add.image(WORLD.gateX - 74, 620, propKey('crack1')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(12).setVisible(false);
     this.foot = scene.add.image(-40, 690, propKey('foot_meadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(36);
@@ -85,8 +88,13 @@ export class CastleView {
       this.keep.setTexture(propKey(`keep${tier}`));
       this.glow.setTexture(propKey(`keepGlow${tier}`));
       this.foot.setTexture(propKey(`foot_${landscapeForDay(view.day)}`));
+      const land = landscapeForDay(view.day);
+      const weather = land === 'snowpine' ? `keepWeather_snowpine_${tier}` : land === 'meadow' ? null : `keepWeather_${land}`;
+      this.weather.setVisible(weather !== null);
+      if (weather) this.weather.setTexture(propKey(weather));
     }
     this.keep.setTint(tint);
+    this.weather.setTint(tint);
     this.foot.setTint(tint);
     this.glow.setAlpha(Math.min(1, night * 1.6));
     this.shadow.setAlpha(1 - night * 0.45);
@@ -105,7 +113,6 @@ export class CastleView {
 
     this.ring.clear();
     for (const m of this.mounts) this.updateMount(m, view, meta, tint, activeMode, dt, time);
-    void this.ownedKey;
   }
 
   private updateMount(m: Mount, view: ViewState, meta: Meta, tint: number, activeMode: string, dt: number, time: number) {
@@ -119,9 +126,11 @@ export class CastleView {
     m.pop = Math.max(0, m.pop - dt * 4);
     const active = activeMode === m.slot;
     m.img.setScale((1 + m.pop * 0.22 + (active ? 0.1 : 0)) / TEX_SCALE);
-    // A dusk-tinted weapon that is ready would lose its glow, so it stays in full colour.
-    m.img.setTint(isReady ? 0xffffff : tint);
-    const { x, y } = WORLD.slots[m.slot];
+    // Weapons sit in the same light as the wall; only their own glow is drawn into the art.
+    m.img.setTint(tint);
+    const off = RING_OFFSET[m.slot];
+    const x = WORLD.slots[m.slot].x + (off?.x ?? 0);
+    const y = WORLD.slots[m.slot].y + (off?.y ?? 0);
     const g = this.ring;
     if (!isReady && max > 0) {
       const done = 1 - cd / max;
@@ -132,9 +141,14 @@ export class CastleView {
       g.arc(x, y, RING_RADIUS, -Math.PI / 2, -Math.PI / 2 + done * Math.PI * 2, false);
       g.strokePath();
     } else {
-      const pulse = 0.35 + Math.sin(time * 0.005 + x) * 0.2;
-      g.lineStyle(active ? 5 : 3, active ? 0xfff1c0 : 0xf3cb5e, active ? 1 : pulse);
-      g.strokeCircle(x, y, active ? RING_RADIUS + 3 : RING_RADIUS - 2);
+      // Same solid ring on every ready weapon; only a soft outer glow breathes.
+      const glow = 0.16 + Math.sin(time * 0.005 + x) * 0.1;
+      g.lineStyle(13, 0xf3cb5e, active ? 0.5 : glow);
+      g.strokeCircle(x, y, RING_RADIUS + 4);
+      g.lineStyle(8, 0x2b2118, 0.85);
+      g.strokeCircle(x, y, RING_RADIUS);
+      g.lineStyle(5, active ? 0xfff1c0 : 0xf3cb5e, 1);
+      g.strokeCircle(x, y, RING_RADIUS);
     }
     this.drawTier(m, meta, x, y);
   }

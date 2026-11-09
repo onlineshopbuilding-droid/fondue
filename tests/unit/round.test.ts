@@ -480,7 +480,7 @@ describe('field width', () => {
     expect(fieldForAspect(2.8)).toBe(FIELD.max);
   });
 
-  it('raiders take the same time to the gate on every field', () => {
+  it('a wider field buys only a little walking time, and never takes any away', () => {
     const walk = (fieldW: number) => {
       const sim = battle({ fieldW });
       const e = sim.spawnEnemy('grunt', fieldEntry(fieldW));
@@ -489,7 +489,10 @@ describe('field width', () => {
       return ticks;
     };
     const base = walk(1280);
-    for (const w of [1440, 1560, 1760]) expect(Math.abs(walk(w) - base)).toBeLessThanOrEqual(base * 0.02);
+    for (const w of [1440, 1560, 1760]) {
+      expect(walk(w)).toBeGreaterThanOrEqual(base);
+      expect(walk(w)).toBeLessThanOrEqual(base * 1.2);
+    }
     expect(fieldSpeedFactor(1280)).toBe(1);
   });
 

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { AIM, WEAPONS, type HornId } from '../config/shop';
+import { WEAPONS, type HornId } from '../config/shop';
 import { WORLD } from '../config/world';
 import type { ViewHand, ViewState } from '../net/snapshot';
 import { AIM_LAND_Y, aimShot, type AimShot, type AimSlot } from '../sim/aim';
@@ -103,6 +103,5 @@ export class AimView {
       g.lineStyle(3, 0xffffff, alpha);
       g.strokeEllipse(x, y, radius * 1.3, radius * 0.36);
     }
-    void AIM;
   }
 }

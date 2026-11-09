@@ -1,4 +1,4 @@
-import { AIM, WEAPONS, type HornId, type WeaponSlot } from '../config/shop';
+import { AIM, type HornId, type WeaponSlot } from '../config/shop';
 import { WORLD } from '../config/world';
 
 export type AimSlot = 'bolter' | 'horn';
@@ -114,5 +114,3 @@ export function slotAt(x: number, y: number, radius: number, owned: (slot: Weapo
   }
   return best;
 }
-
-export const hornFlight = (id: HornId) => WEAPONS.horn[id];

@@ -167,13 +167,17 @@ function shingles(d: string, x0: number, y0: number, x1: number, y1: number, f: 
   return clip(d, n(rect(x0 - 2, y0 - 2, x1 - x0 + 4, y1 - y0 + 4), f) + hl(rows, line, 2)) + l(d);
 }
 
+const spireD = (cx: number, baseY: number, half: number, tipY: number) => {
+  const h = baseY - tipY;
+  return `M${cx - half} ${baseY}Q${fx(cx - half * 0.32)} ${fx(baseY - h * 0.36)} ${cx} ${tipY}Q${fx(cx + half * 0.32)} ${fx(baseY - h * 0.36)} ${cx + half} ${baseY}Q${cx} ${baseY + 9} ${cx - half} ${baseY}Z`;
+};
+
 /** A witch-hat tower roof. */
 function spire(cx: number, baseY: number, half: number, tipY: number, f: string, line: string, finial: string, rowH = 11): string {
   const h = baseY - tipY;
-  const d = `M${cx - half} ${baseY}Q${fx(cx - half * 0.32)} ${fx(baseY - h * 0.36)} ${cx} ${tipY}Q${fx(cx + half * 0.32)} ${fx(baseY - h * 0.36)} ${cx + half} ${baseY}Q${cx} ${baseY + 9} ${cx - half} ${baseY}Z`;
   return (
     l(`M${cx} ${tipY}v-12`, 4) +
-    shingles(d, cx - half, tipY, cx + half, baseY + 8, f, line, rowH, 13) +
+    shingles(spireD(cx, baseY, half, tipY), cx - half, tipY, cx + half, baseY + 8, f, line, rowH, 13) +
     n(`M${cx - half + 7} ${baseY - 2}Q${fx(cx - half * 0.4)} ${fx(baseY - h * 0.4)} ${cx - 2} ${tipY + 8}Q${fx(cx - half * 0.25)} ${fx(baseY - h * 0.36)} ${cx - half * 0.35} ${baseY + 1}Z`, WHITE, 0.13) +
     c(cx, tipY - 13, 5.5, finial)
   );
@@ -389,6 +393,51 @@ function deck(x1: number, f: string, hi: string, dark: string, trim = ''): strin
   );
 }
 
+interface PlateStyle {
+  f: string;
+  hi: string;
+  rivet: string;
+  trim?: string;
+}
+
+function plate(x: number, y: number, w: number, h: number, s: PlateStyle): string {
+  const inset = s.trim ? hl(rect(x + 4, y + 4, w - 8, h - 8), s.trim, 2) : '';
+  return (
+    r(x, y, w, h, s.f, 4) +
+    inset +
+    hl(`M${x + 5} ${y + 3}H${x + w - 5}`, s.hi, 2.5, 0.9) +
+    hl(`M${x + 6} ${y + 7}h.01M${x + w - 6} ${y + 7}h.01M${x + 6} ${y + h - 6}h.01M${x + w - 6} ${y + h - 6}h.01`, s.rivet, 4.5)
+  );
+}
+
+/** Backing plates in the tier's own material, so every mounted weapon is visibly fixed to this wall. */
+function slotPlates(s: PlateStyle, shrinePlate: boolean): string {
+  return (
+    plate(150, 276, 48, 70, s) +
+    plate(160, 394, 52, 58, s) +
+    plate(30, 356, 112, 21, s) +
+    (shrinePlate ? plate(42, 298, 88, 48, s) : '')
+  );
+}
+
+/** Heavy stepped corbel courses that carry a tower's overhang back into the gatehouse. */
+function towerCorbel(x0: number, f: string, hi: string, line: string, trim = ''): string {
+  const courses: [number, number][] = [[256, 452], [267, 436], [278, 420], [296, 402]];
+  return courses
+    .map(([x1, y], i) => {
+      let joints = '';
+      for (let x = x1 - 15; x > 246; x -= 21) joints += `M${x} ${y + 2}v14`;
+      return (
+        r(x0, y, x1 - x0, 17, f, 3) +
+        hl(joints, line, 2) +
+        hl(`M${x0 + 44} ${y + 3}H${x1 - 5}`, hi, 2.5, 0.85) +
+        shade('sU', x0, y, x1 - x0, 11, 0.8) +
+        (i === 3 && trim ? hl(`M${x0 + 44} ${y + 13}H${x1 - 5}`, trim, 3) : '')
+      );
+    })
+    .join('');
+}
+
 // ---------------------------------------------------------------------------------------------
 // Tier 0: a plain wooden palisade fort with a watchtower.
 // ---------------------------------------------------------------------------------------------
@@ -445,6 +494,7 @@ function tier0(): string {
         hl('M127 479a3 5 0 1 0 6 0M244 479a3 5 0 1 0 6 0', WOODD, 2) +
         gateBrow(WOODD, WOOD) +
         deck(256, WOODL, '#d6ad78', WOOD) +
+        slotPlates({ f: WOOD, hi: WOODL, rivet: WOODD }, true) +
         // Hand-made touches: a lantern and a rope coil.
         beam('M124 500H136', WOODD, 3) +
         l('M124 503V510', 2) +
@@ -526,7 +576,8 @@ function tier1(): string {
         r(218, 466, 14, 26, IRON, 2) +
         hl('M151 472h.01M151 485h.01M225 472h.01M225 485h.01', '#20242a', 4) +
         gateBrow(IRON, IRONL) +
-        deck(256, WOODL, '#d6ad78', IRON),
+        deck(256, WOODL, '#d6ad78', IRON) +
+        slotPlates({ f: IRON, hi: IRONL, rivet: '#20242a' }, true),
     )
   );
 }
@@ -539,7 +590,7 @@ const ASHLAR: Omit<Stonework, 'seed'> = { h: 22, base: '#857f71', fills: [STONEL
 const WINS2: Win[] = [
   { x: 52, y: 198, w: 22, h: 40, arch: true },
   { x: 120, y: 198, w: 22, h: 40, arch: true },
-  { x: 209, y: 238, w: 18, h: 30, arch: true },
+  { x: 212, y: 218, w: 16, h: 18, arch: true },
 ];
 
 function tier2(): string {
@@ -590,7 +641,8 @@ function tier2(): string {
         // Stone gate arch.
         archGate(STONEL, STONE, STONED, RUST) +
         gateBrow(STONE, STONEL) +
-        deck(256, STONEL, '#d6d0bd', STONE),
+        deck(256, STONEL, '#d6d0bd', STONE) +
+        slotPlates({ f: STONED, hi: STONEL, rivet: IRON }, false),
     )
   );
 }
@@ -627,7 +679,6 @@ function archGate(light: string, mid: string, dark: string, stoneKey: string): s
 // ---------------------------------------------------------------------------------------------
 
 const SLATE: Omit<Stonework, 'seed'> = { h: 22, base: '#5b6271', fills: ['#8d95a3', '#7c8493', '#9aa2af', '#868e9c'], line: '#4a5160', hi: '#bcc3cd' };
-const RUNE = '#3fd6c4';
 const WINS3: Win[] = [
   { x: 62, y: 106, w: 20, h: 28, arch: true },
   { x: 92, y: 106, w: 20, h: 28, arch: true },
@@ -637,12 +688,13 @@ const WINS3: Win[] = [
   { x: 240, y: 324, w: 22, h: 40, arch: true },
 ];
 
-const runeLine = (d: string) => hl(d, RUNE, 8, 0.25) + hl(d, RUNE, 3.5, 0.75) + hl(d, GLOW, 1.8);
+/** Runes cut into the stone with a dull verdigris inlay. */
+const runeLine = (d: string) => hl(d, '#3f4756', 5.5, 0.9) + hl(d, '#7fae9f', 2.2);
 
 function tier3(): string {
   const keepD = 'M-20 146H166V352H-20Z';
   const upperD = 'M34 92H138V150H34Z';
-  const towerD = 'M212 174H288V440Q270 470 250 474Q226 470 212 440Z';
+  const towerD = 'M212 174H288V404H212Z';
   return (
     SHADE_DEFS +
     ink(
@@ -670,14 +722,13 @@ function tier3(): string {
         // The extra tower, corbelled out over the road.
         clip(towerD, masonry(208, 170, 292, 476, { ...SLATE, seed: 63 })) +
         `<path d="${towerD}" fill="none"/>` +
-        clip(towerD, shade('sR', 258, 176, 30, 300, 0.55) + shade('sD', 212, 410, 76, 64, 0.7)) +
-        r(213, 412, 74, 10, '#9aa2af', 2) +
-        corbels(214, 280, 422, 10, 12, 12, '#7c8493') +
+        shade('sR', 258, 176, 30, 228, 0.55) +
+        towerCorbel(204, '#7c8493', '#bcc3cd', '#4a5160', MUST) +
         windowsBody(WINS3.slice(4, 6), '#bcc3cd') +
         merlons(206, 288, 158, 18, 12, 7, '#9aa2af') +
         spire(250, 158, 50, 96, TEALD, '#163f42', MUSTL) +
         banner(226, 262, 20, 50, TEAL, TEALD, MUSTL, emblem(236, 284, 0.55)) +
-        banner(236, 376, 24, 54, RUST, RUSTD, MUSTL, emblem(248, 398, 0.62)) +
+        banner(266, 262, 18, 50, RUST, RUSTD, MUSTL, emblem(275, 284, 0.5)) +
         flag(250, 86, 54, 34, RUST, MUSTL) +
         runeLine('M224 214V240M216 222L232 234M232 222L216 234') +
         // Lower wall.
@@ -698,7 +749,8 @@ function tier3(): string {
         archGate('#bcc3cd', '#9aa2af', '#6f7787', TEAL) +
         runeLine('M188 470V486M180 478H196') +
         gateBrow('#7c8493', '#bcc3cd', MUST) +
-        deck(256, '#9aa2af', '#c6ccd5', '#7c8493', MUST),
+        deck(256, '#9aa2af', '#c6ccd5', '#7c8493', MUST) +
+        slotPlates({ f: '#6f7787', hi: '#bcc3cd', rivet: GOLD, trim: GOLD }, false),
     )
   );
 }
@@ -727,12 +779,20 @@ function pilaster(x: number, y0: number, y1: number): string {
   return r(x, y0, 12, y1 - y0, '#f6f1e6', 2) + hl(`M${x + 4} ${y0 + 6}V${y1 - 6}`, '#cfc5ae', 2) + r(x - 3, y0 - 6, 18, 7, GOLDEN, 2) + r(x - 3, y1 - 1, 18, 7, GOLDEN, 2);
 }
 
-/** A carved relief of small blind arches. */
-function arcade(x0: number, x1: number, y0: number, y1: number): string {
-  let d = '';
-  const w = 17;
-  for (let x = x0; x + w <= x1; x += w + 4) d += `M${x} ${y1}V${y0 + w / 2}A${w / 2} ${w / 2} 0 0 1 ${x + w} ${y0 + w / 2}V${y1}`;
-  return hl(d, '#b9ae96', 4.5) + hl(d, '#fffaf0', 2) + hl(`M${x0 - 3} ${y1 + 1}H${x1 + 3}`, GOLDEN, 3);
+/** A recessed stone panel carrying solid carved medallions in gold. */
+function carvedPanel(x: number, y: number, w: number, h: number, count: number): string {
+  let medals = '';
+  for (let i = 0; i < count; i++) {
+    const cx = fx(x + ((i + 0.5) * w) / count);
+    const cy = y + h / 2;
+    medals += c(cx, cy, h * 0.36, '#f6f1e6') + p(starPoints(cx, cy, h * 0.27, h * 0.12, 8), GOLDEN);
+  }
+  return (
+    r(x, y, w, h, '#c8bea6', 3) +
+    shade('sU', x, y, w, 12, 0.5) +
+    hl(rect(x + 3.5, y + 3.5, w - 7, h - 7), GOLDEN, 2.5) +
+    `<g stroke-width="2.5">${medals}</g>`
+  );
 }
 
 function goldStuds(x0: number, x1: number, y: number, step: number): string {
@@ -743,14 +803,13 @@ function goldStuds(x0: number, x1: number, y: number, step: number): string {
 
 function tier4(): string {
   const keepD = 'M-20 118H176V352H-20Z';
-  const towerD = 'M206 138H294V438Q274 472 250 476Q226 472 206 438Z';
+  const towerD = 'M206 138H294V404H206Z';
   return (
     SHADE_DEFS +
     ink(
       // Rear gallery with a slim back spire.
       r(168, 252, 44, 100, '#e4ddcb', 2) +
       merlons(170, 208, 238, 16, 10, 6, '#f6f1e6') +
-        spire(192, 240, 19, 148, TEAL, TEALD, MUSTL, 9) +
         // Main spire behind the keep crown.
         flag(100, 46, 16, 36, RUST, MUSTL) +
         spire(100, 112, 74, 46, TEAL, TEALD, MUSTL) +
@@ -774,7 +833,8 @@ function tier4(): string {
         // The tall tower, corbelled out above the gate.
         clip(towerD, masonry(204, 134, 296, 478, { ...MARBLE, seed: 83 })) +
         `<path d="${towerD}" fill="none"/>` +
-        clip(towerD, shade('sR', 262, 138, 32, 340, 0.3) + shade('sD', 206, 400, 88, 76, 0.5)) +
+        shade('sR', 262, 138, 32, 266, 0.3) +
+        towerCorbel(204, '#e4ddcb', WHITE, '#a89c82', GOLDEN) +
         goldBand(204, 296, 134) +
         merlons(202, 292, 116, 18, 13, 7, '#f6f1e6') +
         goldStuds(208, 292, 113, 20) +
@@ -784,13 +844,9 @@ function tier4(): string {
         banner(222, 214, 16, 36, RUST, RUSTD, MUSTL, emblem(230, 232, 0.4)) +
         banner(262, 214, 16, 36, RUST, RUSTD, MUSTL, emblem(270, 232, 0.4)) +
         flag(250, 62, 30, 34, TEAL, MUSTL) +
-        arcade(214, 288, 354, 392) +
-        c(250, 422, 13, GOLDEN) +
-        hl('M250 411V433M239 422H261', GOLDD, 2.5) +
-        goldBand(204, 296, 410) +
-        corbels(212, 284, 418, 12, 12, 12, '#ece6d6') +
+        carvedPanel(216, 352, 70, 42, 2) +
         // Lower wall.
-        clip(rect(-20, 352, 158, 276), masonry(-20, 352, 140, 628, { ...MARBLE, seed: 84 })) +
+        clip(rect(-20, 352, 158, 276), masonry(-20, 352, 140, 628, { ...MARBLE, h: 30, line: '#a89c82', fills: ['#efe8d8', '#e4ddcb', '#f6f1e6', '#d9d1bf'], seed: 84 })) +
         clip(rect(136, 352, 108, 126), masonry(136, 352, 244, 478, { ...MARBLE, seed: 85 })) +
         `<path d="M138 352V478M244 352V478" fill="none"/>` +
         shade('sR', 200, 360, 44, 112, 0.28) +
@@ -798,8 +854,7 @@ function tier4(): string {
         goldBand(-20, 136, 470) +
         pilaster(14, 376, 462) +
         pilaster(124, 376, 462) +
-        arcade(-8, 12, 480, 540) +
-        arcade(32, 134, 482, 540) +
+        carvedPanel(30, 486, 104, 48, 3) +
         hoistBay('#ece6d6', GOLDEN) +
         sallyPort(GOLDEN, GOLDD) +
         footShade +
@@ -810,7 +865,8 @@ function tier4(): string {
         archGate('#f6f1e6', MUSTL, '#c5bca7', RUST) +
         c(188, 478, 7, MUSTL) +
         gateBrow(GOLDEN, MUSTL, GOLDD) +
-        deck(256, '#f6f1e6', WHITE, GOLDEN, GOLDEN),
+        deck(256, '#f6f1e6', WHITE, GOLDEN, GOLDEN) +
+        slotPlates({ f: GOLDEN, hi: MUSTL, rivet: GOLDD, trim: GOLDD }, false),
     )
   );
 }
@@ -824,11 +880,9 @@ const keepShadow = art(
   110,
   0,
   110,
-  `<defs><radialGradient id="a" cx=".5" cy=".5" r=".5">${stops([[0, '#1a120a', 0.5], [0.6, '#1a120a', 0.3], [1, '#1a120a', 0]])}</radialGradient>` +
-    linear('b', 1, 0, [[0, '#1a120a', 0.5], [0.55, '#1a120a', 0.35], [1, '#1a120a', 0]]) +
-    `</defs>` +
-    `<ellipse cx="160" cy="76" rx="200" ry="34" fill="url(#a)"/>` +
-    `<path d="M0 44Q200 34 400 58Q500 70 556 82Q470 106 330 106Q120 106 0 100Z" fill="url(#b)"/>`,
+  `<defs><radialGradient id="a">${stops([[0, '#1a120a', 0.42], [0.55, '#1a120a', 0.24], [1, '#1a120a', 0]])}</radialGradient></defs>` +
+    `<ellipse cx="150" cy="74" rx="170" ry="30" fill="url(#a)"/>` +
+    `<ellipse cx="90" cy="70" rx="124" ry="34" fill="url(#a)"/>`,
 );
 
 // ---------------------------------------------------------------------------------------------
@@ -836,8 +890,8 @@ const keepShadow = art(
 // ---------------------------------------------------------------------------------------------
 
 /** Foot art is 460x130, placed bottom-left at world (-40, 690), so world = art + (-40, 560). */
-const EDGE_D = 'C150 76 162 90 188 100C220 112 268 114 320 122C350 126 384 127 402 131';
-const BANK_D = `M-8 34Q20 54 46 52T100 58T150 60${EDGE_D}V136H-8Z`;
+const EDGE_D = 'C150 78 168 94 200 104C232 113 262 115 292 116';
+const BANK_D = `M-8 34Q20 54 46 52T100 58T150 60${EDGE_D}L300 136H-8Z`;
 const BANK_LINE = `M-8 34Q20 54 46 52T100 58T150 60${EDGE_D}`;
 
 interface FootStyle {
@@ -848,6 +902,23 @@ interface FootStyle {
 
 function footBase(s: FootStyle): string {
   return n(BANK_D, s.base) + hl(BANK_LINE, s.edge, 3.5) + s.extra;
+}
+
+/** A flared stone sill under the gate, with rocks and tufts overlapping both posts. */
+function gateFooting(f: string, hi: string, dark: string, tuft: string, tuftD: string, R: () => number): string {
+  return (
+    `<g stroke-width="2.8">` +
+    p('M142 56H234L246 66Q238 76 190 74Q150 76 134 66Z', f) +
+    hl('M168 59V73M190 59V74M212 59V73', dark, 2.5, 0.7) +
+    hl('M148 60H228', hi, 2.5, 0.8) +
+    rock(134, 62, 15, 10, f, hi, R) +
+    rock(150, 72, 11, 7, dark, hi, R) +
+    rock(245, 60, 14, 9, f, hi, R) +
+    rock(261, 68, 12, 7, dark, hi, R) +
+    rock(277, 74, 8, 5, f, hi, R) +
+    `</g>` +
+    tufts([[143, 60, 14], [151, 66, 11], [232, 60, 12], [241, 66, 14], [256, 60, 9]], tuft, tuftD)
+  );
 }
 
 function bladeTuft(x: number, y: number, h: number): string {
@@ -874,6 +945,7 @@ const footMeadow = art(
       const R = rand(301);
       return (
         footBase({ base: '#7fa352', edge: INK, extra: '' }) +
+        gateFooting(STONE, STONEL, STONED, '#4f7f4e', '#2f5a3a', R) +
         bush(14, 58, 32, 26, '#4f7f4e', '#6f9e5c', 1) +
         bush(62, 72, 26, 20, '#5a8a4c', '#7bab62', 2) +
         `<g stroke-width="2.8">` +
@@ -905,6 +977,7 @@ const footCanyon = art(
       const R = rand(302);
       return (
         footBase({ base: '#c97d4e', edge: INK, extra: hl('M20 92Q60 82 90 96M50 120Q80 110 120 114M150 112Q180 106 214 118', '#a35a38', 3, 0.7) }) +
+        gateFooting('#a04e33', '#d99a70', '#8d4630', '#8a8236', '#55511f', R) +
         `<g stroke-width="2.8">` +
         rock(10, 62, 34, 26, '#a04e33', '#c47a55', R) +
         rock(58, 76, 24, 18, '#8d4630', '#c47a55', R) +
@@ -946,6 +1019,7 @@ const footMarsh = art(
       const R = rand(303);
       return (
         footBase({ base: '#5d6a43', edge: INK, extra: '' }) +
+        gateFooting('#6e7560', '#98a086', '#565d49', '#46633e', '#2a3f28', R) +
         `<g stroke-width="2.8">` +
         p(lump(64, 108, 42, 12, R, 8), '#3f6660') +
         p(lump(134, 100, 22, 8, R, 8), '#3f6660') +
@@ -980,9 +1054,10 @@ const footSnow = art(
     const R = rand(304);
     const line = `M-8 22Q20 40 56 42Q100 44 150 58${EDGE_D}`;
     return ink(
-      n(`${line}V136H-8Z`, '#dde7f4') +
+      n(`${line}L300 136H-8Z`, '#dde7f4') +
         n('M0 28Q40 44 96 50Q130 54 150 66Q112 58 60 56Q24 54 0 44Z', WHITE, 0.95) +
         hl(line, '#1a2740', 3.5) +
+        gateFooting('#8ea7c7', '#dbe7f6', '#7a8fac', '#22405f', '#142a42', R) +
         n('M0 72Q40 62 80 76Q60 98 30 102Q10 98 0 86Z', '#c9d6e8', 0.9) +
         n('M60 112Q90 102 118 108Q104 126 74 126Z', '#c9d6e8', 0.9) +
         `<g stroke="#1a2740" stroke-width="2.8">` +
@@ -1049,7 +1124,7 @@ function mortar(ready: boolean): string {
   return (
     defs +
     ink(
-      (ready ? `<ellipse cx="74" cy="32" rx="40" ry="34" fill="url(#h)" stroke="none"/>` : '') +
+      (ready ? `<ellipse cx="74" cy="34" rx="32" ry="28" fill="url(#h)" stroke="none"/>` : '') +
         p('M16 76H104L110 96H10Z', WOOD) +
         hl('M18 80H102', WOODL, 2.5) +
         c(30, 96, 9, WOODD) +
@@ -1158,11 +1233,17 @@ function stomper(ready: boolean): string {
       c(21, 49, 4.5, MUSTL) +
       links(44, chainY) +
       (ready
-        ? p('M26 58Q26 54 32 54H88Q94 54 94 58L98 104Q98 112 90 112H30Q22 112 22 104Z', STONE) +
-          n('M30 60H42L36 108H26Z', STONEL) +
-          hl('M38 66H86L90 100H34Z', STONED, 3) +
-          `<g stroke-width="2.5">${p('M60 70L74 88H46Z', MUSTL)}</g>` +
-          hl('M60 92V100', INK, 3)
+        ? l('M52 56a8 8 0 1 1 16 0', 9) +
+          hl('M52 56a8 8 0 1 1 16 0', IRONL, 4) +
+          p('M30 58H90L100 104Q100 112 92 112H28Q20 112 20 104Z', STONED) +
+          n('M33 62H45L36 108H27Z', STONE, 0.95) +
+          hl('M52 76L49 88M72 84L76 92', INK, 2.2, 0.35) +
+          r(25, 68, 70, 10, IRON, 2) +
+          hl('M29 71H91', IRONL, 2) +
+          r(21, 96, 78, 10, IRON, 2) +
+          hl('M25 99H95', IRONL, 2) +
+          hl('M34 73h.01M60 73h.01M86 73h.01M30 101h.01M60 101h.01M90 101h.01', '#20242a', 4) +
+          p('M34 112l4 7 4-7ZM54 112l4 7 4-7ZM76 112l4 7 4-7Z', IRON)
         : p(`M56 ${chainY}L64 ${chainY}L68 ${chainY + 6}Q70 ${chainY + 16} 60 ${chainY + 16}Q52 ${chainY + 16} 50 ${chainY + 9}`, 'none') +
           l(`M60 ${chainY}C72 ${chainY + 2} 72 ${chainY + 18} 60 ${chainY + 18}C52 ${chainY + 18} 49 ${chainY + 12} 50 ${chainY + 9}`, 9) +
           hl(`M60 ${chainY}C72 ${chainY + 2} 72 ${chainY + 18} 60 ${chainY + 18}C52 ${chainY + 18} 49 ${chainY + 12} 50 ${chainY + 9}`, IRONL, 4)),
@@ -1241,28 +1322,36 @@ const potLedge = art(
   200,
   0,
   200,
-  ink(
-    (() => {
-      const top = 'M-10 132H176L198 160H-10Z';
-      const front = 'M-10 160H198V184H-10Z';
-      return (
-        beam('M6 20L176 140', IRON, 3.5) +
-        beam('M6 56L116 134', IRON, 3.5) +
-        // Stepped corbels carrying the slab back into the wall.
-        r(-10, 192, 92, 9, STONED, 2) +
-        r(-10, 184, 148, 9, STONED, 2) +
-        hl('M0 195H70M0 187H126', STONE, 2.5, 0.8) +
-        clip(front, masonry(-10, 158, 200, 186, { h: 14, base: '#7f7969', fills: [STONE, '#aca696', '#8e8878'], line: '#6a6559', hi: '#d6d0bd', seed: 77 })) +
-        `<path d="${front}" fill="none"/>` +
-        p(top, STONEL) +
-        n('M-6 136H168L176 146H-6Z', '#d6d0bd', 0.75) +
-        hl('M24 136L18 160M70 136L66 160M116 136L118 160M156 136L164 158M-6 148H192', '#8e8878', 2, 0.7) +
-        r(-4, 10, 14, 24, IRON, 2) +
-        r(-4, 46, 14, 24, IRON, 2) +
-        hl('M3 16h.01M3 28h.01M3 52h.01M3 64h.01', '#20242a', 3.5)
-      );
-    })(),
-  ),
+  SHADE_DEFS +
+    ink(
+      (() => {
+        const top = 'M-10 132H176L198 160H-10Z';
+        const front = 'M-10 160H198V184H-10Z';
+        return (
+          // Tie rod from a wall plate out to a post on the ledge's outer edge, clear of the pot.
+          beam('M6 34L188 62', IRON, 4) +
+          beam('M188 58V146', IRON, 5) +
+          hl('M186 66V142', IRONL, 1.8) +
+          r(-4, 20, 16, 30, IRON, 2) +
+          hl('M4 27h.01M4 43h.01', '#20242a', 4) +
+          r(178, 52, 20, 18, IRON, 3) +
+          hl('M183 57h.01M193 57h.01M183 65h.01M193 65h.01', '#20242a', 3.5) +
+          // Stepped corbels carrying the slab back into the wall.
+          r(-10, 192, 92, 9, STONED, 2) +
+          r(-10, 184, 148, 9, STONED, 2) +
+          corbels(6, 186, 184, 14, 18, 14, STONED) +
+          hl('M0 195H70M0 187H126', STONE, 2.5, 0.8) +
+          clip(front, masonry(-10, 158, 200, 186, { h: 14, base: '#7f7969', fills: [STONE, '#aca696', '#8e8878'], line: '#6a6559', hi: '#d6d0bd', seed: 77 })) +
+          `<path d="${front}" fill="none"/>` +
+          p(top, STONEL) +
+          n('M-6 136H168L176 146H-6Z', '#d6d0bd', 0.75) +
+          hl('M24 136L18 160M70 136L66 160M116 136L118 160M156 136L164 158M-6 148H192', '#8e8878', 2, 0.7) +
+          r(177, 142, 22, 12, IRON, 3) +
+          hl('M182 148h.01M194 148h.01', '#20242a', 3.5) +
+          shade('sU', -10, 184, 200, 16, 0.9)
+        );
+      })(),
+    ),
 );
 
 const potRearBack = art(
@@ -1295,10 +1384,10 @@ const potRearFront = art(
         p('M4 40C24 72 126 72 146 40C150 50 148 56 142 58C118 84 32 84 8 58C2 56 0 50 4 40Z', IRONL) +
         p('M34 66C34 76 38 84 42 84C46 84 46 74 50 72Z', MUST) +
         p('M100 70C102 78 106 80 108 80C112 80 112 72 116 64Z', MUST) +
-        r(24, 80, 14, 12, IRON, 2) +
-        r(112, 80, 14, 12, IRON, 2) +
-        `<ellipse cx="42" cy="89" rx="20" ry="5" fill="${STONED}"/>` +
-        `<ellipse cx="108" cy="89" rx="20" ry="5" fill="${STONED}"/>`,
+        r(24, 78, 14, 9, IRON, 2) +
+        r(112, 78, 14, 9, IRON, 2) +
+        `<ellipse cx="42" cy="83" rx="20" ry="4.5" fill="${STONED}"/>` +
+        `<ellipse cx="108" cy="83" rx="20" ry="4.5" fill="${STONED}"/>`,
       4,
     ) +
     `</g>`,
@@ -1368,41 +1457,157 @@ const perchHook = art(
 
 /** Eagle head and neck facing left. Beak anchor at art (20, 120). */
 function eagleHead(open: boolean): string {
-  const neck = 'M110 62C150 40 200 40 244 50C330 66 420 40 540 30V190C430 200 330 174 254 178C200 180 150 174 122 146Z';
-  // Pale hood with a jagged trailing edge over the darker neck.
-  const hood = 'M108 64C140 40 190 42 216 54L198 66L222 78L200 90L224 104L200 112L222 128L196 134L208 152L178 150L186 170C158 168 134 160 122 146Z';
+  const PALE = '#f2ead6';
+  const PALED = '#c9bb9b';
+  const AMBER = '#e2901f';
+  const AMBERD = '#a85f14';
+  const neck =
+    'M196 44C290 26 410 34 540 18V206L512 196L500 210L470 198L456 214L428 200L412 216L382 200L368 214L338 198L324 212L294 196L280 208L250 192L232 200L196 180Z';
+  const ruffBack =
+    'M214 36L242 46L272 36L276 62L306 58L296 86L324 92L300 110L328 128L298 134L316 158L284 156L288 186L258 170L244 196L224 172L196 186Z';
+  const ruffFront =
+    'M176 38L204 46L226 36L232 60L258 58L246 84L272 92L248 108L272 124L246 130L260 154L232 150L234 178L208 164L194 186L176 168Z';
+  const head = 'M118 72C136 42 186 34 214 52C232 88 226 142 200 170C170 182 138 170 122 142Z';
   let plumes = '';
-  for (let k = 0, x = 256; x < 540; k++, x += 34) {
-    plumes += `M${x} ${84 + (k % 2) * 8}l14 12-14 12`;
-    plumes += `M${x + 14} ${132 + (k % 2) * 8}l14 12-14 12`;
+  for (let k = 0, x = 306; x < 548; k++, x += 38) {
+    for (const row of [0, 1, 2]) {
+      const y = 62 + row * 44 + (k % 2) * 16;
+      plumes += `M${x} ${y}q18 6 26 22q-20 2 -26 -22Z`;
+    }
   }
-  const upperShut = 'M112 74C88 64 58 68 40 88C28 100 20 110 20 124C32 114 46 112 62 114L124 110Z';
-  const lowerShut = 'M48 120Q84 112 124 112L122 132Q88 142 58 136Z';
-  const upperOpen = 'M112 70C88 58 56 58 38 72C26 82 20 92 20 104C32 96 46 94 62 96L124 96Z';
-  const lowerOpen = 'M30 140Q68 128 124 120L118 146Q88 164 52 158Q36 154 30 140Z';
-  const brow = 'M92 70C110 64 126 70 136 84';
+  const upperShut = 'M126 72C102 54 62 56 42 78C28 94 20 110 22 130C28 116 40 110 54 110L128 112Z';
+  const lowerShut = 'M50 114Q88 108 128 110L124 132Q90 142 60 134Z';
+  const upperOpen = 'M126 64C100 48 62 50 42 70C28 86 20 102 22 120C28 108 40 100 54 98L126 94Z';
+  const lowerOpen = 'M36 148Q72 132 128 116L122 148Q90 170 54 166Q38 160 36 148Z';
   return ink(
-    p(neck, GOLD) +
-      n('M150 46C210 40 330 70 420 48C460 40 510 38 540 36V58C500 62 450 62 420 70C340 92 220 62 150 66Z', MUSTL, 0.7) +
-      hl(plumes, GOLDD, 4) +
-      hl('M250 178C330 172 430 196 540 186', GOLDD, 3) +
-      (open ? p(lowerOpen, GOLD) + n('M40 142Q72 130 118 126Q92 152 58 152Q44 150 40 142Z', '#b3282d') : '') +
-      n(hood, MUSTL) +
-      hl('M216 54L198 66L222 78L200 90L224 104L200 112L222 128L196 134L208 152L178 150L186 170', INK, 3.5) +
-      l('M108 64C140 40 190 42 216 54') +
-      hl('M136 122L164 128M140 100L170 96M132 146L156 152', GOLDD, 3.5) +
-      p(open ? upperOpen : upperShut, MUST) +
-      n(open ? 'M36 82Q56 64 96 66Q66 76 46 90Z' : 'M34 104Q50 80 96 74Q66 88 46 110Z', CREAM, 0.7) +
-      (open ? '' : p(lowerShut, GOLD)) +
-      hl(open ? 'M22 104Q70 94 124 96' : 'M22 124Q70 112 124 110', INK, 3) +
-      hl(open ? 'M78 80h.01' : 'M80 88h.01', INK, 4) +
-      // Eye.
-      c(116, 94, 12, WHITE) +
-      c(113, 94, 7.5, INK) +
-      n('M110 90a2.6 2.6 0 1 0 .1 0Z', WHITE) +
-      l(brow, 7) +
-      hl(brow, GOLDD, 2),
-    3.5,
+    p(neck, WOODD) +
+      n('M210 50C300 32 410 42 540 26V48C410 62 300 54 210 72Z', GOLD, 0.8) +
+      `<g stroke-width="2.5">${n(plumes, GOLDD)}<path d="${plumes}" fill="none" stroke="#4a2f19"/></g>` +
+      p(ruffBack, GOLD) +
+      p(ruffFront, PALED) +
+      (open ? p('M54 98L126 94L128 116Q72 132 36 148Q44 120 54 98Z', '#6b1f22') + hl('M58 128Q84 116 116 108', '#b3282d', 8) : '') +
+      (open ? p(lowerOpen, AMBERD) : '') +
+      p(head, PALE) +
+      hl('M178 64l20 10M186 92l24 6M182 122l26 2M168 146l22 8M150 62l14 8M148 150l12 8', PALED, 4) +
+      p(open ? upperOpen : upperShut, AMBER) +
+      n(open ? 'M38 88Q58 62 100 62Q66 76 46 98Z' : 'M36 104Q54 74 100 70Q68 88 48 112Z', '#f7c46a', 0.9) +
+      n(open ? 'M22 120C24 106 30 96 40 88L48 98C38 100 30 108 22 120Z' : 'M22 130C24 114 30 104 40 94L50 110C38 112 30 118 22 130Z', '#5a3312') +
+      (open ? '' : p(lowerShut, AMBERD)) +
+      // Cere at the base of the beak.
+      p(open ? 'M104 56Q124 58 132 72L128 96L104 96Z' : 'M104 64Q124 64 132 78L130 112L104 112Z', MUSTL) +
+      hl(open ? 'M116 72h.01' : 'M116 82h.01', INK, 5) +
+      // Fierce eye under a heavy brow.
+      c(148, 94, 12, '#f0a92c') +
+      c(146, 95, 5.5, INK) +
+      n('M143 91a2.2 2.2 0 1 0 .1 0Z', WHITE) +
+      p('M118 92L146 72L186 68L184 84L150 86Z', PALED) +
+      l('M118 92L150 84L184 84', 5),
+    5,
+  );
+}
+
+// ---------------------------------------------------------------------------------------------
+// Weather overlays, drawn over the keep: 300x660, same anchor as the keep.
+// ---------------------------------------------------------------------------------------------
+
+const SNOW = '#f1f6fc';
+const SNOWD = '#c9d6e8';
+const SNOWLINE = '#1a2740';
+
+/** A lumpy strip lying on top of a ledge. */
+function drift(x0: number, x1: number, y: number, seed: number, f = SNOW, line = SNOWLINE, rise = 8): string {
+  const R = rand(seed);
+  let d = `M${x0} ${y + 3}`;
+  for (let x = x0; x < x1; ) {
+    const nx = Math.min(x + 14 + R() * 16, x1);
+    d += `Q${fx((x + nx) / 2)} ${fx(y - rise * (0.7 + R()))} ${fx(nx)} ${fx(y + 1 - R() * 2)}`;
+    x = nx;
+  }
+  return `<path d="${d}V${y + 3}Z" fill="${f}" stroke="${line}" stroke-width="2.5" stroke-linejoin="round"/>`;
+}
+
+function icicles(x0: number, x1: number, y: number, seed: number): string {
+  const R = rand(seed);
+  let d = '';
+  for (let x = x0; x < x1; x += 18 + R() * 26) d += `M${fx(x)} ${y}l3.5 ${fx(7 + R() * 9)}l3.5 ${fx(-7 - R() * 2)}Z`;
+  return `<path d="${d}" fill="${SNOWD}" stroke="${SNOWLINE}" stroke-width="1.8" stroke-linejoin="round"/>`;
+}
+
+/** Snow over the upper part of a roof, with a scalloped lower edge. */
+function snowCap(d: string, x0: number, x1: number, y0: number, y1: number, seed: number): string {
+  const R = rand(seed);
+  let wave = `M${x0} ${y0}H${x1}V${y1}`;
+  for (let x = x1; x > x0; ) {
+    const nx = Math.max(x - 16 - R() * 14, x0);
+    wave += `Q${fx((x + nx) / 2)} ${fx(y1 + (R() < 0.5 ? 12 : -6) + R() * 8)} ${fx(nx)} ${fx(y1 + R() * 6 - 3)}`;
+    x = nx;
+  }
+  wave += 'Z';
+  return clip(d, n(wave, SNOW) + hl(wave, SNOWD, 2.5)) + `<path d="${d}" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>`;
+}
+
+function snowMerlons(x0: number, x1: number, y: number, w: number, gap: number, seed: number): string {
+  let b = '';
+  for (let x = x0, i = 0; x < x1; x += w + gap, i++) b += drift(x - 1, x + w + 1, y, seed + i, SNOW, SNOWLINE, 6);
+  return b;
+}
+
+/** Ledges every tier shares: walkway and gate brow. */
+const snowLedges = (seed: number) =>
+  drift(-20, 256, 346, seed) + drift(128, 250, 452, seed + 1) + icicles(-6, 250, 359, seed + 2) + icicles(136, 246, 467, seed + 3);
+
+const SNOW_TIERS: string[] = [
+  snowCap('M26 208Q50 182 82 150Q116 182 140 208Q134 214 126 210Q118 216 108 211Q98 216 88 211Q78 216 66 210Q56 216 46 211Q36 216 26 208Z', 20, 146, 148, 184, 501) +
+    drift(40, 126, 252, 502) + drift(-20, 250, 296, 503, SNOW, SNOWLINE, 5) + snowLedges(504),
+  snowCap('M24 158L84 120L144 158L137 166H31Z', 20, 150, 118, 146, 511) +
+    [0, 1, 2, 3, 4, 5].map((k) => drift(-22 + k * 48, 26 + k * 48, 240 + (k % 2 ? 0 : 16) - 3, 512 + k)).join('') + snowLedges(520),
+  snowCap('M-30 190Q14 152 64 100Q118 152 168 190Z', -30, 168, 98, 150, 521) +
+    snowCap(spireD(220, 208, 42, 128), 176, 264, 126, 172, 522) +
+    drift(-26, 160, 186, 523) + drift(184, 256, 206, 524) + snowMerlons(152, 186, 252, 11, 7, 525) + snowLedges(530),
+  snowCap(spireD(86, 92, 60, 58), 24, 148, 56, 78, 531) +
+    snowCap(spireD(250, 158, 50, 96), 198, 302, 94, 130, 532) +
+    snowMerlons(-20, 164, 128, 15, 10, 533) + snowMerlons(206, 288, 158, 12, 7, 540) + snowMerlons(160, 212, 247, 11, 7, 546) + drift(206, 296, 402, 550) + snowLedges(551),
+  snowCap(spireD(100, 112, 74, 46), 24, 176, 44, 84, 561) +
+    snowCap(spireD(250, 118, 54, 56), 194, 306, 54, 92, 562) +
+    snowMerlons(-20, 174, 96, 15, 9, 563) + snowMerlons(202, 292, 116, 13, 7, 570) + snowMerlons(170, 208, 238, 10, 6, 576) + drift(204, 296, 402, 580) + snowLedges(581),
+];
+
+/** Sand blown against the wall foot and settled on the ledges. Tier-independent: only the shared lower wall. */
+function canyonWeather(): string {
+  const R = rand(601);
+  const SAND = '#d8a878';
+  const grit = `M${[18, 44, 70, 96, 122, 236].map((x) => `${x} 356q-4 60 2 ${90 + (x % 7) * 8}`).join('M')}`;
+  let piles = '';
+  for (const [x, y, rx, ry] of [[-6, 624, 40, 18], [40, 632, 34, 12], [92, 634, 36, 11], [132, 632, 18, 9], [244, 632, 20, 8]]) piles += p(lump(x, y, rx, ry, R, 8), SAND);
+  return (
+    `<defs>${linear('d', 0, 1, [[0, SAND, 0], [1, SAND, 0.72]])}</defs>` +
+    `<rect x="-20" y="510" width="160" height="134" fill="url(#d)"/>` +
+    `<rect x="226" y="540" width="20" height="104" fill="url(#d)"/>` +
+    hl(grit, SAND, 9, 0.28) +
+    `<g stroke="${INK}" stroke-width="2.5" stroke-linejoin="round">${piles}</g>` +
+    drift(-20, 256, 346, 602, SAND, '#8d4630', 5) +
+    drift(128, 250, 452, 603, SAND, '#8d4630', 5)
+  );
+}
+
+/** Damp stains, heavy moss and hanging weed. Tier-independent: only the shared lower wall. */
+function marshWeather(): string {
+  const R = rand(701);
+  let hanging = '';
+  for (let x = -8; x < 250; x += 20 + R() * 24) {
+    const h = 9 + R() * 16;
+    hanging += `M${fx(x)} 358q${fx(2 + R() * 2)} ${fx(h)} 5 ${fx(h)}q3 0 5 ${fx(-h)}Z`;
+  }
+  return (
+    `<defs>${linear('w', 0, 1, [[0, '#23403a', 0], [1, '#23403a', 0.62]])}</defs>` +
+    `<rect x="-20" y="480" width="158" height="164" fill="url(#w)"/>` +
+    `<rect x="226" y="520" width="16" height="124" fill="url(#w)"/>` +
+    hl('M20 362V470M64 362V440M118 362V480M196 478V444M238 364V450', '#23403a', 7, 0.26) +
+    moss(34, 552, 36, 12, 702) + moss(104, 530, 26, 10, 703) + moss(60, 486, 20, 8, 704) +
+    moss(22, 430, 18, 7, 705) + moss(128, 410, 12, 6, 706) + moss(236, 560, 9, 14, 707) +
+    `<path d="${hanging}" fill="${LEAFD}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>` +
+    drift(-20, 256, 346, 708, LEAF, INK, 4) +
+    drift(128, 250, 452, 709, LEAF, INK, 4)
   );
 }
 
@@ -1410,7 +1615,13 @@ function eagleHead(open: boolean): string {
 
 const keep = (b: string): Art => art(300, 660, 0, 660, b);
 const glow = (list: Win[]): Art => art(300, 660, 0, 660, windowsGlow(list));
-const mount = (b: string): Art => centred(120, 120, b);
+/** Soft shadow of the weapon's own silhouette, cast down-right onto the wall behind it. */
+const WALL_SHADOW =
+  '<defs><filter id="ws" x="-15%" y="-15%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="b"/>' +
+  '<feOffset in="b" dx="5" dy="6" result="o"/><feComponentTransfer in="o" result="a"><feFuncA type="linear" slope=".5"/></feComponentTransfer>' +
+  '<feMerge><feMergeNode in="a"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+const mount = (b: string): Art => centred(120, 120, `${WALL_SHADOW}<g filter="url(#ws)">${b}</g>`);
+const weather = (b: string): Art => art(300, 660, 0, 660, ink(b));
 const eagle = (open: boolean): Art => art(520, 240, 20, 120, eagleHead(open));
 
 export const CASTLE_ART: Record<string, Art> = {
@@ -1425,6 +1636,13 @@ export const CASTLE_ART: Record<string, Art> = {
   keepGlow3: glow(WINS3),
   keepGlow4: glow(WINS4),
   keepShadow,
+  keepWeather_snowpine_0: weather(SNOW_TIERS[0]),
+  keepWeather_snowpine_1: weather(SNOW_TIERS[1]),
+  keepWeather_snowpine_2: weather(SNOW_TIERS[2]),
+  keepWeather_snowpine_3: weather(SNOW_TIERS[3]),
+  keepWeather_snowpine_4: weather(SNOW_TIERS[4]),
+  keepWeather_canyon: weather(canyonWeather()),
+  keepWeather_marsh: weather(marshWeather()),
   foot_meadow: footMeadow,
   foot_canyon: footCanyon,
   foot_marsh: footMarsh,

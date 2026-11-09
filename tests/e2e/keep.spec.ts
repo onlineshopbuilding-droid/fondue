@@ -30,7 +30,7 @@ async function startClear(page: Page, owned: string[] = [], horn = 'null') {
   await page.click('button[data-a="play"]');
   await page.click('button[data-a="solo"]');
   await waitFor(() => gameState(page), (s) => s?.phase === 'battle', 20000);
-  await page.evaluate(`${sim}.s.spawnQueue = []; ${sim}.s.enemies = []; ${sim}.s.meta.owned.push(...${JSON.stringify(owned)}); ${sim}.s.meta.hornEquipped = ${horn}; ${sim}.s.meta.rev++;`);
+  await page.evaluate(`${sim}.s.spawnQueue = []; ${sim}.s.enemies = []; ${sim}.s.meta.owned.push(...${JSON.stringify(owned)}); ${sim}.s.meta.hornEquipped = ${horn}; ${sim}.s.meta.rev++; ${sim}.setTuning({ ...${sim}.tuning, walkSpeed: 0.02 });`);
   await page.waitForTimeout(100);
 }
 
@@ -327,7 +327,7 @@ test('co-op in one browser: different window shapes share one field and the host
   await host.screenshot({ path: 'mobile-screenshots/coop-host-wide.png' });
 
   // The guest aims from the keep.
-  await host.evaluate(`${sim}.s.spawnQueue = []; ${sim}.s.enemies = []; ${sim}.s.meta.owned.push('bolter1'); ${sim}.s.cooldowns.bolter = 0; ${sim}.s.meta.rev++; ${sim}.spawnEnemy('grunt', 600);`);
+  await host.evaluate(`${sim}.s.spawnQueue = []; ${sim}.s.enemies = []; ${sim}.s.meta.owned.push('bolter1'); ${sim}.s.cooldowns.bolter = 0; ${sim}.s.meta.rev++; ${sim}.setTuning({ ...${sim}.tuning, walkSpeed: 0.02 }); ${sim}.spawnEnemy('grunt', 600);`);
   await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().owned.includes('bolter1')), (b) => b, 5000);
   const { x, y } = WORLD.slots.bolter;
   const start = await guest.evaluate(([a, b]) => (window as any).__fondue.scene.worldToCss(a, b), [x, y]);

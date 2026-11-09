@@ -48,8 +48,12 @@ Drei Datenarten, die man unterscheiden muss:
 | `src/config/shop.ts` | Upgrades und Preise (`SHOP_ITEMS`), Reiter (`SHOP_TABS`), Torstärke (`GATE_HP`), Waffenwerte (`WEAPONS`), `ECONOMY` |
 | `src/config/waves.ts` | Tageslänge und Gegneranzahl (`DAY`), Schwierigkeit (`DIFFICULTIES`), Koop-Faktor (`COOP`), Landschaftswechsel |
 | `src/config/tuning.ts` | Wurfgefühl: Standardwerte, Voreinstellungen, Regler im Panel |
-| `src/config/world.ts` | Geometrie: Bodenlinie, Tor, Kessel, Haken, `CHAR_SCALE` |
+| `src/config/world.ts` | Geometrie: Bodenlinie, Tor, Kessel, Haken, Waffenplätze (`slots`), Feldbreite (`FIELD`), `CHAR_SCALE` |
+| `src/config/flags.ts` | Experiment-Schalter (`FLAG_DEFS`) |
+| `src/config/quickstart.ts` | Schnellstart-Tage mit Gold, Offerings und Besitz (`QUICK_STARTS`) |
 | `src/sim/sim.ts` | Alle Spielregeln |
+| `src/sim/aim.ts` | Schleuder-Zielen an der Burg (`aimShot`), Griffzonen (`slotAt`), Zielpunkt für Bots (`pointerFor`) |
+| `src/sim/keep.ts` | Ausbaustufe der Burg (`buildTier`), welche Waffe verbaut ist (`ownsSlot`) |
 | `src/sim/spawn.ts` | Tagesplan: wie viele Gegner, welche, wann |
 | `src/sim/types.ts` | Datentypen: `Enemy`, `Projectile`, `Meta`, `SimEvent`, `Command` |
 | `src/sim/bot.ts` | Spielende Bots für die Balance-Messung |
@@ -63,19 +67,24 @@ Drei Datenarten, die man unterscheiden muss:
 | `src/render/scene.ts` | Hauptszene: Tor, Hände, Banner, `handleEvent` |
 | `src/render/enemyView.ts` | Eine Figur zeichnen und animieren (`applyPose`) |
 | `src/render/effects.ts` | Partikel, Blut, Explosionen, schwebende Texte |
-| `src/render/hud.ts` | Gold, Torleiste, Waffen-Icons |
+| `src/render/hud.ts` | Gold, Torleiste, Tagesanzeige |
+| `src/render/castleView.ts` | Burg je Ausbaustufe, Tor, Schatten, Vordergrund, Waffen an der Burg mit Nachladering, Griffzonen |
+| `src/render/stations.ts` | Kessel (beide Varianten), Adlerhaken, Adlerkopf |
+| `src/render/aimView.ts` | Zielhilfe: Band, Flugbahn, Einschlagring |
 | `src/render/viewport.ts` | Rechnet Bildschirmgröße in den sichtbaren Weltausschnitt um (`computeView`) |
 | `src/render/background.ts` | Himmel und Parallax-Ebenen |
 | `src/render/textures.ts` | Macht beim Start aus allen SVGs Texturen |
 | `src/art/characters/` | Eine Datei pro Gegner, Sammlung in `RIGS` (`index.ts`), Bausteine und Farben in `kit.ts` |
-| `src/art/props.ts` | Alles andere: Burg, Tore, Icons, Geschosse (`PROPS`) |
+| `src/art/props.ts` | Tore, Icons, Geschosse (`PROPS`) |
+| `src/art/castle.ts` | Burg in 5 Stufen, Vordergrund je Landschaft, Waffen an der Burg, Kessel hinten, Haken, Adlerkopf |
+| `src/art/draw.ts` | Zeichen-Bausteine und Farben für die Requisiten |
 | `src/art/landscapes.ts` | Vier Landschaften mit je vier Ebenen, Wolken |
 | `src/audio/sfx.ts` | Soundeffekte aus Code (`SFX_RECIPES`) |
 | `src/audio/music.ts` | Musik: Akkorde, Abschnitte, Stile `menu` und `battle` |
 | `src/audio/audio.ts` | Abspielen, Lautstärke |
 | `src/ui/app.ts` | Alle Bildschirme, Lobby, Shop-Ansicht, Buttons (`render`, `onClick`) |
 | `src/ui/content.ts` | Hilfe-Seiten, Lade-Tipps, Credits |
-| `src/ui/tuningPanel.ts` | Panel auf F1 |
+| `src/ui/tuningPanel.ts` | Panel auf F1, mit Entwickler-Bereich (Schalter, Schnellstart) |
 | `src/ui/style.css` | Aussehen der Menüs |
 | `server/relay/index.mjs` | Plan-B-Server |
 | `tests/` | Siehe Abschnitt 7 |
@@ -97,7 +106,13 @@ Drei Datenarten, die man unterscheiden muss:
 | Torleben | `GATE_HP`; Heilung über Nacht `ECONOMY.gateRefill` |
 | Gold pro Opfergabe | `ECONOMY.offeringGold` |
 | Klicks gegen Siege Cart, Bombenzünder, Schildzeiten | `BEHAVIOUR` |
-| Lage von Kessel und Haken | `WORLD.cauldron`, `WORLD.perch` |
+| Lage von Kessel und Haken | `WORLD.cauldron`, `WORLD.cauldronBack`, `WORLD.perch` |
+| Lage der Waffen an der Burg | `WORLD.slots`; die Grafik `keep0` bis `keep4` muss dazu passen |
+| Zielgefühl (Zugweite, Winkel, Tempo) | `AIM` in `src/config/shop.ts` |
+| Dauer der Kessel-Verwandlung | `cauldronSeconds` im Tuning |
+| Wartezeit am Haken | `PERCH` in `src/config/shop.ts` |
+| Schnellstart-Ausstattung | `QUICK_STARTS` |
+| Grenzen der Feldbreite | `FIELD` |
 
 ### Wurfgefühl
 
@@ -122,9 +137,11 @@ Die Logik dazu: `velocity()` in `src/input/pointer.ts`, `release`, `clampThrow`,
 | Anfangszustand eines Gegners | `spawnEnemy` |
 | Laufen, Angreifen, Springen, Schweben | `updateEnemy`, von dort `updateWalk`, `updateAttack`, `updateHop`, `updateFloat` |
 | Bomben, Steine, Räder, Kometen, Mörsergranaten | `updateProjectiles`, `updateBomb`, `updateComet`, `updateShell` |
-| Waffen auslösen | `activate`, `fireHorn`, `fireStomper`, `launchComet` |
+| Waffen auslösen | `pressSlot`, `activate`, `fireAimed`, `fireBolter`, `fireHorn`, `landHorn`, `fireStomper`, `fireComet` |
+| Kessel | `enterPot`, `canPot`, `tryRearPotOnRelease`, `steerAtRearPot`, Fall `cooking` in `updateEnemy` |
+| Haken | `tryPerch`, `updateHooked` |
 | Was beim Tod passiert (Gold, Opfergabe, Krähe) | `kill` |
-| Tagesbeginn und -ende, Tor auffüllen | `startDay`, `endDay`, Ablauf in `step` |
+| Tagesbeginn und -ende, Tor auffüllen | `startDay`, `endDay`, Ablauf in `step`; Sonnenuntergang über `s.nightfall` |
 | Kaufen und Ausrüsten | `canBuy`, `buy`, `equip` |
 
 ### Aussehen und Klang
@@ -133,13 +150,15 @@ Die Logik dazu: `velocity()` in `src/input/pointer.ts`, `release`, `clampThrow`,
 |---|---|
 | Figur umzeichnen | Datei in `src/art/characters/`; Figuren schauen in der Grafik **nach links** |
 | Lauf-, Halte-, Fluganimation | `applyPose` in `src/render/enemyView.ts` |
-| Burg, Tor, Icons, Geschosse | `PROPS` in `src/art/props.ts`, Name gleich Texturname |
+| Burg und Waffen an der Burg | `CASTLE_ART` in `src/art/castle.ts`, Name gleich Texturname |
+| Tor, Icons, Geschosse | `PROPS` in `src/art/props.ts`, Name gleich Texturname |
 | Landschaften | `LANDSCAPE_ART` in `src/art/landscapes.ts`, Reihenfolge `LANDSCAPES`, Wechsel `DAYS_PER_LANDSCAPE` |
 | Himmelsfarben | `paintSky` in `src/render/background.ts` |
 | Blut, Partikel, Explosion | `src/render/effects.ts` |
 | Welcher Effekt und Klang bei welchem Ereignis | `handleEvent`, `onImpact`, `onDeath` in `src/render/scene.ts` |
 | Handfarben | `HAND_COLORS` in `src/render/scene.ts` |
 | HUD-Anordnung | `src/render/hud.ts`, Verankerung an den Bildschirmrändern in `layout` |
+| Waffen-Ansicht an der Burg | `src/render/castleView.ts` |
 | Wie viel auf breiten oder hohen Bildschirmen sichtbar ist | `src/render/viewport.ts` |
 | Handy-Layout der Menüs | Blöcke `@media (pointer: coarse)` und `@media (max-height: 520px)` in `src/ui/style.css` |
 | Menüfarben und -layout | `src/ui/style.css` |
@@ -175,11 +194,17 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 
 **Neue Stufe einer Waffe** (zum Beispiel `wheel4`): Eintrag in `SHOP_ITEMS` und `WEAPONS`, Id oben in die Liste von `tierOf`, in `WISHLIST` (`src/sim/bot.ts`). Der Shop-Test zählt 22 Upgrades und muss bewusst angepasst werden.
 
-**Neues Tor:** `SHOP_ITEMS`, `GATE_HP`, Grafik in `PROPS`, die Stufenlisten in `renderGate` (`src/render/scene.ts`) und `currentGateId` (`src/sim/sim.ts`).
+**Neues Tor:** siehe „Neue Burg-Ausbaustufe“, dazu `currentGateId` (`src/sim/sim.ts`).
 
-**Neue Torwaffe:** `SHOP_ITEMS` mit Reiter `horns`, Eintrag in `WEAPONS.horn`, neuer `kind`-Fall in `fireHorn`, Icon in `PROPS` und `HORN_ICONS` (`src/render/hud.ts`).
+**Neue Torwaffe:** `SHOP_ITEMS` mit Reiter `horns`, Eintrag in `WEAPONS.horn` und `AIM`, neuer `kind`-Fall in `fireHorn` und `landHorn`, Grafik `mount…Ready` und `mount…Empty` in `CASTLE_ART`, Zuordnung in `MOUNTS` (`src/render/castleView.ts`), Farbe in `COLORS` (`src/render/aimView.ts`).
 
-**Ganz neuer Waffentyp:** `WeaponSlot`, `WEAPON_SLOTS`, `SHOP_TABS`, `WEAPONS`, `tierOf`, `activate`, `ICONS` (`src/render/hud.ts`). Braucht er eine Zielgeste: `HandMode`, `MODES` in `src/net/snapshot.ts`, `MODE_TO_SLOT` in `src/render/scene.ts`, Hilfe-Seite ergänzen.
+**Ganz neuer Waffentyp:** `WeaponSlot`, `WEAPON_SLOTS`, `SHOP_TABS`, `WEAPONS`, `tierOf`, `activate`, Platz in `WORLD.slots`, Grafik und `MOUNTS`, `SLOT_TIERS` (`src/sim/keep.ts`). Braucht er eine Zielgeste: `HandMode`, `MODES` in `src/net/snapshot.ts`, `aimShot`, Hilfe-Seite ergänzen.
+
+**Neuer Experiment-Schalter:** Eintrag in `FLAG_DEFS` (`src/config/flags.ts`), in den Regeln `this.flag('id')` lesen, im Bild `meta.flags.id`. Das Menü baut sich von selbst.
+
+**Neuer Schnellstart-Tag:** Eintrag in `QUICK_STARTS`; alle Voraussetzungen müssen mit in `owned` stehen, ein Unit-Test prüft das.
+
+**Neue Burg-Ausbaustufe:** Grafik `keepN` und `keepGlowN` in `CASTLE_ART`, Tor in `SHOP_ITEMS`, `GATE_HP`, `GATES` (`src/sim/keep.ts`). Die Waffenplätze aus `WORLD.slots` müssen auf der Grafik frei bleiben.
 
 **Neuer Effekt zu einem Ereignis:** Variante in `SimEvent`, in der Sim `this.emit(...)`, in `handleEvent` den Effekt auslösen. Beim Gast kommt das automatisch an.
 
@@ -200,14 +225,17 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
    | `clampThrow`, `throwEnemy`, `liftFlatThrow` | `localRelease` |
    | `updateHeld`, `updateAir` | `stepPrediction` |
 
-5. **Nicht jede Zahl steht in der Konfiguration.** In `src/sim/sim.ts`: Bolzengeschwindigkeit 1250 in `activate`, Hakensperre 2,3 s in `tryPerch`, Fluchttempo 1,9 in `updateEnemy`, Krähe stirbt schon bei 0,4 × `lethalImpact` in `updateAir`. In `src/sim/spawn.ts`: garantierte Anzahl neuer Gegner, Wachstum der Obergrenze um 15 % pro Tag.
-6. **Einige Einstellungen wirken derzeit nicht.** `DAY.perDayAfterCap` ist gleich `DAY.perDay`, also bremst `softCapDay` nichts. `CANCEL_COOLDOWN` wird nirgends verwendet.
+   Das Zielen an der Burg braucht keine Doppelung: `aimShot` läuft auf beiden Seiten, der Host feuert.
+
+5. **Nicht jede Zahl steht in der Konfiguration.** In `src/sim/sim.ts`: Fluchttempo 1,9 in `updateEnemy` (nur mit dem Schalter „Retreat“), Krähe stirbt schon bei 0,4 × `lethalImpact` in `updateAir`. In `src/sim/spawn.ts`: garantierte Anzahl neuer Gegner, Wachstum der Obergrenze um 15 % pro Tag.
+6. **Einige Einstellungen wirken derzeit nicht.** `DAY.perDayAfterCap` ist gleich `DAY.perDay`, also bremst `softCapDay` nichts, außer die Werte wurden beim Balancing getrennt.
 7. **Größen:** `radius` und `height` in `ENEMIES` sind Weltmaße und enthalten `CHAR_SCALE` bereits. Wer eine Figur größer zeichnet, muss sie dort mit anpassen, sonst passt die Greiffläche nicht mehr.
 8. **Balance-Bots sind Näherungen.** Sie zielen ohne Bewegung und besiegen Yetis nur mit Waffen. Die Zahlen sagen, ob eine Änderung in die richtige Richtung geht, nicht wie ihr tatsächlich abschneidet.
 9. **Tests dürfen nie abgeschwächt werden.** Ändert sich eine Zahl, ist es in Ordnung, das Szenario eines Tests anzupassen; die Prüfung selbst bleibt. Ausfälle erst erklären, nicht einfach wiederholen.
 10. **Testläufe überschreiben `docs/screenshots/`.** Das erzeugt Git-Änderungen ohne inhaltliche Bedeutung.
-11. **Welt- und Bildschirmkoordinaten sind nicht dasselbe.** Die Welt ist immer 1280 × 720, der Bildschirm zeigt je nach Seitenverhältnis mehr davon. Figuren, Geschosse und die Hand stehen in Weltkoordinaten. HUD-Elemente stehen in Bildschirmkoordinaten und werden in `layout` an einen Rand verankert. Umrechnung: Bildschirm = Welt minus `offsetX`/`offsetY` aus `GameView`.
-12. **Neue Dinge links von x = 0 oder oberhalb von y = 0 sind nur auf manchen Bildschirmen sichtbar.** Alles Spielrelevante muss zwischen 0 und 1280 liegen, sonst sehen Host und Gast nicht dasselbe.
+11. **Welt- und Bildschirmkoordinaten sind nicht dasselbe.** Die Feldbreite ist 1280 bis 1760 und steht in `meta.fieldW`, nie fest in `WORLD.width` rechnen. Der Bildschirm beginnt immer bei x = 0, oben zeigt er je nach Format mehr oder weniger Himmel. Figuren, Geschosse und die Hand stehen in Weltkoordinaten. HUD-Elemente stehen in Bildschirmkoordinaten und werden in `layout` an einen Rand verankert. Umrechnung: Bildschirm = Welt minus `offsetX`/`offsetY` aus `GameView`.
+12. **Neue Dinge links von x = 0 sieht niemand, oberhalb von y = 120 kann der Himmel abgeschnitten sein.** Alles Spielrelevante muss darunter liegen und im Feld (`meta.fieldW`), sonst sehen Host und Gast nicht dasselbe.
+13. **`Math.random` und `window` sind in `src/sim/` tabu.** Auch ein Import aus `src/render/` zieht Phaser in die Unit-Tests. Gemeinsame reine Helfer gehören nach `src/sim/`, zum Beispiel `keep.ts`.
 
 ## 7. Testen und veröffentlichen
 
@@ -227,6 +255,7 @@ Die Testregeln gelten weiter: Browser-Tests laufen mit Playwright. Firefox und d
 ## 8. Hilfen beim Ausprobieren
 
 - **F1:** Tuning-Panel. **F3:** Debug-Anzeige mit FPS, Rolle, Ping, Build.
+- **Entwickler-Menü:** Am Laptop F1, unten im Panel. Auf dem Handy den Schriftzug im Hauptmenü lang drücken. Dort: Experiment-Schalter (im Koop gelten die des Hosts) und Schnellstart ab Tag 10, 20 oder 30.
 - **Koop allein testen:** zwei Tabs mit `http://localhost:5173/?net=loopback`, im zweiten `&join=CODE` anhängen. Mit `&lat=45&jit=20&loss=0.02` kommt simulierte Latenz dazu.
 - **Fester Zufall:** `?seed=123`.
 - **Plan B:** `npm run relay`, Adresse in den Options oder per `?relay=...`. Anleitung in `docs/uebergabe/START-HIER.md`.
@@ -257,20 +286,20 @@ Am Ende steht ein kurzer Bericht für Tim und Lenny: was geändert wurde, was da
 Jede Version muss auf Laptop und Handy funktionieren. Das Spiel soll später in beide Stores, zuerst privat.
 
 **So funktioniert die Anpassung an jeden Bildschirm**
-- Die Spielwelt bleibt immer 1280 × 720. Regeln und Koop sind dadurch für alle gleich, auch wenn einer am Handy und einer am Laptop spielt.
-- `computeView` bestimmt, was sichtbar ist. Breite Bildschirme sehen links mehr Landschaft, Tablets oben mehr Himmel. Rechter und unterer Rand bleiben fest, damit Gegner weiter unsichtbar starten.
-- Das HUD ist in Gruppen an die Bildschirmränder verankert und wächst auf kleinen Bildschirmen, bis Finger es treffen.
+- Die Feldbreite (1280 bis 1760) legt der Host beim Spielstart fest (`meta.fieldW`, siehe E-021). Regeln und Koop sind dadurch für beide gleich, auch wenn einer am Handy und einer am Laptop spielt. Gegner laufen auf breiterem Feld schneller und holen die Hälfte der längeren Strecke auf (`FIELD.speedCompensation`), gemessen mit den Balance-Bots.
+- `computeView` bestimmt, was sichtbar ist. Die Burg steht immer am linken Rand, die Straße unten. Tablets und Gäste mit schmalerem Bildschirm sehen oben mehr Himmel, Gäste mit breiterem etwas weniger, und ganz rechts höchstens etwas Kulisse.
+- Das HUD ist in Gruppen an die Bildschirmränder verankert und wächst auf kleinen Bildschirmen, bis Finger es treffen. Waffen liegen an der Burg, ihre Griffzonen wachsen ebenso.
 - Menüs nutzen auf niedrigen Bildschirmen ein kompaktes Layout, der Markt scrollt nur die Liste. Hochkant erscheint ein Hinweis zum Drehen, ein laufendes Solo-Spiel pausiert.
 - Notch und Home-Leiste kommen über `readSafeArea` und werden im HUD freigehalten.
 
-**So wird geprüft:** `tests/e2e/mobile.spec.ts` läuft mit `npm run test:e2e` in acht Bildschirmgrößen vom kleinen Android bis zum iPad, in simuliertem Chrome mit Touch. Geprüft wird: nichts ragt aus dem Bild, alle Bedienflächen sind mindestens 44 Pixel groß, das Bild füllt den Bildschirm, Hinweise verdecken nicht das Spielfeld, Waffen, Pause und Greifen gehen per Finger. Die Screenshots liegen danach in `mobile-screenshots/` und werden bei Änderungen an Aussehen oder Bedienung angesehen.
+**So wird geprüft:** `tests/e2e/mobile.spec.ts` läuft mit `npm run test:e2e` in acht Bildschirmgrößen vom kleinen Android bis zum iPad, in simuliertem Chrome mit Touch. Geprüft wird: nichts ragt aus dem Bild, alle Bedienflächen sind mindestens 44 Pixel groß, das Bild füllt den Bildschirm, Hinweise verdecken nicht das Spielfeld, Waffen, Pause und Greifen gehen per Finger. `tests/e2e/keep.spec.ts` prüft Zielen, Griffzonen, Kessel, Haken, Schnellstart und Koop mit ungleichen Bildschirmen, mit Maus und Finger. Die Screenshots liegen danach in `mobile-screenshots/` und werden bei Änderungen an Aussehen oder Bedienung angesehen.
 
 **Grenzen der Simulation:** Safari verhält sich manchmal anders als Chrome, und Leistung oder Spielgefühl auf echten Geräten sieht man so nicht. Dafür testen Tim (iPhone 16) und Lenny (Android) von Zeit zu Zeit auf dem echten Gerät.
 
 **Für jede neue Funktion**
 - Alles muss per Finger gehen. Tastatur, Hover und Rechtsklick sind nur Zusatz.
 - Neue Bildschirme und Menüs bekommen einen Eintrag in `tests/e2e/mobile.spec.ts`.
-- Neue HUD-Elemente kommen in eine der Gruppen in `src/render/hud.ts`.
+- Neue HUD-Elemente kommen in eine der Gruppen in `src/render/hud.ts`, neue Waffen an einen Platz der Burg.
 - Spieltexte sprechen von „tap“, nicht von „click“, und nennen keine Tasten als einzigen Weg.
 - Keine neue Abhängigkeit, die nur im Desktop-Browser läuft.
 

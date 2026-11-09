@@ -36,8 +36,9 @@ export const WORLD = {
 
 /**
  * Field width. The host's screen decides it at the start of a game and both players get the same
- * field. Enemies walk proportionally faster on a wider field, so the walk to the gate takes the
- * same time everywhere and a wide phone gains no breathing room.
+ * field. Enemies walk faster on a wider field, so that a wide phone gains no breathing room. They
+ * make up only part of the extra distance: at full compensation, fast raiders on a wide field were
+ * so much harder to hit that the balance bots lost a third of their days (docs/balance.md).
  */
 export const FIELD = {
   min: 1280,
@@ -45,6 +46,8 @@ export const FIELD = {
   /** Enemies start this far beyond the wall and hurry onto the field, out of everyone's sight. */
   offstageRun: 260,
   offstageSpeed: 1200,
+  /** 0: the same speed on every field. 1: the same walking time to the gate on every field. */
+  speedCompensation: 0.5,
 };
 
 /** Right-hand wall of a field. */
@@ -55,8 +58,8 @@ export const fieldEntry = (fieldW: number) => fieldW + 50;
 export const fieldForAspect = (aspect: number) => Math.round(Math.max(FIELD.min, Math.min(FIELD.max, WORLD.height * aspect)));
 /** X of the eagle hook on a field. */
 export const perchX = (fieldW: number) => fieldW - WORLD.perch.insetRight;
-/** Keeps the time from the field's edge to the gate the same on every field width. */
-export const fieldSpeedFactor = (fieldW: number) => (fieldEntry(fieldW) - WORLD.gateX) / (fieldEntry(WORLD.width) - WORLD.gateX);
+/** How much faster raiders walk on this field than on the base width. */
+export const fieldSpeedFactor = (fieldW: number) => 1 + ((fieldEntry(fieldW) - WORLD.gateX) / (fieldEntry(WORLD.width) - WORLD.gateX) - 1) * FIELD.speedCompensation;
 
 export const TICK_RATE = 60;
 export const DT = 1 / TICK_RATE;

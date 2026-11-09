@@ -23,3 +23,10 @@
 - Eigener TURN-Server, falls Plan B oft gebraucht wird.
 - Mitschnitte der besten Läufe.
 - Finaler Name: Der Arbeitstitel steht nur in `src/config/game.ts`.
+
+## Aus der großen Änderungsrunde (noch nicht umgesetzt)
+- Mehr Hände freischaltbar, vor allem auf dem Handy.
+- Käse-Story: Der Name Fondue bleibt, der König der Burg hat allen Käse des Landes gesammelt und wird deshalb angegriffen.
+- Kessel-Upgrades: kürzere Verwandlung, mehrere Gegner gleichzeitig.
+- Hintergrund stärker nutzen: Burg geht nach hinten weiter, Gegner in die Tiefe werfen, je nachdem, wie die Kessel-Variante „hinten“ ankommt.
+- Endlosmodus, der bei sehr guter Spielweise fast unendlich geht.

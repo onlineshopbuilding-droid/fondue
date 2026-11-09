@@ -22,6 +22,7 @@ export class Stations {
   private cheese: Phaser.GameObjects.Image;
   private puffs: Puff[] = [];
   private busyBar: Phaser.GameObjects.Graphics;
+  private ringCheese: Phaser.GameObjects.Image;
 
   private chain: Phaser.GameObjects.TileSprite;
   private hook: Phaser.GameObjects.Image;
@@ -31,7 +32,7 @@ export class Stations {
   private eagleY = 0;
   private view!: GameView;
 
-  constructor(private scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene) {
     const f = WORLD.cauldron.x;
     this.frontBack = scene.add.image(f, 650, propKey('cauldronBack')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(19).setVisible(false);
     this.frontFront = scene.add.image(f, 650, propKey('cauldronFront')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(19.8).setVisible(false);
@@ -40,6 +41,7 @@ export class Stations {
     this.rearFront = scene.add.image(WORLD.cauldronBack.x, 516, propKey('potRearFront')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(8.8).setVisible(false);
     this.cheese = scene.add.image(0, 0, propKey('cheese')).setScale(1 / TEX_SCALE).setDepth(26).setVisible(false);
     this.busyBar = scene.add.graphics().setDepth(27);
+    this.ringCheese = scene.add.image(0, 0, propKey('cheese')).setDepth(27.1).setVisible(false);
     for (let i = 0; i < STEAM_PUFFS; i++) {
       const img = scene.add.image(0, 0, propKey('steam')).setDepth(26).setVisible(false);
       this.puffs.push({ img, t: i / STEAM_PUFFS });
@@ -104,14 +106,17 @@ export class Stations {
     const g = this.busyBar;
     g.clear();
     if (owned && busy) {
-      const r = 30 * size;
-      const y = rimY - 92 * size;
-      g.fillStyle(0x2b2118, 0.75);
-      g.fillCircle(cx, y, r + 5);
-      g.lineStyle(7 * size, 0xf3cb5e, 1);
+      const r = 22 * size;
+      const y = rimY - 88 * size;
+      g.lineStyle(9 * size, 0x2b2118, 0.65);
+      g.strokeCircle(cx, y, r);
+      g.lineStyle(5 * size, 0xf3cb5e, 1);
       g.beginPath();
       g.arc(cx, y, r, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2, false);
       g.strokePath();
+      this.ringCheese.setVisible(true).setPosition(cx, y).setScale((0.42 * size) / TEX_SCALE);
+    } else {
+      this.ringCheese.setVisible(false);
     }
   }
 
@@ -142,6 +147,4 @@ export class Stations {
   }
 
   reset() { this.eagleT = -1; this.eagle.setVisible(false); }
-
-  get sceneRef() { return this.scene; }
 }

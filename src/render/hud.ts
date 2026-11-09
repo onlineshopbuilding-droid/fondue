@@ -39,7 +39,8 @@ export class Hud {
     this.centre = box();
 
     const leftPlate = scene.add.graphics();
-    leftPlate.fillStyle(0x2b2118, 0.55);
+    // Nearly solid: the flags on the top of a big keep pass behind this plate.
+    leftPlate.fillStyle(0x2b2118, 0.86);
     leftPlate.fillRoundedRect(18, 8, 318, 52, 14);
     const coin = scene.add.image(this.goldPos.x, this.goldPos.y, propKey('coin')).setScale(1.2 / TEX_SCALE);
     this.gold = scene.add.text(this.goldPos.x + 24, this.goldPos.y, '0', small).setOrigin(0, 0.5);
@@ -48,7 +49,8 @@ export class Hud {
     this.left.add([leftPlate, coin, this.gold, offering, this.offerings]);
 
     const rightPlate = scene.add.graphics();
-    rightPlate.fillStyle(0x2b2118, 0.55);
+    // Nearly solid: the chain of the eagle hook runs behind this plate.
+    rightPlate.fillStyle(0x2b2118, 0.86);
     rightPlate.fillRoundedRect(960, 8, 302, 52, 14);
     const castle = scene.add.image(986, 34, propKey('iconCastle')).setScale(0.95 / TEX_SCALE);
     this.gateBar = scene.add.graphics();

@@ -1,5 +1,5 @@
 import { BEHAVIOUR, ENEMIES, ENEMY_TYPES, type EnemyType } from '../config/enemies';
-import { DAY, DIFFICULTIES } from '../config/waves';
+import { COOP, DAY, DIFFICULTIES } from '../config/waves';
 import { DT, FIELD, WORLD, fieldEntry, fieldSpeedFactor, fieldWall, perchX } from '../config/world';
 import { AIM, ECONOMY, GATE_HP, PERCH, SHOP_ITEMS, STARTING_ITEMS, WEAPONS, WEAPON_SLOTS, type HornId, type WeaponSlot } from '../config/shop';
 import { cleanFlags } from '../config/flags';
@@ -682,7 +682,7 @@ export class Sim {
     e.heldBy = [];
     const def = ENEMIES[e.type];
     const diff = DIFFICULTIES[s.meta.difficulty];
-    let gold = Math.round(def.gold * diff.gold);
+    let gold = Math.round(def.gold * diff.gold * (s.hands.length > 1 ? COOP.goldFactor : 1));
     const score = Math.round(def.score * (1 + (s.day - 1) * 0.1));
     if (cause === 'cauldron' || cause === 'eagle') {
       gold += ECONOMY.offeringGold;
