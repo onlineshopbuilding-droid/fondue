@@ -10,9 +10,13 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "relay": "node server/relay/index.mjs",
-    "balance": "node -e \"process.env.BALANCE=1;require('child_process').execSync('npx vitest run',{stdio:'inherit',env:process.env})\""
+    "balance": "node -e \"process.env.BALANCE=1;require('child_process').execSync('npx vitest run',{stdio:'inherit',env:process.env})\"",
+    "android:prepare": "npm run build && npx cap add android && node scripts/android-setup.mjs && npx cap sync android"
   },
   "devDependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/cli": "8.6.0",
+    "@capacitor/core": "8.6.0",
     "@playwright/test": "^1.65.0",
     "@types/node": "^26.6.6",
     "@types/ws": "^8.18.2",

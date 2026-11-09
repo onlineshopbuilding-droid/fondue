@@ -1,0 +1,51 @@
+name: Build Android test app
+
+# Only the app shell needs rebuilding; game changes reach the app through the published site.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'android/**']
+    paths:
+      - capacitor.config.ts
+      - scripts/android-setup.mjs
+      - .github/workflows/android.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm run android:prepare
+      - name: Build the APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-test-app
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Attach the APK to the rolling test release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk android-test-app.apk
+          gh release view android-latest >/dev/null 2>&1 || gh release create android-latest --prerelease --title "Android test app" --notes "Latest Android test build. Install android-test-app.apk on the phone."
+          gh release upload android-latest android-test-app.apk --clobber

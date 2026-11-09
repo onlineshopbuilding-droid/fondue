@@ -63,3 +63,9 @@ Das Spiel ist für das Querformat gebaut, hochkant erscheint ein Hinweis zum Dre
 
 ## E-018 – Gemeinsame Regeln für alle KIs, Veröffentlichen nur auf Zuruf
 Tim und Lenny wollen mit Claude, ChatGPT und Gemini am selben Projekt arbeiten. Die Regeln stehen deshalb in `AGENTS.md`; `CLAUDE.md` und `GEMINI.md` verweisen nur darauf. Das ersetzt die frühere Regel, dass fertige Änderungen in der Alpha ohne Rückfrage live gehen: Gepusht wird nur, wenn Tim oder Lenny es sagt. Bewusst ohne Pull Requests und Schutz von `main`, weil es noch nichts zu verlieren gibt. Grüne Tests bleiben Bedingung.
+
+## E-019 – Android-Testapp als Hülle um die Live-Seite
+Die Testapp nutzt Capacitor und lädt die veröffentlichte Seite (`server.url` in `capacitor.config.ts`). Jede Veröffentlichung erreicht sie dadurch ohne neuen App-Bau. Für den Store ist das nicht geeignet, dort muss das Spiel fest in die App. Der Android-Projektordner wird nicht versioniert, sondern von `npm run android:prepare` erzeugt und von `scripts/android-setup.mjs` angepasst (nur Querformat, Vollbild). Gebaut wird in `.github/workflows/android.yml` auf GitHub, weil es auf Tims Laptop weder Java noch Android-SDK gibt. Die APK liegt im Release `android-latest`. Die Build-ID ist neutral gehalten, weil der Spielname nur in `src/config/game.ts` stehen soll.
+
+## E-020 – Arbeit über Issues und Pull Requests, main geschützt
+Tim und Lenny wollen gemeinsam über GitHub-Issues arbeiten und Claude dort mit `@claude` ansprechen. Das ersetzt die direkte Arbeit auf `main` aus E-018. `main` nimmt Änderungen nur noch per Pull Request an, und die Prüfung `test` muss grün sein. Das gilt auch für Admins. Claude darf auf GitHub Pull Requests stellen, aber nie mergen. Die Regeln stehen weiter nur in `AGENTS.md`, `CLAUDE.md` verweist dorthin. Authentifiziert wird über das Abo von Tim statt über einen kostenpflichtigen API-Schlüssel.

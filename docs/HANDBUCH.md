@@ -220,7 +220,7 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 | `npx playwright test --config playwright.perf.config.ts` | FPS mit 200 Gegnern in Edge | `tests/perf/` |
 | `npx playwright test --config playwright.live.config.ts` | Veröffentlichte Seite | `tests/live/` |
 
-Veröffentlichen, sobald Tim oder Lenny es sagt: alle Tests grün, `git pull --rebase`, dann `git push origin main`. Die Pipeline steht in `.github/workflows/deploy.yml`. Danach mit `EXPECT_BUILD=<kurzer Hash>` die Live-Tests laufen lassen.
+Veröffentlichen, sobald Tim oder Lenny es sagt: alle Tests grün, Pull Request nach `main` stellen und mergen. `.github/workflows/ci.yml` führt die Tests für jeden Pull Request aus (Prüfung `test`), ohne Grün geht kein Merge. Die Pipeline steht in `.github/workflows/deploy.yml`. Danach mit `EXPECT_BUILD=<kurzer Hash>` die Live-Tests laufen lassen.
 
 Die Testregeln gelten weiter: Browser-Tests laufen mit Playwright. Firefox und das volle Playwright-Chromium startet Windows auf diesem Laptop nicht (E-011), Edge läuft über `channel: 'msedge'`.
 
@@ -229,6 +229,7 @@ Die Testregeln gelten weiter: Browser-Tests laufen mit Playwright. Firefox und d
 - **F1:** Tuning-Panel. **F3:** Debug-Anzeige mit FPS, Rolle, Ping, Build.
 - **Koop allein testen:** zwei Tabs mit `http://localhost:5173/?net=loopback`, im zweiten `&join=CODE` anhängen. Mit `&lat=45&jit=20&loss=0.02` kommt simulierte Latenz dazu.
 - **Fester Zufall:** `?seed=123`.
+- **Parallele Sitzungen:** Laufen auf einem Rechner zwei Sitzungen, braucht jede einen eigenen Testserver, zum Beispiel mit der Umgebungsvariable `TEST_PORT=5317`. Sonst prüfen die Browser-Tests den Code der anderen Sitzung.
 - **Plan B:** `npm run relay`, Adresse in den Options oder per `?relay=...`. Anleitung in `docs/uebergabe/START-HIER.md`.
 - **Browser-Konsole:** `window.__fondue` ist die App. Auf dem Host geht zum Beispiel `__fondue.session.sim.s.gold = 5000` oder `__fondue.session.sim.s.dayT = 49.9`, um einen Tag zu überspringen.
 
@@ -276,11 +277,13 @@ Jede Version muss auf Laptop und Handy funktionieren. Das Spiel soll später in 
 
 **Geräte:** Tim: ASUS Zenbook (Windows), iPhone 16. Lenny: Windows-Laptop, Linux-Laptop, Android-Handy. Es gibt keinen Mac, iOS-Builds brauchen später einen Cloud-Dienst mit macOS.
 
+**Android-Testapp:** `capacitor.config.ts` beschreibt die Hülle, `npm run android:prepare` erzeugt daraus den Ordner `android/` (nicht im Repo), `scripts/android-setup.mjs` stellt Querformat und Vollbild ein. Gebaut wird auf GitHub in `.github/workflows/android.yml`, sobald sich eine dieser Dateien ändert oder von Hand. Die APK liegt im Release `android-latest`. Spieländerungen brauchen keinen neuen App-Bau, sie kommen mit jeder Veröffentlichung über die Live-Seite. Jeder neue Bau hat eine andere Test-Signatur, die App muss dann vorher deinstalliert werden.
+
 **Noch offen bis zur Store-Version**
 
 | Thema | Heute | Nötig |
 |---|---|---|
-| Verpackung als App | Nur Webseite | Hülle um das Web-Spiel, voraussichtlich Capacitor |
+| Verpackung als App | Android-Testapp als Hülle um die Live-Seite, iPhone noch nicht | Für den Store das Spiel fest in die App packen, iPhone über TestFlight |
 | Leistung | Nur auf dem Laptop gemessen | Auf echten Handys messen, bei Bedarf Einstellung mit weniger Effekten |
 | Koop über Mobilfunk | Direktverbindung über STUN, öffentlicher PeerJS-Dienst, kein TURN | Eigener Vermittlungs- und Relay-Dienst, weil Mobilnetze Direktverbindungen oft blockieren |
 | Versionsprüfung | Host und Gast brauchen exakt denselben Build | Lockerer, weil in Stores nicht alle gleichzeitig aktualisieren |
@@ -294,9 +297,11 @@ Die Regeln stehen in `AGENTS.md`. `CLAUDE.md` und `GEMINI.md` verweisen nur dara
 
 **Ablauf**
 1. `git pull`, damit alle vom selben Stand ausgehen.
-2. Eine KI bearbeitet ein Thema, direkt auf `main`.
-3. Commit lokal. Live geht erst etwas, wenn Tim oder Lenny „veröffentlichen“ sagt.
-4. Vor dem Push: Tests grün, `git pull --rebase`, `git push origin main`.
+2. Ein Thema bekommt ein Issue, das einer Person zugewiesen wird, und einen eigenen Branch.
+3. Fertige Arbeit kommt als Pull Request mit `Fixes #NUMMER`.
+4. `main` ist geschützt: Ist die Prüfung `test` grün, mergen Tim oder Lenny. Der Merge geht sofort live.
+
+**Claude auf GitHub:** `.github/workflows/claude.yml` startet Claude, wenn jemand mit Schreibrechten `@claude` in einem Issue oder Pull Request schreibt. Es läuft über das Abo von Tim (Geheimnis `CLAUDE_CODE_OAUTH_TOKEN`, ein Jahr gültig, danach mit `claude setup-token` erneuern).
 
 **Damit nichts verloren geht**
 - Kurz absprechen, wer woran sitzt. Nicht zwei Personen oder KI-Sitzungen gleichzeitig an denselben Dateien.

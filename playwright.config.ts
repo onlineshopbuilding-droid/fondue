@@ -1,19 +1,23 @@
 import { defineConfig } from '@playwright/test';
 
+// Parallel sessions on one machine must not share a server: set TEST_PORT to a free port.
+const port = process.env.TEST_PORT ?? '5199';
+
 export default defineConfig({
   testDir: 'tests/e2e',
-  timeout: 180_000,
+  // GitHub's machines render the game in software several times slower than the laptop.
+  timeout: process.env.CI ? 420_000 : 180_000,
   fullyParallel: false,
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: 'http://localhost:5199',
+    baseURL: `http://localhost:${port}`,
     viewport: { width: 1280, height: 720 },
     launchOptions: { args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] },
   },
   webServer: {
-    command: 'npx vite --port 5199 --strictPort',
-    url: 'http://localhost:5199',
+    command: `npx vite --port ${port} --strictPort`,
+    url: `http://localhost:${port}`,
     reuseExistingServer: true,
     timeout: 60_000,
   },
