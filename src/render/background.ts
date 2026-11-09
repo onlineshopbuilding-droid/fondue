@@ -124,6 +124,14 @@ export class Background {
       main.setTint(tint);
       copy.setTint(tint);
     }
+    // Clouds go first: at night they are the darkest thing up there, at dusk they warm up.
+    const cloud = u > 0.75 ? 0x4a5670 : u > 0.5 ? 0xf0c2a0 : 0xffffff;
+    const fade = u > 0.75 ? Math.min(1, (u - 0.75) / 0.15) : u > 0.5 ? (u - 0.5) / 0.2 : 0;
+    const blend = Phaser.Display.Color.Interpolate.ColorWithColor(
+      Phaser.Display.Color.ValueToColor(u > 0.75 ? 0xf0c2a0 : 0xffffff), Phaser.Display.Color.ValueToColor(cloud), 100, Math.min(100, fade * 100),
+    );
+    const cloudTint = Phaser.Display.Color.GetColor(blend.r, blend.g, blend.b);
+    for (const c of this.clouds) c.img.setTint(cloudTint);
 
     const key = u.toFixed(3);
     if (key !== this.lastSkyKey) {

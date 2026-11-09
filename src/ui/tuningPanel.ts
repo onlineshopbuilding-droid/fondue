@@ -41,6 +41,7 @@ export class TuningPanel {
         <input type="range" data-key="${s.key}" min="${s.min}" max="${s.max}" step="${s.step}" value="${t[s.key]}" ${edit ? '' : 'disabled'}>
       </div>`).join('');
     el.innerHTML = `
+      ${window.matchMedia('(pointer: coarse)').matches ? this.developer(edit) : ''}
       <h3>Tuning</h3>
       ${edit ? '' : '<p class="note">The host sets these values.</p>'}
       <div class="row" style="justify-content:flex-start;margin-bottom:8px">
@@ -54,7 +55,7 @@ export class TuningPanel {
         <button class="small" data-act="close">Close</button>
       </div>
       <textarea data-json placeholder="Exported values appear here. Paste JSON and press Import."></textarea>
-      ${this.developer(edit)}`;
+      ${window.matchMedia('(pointer: coarse)').matches ? '' : this.developer(edit)}`;
     el.addEventListener('input', (ev) => this.onInput(ev));
     el.addEventListener('click', (ev) => this.onClick(ev));
     this.root.appendChild(el);

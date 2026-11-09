@@ -307,6 +307,7 @@ export class Sim {
     this.throwEnemy(e, vx, vy, p);
     this.liftFlatThrow(e);
     this.applyCauldronAssist(e);
+    this.steerAtPerch(e);
   }
 
   private get wall() { return fieldWall(this.s.meta.fieldW); }
@@ -341,16 +342,16 @@ export class Sim {
     e.vy = -speed * 0.25;
   }
 
-  private tryPerch(e: Enemy): boolean {
+  private tryPerch(e: Enemy, radius: number = WORLD.perch.snapRadius): boolean {
     const s = this.s;
     if (!this.owns('perch') || s.perchBusy > 0) return false;
-    const { hookY, snapRadius } = WORLD.perch;
+    const { hookY } = WORLD.perch;
     const x = perchX(s.meta.fieldW);
-    if (Math.hypot(e.x - x, e.y - hookY - ENEMIES[e.type].height * 0.3) > snapRadius) return false;
+    if (Math.hypot(e.x - x, e.y - hookY - ENEMIES[e.type].height * 0.3) > radius) return false;
     if (e.type === 'siegeCart' || e.type === 'yeti') return false;
     e.st = 'hooked';
     e.x = x;
-    e.y = hookY + ENEMIES[e.type].height * 0.7;
+    e.y = hookY + ENEMIES[e.type].height * PERCH.hangDrop;
     e.vx = 0; e.vy = 0;
     e.rot = 0;
     e.t = PERCH.hangSeconds + PERCH.eatSeconds;
@@ -413,20 +414,35 @@ export class Sim {
   /** A throw that is headed near the rear pot bends into it, because depth is hard to judge. */
   private steerAtRearPot(e: Enemy) {
     const { x, rimY, assistRadius } = WORLD.cauldronBack;
+    this.steerAt(e, x, rimY, e.y - ENEMIES[e.type].height * 0.45, assistRadius, WORLD.cauldronBack.headingCos);
+  }
+
+  /** Same for the hook: only a throw really headed for it, since gravity pulls long throws under it. */
+  private steerAtPerch(e: Enemy) {
+    if (e.st !== 'air' || !this.owns('perch') || this.s.perchBusy > 0) return;
+    if (e.type === 'siegeCart' || e.type === 'yeti') return;
+    this.steerAt(e, perchX(this.s.meta.fieldW), WORLD.perch.hookY, e.y - ENEMIES[e.type].height * 0.3, WORLD.perch.assistRadius, WORLD.perch.headingCos);
+  }
+
+  /** Bends a throw into a target if it heads that way and passes near. bodyY is the height the target is measured at. */
+  private steerAt(e: Enemy, x: number, y: number, bodyY: number, radius: number, headingCos: number) {
     const g = this.tuning.gravity;
-    const bodyY = e.y - ENEMIES[e.type].height * 0.45;
-    // Closest approach of the flight path over the next second.
+    const toX = x - e.x;
+    const toY = y - bodyY;
+    const speed = Math.hypot(e.vx, e.vy);
+    const dist = Math.hypot(toX, toY);
+    if (speed < 1 || dist < 1) return;
+    // Only throws that really go towards it count, not whatever happens to fly past.
+    if ((toX * e.vx + toY * e.vy) / (speed * dist) < headingCos) return;
     let best = Infinity;
     let bestT = 0;
     for (let t = 0.04; t <= 1; t += 0.04) {
-      const d = Math.hypot(e.x + e.vx * t - x, bodyY + e.vy * t + 0.5 * g * t * t - rimY);
+      const d = Math.hypot(e.x + e.vx * t - x, bodyY + e.vy * t + 0.5 * g * t * t - y);
       if (d < best) { best = d; bestT = t; }
     }
-    if (best > assistRadius) return;
-    // Only throws that actually go towards the pot count, not whatever happens to fly past.
-    if ((x - e.x) * e.vx + (rimY - bodyY) * e.vy <= 0) return;
-    e.vx = (x - e.x) / bestT;
-    e.vy = (rimY - bodyY - 0.5 * g * bestT * bestT) / bestT;
+    if (best > radius) return;
+    e.vx = toX / bestT;
+    e.vy = (toY - 0.5 * g * bestT * bestT) / bestT;
   }
 
   private dropHeld(p: number) {
@@ -1167,7 +1183,7 @@ export class Sim {
     e.y += e.vy * DT;
     e.rot += e.rotV * DT;
 
-    if (e.thrownBy >= 0 && this.tryPerch(e)) return;
+    if (e.thrownBy >= 0 && this.tryPerch(e, WORLD.perch.flySnapRadius)) return;
 
     if (this.canPot(e)) {
       if (this.potAtBack) {

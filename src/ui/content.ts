@@ -26,6 +26,13 @@ export const WEAPON_TIPS: Record<string, string> = {
   horn: 'Press the weapon over the gate, pull away from it and let go.',
 };
 
+/** Shown once when the cauldron or the hook has been bought. */
+export const STATION_TIPS: Record<string, string> = {
+  cauldronfront: 'Throw raiders into the Great Cauldron. It melts one at a time into cheese, for an offering.',
+  cauldronback: 'The Great Cauldron hangs on the keep. Carry or throw raiders at it and it pulls them in.',
+  perch: 'Fling a raider onto the hook in the top right, or carry it there. The eagle pays an offering.',
+};
+
 export const LOADING_TIPS: string[] = [
   'A flick does not need to be big. It needs to be quick.',
   'When the sun sets no more raiders come, but the ones on the road fight to the end.',

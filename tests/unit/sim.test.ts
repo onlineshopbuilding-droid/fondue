@@ -40,7 +40,7 @@ function flingUp(sim: Sim, e: Enemy, speed: number, p = 0) {
 /** Pulls a weapon on the keep so that it lands on targetX, and lets go. */
 function fireAt(sim: Sim, slot: AimSlot, targetX: number, p = 0) {
   const horn = sim.s.meta.hornEquipped as Parameters<typeof aimShot>[1];
-  const at = pointerFor(slot, horn, targetX, sim.fieldW, sim.tuning.gravity);
+  const at = pointerFor(slot, horn, targetX, sim.fieldW);
   sim.command({ k: 'pressSlot', p, slot, x: WORLD.slots[slot].x, y: WORLD.slots[slot].y });
   sim.setHand(p, at.x, at.y);
   sim.command({ k: 'release', p, x: at.x, y: at.y, vx: 0, vy: 0 });

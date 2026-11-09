@@ -439,7 +439,7 @@ export class Bot {
     this.at(reach, () => {
       sim.command({ k: 'pressSlot', p, slot, x: hit.x, y: hit.y });
       const target = Math.max(WORLD.gateX + 20, x - this.walkLead(sim, x, flight));
-      const pull = pointerFor(aimSlot, horn, target, sim.fieldW, sim.tuning.gravity);
+      const pull = pointerFor(aimSlot, horn, target, sim.fieldW);
       const dur = this.moveTo(sim, pull.x, pull.y);
       this.at(dur + 0.08, () => {
         sim.command({ k: 'release', p, x: pull.x, y: pull.y, vx: 0, vy: 0 });

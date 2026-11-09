@@ -50,7 +50,7 @@ export class Hud {
 
     const rightPlate = scene.add.graphics();
     // Nearly solid: the chain of the eagle hook runs behind this plate.
-    rightPlate.fillStyle(0x2b2118, 0.86);
+    rightPlate.fillStyle(0x2b2118, 1);
     rightPlate.fillRoundedRect(960, 8, 302, 52, 14);
     const castle = scene.add.image(986, 34, propKey('iconCastle')).setScale(0.95 / TEX_SCALE);
     this.gateBar = scene.add.graphics();

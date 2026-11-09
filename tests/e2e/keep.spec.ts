@@ -1,6 +1,5 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { WORLD, perchX } from '../../src/config/world';
-import { TUNING_DEFAULT } from '../../src/config/tuning';
 import { pointerFor } from '../../src/sim/aim';
 import { gameState, waitFor, waitForGame } from './helpers';
 
@@ -91,7 +90,7 @@ for (const size of SIZES) {
     await p.down(x, y);
     await waitFor(() => handMode(page), (m) => m === 'bolter', 2000);
     const fieldW = await page.evaluate(`${sim}.fieldW`) as number;
-    const aim = pointerFor('bolter', null, 620, fieldW, TUNING_DEFAULT.gravity);
+    const aim = pointerFor('bolter', null, 620, fieldW);
     await p.glide(x, y, aim.x, aim.y);
     const held = await gameState(page);
     expect(held!.enemies.every((e: any) => e.heldBy.length === 0), JSON.stringify(held!.enemies)).toBe(true);
@@ -128,7 +127,7 @@ for (const size of SIZES) {
     const fieldW = await page.evaluate(`${sim}.fieldW`) as number;
     const p = await pointer(page, size);
     const { x, y } = WORLD.slots.horn;
-    const aim = pointerFor('horn', 'mortar', 700, fieldW, TUNING_DEFAULT.gravity);
+    const aim = pointerFor('horn', 'mortar', 700, fieldW);
     await p.down(x, y);
     await p.glide(x, y, aim.x, aim.y);
     await page.screenshot({ path: `mobile-screenshots/aim-mortar-${size.name}.png` });
@@ -334,7 +333,7 @@ test('co-op in one browser: different window shapes share one field and the host
   await guest.mouse.move(start.x, start.y);
   await guest.mouse.down();
   await waitFor(() => gameState(host), (s) => s!.hands[1].mode === 'bolter', 4000);
-  const aim = pointerFor('bolter', null, 600, hostMeta.fieldW, TUNING_DEFAULT.gravity);
+  const aim = pointerFor('bolter', null, 600, hostMeta.fieldW);
   const end = await guest.evaluate(([a, b]) => (window as any).__fondue.scene.worldToCss(a, b), [aim.x, aim.y]);
   for (let i = 1; i <= 10; i++) {
     await guest.mouse.move(start.x + ((end.x - start.x) * i) / 10, start.y + ((end.y - start.y) * i) / 10);

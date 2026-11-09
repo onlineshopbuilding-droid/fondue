@@ -3,7 +3,7 @@ import { PROPS } from '../art/props';
 import { AudioEngine } from '../audio/audio';
 import { ENEMIES } from '../config/enemies';
 import { GAME_NAME } from '../config/game';
-import { SHOP_ITEMS, SHOP_TABS, WEAPON_SLOTS, type ShopTab, type WeaponSlot } from '../config/shop';
+import { SHOP_ITEMS, SHOP_TABS, WEAPON_SLOTS, type ShopTab } from '../config/shop';
 import { fieldForAspect } from '../config/world';
 import { DIFFICULTIES, type Difficulty } from '../config/waves';
 import { GuestSession, HostSession, type Session } from '../game/session';
@@ -19,7 +19,7 @@ import { buildTextures } from '../render/textures';
 import { computeView, readSafeArea, sameView } from '../render/viewport';
 import type { Meta } from '../sim/types';
 import { ownsSlot } from '../sim/keep';
-import { CREDITS_HTML, HELP_SLIDES, LOADING_TIPS, WEAPON_TIPS } from './content';
+import { CREDITS_HTML, HELP_SLIDES, LOADING_TIPS, STATION_TIPS, WEAPON_TIPS } from './content';
 import { TuningPanel } from './tuningPanel';
 
 declare const __GAME_VERSION__: string;
@@ -54,7 +54,7 @@ export class App {
   private tuning: TuningPanel;
   /** Day the next game starts on; set from the developer menu, 1 for a normal run. */
   private startDay = 1;
-  private shownWeaponTips = new Set<WeaponSlot>();
+  private shownWeaponTips = new Set<string>();
   private params = new URLSearchParams(location.search);
 
   // Lobby state
@@ -285,6 +285,12 @@ export class App {
       if (this.shownWeaponTips.has(slot) || !ownsSlot(slot, meta)) continue;
       this.shownWeaponTips.add(slot);
       if (meta.quickStart === 0) this.toast(WEAPON_TIPS[slot], 'tip', 5500);
+    }
+    for (const station of ['cauldron', 'perch']) {
+      if (this.shownWeaponTips.has(station) || !meta.owned.includes(station)) continue;
+      this.shownWeaponTips.add(station);
+      const tip = station === 'cauldron' ? `cauldron${meta.flags.cauldron}` : station;
+      if (meta.quickStart === 0) this.toast(STATION_TIPS[tip], 'tip', 5500);
     }
   }
 

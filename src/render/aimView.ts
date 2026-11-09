@@ -93,6 +93,16 @@ export class AimView {
       radius = w.kind === 'flame' ? w.halfWidth : w.radius;
     }
     const x = Math.min(shot.landX, meta.fieldW + 40);
+    // A bolt that runs out in mid-air ends in a tick; only what reaches the road gets a ring.
+    if (shot.kind === 'line' && shot.landY < AIM_LAND_Y - 1) {
+      g.lineStyle(8, 0x2b2118, alpha * 0.7);
+      g.lineBetween(x - 11, y - 11, x + 11, y + 11);
+      g.lineBetween(x - 11, y + 11, x + 11, y - 11);
+      g.lineStyle(4, color, alpha);
+      g.lineBetween(x - 10, y - 10, x + 10, y + 10);
+      g.lineBetween(x - 10, y + 10, x + 10, y - 10);
+      return;
+    }
     g.lineStyle(9, 0x2b2118, alpha * 0.6);
     g.strokeEllipse(x, y, radius * 2, radius * 0.56);
     g.fillStyle(color, alpha * 0.28);

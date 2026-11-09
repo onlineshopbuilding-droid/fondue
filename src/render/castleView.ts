@@ -10,9 +10,9 @@ import type { GameView } from './viewport';
 import { landscapeForDay } from './background';
 
 const FINGER_CSS = 27;
-const RING_RADIUS = 46;
+const RING_RADIUS = 40;
 /** Where the ring of a weapon sits, if not around the middle of its art. */
-const RING_OFFSET: Partial<Record<WeaponSlot, { x: number; y: number }>> = { wheel: { x: -14, y: 2 } };
+const RING_OFFSET: Partial<Record<WeaponSlot, { x: number; y: number }>> = { wheel: { x: 4, y: -8 } };
 
 /** Art of a mounted weapon when ready and when reloading. */
 const MOUNTS: Record<WeaponSlot, (m: Meta) => string> = {
@@ -143,11 +143,11 @@ export class CastleView {
     } else {
       // Same solid ring on every ready weapon; only a soft outer glow breathes.
       const glow = 0.16 + Math.sin(time * 0.005 + x) * 0.1;
-      g.lineStyle(13, 0xf3cb5e, active ? 0.5 : glow);
-      g.strokeCircle(x, y, RING_RADIUS + 4);
-      g.lineStyle(8, 0x2b2118, 0.85);
+      g.lineStyle(10, 0xf3cb5e, active ? 0.5 : glow);
+      g.strokeCircle(x, y, RING_RADIUS + 3);
+      g.lineStyle(6, 0x2b2118, 0.7);
       g.strokeCircle(x, y, RING_RADIUS);
-      g.lineStyle(5, active ? 0xfff1c0 : 0xf3cb5e, 1);
+      g.lineStyle(3.5, active ? 0xfff1c0 : 0xf3cb5e, 1);
       g.strokeCircle(x, y, RING_RADIUS);
     }
     this.drawTier(m, meta, x, y);

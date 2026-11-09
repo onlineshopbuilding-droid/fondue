@@ -215,6 +215,24 @@ describe('eagle hook', () => {
     expect(e.st).toBe('hooked');
   });
 
+  it('a throw that is headed for the hook gets there, even from far away', () => {
+    const sim = battle();
+    sim.s.meta.owned.push('perch');
+    const e = sim.spawnEnemy('grunt', 500);
+    carryTo(sim, e, 700, 420, 1600, -500);
+    run(sim, () => e.st === 'hooked' || e.dead, 200);
+    expect(e.st).toBe('hooked');
+  });
+
+  it('an ordinary fling up and away is not caught by the hook', () => {
+    const sim = battle();
+    sim.s.meta.owned.push('perch');
+    const e = sim.spawnEnemy('grunt', 800);
+    carryTo(sim, e, 860, 500, 100, -1500);
+    run(sim, () => e.st !== 'air', 200);
+    expect(e.st).not.toBe('hooked');
+  });
+
   it('holds one at a time, the eagle eats it, then the hook is free at once', () => {
     const sim = battle();
     sim.s.meta.owned.push('perch');
@@ -285,9 +303,28 @@ describe('aiming at the keep', () => {
     }
   });
 
+  it('a full pull ends at the field, never beyond it, and the preview says the same', () => {
+    for (const fieldW of [1280, 1560, 1760]) {
+      for (const [slot, id] of [['horn', 'mortar'], ['horn', 'frost'], ['horn', 'bellows']] as const) {
+        const { x: x0, y: y0 } = WORLD.slots[slot];
+        const shot = aimShot(slot, id, x0 + AIM.maxPull * 2, y0 - 10, fieldW, G);
+        expect(shot.landX).toBeLessThanOrEqual(fieldW + 30);
+        expect(shot.landX).toBeGreaterThan(fieldW - 30);
+      }
+    }
+  });
+
+  it('pulling steeper flies higher and longer but lands in the same place', () => {
+    const { x: x0, y: y0 } = WORLD.slots.horn;
+    const flat = aimShot('horn', 'mortar', x0 + 300, y0, 1280, G);
+    const steep = aimShot('horn', 'mortar', x0 + 300 * Math.cos(1.4), y0 - 300 * Math.sin(1.4), 1280, G);
+    expect(steep.landX).toBeCloseTo(flat.landX, 3);
+    expect(steep.flight).toBeGreaterThan(flat.flight);
+  });
+
   it('can land on any spot of the road', () => {
     for (const x of [260, 500, 900, 1250]) {
-      const p = pointerFor('horn', 'mortar', x, 1280, G);
+      const p = pointerFor('horn', 'mortar', x, 1280);
       expect(Math.abs(aimShot('horn', 'mortar', p.x, p.y, 1280, G).landX - x)).toBeLessThan(6);
     }
   });
@@ -305,7 +342,7 @@ describe('aiming at the keep', () => {
     const sim = battle();
     sim.s.meta.owned.push('bolter1');
     const e = sim.spawnEnemy('grunt', 620);
-    const at = pointerFor('bolter', null, 620, sim.fieldW, sim.tuning.gravity);
+    const at = pointerFor('bolter', null, 620, sim.fieldW);
     pressSlot(sim, 'bolter');
     sim.setHand(0, at.x, at.y);
     sim.command({ k: 'release', p: 0, x: at.x, y: at.y, vx: 0, vy: 0 });

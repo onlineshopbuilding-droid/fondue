@@ -58,8 +58,8 @@ Vollständige Zeilen stehen in `docs/balance-latest.md`.
 | Mid solo Hard | 14 (13–14) | deutlich schwerer, sinnvoll; viele Läufe enden am ersten Yeti-Tag |
 | Mid solo Feld 1560 | 23 (15–28) | wie 1280 (22) |
 | Great solo Feld 1560 | 40 (36–41) | wie 1280 (38) |
-| Mid solo Feld 1760 | 21,5 (15–25) | wie 1280 (22) |
-| Great solo Feld 1760 | 40 (36–42) | wie 1280 (38) |
+| Mid solo Feld 1760 | 23 (15–28) | wie 1280 (22) |
+| Great solo Feld 1760 | 39,5 (36–41) | wie 1280 (38) |
 | Mid solo Kessel hinten | 21,5 (14–27) | Kessel hinten ist genauso spielbar |
 | Great solo Kessel hinten | 38 (34–40) | Kessel hinten ist genauso spielbar |
 

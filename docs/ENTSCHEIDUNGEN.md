@@ -95,3 +95,12 @@ Nach Auftrag 4.2 kämpfen die Gegner bis zum Tod. Die alte Regel ist für den Ve
 
 ## E-026 – Experiment-Schalter und Schnellstart
 Schalter stehen in `src/config/flags.ts`. Ein Eintrag genügt, dann erscheinen sie im Entwickler-Menü, das Lesen in den Regeln geht über `sim.flag('id')`. Die Werte sind Teil von `Meta`, im Koop gelten also die des Hosts. Der gewählte Schnellstart-Tag lebt nur bis zum Neuladen der Seite, damit niemand versehentlich dauerhaft mit Schnellstart spielt. Solche Läufe zählen nicht für die Bestenliste.
+
+## E-027 – Bogenwaffen: Die Zuglänge bestimmt den Einschlag
+Nach dem Spieletest. Vorher hingen Reichweite und Winkel zusammen: Weiter und steiler gezogen landete der Mörser kürzer, und ein voller Zug schoss über das Feld hinaus. Jetzt bestimmt nur die Länge des Zugs den Einschlagpunkt, von 90 Einheiten vor der Waffe bis zum Feldende. Die Richtung bestimmt, wie hoch und wie lange der Schuss fliegt. Die Vorschau zeigt genau das, was passiert.
+
+## E-028 – Koop bezahlt weniger Gold pro Kill
+Zu zweit gibt es 70 % des Goldes pro Gegner (`COOP.goldFactor`), und früh 2,3-mal so viele Gegner wie allein. Ohne diese Kürzung war der mittlere Bot im Koop deutlich zu stark, weil das gemeinsame Gold doppelt so schnell wuchs. Die Details stehen in `docs/balance.md`.
+
+## E-029 – Zielhilfe am Haken nur für wirklich gezielte Würfe
+Lange Würfe an den Haken verfehlten fast immer, weil die Schwerkraft den Gegner unter den Haken zieht. Ein Wurf, der klar in Richtung Haken geht, wird deshalb sanft hingelenkt (`WORLD.perch.assistRadius`, `headingCos`). Kurz am Haken vorbei fliegt er weiter, damit normale Würfe nicht abgefangen werden. Das Tragen an den Haken rastet weiter großzügig ein.

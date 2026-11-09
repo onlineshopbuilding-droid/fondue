@@ -69,7 +69,12 @@ export class Stations {
     this.ledge.setVisible(owned && rear);
     this.rearBack.setVisible(owned && rear);
     this.rearFront.setVisible(owned && rear);
-    for (const img of [this.frontBack, this.frontFront, this.ledge, this.rearBack, this.rearFront]) img.setTint(tint);
+    for (const img of [this.frontFront, this.ledge, this.rearFront]) img.setTint(tint);
+    // The molten cheese is the glow of the scene, so the inside of the pot stays lit at night.
+    const lit = Phaser.Display.Color.Interpolate.ColorWithColor(Phaser.Display.Color.ValueToColor(tint), Phaser.Display.Color.ValueToColor(0xffffff), 100, 70);
+    const potLight = Phaser.Display.Color.GetColor(lit.r, lit.g, lit.b);
+    this.frontBack.setTint(potLight);
+    this.rearBack.setTint(potLight);
     this.updatePot(view, owned, rear, dt, time);
     this.updatePerch(view, meta, tint, dt, time);
   }

@@ -17,9 +17,9 @@ export const WORLD = {
   /** The pot on the road (experiment "in front"). */
   cauldron: { x: 345, halfWidth: 58 },
   /** The pot on the keep (experiment "behind"): where its rim is, and how far it pulls things in. */
-  cauldronBack: { x: 290, rimY: 456, snapRadius: 92, assistRadius: 190 },
+  cauldronBack: { x: 290, rimY: 456, snapRadius: 92, assistRadius: 190, headingCos: 0.6 },
   /** The hook hangs from the top edge, this far left of the field's right end. x is for the base width. */
-  perch: { x: 1110, insetRight: 170, hookY: 262, snapRadius: 104 },
+  perch: { x: 1110, insetRight: 170, hookY: 262, snapRadius: 104, flySnapRadius: 66, assistRadius: 170, headingCos: 0.9 },
   /** Where each weapon sits on the keep: centre of its art, aim origin, centre of its grip zone. */
   slots: {
     comet: { x: 46, y: 282 },

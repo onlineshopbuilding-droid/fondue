@@ -67,20 +67,22 @@ export function aimShot(slot: AimSlot, horn: HornId | null, px: number, py: numb
   }
   const a = AIM[horn ?? 'mortar'];
   const elev = clamp(Math.atan2(-dy, Math.max(1, dx)) / RAD, a.minDeg, a.maxDeg) * RAD;
-  // The reach of a throw grows with the square of its speed; the root makes the pull feel linear.
-  const top = Math.sqrt(gravity * Math.max(200, fieldW - x0 + 40) / Math.sin(2 * a.minDeg * RAD));
-  const speed = top * Math.sqrt(Math.max(0.015, strength));
-  const vx = Math.cos(elev) * speed;
+  // Pull length alone decides where it lands; the direction decides how high it goes to get there.
+  const reach = AIM.minReach + (Math.max(AIM.minReach, fieldW - x0 + 20) - AIM.minReach) * strength;
+  const drop = AIM_LAND_Y - y0;
+  const cos = Math.cos(elev);
+  const speed = Math.sqrt((gravity * reach * reach) / (2 * cos * cos * (drop + reach * Math.tan(elev))));
+  const vx = cos * speed;
   const vy = -Math.sin(elev) * speed;
-  const flight = (-vy + Math.sqrt(vy * vy + 2 * gravity * (AIM_LAND_Y - y0))) / gravity;
+  const flight = reach / vx;
   return {
     kind: 'arc', ok, x0, y0, vx, vy, strength, range: 0, power: 1,
-    landX: x0 + vx * flight, landY: AIM_LAND_Y, flight,
+    landX: x0 + reach, landY: AIM_LAND_Y, flight,
   };
 }
 
 /** Where to hold the hand to land near a target; used by bots, and handy for tests. */
-export function pointerFor(slot: AimSlot, horn: HornId | null, targetX: number, fieldW: number, gravity: number): { x: number; y: number } {
+export function pointerFor(slot: AimSlot, horn: HornId | null, targetX: number, fieldW: number): { x: number; y: number } {
   const { x: x0, y: y0 } = WORLD.slots[slot];
   if (slot === 'bolter') {
     // Aim the bolt into the feet of the crowd at full pull.
@@ -91,15 +93,10 @@ export function pointerFor(slot: AimSlot, horn: HornId | null, targetX: number, 
   }
   const a = AIM[horn ?? 'mortar'];
   const ang = a.minDeg * RAD;
-  const at = (s: number) => ({ x: x0 + Math.cos(ang) * (AIM.deadzone + (AIM.maxPull - AIM.deadzone) * s), y: y0 - Math.sin(ang) * (AIM.deadzone + (AIM.maxPull - AIM.deadzone) * s) });
-  let lo = 0;
-  let hi = 1;
-  for (let i = 0; i < 22; i++) {
-    const mid = (lo + hi) / 2;
-    const p = at(mid);
-    if (aimShot(slot, horn, p.x, p.y, fieldW, gravity).landX < targetX) lo = mid; else hi = mid;
-  }
-  return at((lo + hi) / 2);
+  const span = Math.max(1, Math.max(AIM.minReach, fieldW - x0 + 20) - AIM.minReach);
+  const s = clamp((targetX - x0 - AIM.minReach) / span, 0, 1);
+  const dist = AIM.deadzone + (AIM.maxPull - AIM.deadzone) * s;
+  return { x: x0 + Math.cos(ang) * dist, y: y0 - Math.sin(ang) * dist };
 }
 
 /** Which weapon a press lands on. Nearest zone wins; zones never reach the road in front of the gate. */

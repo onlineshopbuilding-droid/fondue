@@ -109,9 +109,11 @@ export const AIM = {
   deadzone: 42,
   /** Pulling further than this adds nothing. */
   maxPull: 430,
+  /** How far an arc lands at the shortest pull, measured from the weapon. */
+  minReach: 90,
   /** The flat, fast one. Positive angles point down. */
   bolter: { minDownDeg: -28, maxDownDeg: 78, minSpeed: 950, maxSpeed: 2000, minRange: 420, minPower: 0.75, maxPower: 1.2, spreadDeg: 2.4 },
-  /** The high one: elevation in degrees above the horizon. */
+  /** The high one: elevation in degrees above the horizon. Pull length alone sets the landing spot; a steeper pull only flies higher and longer. */
   mortar: { minDeg: 58, maxDeg: 84 },
   /** Low, quick lobs. */
   frost: { minDeg: 30, maxDeg: 62 },
@@ -119,7 +121,7 @@ export const AIM = {
 } as const;
 
 /** The eagle's hook: how long the catch hangs, and how much of that is the eagle eating. */
-export const PERCH = { hangSeconds: 1.1, eatSeconds: 0.65 };
+export const PERCH = { hangSeconds: 1.1, eatSeconds: 0.65, /** Feet below the hook, in body heights: it hangs by the collar. */ hangDrop: 1.02 };
 
 export const ECONOMY = {
   offeringGold: 10,
