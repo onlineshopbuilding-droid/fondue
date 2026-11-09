@@ -104,3 +104,6 @@ Zu zweit gibt es 70 % des Goldes pro Gegner (`COOP.goldFactor`), und früh 2,3-m
 
 ## E-029 – Zielhilfe am Haken nur für wirklich gezielte Würfe
 Lange Würfe an den Haken verfehlten fast immer, weil die Schwerkraft den Gegner unter den Haken zieht. Ein Wurf, der klar in Richtung Haken geht, wird deshalb sanft hingelenkt (`WORLD.perch.assistRadius`, `headingCos`). Kurz am Haken vorbei fliegt er weiter, damit normale Würfe nicht abgefangen werden. Das Tragen an den Haken rastet weiter großzügig ein.
+
+## E-030 – Browser-Tests standardmäßig auf drei Bildschirmen
+Tim hat am 09.11.2026 entschieden: Laptop, iPhone 16 und Android reichen für die laufende Prüfung, die anderen Größen kommen später. Sie bleiben im Code und laufen mit `ALL_SCREENS=1`. Android ist im Test ein aktuelles breites Gerät mit 960 × 400.

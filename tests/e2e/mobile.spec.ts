@@ -6,7 +6,7 @@ import { gameState, waitFor, waitForGame } from './helpers';
  * smallest, the widest and the squarest screen work, the ones in between do too.
  * Screenshots land in mobile-screenshots/ for looking at.
  */
-const DEVICES = [
+const ALL_DEVICES = [
   { name: 'small-android', width: 640, height: 360 },
   { name: 'small-with-browser-bars', width: 640, height: 320 },
   { name: 'iphone-se', width: 667, height: 375 },
@@ -16,6 +16,11 @@ const DEVICES = [
   { name: 'wide-android', width: 960, height: 400 },
   { name: 'ipad', width: 1024, height: 768 },
 ];
+
+/** The screens checked on every change: iPhone 16 and a current Android. The rest run with ALL_SCREENS=1. */
+const EVERYDAY = ['iphone-16', 'wide-android'];
+const DEVICES = process.env.ALL_SCREENS ? ALL_DEVICES : ALL_DEVICES.filter((d) => EVERYDAY.includes(d.name));
+const GRAB_DEVICES = process.env.ALL_SCREENS ? [ALL_DEVICES[0], ALL_DEVICES[3], ALL_DEVICES[7]] : DEVICES;
 
 const MIN_TOUCH_PX = 44;
 
@@ -173,7 +178,7 @@ for (const d of DEVICES) {
   });
 }
 
-for (const d of [DEVICES[0], DEVICES[3], DEVICES[7]]) {
+for (const d of GRAB_DEVICES) {
   test(`${d.name}: a finger can grab and fling, with the picture filling the screen`, async ({ browser }) => {
     const { context, page } = await phone(browser, d.width, d.height, '/?seed=21');
     await page.tap('button[data-a="play"]');

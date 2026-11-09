@@ -4,12 +4,15 @@ import { pointerFor } from '../../src/sim/aim';
 import { gameState, waitFor, waitForGame } from './helpers';
 
 /** Everything about the keep, by mouse and by finger, on the shapes of screen that matter. */
-const SIZES = [
+const EVERYDAY_SIZES = [
   { name: 'laptop', width: 1280, height: 720, touch: false },
   { name: 'wide-phone', width: 852, height: 393, touch: true },
-  { name: 'small-phone', width: 640, height: 360, touch: true },
-  { name: 'tablet', width: 1024, height: 768, touch: true },
+  { name: 'android', width: 960, height: 400, touch: true },
 ];
+/** Checked on every change: laptop, iPhone 16, Android. The others run with ALL_SCREENS=1. */
+const SIZES = process.env.ALL_SCREENS
+  ? [...EVERYDAY_SIZES, { name: 'small-phone', width: 640, height: 360, touch: true }, { name: 'tablet', width: 1024, height: 768, touch: true }]
+  : EVERYDAY_SIZES;
 
 async function open(browser: Browser, size: (typeof SIZES)[number], query = '?seed=31') {
   const context = await browser.newContext({
@@ -227,9 +230,10 @@ for (const size of [SIZES[0], SIZES[1]]) {
     await waitFor(() => gameState(page), (v) => v!.enemies[0]?.st === 'hooked', 3000, 30);
     await page.waitForTimeout(250);
     await page.screenshot({ path: `mobile-screenshots/hook-hanging-${size.name}.png` });
-    await waitFor(() => page.evaluate(`${sim}.s.enemies[0]?.t < 0.5`), (b) => b === true, 3000, 20);
+    // The game clock falls behind real time at the low frame rates of a software renderer.
+    await waitFor(() => page.evaluate(`${sim}.s.enemies[0]?.t < 0.5`), (b) => b === true, 15000, 20);
     await page.screenshot({ path: `mobile-screenshots/hook-eagle-${size.name}.png` });
-    await waitFor(() => gameState(page), (v) => v!.offerings === 1, 4000);
+    await waitFor(() => gameState(page), (v) => v!.offerings === 1, 15000);
     expect(errors).toEqual([]);
     await context.close();
   });
