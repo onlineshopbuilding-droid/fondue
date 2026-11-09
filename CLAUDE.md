@@ -21,7 +21,7 @@ Eigene Spielwelt, eigene Gegner- und Itemnamen. Siehe docs/ENTSCHEIDUNGEN.md, Ei
 - Kein Force-Push. Tests nie abschwächen oder löschen. features.json nur mit echtem Beleg auf true.
 - Sprache: Dokumente auf Deutsch; Code, Kommentare, Commits auf Englisch; Spieltexte auf Englisch.
 - Browser-Tests mit Playwright, nicht mit Tims Chrome.
-- Name des Spiels nur in src/config.ts.
+- Name des Spiels nur in src/config/game.ts.
 
 ## Befehle
 - Entwicklung: `npm run dev`
