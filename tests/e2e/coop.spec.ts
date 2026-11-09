@@ -64,7 +64,14 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await waitFor(() => gameState(host), (v) => v!.gold >= 10, 6000);
 
     // A free-standing target: a neighbour right at the grab point would rightly be taken instead.
-    const freeStanding = (v: any) => onScreen(v).filter((e: any) => v.enemies.every((o: any) => o.id === e.id || Math.abs(o.x - (e.x - 10)) > 60));
+    // It is placed on purpose, because how the crowd spreads depends on the speed of the machine.
+    await host.evaluate(() => {
+      const sim = (window as any).__fondue.session.sim;
+      sim.s.spawnQueue = [];
+      sim.s.enemies = [];
+      sim.spawnEnemy('grunt', 800);
+    });
+    const freeStanding =(v: any) => onScreen(v).filter((e: any) => v.enemies.every((o: any) => o.id === e.id || Math.abs(o.x - (e.x - 10)) > 60));
     s = await waitFor(() => gameState(guest), (v) => freeStanding(v).length >= 1, 25000);
     const before = (await gameState(host))!.gold;
     const target = freeStanding(s).sort((a: any, b: any) => b.x - a.x)[0];
