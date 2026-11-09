@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "relay": "node server/relay/index.mjs"
+    "relay": "node server/relay/index.mjs",
+    "balance": "node -e \"process.env.BALANCE=1;require('child_process').execSync('npx vitest run',{stdio:'inherit',env:process.env})\""
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",

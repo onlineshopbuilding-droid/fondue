@@ -28,4 +28,4 @@ Eigene Spielwelt, eigene Gegner- und Itemnamen. Siehe docs/ENTSCHEIDUNGEN.md, Ei
 - Build: `npm run build`
 - Deploy: `git push origin main` (GitHub Actions, .github/workflows/deploy.yml)
 - Live: https://onlineshopbuilding-droid.github.io/fondue/
-- Tests: werden in E2 ergänzt
+- Tests: `npm test` (Unit), `npm run test:e2e` (Browser), `npx playwright test --config playwright.live.config.ts` (Live), `npx playwright test --config playwright.perf.config.ts` (FPS), `npm run balance`
