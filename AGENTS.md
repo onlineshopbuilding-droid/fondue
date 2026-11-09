@@ -21,19 +21,26 @@ Aktuelle Phase: Alpha, Tim und Lenny testen zu zweit. Jede Version muss auf Lapt
 - Technische Details selbst entscheiden und festhalten. Rückfragen, wenn es um Spielinhalt, Spielgefühl, Kosten oder Veröffentlichung geht und die Antwort das Ergebnis verändert.
 
 ## Veröffentlichen
-- Gearbeitet wird direkt auf `main`, ohne Pull Requests.
+- Jede Änderung läuft über einen eigenen Branch und einen Pull Request. `main` ist geschützt: Ein Merge ist nur möglich, wenn die Prüfung `test` grün ist.
 - Vor jedem Commit genau prüfen, welche Dateien dazugehören, und sie einzeln mit Namen hinzufügen. Kein `git add -A` oder `git add .`: Andere Sitzungen können parallel arbeiten, und Testläufe ändern `docs/screenshots/`.
-- Jeder Push auf `main` geht sofort live. Deshalb wird nur gepusht, wenn Tim oder Lenny das sagt, etwa mit „veröffentlichen“.
-- Vor dem Push: alle Tests grün (`npm test`, `npm run test:e2e`), dann `git pull --rebase`, dann `git push origin main`. Der veröffentlichte Stand ist immer spielbar.
-- Kontrollen wie Pull Requests und Schutz von `main` kommen erst später, wenn das Spiel etwas zu verlieren hat. Die KI schlägt das vor, sobald es so weit ist, spätestens bevor Freunde mitspielen.
+- Jeder Merge nach `main` geht sofort live. Deshalb entscheiden Tim oder Lenny darüber: Sie mergen selbst, oder sie sagen in einer Sitzung „veröffentlichen“.
+- Vor einem Merge: alle Tests grün (`npm test`, `npm run test:e2e`). Der veröffentlichte Stand ist immer spielbar.
+
+## Arbeiten mit Issues und Pull Requests
+- Ideen und Fehler werden als GitHub-Issue gesammelt und dort besprochen.
+- Pro Issue arbeitet nur eine KI. Bevor die Arbeit beginnt, wird das Issue einer Person zugewiesen. Ein zugewiesenes Issue mit laufender Arbeit lässt jede andere KI in Ruhe.
+- Jedes Issue bekommt einen eigenen Branch. Nie direkt auf `main` arbeiten oder pushen.
+- Der Pull Request verweist im Text mit `Fixes #NUMMER` auf das Issue, damit es beim Merge automatisch geschlossen wird.
+- Mit `@claude` in einem Kommentar wird Claude auf GitHub angesprochen. Bei Fragen oder der Bitte um Möglichkeiten antwortet es nur als Kommentar. Erst ein klarer Auftrag wie „setz Möglichkeit 2 um“ führt zu einem Branch und einem Pull Request.
+- Claude auf GitHub mergt nie selbst. Für Arbeit, die über `@claude` beauftragt wurde, entfällt die Frage am Ende der Sitzung; dort übernimmt der Merge diese Entscheidung.
 
 ## Am Ende jeder Sitzung
 Egal wer wo mit welcher KI arbeitet: Wurde in der Sitzung etwas geändert, sagt die KI am Ende kurz und verständlich, was geändert wurde und ob es schon committet und veröffentlicht ist. Dann fragt sie deutlich sichtbar, in einer eigenen Zeile am Schluss ihrer Nachricht:
 
 > **Sage „committen“, um die Änderungen im Repo zu sichern, oder „veröffentlichen“, um sie live zu stellen.**
 
-- **committen:** Die Änderungen werden gesichert, gehen aber nicht live.
-- **veröffentlichen:** Die Änderungen werden committet, und bei grünen Tests gepusht. Sie sind dann live.
+- **committen:** Die Änderungen werden auf dem Branch gesichert, gehen aber nicht live.
+- **veröffentlichen:** Die Änderungen werden committet, kommen in einen Pull Request und werden bei grünen Tests gemergt. Sie sind dann live.
 
 Ohne eines dieser Worte wird nichts committet oder gepusht. Ist schon alles committet, fragt die KI nur noch nach „veröffentlichen“.
 
@@ -59,6 +66,6 @@ Eigene Spielwelt, eigene Gegner- und Itemnamen. Siehe docs/ENTSCHEIDUNGEN.md, Ei
 - Einrichten: `npm ci`, dann `npx playwright install chromium`
 - Entwicklung: `npm run dev`
 - Build: `npm run build`
-- Veröffentlichen: `git push origin main` (GitHub Actions, .github/workflows/deploy.yml)
+- Veröffentlichen: Pull Request nach `main` mergen (GitHub Actions, .github/workflows/deploy.yml)
 - Live: https://onlineshopbuilding-droid.github.io/fondue/
 - Tests: `npm test` (Unit), `npm run test:e2e` (Browser und Handy), `npx playwright test --config playwright.live.config.ts` (Live), `npx playwright test --config playwright.perf.config.ts` (FPS), `npm run balance`

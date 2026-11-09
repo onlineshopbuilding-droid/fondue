@@ -1,0 +1,50 @@
+name: Claude
+
+# Runs when someone with write access mentions @claude. Bots and people without write access are
+# rejected by the action itself.
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [opened]
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # One Claude per issue or pull request at a time; a second request waits for the first.
+    concurrency:
+      group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          branch_prefix: claude/
+          claude_args: |
+            --max-turns 60
+            --allowedTools "Bash(npx tsc:*),Bash(npx vitest:*),Bash(npm test:*),Bash(npm run build:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh issue view:*)"
+            --append-system-prompt "You are working from a GitHub issue or pull request of this project. Follow AGENTS.md, which CLAUDE.md points to. If the request is a question or asks for options, only reply in a comment and change nothing. Change code only when explicitly asked to implement something. Never push to main. On an issue, work on your own new branch; on a pull request, push to that pull request's branch. Before pushing, run npx tsc --noEmit and npx vitest run and make sure they pass; the full browser tests run automatically on the pull request. When you finish work on an issue, open a pull request against main with gh pr create and put Fixes #<issue number> in its body. Never merge. Tim or Lenny merge, and merging replaces the question about committing or publishing from AGENTS.md, so do not ask it here. Reply in the language of the request, briefly and understandably, because the readers have little GitHub experience."

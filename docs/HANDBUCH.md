@@ -220,7 +220,7 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 | `npx playwright test --config playwright.perf.config.ts` | FPS mit 200 Gegnern in Edge | `tests/perf/` |
 | `npx playwright test --config playwright.live.config.ts` | Veröffentlichte Seite | `tests/live/` |
 
-Veröffentlichen, sobald Tim oder Lenny es sagt: alle Tests grün, `git pull --rebase`, dann `git push origin main`. Die Pipeline steht in `.github/workflows/deploy.yml`. Danach mit `EXPECT_BUILD=<kurzer Hash>` die Live-Tests laufen lassen.
+Veröffentlichen, sobald Tim oder Lenny es sagt: alle Tests grün, Pull Request nach `main` stellen und mergen. `.github/workflows/ci.yml` führt die Tests für jeden Pull Request aus (Prüfung `test`), ohne Grün geht kein Merge. Die Pipeline steht in `.github/workflows/deploy.yml`. Danach mit `EXPECT_BUILD=<kurzer Hash>` die Live-Tests laufen lassen.
 
 Die Testregeln gelten weiter: Browser-Tests laufen mit Playwright. Firefox und das volle Playwright-Chromium startet Windows auf diesem Laptop nicht (E-011), Edge läuft über `channel: 'msedge'`.
 
@@ -296,9 +296,11 @@ Die Regeln stehen in `AGENTS.md`. `CLAUDE.md` und `GEMINI.md` verweisen nur dara
 
 **Ablauf**
 1. `git pull`, damit alle vom selben Stand ausgehen.
-2. Eine KI bearbeitet ein Thema, direkt auf `main`.
-3. Commit lokal. Live geht erst etwas, wenn Tim oder Lenny „veröffentlichen“ sagt.
-4. Vor dem Push: Tests grün, `git pull --rebase`, `git push origin main`.
+2. Ein Thema bekommt ein Issue, das einer Person zugewiesen wird, und einen eigenen Branch.
+3. Fertige Arbeit kommt als Pull Request mit `Fixes #NUMMER`.
+4. `main` ist geschützt: Ist die Prüfung `test` grün, mergen Tim oder Lenny. Der Merge geht sofort live.
+
+**Claude auf GitHub:** `.github/workflows/claude.yml` startet Claude, wenn jemand mit Schreibrechten `@claude` in einem Issue oder Pull Request schreibt. Es läuft über das Abo von Tim (Geheimnis `CLAUDE_CODE_OAUTH_TOKEN`, ein Jahr gültig, danach mit `claude setup-token` erneuern).
 
 **Damit nichts verloren geht**
 - Kurz absprechen, wer woran sitzt. Nicht zwei Personen oder KI-Sitzungen gleichzeitig an denselben Dateien.
