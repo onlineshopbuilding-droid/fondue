@@ -276,11 +276,13 @@ Jede Version muss auf Laptop und Handy funktionieren. Das Spiel soll später in 
 
 **Geräte:** Tim: ASUS Zenbook (Windows), iPhone 16. Lenny: Windows-Laptop, Linux-Laptop, Android-Handy. Es gibt keinen Mac, iOS-Builds brauchen später einen Cloud-Dienst mit macOS.
 
+**Android-Testapp:** `capacitor.config.ts` beschreibt die Hülle, `npm run android:prepare` erzeugt daraus den Ordner `android/` (nicht im Repo), `scripts/android-setup.mjs` stellt Querformat und Vollbild ein. Gebaut wird auf GitHub in `.github/workflows/android.yml`, sobald sich eine dieser Dateien ändert oder von Hand. Die APK liegt im Release `android-latest`. Spieländerungen brauchen keinen neuen App-Bau, sie kommen mit jeder Veröffentlichung über die Live-Seite. Jeder neue Bau hat eine andere Test-Signatur, die App muss dann vorher deinstalliert werden.
+
 **Noch offen bis zur Store-Version**
 
 | Thema | Heute | Nötig |
 |---|---|---|
-| Verpackung als App | Nur Webseite | Hülle um das Web-Spiel, voraussichtlich Capacitor |
+| Verpackung als App | Android-Testapp als Hülle um die Live-Seite, iPhone noch nicht | Für den Store das Spiel fest in die App packen, iPhone über TestFlight |
 | Leistung | Nur auf dem Laptop gemessen | Auf echten Handys messen, bei Bedarf Einstellung mit weniger Effekten |
 | Koop über Mobilfunk | Direktverbindung über STUN, öffentlicher PeerJS-Dienst, kein TURN | Eigener Vermittlungs- und Relay-Dienst, weil Mobilnetze Direktverbindungen oft blockieren |
 | Versionsprüfung | Host und Gast brauchen exakt denselben Build | Lockerer, weil in Stores nicht alle gleichzeitig aktualisieren |
