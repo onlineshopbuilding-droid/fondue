@@ -21,7 +21,8 @@ import { CREDITS_HTML, HELP_SLIDES, LOADING_TIPS } from './content';
 import { TuningPanel } from './tuningPanel';
 
 declare const __GAME_VERSION__: string;
-const BUILD = `${PROTOCOL_VERSION}-${__GAME_VERSION__}`;
+// A test can pretend to be an out-of-date client with ?fakever=x.
+const BUILD = new URLSearchParams(location.search).get('fakever') ?? `${PROTOCOL_VERSION}-${__GAME_VERSION__}`;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const artUri = (name: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(PROPS[name].svg)}`;
@@ -117,9 +118,9 @@ export class App {
     this.game.scene.add('game', this.scene, true);
     (window as unknown as Record<string, unknown>).__fondue = this;
 
+    if (this.params.get('relay')) this.settings.relayAddress = this.params.get('relay')!;
     const invite = this.params.get('join');
     if (invite) {
-      if (this.params.get('relay')) this.settings.relayAddress = this.params.get('relay')!;
       this.show('join');
       const input = this.overlay?.querySelector<HTMLInputElement>('#code');
       if (input) input.value = normalizeRoomCode(invite);
@@ -292,9 +293,9 @@ export class App {
   private playerName(): string { return this.settings.name.trim() || 'Player'; }
 
   private leaveToMenu() {
+    if (this.session?.role === 'host') this.lobbyLink?.send({ k: 'leftGame' });
     this.lobbyLink?.close();
     this.joinLink?.close();
-    if (this.session?.role === 'host' && this.lobbyLink) this.lobbyLink.send({ k: 'leftGame' });
     this.session?.dispose();
     this.session = null;
     this.scene.session = null;
@@ -374,21 +375,13 @@ export class App {
   }
 
   private restartCoop() {
-    const old = this.session as HostSession;
-    if (!this.lobbyLink) { this.startSoloFromHost(); return; }
-    const link = this.lobbyLink;
+    const connected = this.session?.connection() === 'connected';
+    if (!connected || !this.lobbyLink) { this.startSolo(); return; }
+    // The link stays open across runs, so the old session must not close it.
     this.session = null;
-    void old;
     this.guestName = this.lastGuestName;
-    this.startCoopAsHostWith(link);
-  }
-
-  private startCoopAsHostWith(link: Transport) {
-    this.lobbyLink = link;
     this.startCoopAsHost();
   }
-
-  private startSoloFromHost() { this.startSolo(); }
 
   // Guest side -----------------------------------------------------------------
 
