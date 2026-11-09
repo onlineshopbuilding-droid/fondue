@@ -258,6 +258,7 @@ Die Testregeln gelten weiter: Browser-Tests laufen mit Playwright. Firefox und d
 - **Entwickler-Menü:** Am Laptop F1, unten im Panel. Auf dem Handy den Schriftzug im Hauptmenü lang drücken. Dort: Experiment-Schalter (im Koop gelten die des Hosts) und Schnellstart ab Tag 10, 20 oder 30.
 - **Koop allein testen:** zwei Tabs mit `http://localhost:5173/?net=loopback`, im zweiten `&join=CODE` anhängen. Mit `&lat=45&jit=20&loss=0.02` kommt simulierte Latenz dazu.
 - **Fester Zufall:** `?seed=123`.
+- **Parallele Sitzungen:** Laufen auf einem Rechner zwei Sitzungen, braucht jede einen eigenen Testserver, zum Beispiel mit der Umgebungsvariable `TEST_PORT=5317`. Sonst prüfen die Browser-Tests den Code der anderen Sitzung.
 - **Plan B:** `npm run relay`, Adresse in den Options oder per `?relay=...`. Anleitung in `docs/uebergabe/START-HIER.md`.
 - **Browser-Konsole:** `window.__fondue` ist die App. Auf dem Host geht zum Beispiel `__fondue.session.sim.s.gold = 5000` oder `__fondue.session.sim.s.dayT = 49.9`, um einen Tag zu überspringen.
 
