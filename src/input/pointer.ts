@@ -41,7 +41,7 @@ export class PointerTracker {
       const dt = (s[i].t - s[i - 1].t) / 1000;
       if (dt <= 0) continue;
       const age = (now - s[i].t) / windowMs;
-      const w = (1 - age) * (1 - age) * dt + 1e-6;
+      const w = (1 - age) * dt + 1e-6;
       vx += ((s[i].x - s[i - 1].x) / dt) * w;
       vy += ((s[i].y - s[i - 1].y) / dt) * w;
       sumW += w;

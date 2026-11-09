@@ -25,7 +25,7 @@ Messungen am Original in Anteilen der Bildhöhe H und Bildbreite W, umgerechnet 
 |---|---|---|
 | Schwerkraft | ca. 10 H/s² aus Fallzeit, 7 H/s² aus Wurfbogen [M] | 3400 px/s² (4,7 H/s²); Wert liegt bewusst darunter, damit die Bahn lesbar bleibt |
 | Starker Wurf, Luftzeit | 0,75 s bis 1,4 s [M] | 2000 px/s nach oben: etwa 1,2 s; per Unit-Test auf 0,75–1,6 s geprüft |
-| Starker Wurf, Höhe | 0,7 H, sehr starke Würfe verlassen das Bild [M] | maximal 2700 px/s, Scheitel außerhalb des Bilds |
+| Starker Wurf, Höhe | 0,7 H, sehr starke Würfe verlassen das Bild [M] | maximal 1700 px/s, Scheitel etwa 425 px über dem Loslasspunkt |
 | Laufgeschwindigkeit | 0,10–0,15 W/s, ±40 % [W] | 96 px/s (0,075 W/s), am unteren Rand gewählt |
 | Reiter | 0,3 W/s [W] | 230 px/s (0,18 W/s) |
 | Figurengröße | 0,12–0,19 H [M] | 87 px (0,12 H) |
@@ -71,4 +71,4 @@ Abklingzeiten sind in den Videos nicht zu erkennen und daher **[A]**.
 Host-autoritativ mit 30 Snapshots pro Sekunde, Interpolation 100 ms, Vorhersage von Griff und Wurf beim Gast. Gemeinsame Kasse, gemeinsames Tor, Shop mit Ready. Gegneranzahl ×1,9 (Startwert im Auftrag 1,6, nach Balance-Simulation erhöht).
 
 ## Eskalation
-Tag 1: 38 Gegner, je Tag +14, ab Tag 12 +12. Tag 7: 122. Torschaden +20 %, Tempo +1,5 %, Waffen-Trefferpunkte +12 % pro Tag.
+Tag 1: 34 Gegner, je Tag +12, ab Tag 12 +12. Tag 7: 106. Torschaden +20 %, Tempo +3 %, Waffen-Trefferpunkte +12 % pro Tag.

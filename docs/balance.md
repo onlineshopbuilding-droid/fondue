@@ -12,20 +12,21 @@ Simulation ohne Grafik mit Bots, je 10 Läufe, Abbruch bei Tag 40. Bots nutzen d
 ## Ergebnis
 | Bot | Spieler | Stufe | Tag erreicht (Mittel, min-max) | Kills | Upgrades | Offerings gesamt | Gold Tag 1/3/7 |
 |---|---|---|---|---|---|---|---|
-| Beginner | 1 | medium | 3.3 (1-7) | 137 | 2.5/22 | 21 | 203/654/131 |
-| Average | 1 | medium | 13.7 (13-14) | 1550 | 14.7/22 | 176 | 337/815/1745 |
-| Pro | 1 | medium | 17.3 (15-23) | 2584 | 18.2/22 | 292 | 376/947/1908 |
-| Beginner | 2 | medium | 4.9 (1-10) | 590 | 6.4/22 | 84 | 424/951/1243 |
-| Average | 2 | medium | 18.1 (15-22) | 5176 | 20.7/22 | 381 | 672/1606/3388 |
-| Pro | 2 | medium | 27.6 (26-30) | 11147 | 22.0/22 | 892 | 720/1773/3540 |
-| Average | 1 | easy | 16.7 (15-18) | 1667 | 16.2/22 | 201 | 324/769/1573 |
-| Average | 1 | hard | 10.1 (7-12) | 1169 | 12.0/22 | 138 | 352/1004/1969 |
+| Beginner | 1 | medium | 2.9 (1-4) | 75 | 2.0/22 | 14 | 195/364/0 |
+| Average | 1 | medium | 9.2 (4-13) | 650 | 9.1/22 | 109 | 312/722/1276 |
+| Pro | 1 | medium | 16.2 (14-22) | 2017 | 16.5/22 | 254 | 339/833/1660 |
+| Beginner | 2 | medium | 4.2 (3-7) | 305 | 4.6/22 | 59 | 415/1046/234 |
+| Average | 2 | medium | 16.1 (14-20) | 3600 | 19.8/22 | 339 | 627/1363/2953 |
+| Pro | 2 | medium | 27.4 (25-29) | 9868 | 22.0/22 | 899 | 650/1550/3094 |
+| Average | 1 | easy | 13.8 (13-14) | 1007 | 13.0/22 | 155 | 298/651/1338 |
+| Average | 1 | hard | 6.1 (3-8) | 428 | 6.2/22 | 85 | 337/829/850 |
 
 ## Bewertung
-- Zielbild Medium: Durchschnitts-Bot solo Tag 8–12. Erreicht: etwa Tag 14, knapp darüber. Dort tauchen die ersten Yetis auf, die allein nur mit Waffen zu schlagen sind, und werden zur Wand.
-- Durchschnitts-Bots zu zweit kommen auf etwa Tag 18, das ist weiter als das Zielbild „etwas weiter“. Bots stimmen sich perfekt ab und verlieren nie Zeit, Menschen eher schon. Der Koop-Faktor steht deshalb bei 1,9 statt 1,6. Wer es härter will, erhöht `COOP.countFactor` in `src/config/waves.ts`.
-- Die Wirtschaft erlaubt in langen Läufen die großen Upgrades: Ein Durchschnitts-Bot besitzt am Ende rund 15 von 22.
-- Der Schwierigkeitsgrad wirkt deutlich: Easy Tag 17, Medium Tag 14, Hard Tag 10.
+- Zielbild Medium: Durchschnitts-Bot solo Tag 8–12. Erreicht: etwa Tag 9, mit einer Spanne von Tag 4 bis 13.
+- Durchschnitts-Bots zu zweit kommen auf etwa Tag 16, das ist weiter als das Zielbild „etwas weiter“. Bots stimmen sich perfekt ab und verlieren nie Zeit, Menschen eher schon. Der Koop-Faktor steht deshalb bei 1,9 statt 1,6. Wer es härter will, erhöht `COOP.countFactor` in `src/config/waves.ts`.
+- Die Wirtschaft erlaubt in langen Läufen die großen Upgrades: Profi-Bots besitzen am Ende rund 16 von 22, zu zweit alle.
+- Der Schwierigkeitsgrad wirkt deutlich: Easy Tag 14, Medium Tag 9, Hard Tag 6.
+- Der Anfänger-Bot scheitert auf Medium früh (Tag 3). Er braucht 1,5 s pro Wurf, verfehlt 30 % und nutzt kaum Waffen. Für Einsteiger ist Easy gedacht.
 
 ## Grenzen
 Bots zielen ohne Bewegung und fliegen nicht über das Feld wie eine Hand. Die absoluten Tage sind eine Orientierung, kein Versprechen für echte Spieler. Yetis besiegen Bots nur mit Waffen.

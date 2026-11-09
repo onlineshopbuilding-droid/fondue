@@ -146,6 +146,10 @@ export class Hud {
     const cd = v.cooldowns[s.slot];
     const max = v.cooldownMax[s.slot];
     s.icon.setScale((activeMode === s.slot ? 1.18 : 1) / TEX_SCALE);
+    if (cd <= 0) {
+      s.mask.lineStyle(3, 0xfff1c0, 1);
+      s.mask.strokeCircle(s.x, SLOT_Y, SLOT_R + 1);
+    }
     if (cd > 0 && max > 0) {
       // Dark wedge that shrinks clockwise as the weapon recharges.
       const f = cd / max;

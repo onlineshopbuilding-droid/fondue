@@ -157,6 +157,7 @@ export class Sim {
     }
     if (!best) return false;
     best.heldBy = p;
+    best.byPlayer = true;
     h.holdingProj = best.id;
     return true;
   }
@@ -405,7 +406,7 @@ export class Sim {
       case 'wheel': {
         const w = WEAPONS.wheel[tier as keyof typeof WEAPONS.wheel];
         const q = this.spawnProjectile('wheel', WORLD.gateX + 30, WORLD.groundY + 22 - w.radius, w.speed, 0);
-        q.size = w.radius; q.damage = w.damage; q.pierce = true;
+        q.size = w.radius; q.damage = w.damage; q.pierce = true; q.maxHits = w.maxHits;
         this.startCooldown(slot, w.cooldown);
         this.emit({ e: 'wheel', size: w.radius });
         break;
@@ -523,7 +524,7 @@ export class Sim {
   private spawnProjectile(kind: ProjectileKind, x: number, y: number, vx: number, vy: number): Projectile {
     const q: Projectile = {
       id: this.s.nextId++, kind, x, y, vx, vy, rot: 0, t: 0, size: 10, damage: 0,
-      heldBy: -1, charge: 0, pierce: false, hit: [], landed: false,
+      heldBy: -1, charge: 0, pierce: false, hit: [], maxHits: Infinity, byPlayer: false, landed: false,
     };
     this.s.projectiles.push(q);
     return q;
@@ -918,6 +919,14 @@ export class Sim {
 
   private updateHop(e: Enemy) {
     const def = ENEMIES.pogo;
+    if (e.t > 0) {
+      // Catching its breath at the gate: the easiest moment to grab it.
+      e.t -= DT;
+      e.y = this.groundOf(e);
+      e.rot = 0;
+      if (e.t <= 0) e.vy = -BEHAVIOUR.pogo.hopSpeed * this.rng.range(0.85, 1.05);
+      return;
+    }
     e.vy += this.tuning.gravity * DT;
     e.y += e.vy * DT;
     e.x -= this.speedOf(e) * DT;
@@ -929,6 +938,9 @@ export class Sim {
     if (e.x <= WORLD.gateX + def.range + 34) {
       this.emit({ e: 'strike', x: e.x, y: e.y, etype: e.type });
       this.damageGate(def.strike, WORLD.gateX + 6, e.y - 50, e.type);
+      e.t = BEHAVIOUR.pogo.restAtGate;
+      e.vy = 0;
+      return;
     }
     e.vy = -BEHAVIOUR.pogo.hopSpeed * this.rng.range(0.85, 1.05);
   }
@@ -1116,6 +1128,7 @@ export class Sim {
             if (Math.abs(e.x - q.x) > q.size + ENEMIES[e.type].radius * 0.6) continue;
             q.hit.push(e.id);
             this.hurt(e, q.damage, 'crush', -1);
+            if (q.hit.length >= q.maxHits) { q.t = -1; this.emit({ e: 'explosion', x: q.x, y: q.y, radius: q.size }); break; }
           }
           if (q.x > WORLD.width + 140) q.t = -1;
           break;
@@ -1177,7 +1190,8 @@ export class Sim {
   private explodeBomb(q: Projectile, radius = BEHAVIOUR.bomb.blastRadius) {
     q.t = -1;
     if (q.x < WORLD.gateX + 90) this.damageGate(q.damage || BEHAVIOUR.bomb.gateDamage, WORLD.gateX + 6, q.y, 'bomber');
-    this.blast(q.x, q.y, radius, BEHAVIOUR.bomb.blastDamage, -1);
+    if (q.byPlayer) this.blast(q.x, q.y, radius, BEHAVIOUR.bomb.blastDamage, -1);
+    else this.emit({ e: 'explosion', x: q.x, y: q.y, radius });
   }
 
   private updateComet(q: Projectile) {

@@ -29,22 +29,22 @@ Details und Messwerte in `docs/GDD.md`.
 ## Testergebnisse
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| Unit-Tests | `npm test` | 81 von 81 grün |
+| Unit-Tests | `npm test` | 84 von 84 grün |
 | Browser-Tests | `npm run test:e2e` | 16 von 16 grün, darunter Koop mit zwei Browsern ohne und mit Latenz, Relay, Touch |
 | Live-Seite | `npx playwright test --config playwright.live.config.ts` | Chrome und Edge grün, echte PeerJS-Verbindung grün |
 | Plan B über echten Tunnel | `tests/live/tunnel.spec.ts` | grün am 09.11.2026 |
 | FPS mit 200 Gegnern und Effekten | `playwright.perf.config.ts`, Edge | 58 FPS im Mittel, Median 16,7 ms, 95. Perzentil 22,6 ms |
 | Balance | `npm run balance` | `docs/balance.md` |
 
-Zwei unabhängige Tester (Subagents) haben gespielt und Code geprüft, zusammen 51 Befunde. Die wichtigen sind behoben und durch Tests abgesichert.
+Unabhängige Tester (Subagents) haben gespielt und Code geprüft, dazu ein dritter für Spielgefühl und Tempo, zusammen rund 70 Befunde. Die wichtigen sind behoben und durch Tests abgesichert.
 
 ## Offene Punkte
 1. **Firefox ungetestet.** Windows startet den Firefox-Testbrowser von Playwright auf diesem Laptop nicht (`spawn UNKNOWN`, vermutlich Smart App Control, dieselbe Sperre trifft das volle Playwright-Chromium). Ersatz: Das Spiel nutzt nur Standard-Webtechnik. Bitte einmal von Hand in Firefox öffnen. Abnahmepunkt 1 steht deshalb auf `false`.
 2. **Wurfgefühl nicht von Menschen geprüft.** Ich kann es nicht spüren. Es ist am Original gemessen und per Video geprüft. Das Tuning-Panel ist dafür da.
 3. **Sound nicht angehört.** Technisch geprüft (kein Übersteuern, alle Klänge hörbar), aber nicht nach Gehör abgemischt.
-4. **Balance:** Durchschnitts-Bots kommen solo auf etwa Tag 14 (Ziel 8–12), zu zweit auf etwa Tag 18. Bots sind keine Menschen; die Werte stehen in `src/config/waves.ts`.
+4. **Balance:** Durchschnitts-Bots kommen solo auf etwa Tag 9 (Ziel 8–12), zu zweit auf etwa Tag 16, weiter als das Ziel „etwas weiter“. Anfänger-Bots scheitern auf Medium früh. Bots sind keine Menschen; die Werte stehen in `src/config/waves.ts`.
 5. **Datenkanal:** Snapshots laufen über einen zuverlässigen Kanal. Bei viel Paketverlust ruckelt es kurz. Wird der Kanal voll, werden Snapshots übersprungen.
-6. **Kleinere Punkte aus den Tests** ohne Behebung: kein Hinweis auf einem besetzten Adlerhaken, Interpolation mit Ankunftszeit statt Host-Tick.
+6. **Kleinere Punkte aus den Tests** ohne Behebung: kein Hinweis auf einem besetzten Adlerhaken, Interpolation mit Ankunftszeit statt Host-Tick, Gate Mortar ohne sichtbares Geschoss. Bewusst nicht übernommen: Gegner werfen andere um bleibt standardmäßig aus (Schalter im Tuning-Panel), wie im Auftrag vorgegeben.
 7. **Energieeinstellungen** wurden nicht verändert, siehe ENTSCHEIDUNGEN E-002. Der Laptop muss mit offenem Deckel laufen.
 8. Abschnitt 6.2 und 6.3 des Auftrags (Skills, freie Asset-Pakete suchen) habe ich nur knapp umgesetzt: keine fremden Skills oder Assets, weil die eigene Grafik und der eigene Sound einheitlicher sind.
 
@@ -57,3 +57,4 @@ Zwei unabhängige Tester (Subagents) haben gespielt und Code geprüft, zusammen 
 | 02:30 | Balance, Live-Tests, Doku |
 | 03:00 | Erster unabhängiger Test, Befunde behoben |
 | 03:30 | Zweiter unabhängiger Test (Koop), Befunde behoben |
+| 04:10 | Dritter unabhängiger Test (Gefühl, Tempo), Befunde eingearbeitet |

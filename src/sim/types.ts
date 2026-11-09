@@ -76,6 +76,10 @@ export interface Projectile {
   pierce: boolean;
   /** Enemy ids already hit by a piercing projectile. */
   hit: number[];
+  /** Most enemies this may hit. */
+  maxHits: number;
+  /** A bomb the player has touched: only those hurt raiders. */
+  byPlayer: boolean;
   landed: boolean;
 }
 

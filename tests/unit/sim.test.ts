@@ -464,10 +464,10 @@ describe('shop', () => {
     expect(sim.owns('wheel2')).toBe(false);
     sim.command({ k: 'buy', p: 0, item: 'wheel1' });
     expect(sim.owns('wheel1')).toBe(true);
-    expect(sim.s.gold).toBe(550);
+    expect(sim.s.gold).toBe(1000 - SHOP_ITEMS.find((i) => i.id === 'wheel1')!.gold);
     expect(sim.s.offerings).toBe(1);
     sim.command({ k: 'buy', p: 0, item: 'wheel1' });
-    expect(sim.s.gold).toBe(550);
+    expect(sim.s.gold).toBe(1000 - SHOP_ITEMS.find((i) => i.id === 'wheel1')!.gold);
     sim.command({ k: 'buy', p: 0, item: 'gate1' });
     expect(sim.owns('gate1')).toBe(false);
   });
@@ -766,6 +766,45 @@ describe('regressions from the first playtest', () => {
     const e = place(sim, 'siegeCart', 700);
     for (let i = 0; i < BEHAVIOUR.siegeCartTaps; i++) sim.command({ k: 'press', p: 0, x: e.x, y: e.y - 40 });
     expect(e.dead).toBe(true);
+  });
+});
+
+describe('regressions from the third playtest', () => {
+  it('a small wheel stops after its hit limit', () => {
+    const sim = battleSim();
+    sim.s.meta.owned.push('wheel1');
+    const list = Array.from({ length: 12 }, (_, i) => place(sim, 'grunt', 500 + i * 6));
+    sim.command({ k: 'activate', p: 0, slot: 'wheel' });
+    for (let i = 0; i < 120; i++) sim.step();
+    expect(list.filter((e) => e.dead).length).toBe(WEAPONS.wheel.wheel1.maxHits);
+  });
+
+  it('a pogo bandit rests after each hit on the gate', () => {
+    const sim = battleSim();
+    const e = place(sim, 'pogo', WORLD.gateX + 90);
+    const ev = runUntil(sim, () => e.t > 0, 400);
+    expect(ev.some((x) => x.e === 'gateHit')).toBe(true);
+    expect(e.y).toBe(WORLD.groundY + e.lane);
+    const hits: number[] = [];
+    for (let t = 0; t < 180; t++) {
+      sim.step();
+      if (sim.drainEvents().some((x) => x.e === 'gateHit')) hits.push(t);
+    }
+    for (let i = 1; i < hits.length; i++) expect(hits[i] - hits[i - 1]).toBeGreaterThan(BEHAVIOUR.pogo.restAtGate * 60);
+  });
+
+  it('enemy bombs do not blow up their own side, returned ones do', () => {
+    const blastOn = (returned: boolean) => {
+      const sim = battleSim();
+      const n = place(sim, 'grunt', 700);
+      sim.s.meta.tuning.walkSpeed = 0;
+      const q = (sim as unknown as { spawnProjectile(k: string, x: number, y: number, vx: number, vy: number): any }).spawnProjectile('bomb', 700, n.y - 30, 0, 0);
+      q.t = 0.05; q.landed = true; q.byPlayer = returned;
+      for (let i = 0; i < 10; i++) sim.step();
+      return n.dead;
+    };
+    expect(blastOn(false)).toBe(false);
+    expect(blastOn(true)).toBe(true);
   });
 });
 

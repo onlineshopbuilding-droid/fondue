@@ -45,13 +45,13 @@ export interface EnemyDef {
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
   grunt: {
     name: 'Pothelm',
-    speed: 96, strike: 5, strikeEvery: 1.1, range: 22, hp: 40, radius: 26, height: 87,
+    speed: 96, strike: 4, strikeEvery: 1.1, range: 22, hp: 40, radius: 26, height: 87,
     gold: 10, score: 100, grabbable: true, firstDay: 1, weight: 10, maxPerDay: 999,
     tip: 'Grab a Pothelm and fling it skyward. What goes up comes down hard.',
   },
   bomber: {
     name: 'Keg Hauler',
-    speed: 85, strike: 26, strikeEvery: 3.2, range: 225, hp: 40, radius: 28, height: 90,
+    speed: 85, strike: 16, strikeEvery: 3.2, range: 225, hp: 40, radius: 28, height: 90,
     gold: 15, score: 160, grabbable: true, firstDay: 2, weight: 3, maxPerDay: 40,
     tip: 'Keg Haulers lob bombs at the gate. A quick click makes them drop the keg. Pick up a thrown bomb and send it back.',
   },
@@ -63,7 +63,7 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   },
   pogo: {
     name: 'Pogo Bandit',
-    speed: 150, strike: 9, strikeEvery: 1.0, range: 8, hp: 40, radius: 26, height: 99,
+    speed: 150, strike: 6, strikeEvery: 1.0, range: 8, hp: 40, radius: 26, height: 99,
     gold: 15, score: 180, grabbable: true, firstDay: 4, weight: 3, maxPerDay: 40,
     tip: 'Pogo Bandits bounce over the crowd. Snatch them out of the air.',
   },
@@ -116,7 +116,7 @@ export const ENEMY_TYPES = Object.keys(ENEMIES) as EnemyType[];
 /** Numbers for special behaviours. */
 export const BEHAVIOUR = {
   stunSeconds: 1,
-  bomb: { fuse: 2.6, gateDamage: 26, blastRadius: 120, blastDamage: 220 },
+  bomb: { fuse: 2.6, gateDamage: 16, blastRadius: 95, blastDamage: 220 },
   kegDropFuse: 0.75,
   hexerShield: { on: 3.2, off: 3.4 },
   shade: { hidden: 2.2, visible: 1.5 },

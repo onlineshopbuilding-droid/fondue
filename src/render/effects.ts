@@ -34,6 +34,7 @@ export class Effects {
   private texts: FloatText[] = [];
   private freeTexts: Phaser.GameObjects.Text[] = [];
   private decals: Decal[] = [];
+  private floatBudget = 3;
 
   constructor(private scene: Phaser.Scene) {
     for (let i = 0; i < MAX_PARTICLES; i++) {
@@ -103,7 +104,7 @@ export class Effects {
     for (const d of this.decals) {
       if (d.life <= 0) continue;
       d.life -= dt;
-      d.img.setAlpha(Math.min(0.9, d.life / 3));
+      d.img.setAlpha(Math.min(0.75, d.life / 2));
       if (d.life <= 0) d.img.setVisible(false);
     }
   }
@@ -111,15 +112,16 @@ export class Effects {
   private decal(tex: string, x: number, y: number, scale: number) {
     let best = this.decals[0];
     for (const d of this.decals) if (d.life < best.life) best = d;
-    best.life = 9;
-    best.img.setTexture(tex).setPosition(x, y).setVisible(true).setScale(scale / TEX_SCALE).setRotation(Math.random() * 0.2 - 0.1).setAlpha(0.9);
+    best.life = 4.5;
+    best.img.setTexture(tex).setPosition(x, y).setVisible(true).setScale(scale / TEX_SCALE).setRotation(Math.random() * 0.2 - 0.1).setAlpha(0.75);
     best.img.setDepth(16 + (y - WORLD.groundY) / 1000);
   }
 
   /** The main meaty hit: splat, droplets, armour bits, dust. `power` is 0..1. */
   splat(x: number, y: number, power: number) {
     const key = propKey(`splat${1 + Math.floor(Math.random() * 3)}`);
-    this.decal(key, x, y + 3, 0.7 + power * 0.8);
+    // Only something on the road leaves a stain; mid-air kills just spray.
+    if (y >= WORLD.groundY - 20) this.decal(key, x, y + 3, 0.7 + power * 0.8);
     const drops = 6 + Math.floor(power * 12);
     for (let i = 0; i < drops; i++) {
       const a = -Math.PI * (0.1 + Math.random() * 0.8);
@@ -158,9 +160,14 @@ export class Effects {
     this.spawn(propKey('offering'), x, y - 20, { life: 1.0, toX, toY, s0: 1.4, s1: 0.6, fade: false });
   }
 
+  /** Allows a few floating numbers per frame; an area kill would otherwise pile up an unreadable stack. */
+  resetFloatBudget() { this.floatBudget = 3; }
+
   floatText(x: number, y: number, text: string, color = '#ffd76a') {
+    if (this.floatBudget <= 0) return;
     const t = this.freeTexts.pop();
     if (!t) return;
+    this.floatBudget--;
     t.setText(text).setColor(color).setPosition(x, y).setVisible(true).setAlpha(1);
     this.texts.push({ t, life: 0.9, vy: -80 });
   }

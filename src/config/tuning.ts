@@ -29,8 +29,8 @@ export interface Tuning {
 export const TUNING_DEFAULT: Tuning = {
   gravity: 3400,
   throwMult: 1.0,
-  maxThrow: 2700,
-  velWindowMs: 80,
+  maxThrow: 1700,
+  velWindowMs: 110,
   lethalImpact: 900,
   hitstopMs: 60,
   shake: 1,

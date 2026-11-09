@@ -35,16 +35,16 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'cauldron', name: 'Great Cauldron', tab: 'offerings', gold: 250, offerings: 0, desc: 'Drop enemies into the bubbling pot for +1 offering each.' },
   { id: 'perch', name: 'Eagle Perch', tab: 'offerings', gold: 1000, offerings: 0, desc: 'Hang an enemy on the hook. The great eagle takes it for +1 offering.' },
 
-  { id: 'wheel1', name: 'Rolling Wheel', tab: 'wheels', gold: 450, offerings: 4, desc: 'Sends a stone wheel down the road.' },
-  { id: 'wheel2', name: 'Heavy Wheel', tab: 'wheels', gold: 1200, offerings: 16, requires: 'wheel1', desc: 'Wider, and it does not stop for much.' },
+  { id: 'wheel1', name: 'Rolling Wheel', tab: 'wheels', gold: 700, offerings: 4, desc: 'Sends a stone wheel down the road.' },
+  { id: 'wheel2', name: 'Heavy Wheel', tab: 'wheels', gold: 1200, offerings: 11, requires: 'wheel1', desc: 'Wider, and it does not stop for much.' },
   { id: 'wheel3', name: 'Colossal Wheel', tab: 'wheels', gold: 3200, offerings: 32, requires: 'wheel2', desc: 'Flattens the whole road.' },
 
   { id: 'stomper1', name: 'Stomper', tab: 'stompers', gold: 900, offerings: 8, desc: 'Click its icon, hover where it should land, then press to slam.' },
-  { id: 'stomper2', name: 'Great Stomper', tab: 'stompers', gold: 2200, offerings: 18, requires: 'stomper1', desc: 'A wider slab, reloaded faster.' },
+  { id: 'stomper2', name: 'Great Stomper', tab: 'stompers', gold: 2200, offerings: 12, requires: 'stomper1', desc: 'A wider slab, reloaded faster.' },
   { id: 'stomper3', name: 'Titan Stomper', tab: 'stompers', gold: 5200, offerings: 32, requires: 'stomper2', desc: 'The ground remembers this one.' },
 
   { id: 'comet1', name: 'Comet', tab: 'comets', gold: 600, offerings: 8, desc: 'Grab the comet, swing it, let go. More swing, bigger blast.' },
-  { id: 'comet2', name: 'Blazing Comet', tab: 'comets', gold: 1100, offerings: 18, requires: 'comet1', desc: 'Leaves more fire behind.' },
+  { id: 'comet2', name: 'Blazing Comet', tab: 'comets', gold: 1100, offerings: 12, requires: 'comet1', desc: 'Leaves more fire behind.' },
   { id: 'comet3', name: 'Falling Star', tab: 'comets', gold: 3000, offerings: 34, requires: 'comet2', desc: 'A piece of the sky.' },
 
   { id: 'mortar', name: 'Gate Mortar', tab: 'horns', gold: 1400, offerings: 0, desc: 'Press and move to aim, let go to fire.' },
@@ -69,14 +69,14 @@ export const GATE_HP: Record<string, number> = {
 
 export const WEAPONS = {
   wheel: {
-    wheel1: { speed: 520, radius: 34, damage: 160, cooldown: 17 },
-    wheel2: { speed: 560, radius: 52, damage: 320, cooldown: 15 },
-    wheel3: { speed: 620, radius: 74, damage: 700, cooldown: 13 },
+    wheel1: { speed: 520, radius: 34, damage: 160, cooldown: 17, maxHits: 8 },
+    wheel2: { speed: 560, radius: 52, damage: 320, cooldown: 15, maxHits: 16 },
+    wheel3: { speed: 620, radius: 74, damage: 700, cooldown: 13, maxHits: 999 },
   },
   stomper: {
-    stomper1: { halfWidth: 60, damage: 260, cooldown: 12 },
-    stomper2: { halfWidth: 90, damage: 480, cooldown: 10 },
-    stomper3: { halfWidth: 130, damage: 900, cooldown: 8 },
+    stomper1: { halfWidth: 95, damage: 260, cooldown: 10 },
+    stomper2: { halfWidth: 125, damage: 480, cooldown: 9 },
+    stomper3: { halfWidth: 170, damage: 900, cooldown: 8 },
   },
   comet: {
     comet1: { radius: 80, damage: 120, flameSeconds: 2.5, cooldown: 13 },
@@ -88,14 +88,14 @@ export const WEAPONS = {
     idleCancelSeconds: 20,
   },
   horn: {
-    mortar: { kind: 'blast', radius: 95, damage: 150, cooldown: 5 },
+    mortar: { kind: 'blast', radius: 95, damage: 150, cooldown: 6 },
     frost: { kind: 'freeze', radius: 130, cooldown: 9 },
     bellows: { kind: 'flame', halfWidth: 150, flameSeconds: 2.2, cooldown: 11 },
   },
   bolter: {
-    bolter1: { bolts: 4, damage: 60, pierce: false, cooldown: 9 },
-    bolter2: { bolts: 8, damage: 80, pierce: false, cooldown: 8 },
-    bolter3: { bolts: 12, damage: 120, pierce: true, cooldown: 7 },
+    bolter1: { bolts: 4, damage: 100, pierce: false, cooldown: 9 },
+    bolter2: { bolts: 8, damage: 130, pierce: false, cooldown: 8 },
+    bolter3: { bolts: 12, damage: 180, pierce: true, cooldown: 7 },
   },
   /** Ground flames deal this much damage per second. */
   flameDps: 90,

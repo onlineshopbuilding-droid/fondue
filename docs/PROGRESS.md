@@ -14,3 +14,10 @@
 - Offen: cloudflared-Installation wartet vermutlich auf die Windows-Bestätigung (msiexec läuft, Programm noch nicht vorhanden). Wird nur für Plan B gebraucht.
 - docs/AUFTRAG.md bleibt lokal (.gitignore), weil das Repo öffentlich ist und die Datei persönliche Angaben enthält. Commits laufen über die GitHub-Noreply-Adresse.
 - Nächster Schritt nach Tims Antwort: E1 (Mechanik- und Timing-Analyse), dann E2.
+
+## 2026-11-09 04:12 – E1 bis E8, Zwischenstand
+- Videoauswertung (nur Mechanik und Timing), GDD, Simulation, Netz, Rendering, Menüs, eigene Grafik und Sound fertig.
+- Drei unabhängige Tests, Berichte in reference/review/playtest-1.md bis -3.md, wichtige Befunde behoben.
+- Belege: `npx vitest run` 84/84 grün; `npx playwright test` 16/16 grün; `playwright.perf.config.ts` 57,6 FPS Mittel bei 200 Gegnern (docs/perf-latest.json); Live-Tests Chrome und Edge grün; Tunnel-Test grün.
+- Offen: Firefox nicht automatisch testbar (ENTSCHEIDUNGEN E-011), Sound nicht angehört, Wurfgefühl nicht von Menschen geprüft.
+- Nächster Schritt: Abschlussrunden ab 12:00 Uhr.

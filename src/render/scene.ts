@@ -74,7 +74,7 @@ export class GameScene extends Phaser.Scene {
     this.keepGate = this.add.image(WORLD.gateX - 74, 620, propKey('gate0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(11);
     this.cracks = this.add.image(WORLD.gateX - 74, 620, propKey('crack1')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(12).setVisible(false);
     this.cauldronBack = this.add.image(WORLD.cauldron.x, 650, propKey('cauldronBack')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(19).setVisible(false);
-    this.cauldronFront = this.add.image(WORLD.cauldron.x, 650, propKey('cauldronFront')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(29).setVisible(false);
+    this.cauldronFront = this.add.image(WORLD.cauldron.x, 650, propKey('cauldronFront')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(19.8).setVisible(false);
     this.perch = this.add.image(WORLD.perch.x, 640, propKey('perch')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(18).setVisible(false);
     this.eagle = this.add.image(0, 0, propKey('eagleA')).setScale(1 / TEX_SCALE).setDepth(40).setVisible(false);
 
@@ -167,7 +167,9 @@ export class GameScene extends Phaser.Scene {
     this.hud.setVisible(true);
 
     s.setHand(this.tracker.x, this.tracker.y);
-    s.update(Math.min(100, deltaMs));
+    // Alone, a hitstop can stop the world for real; a shared game must keep running for the other player.
+    if (s.role !== 'solo' || now >= this.hitstopUntil) s.update(Math.min(100, deltaMs));
+    this.fx.resetFloatBudget();
     const events = s.drainEvents();
     for (const e of events) this.handleEvent(e, s);
 
@@ -245,7 +247,7 @@ export class GameScene extends Phaser.Scene {
       if (q.kind === 'wheel') img.setScale((q.size / 50) / TEX_SCALE);
       else if (q.kind === 'slab') img.setScale((q.size / 80) / TEX_SCALE);
       else if (q.kind === 'comet') {
-        const swell = 1 + Math.min(1, q.charge / 900) * 0.8;
+        const swell = q.heldBy >= 0 ? 1 + Math.min(1, q.charge / 900) * 0.8 : 1;
         img.setScale((swell * (q.size / 80)) / TEX_SCALE);
       } else img.setScale(1 / TEX_SCALE);
     }

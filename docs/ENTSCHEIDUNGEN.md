@@ -43,3 +43,9 @@ Playwright läuft mit Software-WebGL. Die vollen Browser von Playwright startet 
 
 ## E-012 – Skills und Quellen
 Keine zusätzlichen Claude-Code-Skills oder fremden Repos verwendet; die Pakete stammen alle aus npm. Keine fremden Assets.
+
+## E-013 – Werte nach dem dritten Test
+Wurfgeschwindigkeit auf 1700 px/s begrenzt, damit Würfe im Bild bleiben. Messfenster 110 ms mit flacherer Gewichtung, damit abbremsende Bewegungen nicht verschluckt werden. Rad-Treffer begrenzt, Stomper und Dachgeschütz verstärkt. Gegnerische Bomben treffen nur noch das Tor, zurückgeworfene auch Räuber.
+
+## E-014 – „Gegner werfen andere um“ bleibt aus
+Der dritte Tester hat es vorgeschlagen. Der Auftrag sieht als Standard das Verhalten des Originals vor (eher nein), und die Videos geben nichts anderes her. Der Schalter steht im Tuning-Panel; die Arcade-Voreinstellung hat ihn an.

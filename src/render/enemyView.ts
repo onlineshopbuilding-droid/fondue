@@ -131,7 +131,9 @@ export class EnemyView {
     const root = pup.root;
     root.setPosition(ox, oy);
     root.setRotation(rot);
-    root.setDepth(20 + e.lane / 100 + (e.st === 'held' ? 5 : 0) + (e.st === 'air' ? 3 : 0));
+    // A figure falling into the cauldron passes between its back and its rim.
+    const intoCauldron = e.st === 'air' && e.y > WORLD.groundY - 70 && Math.abs(e.x - WORLD.cauldron.x) < WORLD.cauldron.halfWidth + 20;
+    root.setDepth(intoCauldron ? 19.5 : 20 + e.lane / 100 + (e.st === 'held' ? 5 : 0) + (e.st === 'air' ? 3 : 0));
 
     this.squash = Math.max(0, this.squash - dt * 5);
     const sq = this.squash * 0.35;
@@ -157,7 +159,7 @@ export class EnemyView {
     this.bubble.setVisible(e.shield);
     if (this.bubble.visible) {
       const s = 1 + Math.sin(time * 0.012) * 0.04;
-      this.bubble.setPosition(e.x, e.y - def.height * 0.5).setScale(s / TEX_SCALE).setDepth(depth);
+      this.bubble.setPosition(e.x, e.y - def.height * 0.5).setScale(s / TEX_SCALE).setDepth(depth).setAlpha(0.6);
     }
     this.star.setVisible(e.st === 'stun');
     if (this.star.visible) {
