@@ -96,7 +96,7 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await host.waitForSelector('#toShop', { timeout: 8000 });
     await host.click('#toShop');
     await guest.click('#toShop');
-    await guest.locator('.tab', { hasText: 'Shrines' }).click();
+    await guest.locator('.tab', { hasText: 'Offerings' }).click();
     await guest.click('button[data-buy="cauldron"]');
     await expect(host.locator('.toast').filter({ hasText: 'Lenny bought Great Cauldron' })).toBeVisible({ timeout: 5000 });
     await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().owned.includes('cauldron')), (b) => b, 5000);

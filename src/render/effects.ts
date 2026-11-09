@@ -207,8 +207,8 @@ export class Effects {
     }
   }
 
-  fadingProp(key: string, x: number, y: number, life: number, originY = 1) {
-    const p = this.spawn(propKey(key), x, y, { life, s0: 1, s1: 1 });
+  fadingProp(key: string, x: number, y: number, life: number, scale = 1, originY = 1) {
+    const p = this.spawn(propKey(key), x, y, { life, s0: scale, s1: scale });
     p?.img.setOrigin(0.5, originY);
   }
 

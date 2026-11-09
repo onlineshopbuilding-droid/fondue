@@ -41,7 +41,7 @@ test('day, results, market, next day', async ({ page }) => {
   await page.screenshot({ path: 'docs/screenshots/market.png' });
   await page.click('#ready');
   await waitFor(() => gameState(page), (s) => s?.day === 2 && s.phase === 'banner', 6000);
-  expect((await gameState(page))!.gateMax).toBe(1000);
+  expect((await gameState(page))!.gateMax).toBe(1400);
   await waitFor(() => gameState(page), (s) => s?.phase === 'battle');
 
   // Weapon by key and by clicking its icon.
@@ -101,6 +101,38 @@ test('debug overlay and pause', async ({ page }) => {
   await expect(page.locator('.panel h2')).toHaveText('Paused');
   await page.click('button[data-a="resume"]');
   await expect(page.locator('.panel')).toHaveCount(0);
+  await page.keyboard.press('p');
+  await expect(page.locator('.panel h2')).toHaveText('Paused');
+  await page.keyboard.press('p');
+  await expect(page.locator('.panel')).toHaveCount(0);
+});
+
+test('right click cancels a weapon and never grabs', async ({ page }) => {
+  await startSolo(page, '?seed=16');
+  await waitFor(() => gameState(page), (s) => s?.phase === 'battle');
+  await page.evaluate(`window.__fondue.session.sim.s.meta.owned.push('stomper1'); window.__fondue.session.sim.s.spawnQueue = []; window.__fondue.session.sim.s.enemies = []; window.__fondue.session.sim.spawnEnemy('grunt', 700);`);
+  await page.waitForTimeout(100);
+  await page.keyboard.press('2');
+  await waitFor(() => gameState(page), (s) => s!.hands[0].mode === 'stomper', 2000);
+  await page.mouse.click(640, 400, { button: 'right' });
+  await waitFor(() => gameState(page), (s) => s!.hands[0].mode === 'none', 2000);
+  expect(await page.evaluate(() => (window as any).__fondue.session.view().cooldowns.stomper)).toBe(0);
+  const e = (await gameState(page))!.enemies[0];
+  await page.mouse.move(e.x, e.y - 40);
+  await page.mouse.down({ button: 'right' });
+  await page.waitForTimeout(80);
+  expect((await gameState(page))!.enemies[0].st).not.toBe('held');
+  await page.mouse.up({ button: 'right' });
+});
+
+test('from game over, scores returns to the game over screen', async ({ page }) => {
+  await startSolo(page, '?seed=17');
+  await waitFor(() => gameState(page), (s) => s?.phase === 'battle');
+  await page.evaluate(`${sim('gateHp')} = 1; window.__fondue.session.sim.spawnEnemy('grunt', 220);`);
+  await page.waitForSelector('#restart', { timeout: 15000 });
+  await page.click('button[data-a="scores2"]');
+  await page.click('button[data-a="backGameOver"]');
+  await expect(page.locator('#restart')).toBeVisible();
 });
 
 test('a realistic flick kills, a slow drop does not', async ({ page }) => {

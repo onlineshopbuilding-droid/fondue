@@ -31,7 +31,7 @@ Messungen am Original in Anteilen der Bildhöhe H und Bildbreite W, umgerechnet 
 | Figurengröße | 0,12–0,19 H [M] | 87 px (0,12 H) |
 | Aufprall-Effekte | Blut 0,5–0,6 s, Explosion 0,33 s [M] | Partikel 0,45–0,75 s, Explosion 0,33 s |
 
-Tödlich ist ein Aufprall ab 720 px/s. Das entspricht einem Fall aus etwa 76 px Höhe, ein kurzes Hochschnippen reicht also.
+Tödlich ist ein Aufprall ab 900 px/s. Das entspricht einem Fall aus etwa 120 px Höhe, ein kurzes Hochschnippen reicht also. Ein flacher Wurf von der Straße bekommt einen kleinen Bogen, damit er sichtbar fliegt.
 
 ## Gegner
 Die Verhaltensarten stammen aus dem Original oder sind vom Auftrag vorgegeben, Namen und Aussehen sind eigen.
@@ -71,4 +71,4 @@ Abklingzeiten sind in den Videos nicht zu erkennen und daher **[A]**.
 Host-autoritativ mit 30 Snapshots pro Sekunde, Interpolation 100 ms, Vorhersage von Griff und Wurf beim Gast. Gemeinsame Kasse, gemeinsames Tor, Shop mit Ready. Gegneranzahl ×1,9 (Startwert im Auftrag 1,6, nach Balance-Simulation erhöht).
 
 ## Eskalation
-Tag 1: 38 Gegner, je Tag +14, ab Tag 12 +12. Tag 7: 122. Torschaden +13 %, Tempo +1,5 %, Waffen-Trefferpunkte +12 % pro Tag.
+Tag 1: 38 Gegner, je Tag +14, ab Tag 12 +12. Tag 7: 122. Torschaden +20 %, Tempo +1,5 %, Waffen-Trefferpunkte +12 % pro Tag.

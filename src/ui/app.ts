@@ -141,6 +141,7 @@ export class App {
   private onKey(e: KeyboardEvent) {
     if (e.key === 'F1' || e.key === '^') { e.preventDefault(); this.tuning.toggle(); }
     if (e.key === 'F3') { e.preventDefault(); this.toggleDebug(); }
+    if (this.screen === 'pause' && (e.key === 'p' || e.key === 'P' || e.key === 'Escape')) this.togglePause();
   }
 
   private toggleDebug() {
@@ -181,7 +182,8 @@ export class App {
     this.syncConnection();
     if (view.phase === 'banner' && meta && this.tipShownDay !== view.day) {
       this.tipShownDay = view.day;
-      for (const t of meta.newTipTypes) this.toast(ENEMIES[t].tip, 'tip', 7000);
+      if (view.day === 1) this.toast('Hold the gate until the sun crosses the bar at the top. Gold buys upgrades between days.', 'tip', 5500);
+      for (const t of meta.newTipTypes) this.toast(ENEMIES[t].tip, 'tip', 5500);
     }
   }
 
@@ -491,6 +493,7 @@ export class App {
         return `<div class="panel narrow"><h2>Play</h2>
           <div class="stack">
             <label class="field">Your name<input id="name" type="text" maxlength="14" value="${esc(this.settings.name)}" placeholder="Player"></label>
+            <label class="field">Difficulty<select id="difficulty">${this.difficultyOptions()}</select></label>
             <button data-a="solo">Single Player</button>
             <button class="alt" data-a="openRoom">Host Co-op</button>
             <button class="alt" data-a="gotoJoin">Join Co-op</button>
@@ -541,9 +544,14 @@ export class App {
     return url.toString();
   }
 
+  private difficultyOptions(): string {
+    return (Object.keys(DIFFICULTIES) as Difficulty[])
+      .map((d) => `<option value="${d}" ${d === this.settings.difficulty ? 'selected' : ''}>${DIFFICULTIES[d].label}</option>`).join('');
+  }
+
   private renderHost(): string {
     const ready = this.lobbyLink !== null;
-    const opts = (Object.keys(DIFFICULTIES) as Difficulty[]).map((d) => `<option value="${d}" ${d === this.settings.difficulty ? 'selected' : ''}>${DIFFICULTIES[d].label}</option>`).join('');
+    const opts = this.difficultyOptions();
     return `<div class="panel narrow"><h2>Host Co-op</h2>
       <p style="text-align:center;margin:0">Room code</p>
       <div class="code" id="roomCode">${esc(this.code)}</div>
@@ -574,7 +582,7 @@ export class App {
 
   private renderOptions(back: string): string {
     const s = this.settings;
-    const opts = (Object.keys(DIFFICULTIES) as Difficulty[]).map((d) => `<option value="${d}" ${d === s.difficulty ? 'selected' : ''}>${DIFFICULTIES[d].label}</option>`).join('');
+    const opts = this.difficultyOptions();
     const returnBtn = this.session ? '<button class="secondary" data-a="backPause">Back</button>' : back;
     return `<div class="panel narrow"><h2>Options</h2><div class="stack">
       <label class="field">Difficulty (applies to new games)<select id="difficulty">${opts}</select></label>
@@ -600,7 +608,7 @@ export class App {
     return `<div class="panel"><h2>Scores</h2>
       <table class="scores"><thead><tr><th>#</th><th>Name</th><th>Mode</th><th>Level</th><th>Day</th><th>Score</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="6">No runs yet. Go hold that gate.</td></tr>'}</tbody></table>
-      <div class="row" style="margin-top:14px">${back}</div></div>`;
+      <div class="row" style="margin-top:14px">${this.session?.view()?.phase === 'gameover' ? '<button class="secondary" data-a="backGameOver">Back</button>' : back}</div></div>`;
   }
 
   private readyLine(meta: Meta): string {
@@ -615,7 +623,7 @@ export class App {
     const me = this.session?.me ?? 0;
     const label = meta.names.length > 1 ? (meta.ready[me] ? 'Not ready' : 'Ready') : 'Next Day';
     const force = this.session?.role === 'host' && meta.ready[0] ? '<button class="alt" data-a="force">Start anyway</button>' : '';
-    return `<button id="ready" data-a="ready">${label}</button>${force}`;
+    return `<button class="alt" id="ready" data-a="ready">${label}</button>${force}`;
   }
 
   private renderResults(): string {
@@ -632,7 +640,7 @@ export class App {
       </div>
       <p style="text-align:center;font-style:italic">${esc(this.loadingTip)}</p>
       ${this.readyLine(meta)}
-      <div class="row" style="margin-top:10px"><button class="secondary" id="toShop" data-a="toShop">Market</button>${this.nextButtons(meta)}</div></div>`;
+      <div class="row" style="margin-top:10px"><button id="toShop" data-a="toShop">Market</button>${this.nextButtons(meta)}</div></div>`;
   }
 
   private renderShop(): string {
@@ -647,14 +655,15 @@ export class App {
       const owned = meta.owned.includes(i.id);
       const locked = !!i.requires && !meta.owned.includes(i.requires);
       const afford = v.gold >= i.gold && v.offerings >= i.offerings;
-      const isEquipped = i.tab === 'horns' ? meta.hornEquipped === i.id : owned;
+      const tierSiblings = SHOP_ITEMS.filter((o) => o.tab === i.tab && meta.owned.includes(o.id));
+      const isEquipped = i.tab === 'horns' ? meta.hornEquipped === i.id
+        : i.tab === 'offerings' ? owned : tierSiblings[tierSiblings.length - 1]?.id === i.id;
       let action = '';
       if (owned) {
-        action = i.tab === 'horns' && !isEquipped
-          ? `<button class="small secondary" data-equip="${i.id}">Equip</button>`
-          : '<span class="tag">Equipped</span>';
+        if (i.tab === 'horns' && !isEquipped) action = `<button class="small secondary" data-equip="${i.id}">Equip</button>`;
+        else action = `<span class="tag">${isEquipped ? 'Equipped' : 'Owned'}</span>`;
       } else if (locked) {
-        action = '<span class="tag">Locked</span>';
+        action = `<span class="tag">Needs ${esc(SHOP_ITEMS.find((o) => o.id === i.requires)?.name ?? '')}</span>`;
       } else {
         action = `<button class="small" data-buy="${i.id}" ${afford ? '' : 'disabled'}>Buy</button>`;
       }
@@ -665,7 +674,7 @@ export class App {
     }).join('');
     return `<div class="panel wide"><h2>The Market</h2>
       <div class="purse"><span>${coin}<span id="gold">${v.gold}</span></span><span>${off}<span id="offerings">${v.offerings}</span></span></div>
-      <div class="tabs">${tabs}</div><div class="items">${items}</div>
+      <div class="tabs">${tabs}</div>${this.shopTab === 'horns' ? '<p style="text-align:center;margin:0 0 8px">Only one Gate Arm can be equipped at a time.</p>' : ''}<div class="items">${items}</div>
       ${this.readyLine(meta)}
       <div class="row" style="margin-top:14px"><button class="secondary" data-a="toResults">Results</button>${this.nextButtons(meta)}</div></div>`;
   }
@@ -677,7 +686,7 @@ export class App {
     const restart = this.session?.role === 'guest' ? '<p style="text-align:center">The host can start a new run.</p>' : '<button data-a="restart" id="restart">Play again</button>';
     return `<div class="panel narrow"><h2>The gate has fallen</h2>
       <div class="stats">
-        <span>Days survived</span><b>${Math.max(0, v.day - 1)}</b>
+        <span>Fell on day</span><b>${v.day}</b>
         <span>Raiders defeated</span><b>${meta.totalKills}</b>
         <span>Final score</span><b id="finalScore">${meta.totalScore}</b>
       </div>
@@ -717,6 +726,7 @@ export class App {
       case 'help': this.show('help'); break;
       case 'scores': this.show('scores'); break;
       case 'scores2': this.show('scores'); break;
+      case 'backGameOver': this.show('gameover'); break;
       case 'credits': this.show('credits'); break;
       case 'solo': this.startSolo(); break;
       case 'openRoom': void this.openRoom(); break;
@@ -734,7 +744,7 @@ export class App {
       case 'startCoop': this.startCoopAsHost(); break;
       case 'helpPrev': this.helpIndex = (this.helpIndex + HELP_SLIDES.length - 1) % HELP_SLIDES.length; this.show('help'); break;
       case 'helpNext': this.helpIndex = (this.helpIndex + 1) % HELP_SLIDES.length; this.show('help'); break;
-      case 'toShop': this.show('shop'); break;
+      case 'toShop': this.shopTab = this.bestShopTab(); this.show('shop'); break;
       case 'toResults': this.show('results'); break;
       case 'ready': this.clickReady(); break;
       case 'force': this.session?.send({ k: 'forceStart' }); break;
@@ -745,6 +755,17 @@ export class App {
       case 'rejoin': this.enterRejoin(); break;
       case 'quit': this.leaveToMenu(); break;
     }
+  }
+
+  /** Opens the market where something can actually be bought. */
+  private bestShopTab(): ShopTab {
+    const s = this.session;
+    const meta = s?.meta();
+    const v = s?.view();
+    if (!meta || !v) return this.shopTab;
+    const buyable = SHOP_ITEMS.find((i) => !meta.owned.includes(i.id) && (!i.requires || meta.owned.includes(i.requires))
+      && v.gold >= i.gold && v.offerings >= i.offerings);
+    return buyable?.tab ?? this.shopTab;
   }
 
   private clickReady() {

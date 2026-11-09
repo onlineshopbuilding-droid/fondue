@@ -8,9 +8,9 @@ export interface HelpSlide {
 export const HELP_SLIDES: HelpSlide[] = [
   { title: 'You are the hand', icon: 'handOpen', text: 'The raiders come down the road toward your gate. Reach in with your mouse or finger. No hero, no army, just your hand.' },
   { title: 'Grab and fling', icon: 'handClosed', text: 'Press on a raider to grab it. Move fast and let go to throw it. It dies when it lands hard, so a good flick skyward is enough.' },
-  { title: 'Drop', icon: 'dust', text: 'You can also lift a raider up high and simply let go. A soft landing only dazes it for a second.' },
-  { title: 'Offerings', icon: 'cauldronBack', text: 'Buy the Great Cauldron and drop raiders into it, or buy the Eagle Perch and hang them on the hook. Each one earns an offering, which the best upgrades cost.' },
-  { title: 'Wheels and Stompers', icon: 'iconStomper', text: 'Click a weapon icon or press 1 to 5. A Wheel rolls at once. For a Stomper, click its icon, hover where you want it, then press and flick down.' },
+  { title: 'Drop', icon: 'dust', text: 'Lift a raider well above the road and simply let go. A short drop only dazes it for a second.' },
+  { title: 'Offerings', icon: 'cauldronBack', text: 'Gold buys upgrades at the Market between days. Buy the Great Cauldron and drop raiders into it, or buy the Eagle Perch and hang them on the hook. Each one earns an offering, which the best upgrades cost.' },
+  { title: 'Wheels and Stompers', icon: 'iconStomper', text: 'Click a weapon icon or press 1 to 5. A Wheel rolls at once. For a Stomper, click its icon, hover where you want it, then press to slam it down.' },
   { title: 'Comets', icon: 'iconComet', text: 'Click the icon and the comet is in your hand. Press, swing it around, let go. The more you swing, the bigger the blast.' },
   { title: 'Gate Arms', icon: 'iconFrost', text: 'Click the icon, press and move to aim, let go to fire. A click on a frozen raider shatters it. Right-click or Esc cancels a weapon.' },
   { title: 'Know your enemy', icon: 'iconCastle', text: 'Click Keg Haulers quickly to make them drop the keg. Hit Siege Carts again and again. Hexers are untouchable while their bubble is up. A Yeti needs two hands.' },

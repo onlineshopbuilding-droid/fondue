@@ -361,6 +361,10 @@ export class GuestSession implements Session {
     const sp = Math.hypot(ax, ay);
     if (sp > t.maxThrow) { ax *= t.maxThrow / sp; ay *= t.maxThrow / sp; }
     p.vx = ax; p.vy = ay;
+    // Same low arc the host gives a flat throw from road height.
+    const groundY = WORLD.groundY + p.lane;
+    const flat = Math.abs(ax);
+    if (groundY - p.y < 20 && flat > 250 && ay <= flat * 0.5 && ay >= -flat * 0.25) { p.y = groundY - 22; p.vy = -flat * 0.25; }
     p.thrown = true;
     p.pressedAt = performance.now();
     this.thrown.push(p);

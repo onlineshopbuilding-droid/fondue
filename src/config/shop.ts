@@ -16,7 +16,7 @@ export interface ShopItem {
 
 export const SHOP_TABS: { id: ShopTab; label: string }[] = [
   { id: 'gates', label: 'Gates' },
-  { id: 'offerings', label: 'Shrines' },
+  { id: 'offerings', label: 'Offerings' },
   { id: 'wheels', label: 'Wheels' },
   { id: 'stompers', label: 'Stompers' },
   { id: 'comets', label: 'Comets' },
@@ -39,7 +39,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'wheel2', name: 'Heavy Wheel', tab: 'wheels', gold: 1200, offerings: 16, requires: 'wheel1', desc: 'Wider, and it does not stop for much.' },
   { id: 'wheel3', name: 'Colossal Wheel', tab: 'wheels', gold: 3200, offerings: 32, requires: 'wheel2', desc: 'Flattens the whole road.' },
 
-  { id: 'stomper1', name: 'Stomper', tab: 'stompers', gold: 900, offerings: 8, desc: 'Click its icon, hover, then press and flick down to slam.' },
+  { id: 'stomper1', name: 'Stomper', tab: 'stompers', gold: 900, offerings: 8, desc: 'Click its icon, hover where it should land, then press to slam.' },
   { id: 'stomper2', name: 'Great Stomper', tab: 'stompers', gold: 2200, offerings: 18, requires: 'stomper1', desc: 'A wider slab, reloaded faster.' },
   { id: 'stomper3', name: 'Titan Stomper', tab: 'stompers', gold: 5200, offerings: 32, requires: 'stomper2', desc: 'The ground remembers this one.' },
 
@@ -60,11 +60,11 @@ export const STARTING_ITEMS = ['gate0'];
 
 /** Gate strength per tier. */
 export const GATE_HP: Record<string, number> = {
-  gate0: 500,
-  gate1: 1000,
-  gate2: 1700,
-  gate3: 2800,
-  gate4: 4500,
+  gate0: 800,
+  gate1: 1400,
+  gate2: 2200,
+  gate3: 3400,
+  gate4: 5200,
 };
 
 export const WEAPONS = {
@@ -85,12 +85,12 @@ export const WEAPONS = {
     /** Swing path length in px that gives the full size bonus. */
     fullChargePath: 900,
     maxChargeBonus: 0.9,
-    idleCancelSeconds: 9,
+    idleCancelSeconds: 20,
   },
   horn: {
-    mortar: { kind: 'blast', radius: 95, damage: 150, cooldown: 3.5 },
+    mortar: { kind: 'blast', radius: 95, damage: 150, cooldown: 5 },
     frost: { kind: 'freeze', radius: 130, cooldown: 9 },
-    bellows: { kind: 'flame', halfWidth: 150, flameSeconds: 2.2, damage: 120, cooldown: 11 },
+    bellows: { kind: 'flame', halfWidth: 150, flameSeconds: 2.2, cooldown: 11 },
   },
   bolter: {
     bolter1: { bolts: 4, damage: 60, pierce: false, cooldown: 9 },

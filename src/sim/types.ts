@@ -49,6 +49,9 @@ export interface Enemy {
   dead: boolean;
   /** Was frozen at the moment it was grabbed. */
   frozenHeld: boolean;
+  maxHp: number;
+  /** How far right a single hand may drag a yeti. */
+  tugLimit: number;
 }
 
 export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt';
@@ -98,6 +101,8 @@ export interface Hand {
   pressX: number;
   pressY: number;
   pressTick: number;
+  /** The current press began after the weapon mode started, so its release may fire. */
+  modePress: boolean;
   connected: boolean;
 }
 

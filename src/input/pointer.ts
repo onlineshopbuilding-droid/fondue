@@ -23,6 +23,13 @@ export class PointerTracker {
 
   clear() { this.samples = []; }
 
+  /** The release point. A repeat of the last position would read as a sudden stop, so it is skipped. */
+  addRelease(t: number, x: number, y: number) {
+    const last = this.samples[this.samples.length - 1];
+    if (last && last.x === x && last.y === y) return;
+    this.add(t, x, y);
+  }
+
   /** Weighted velocity over the last windowMs, in world px/s. Recent segments count more. */
   velocity(now: number, windowMs: number): { vx: number; vy: number } {
     const s = this.samples.filter((p) => now - p.t <= windowMs);
@@ -77,7 +84,8 @@ export function bindPointer(canvas: HTMLCanvasElement, h: PointerHandlers): { tr
   };
 
   const onDown = (ev: PointerEvent) => {
-    if (activeId !== null) return;
+    // Only the primary button plays; the right button is reserved for cancelling.
+    if (activeId !== null || ev.button !== 0) return;
     activeId = ev.pointerId;
     canvas.setPointerCapture(ev.pointerId);
     const p = toWorld(ev);
@@ -92,7 +100,7 @@ export function bindPointer(canvas: HTMLCanvasElement, h: PointerHandlers): { tr
     if (ev.pointerId !== activeId) return;
     activeId = null;
     const p = toWorld(ev);
-    tracker.add(ev.timeStamp, p.x, p.y);
+    tracker.addRelease(ev.timeStamp, p.x, p.y);
     if (hudPress) { hudPress = false; return; }
     const v = tracker.velocity(ev.timeStamp, h.windowMs());
     h.onUp(p.x, p.y, v.vx, v.vy);

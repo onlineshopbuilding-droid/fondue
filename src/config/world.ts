@@ -9,7 +9,7 @@ export const WORLD = {
   /** Enemies appear here. */
   spawnX: 1330,
   /** Thrown enemies bounce off an invisible wall here. */
-  rightWallX: 1400,
+  rightWallX: 1285,
   /** Depth lanes: pixels added to groundY. */
   laneMin: 0,
   laneMax: 44,

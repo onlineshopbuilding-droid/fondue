@@ -1,4 +1,4 @@
-import { ENEMIES, ENEMY_TYPES, type EnemyType } from '../config/enemies';
+import { ENEMY_TYPES, type EnemyType } from '../config/enemies';
 import { WEAPON_SLOTS, type WeaponSlot } from '../config/shop';
 import type { EnemyState, Flame, HandMode, Phase, ProjectileKind, SimState } from '../sim/types';
 
@@ -114,7 +114,7 @@ export function encodeSnapshot(s: SimState): WireSnapshot {
       return [
         e.id, ENEMY_TYPES.indexOf(e.type), STATES.indexOf(e.st), r1(e.x), r1(e.y), r2(e.rot), Math.round(e.lane), flags,
         e.heldBy.length > 0 ? e.heldBy[0] : -1, e.heldBy.length > 1 ? e.heldBy[1] : -1,
-        r2(e.hp / ENEMIES[e.type].hp),
+        r2(e.hp / e.maxHp),
       ];
     }),
     q: s.projectiles.map((q) => [q.id, KINDS.indexOf(q.kind), r1(q.x), r1(q.y), r2(q.rot), r1(q.size), q.heldBy, Math.round(q.charge)]),

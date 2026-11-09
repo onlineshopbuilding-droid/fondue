@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { AudioEngine, SfxName } from '../audio/audio';
 import { ENEMIES } from '../config/enemies';
-import { WEAPON_SLOTS, type WeaponSlot } from '../config/shop';
+import { WEAPONS, WEAPON_SLOTS, type WeaponSlot } from '../config/shop';
 import { WORLD } from '../config/world';
 import type { Session } from '../game/session';
 import type { ViewEnemy, ViewHand, ViewProjectile, ViewState } from '../net/snapshot';
@@ -320,7 +320,11 @@ export class GameScene extends Phaser.Scene {
       hv.img.setPosition(x, y);
       if (view.hands.length > 1) hv.label.setText(meta?.names[i] ?? '').setPosition(x, y - 40);
       hv.reticle.setPosition(x, y).setRotation(performance.now() * 0.002);
-      hv.ghost.setPosition(x, 200);
+      if (h.mode === 'stomper') {
+        const tier = ['stomper3', 'stomper2', 'stomper1'].find((id) => meta?.owned.includes(id));
+        const halfWidth = tier ? WEAPONS.stomper[tier as keyof typeof WEAPONS.stomper].halfWidth : 80;
+        hv.ghost.setPosition(x, WORLD.groundY + 34).setScale((halfWidth / 80) / TEX_SCALE);
+      }
     });
   }
 
@@ -431,7 +435,7 @@ export class GameScene extends Phaser.Scene {
         break;
       case 'slam':
         this.sfx('slam');
-        this.fx.fadingProp('slab', ev.x, ev.y + 8, 0.5);
+        this.fx.fadingProp('slab', ev.x, ev.y + 8, 0.5, ev.halfWidth / 80);
         this.fx.dust(ev.x, ev.y, 1);
         this.fx.dust(ev.x - ev.halfWidth, ev.y, 1);
         this.fx.dust(ev.x + ev.halfWidth, ev.y, 1);

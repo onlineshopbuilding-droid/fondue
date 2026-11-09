@@ -31,7 +31,7 @@ export const TUNING_DEFAULT: Tuning = {
   throwMult: 1.0,
   maxThrow: 2700,
   velWindowMs: 80,
-  lethalImpact: 720,
+  lethalImpact: 900,
   hitstopMs: 60,
   shake: 1,
   holdSpring: 1600,

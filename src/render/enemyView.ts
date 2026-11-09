@@ -51,6 +51,8 @@ export class EnemyView {
   private bubble: Phaser.GameObjects.Image;
   private star: Phaser.GameObjects.Image;
   private fuse: Phaser.GameObjects.Image;
+  private barBack: Phaser.GameObjects.Rectangle;
+  private bar: Phaser.GameObjects.Rectangle;
   id = -1;
   private seed = 0;
   private squash = 0;
@@ -64,6 +66,8 @@ export class EnemyView {
     this.bubble = scene.add.image(0, 0, propKey('shieldBubble')).setScale(1 / TEX_SCALE).setVisible(false);
     this.star = scene.add.image(0, 0, propKey('star')).setScale(1 / TEX_SCALE).setVisible(false);
     this.fuse = scene.add.image(0, 0, propKey('spark')).setScale(1 / TEX_SCALE).setVisible(false);
+    this.barBack = scene.add.rectangle(0, 0, 64, 9, 0x2b2118).setVisible(false).setOrigin(0, 0.5);
+    this.bar = scene.add.rectangle(0, 0, 60, 5, 0xe9b44c).setVisible(false).setOrigin(0, 0.5);
   }
 
   private puppet(rigName: string): Puppet {
@@ -92,6 +96,8 @@ export class EnemyView {
     this.bubble.setVisible(false);
     this.star.setVisible(false);
     this.fuse.setVisible(false);
+    this.barBack.setVisible(false);
+    this.bar.setVisible(false);
   }
 
   /** Called when a soft landing happens. */
@@ -132,7 +138,7 @@ export class EnemyView {
     root.setScale(CHAR_SCALE * (1 + sq), CHAR_SCALE * (1 - sq));
 
     pup.setPartVisible('keg', e.armed);
-    pup.setPartVisible('balloon', e.st === 'float' || e.st === 'attack');
+    pup.setPartVisible('balloon', e.st === 'float');
     root.setAlpha(e.hidden ? 0.1 + Math.abs(Math.sin(time * 0.01 + this.seed * 10)) * 0.1 : 1);
 
     this.applyPose(pup, e, time);
@@ -157,6 +163,15 @@ export class EnemyView {
     if (this.star.visible) {
       const a = time * 0.01;
       this.star.setPosition(e.x + Math.cos(a) * 24, e.y - def.height * CHAR_SCALE - 6 + Math.sin(a) * 6).setDepth(depth);
+    }
+    // Tough enemies show how close they are to breaking.
+    const showBar = (e.type === 'siegeCart' || e.type === 'yeti') && e.hpFrac < 0.999;
+    this.barBack.setVisible(showBar);
+    this.bar.setVisible(showBar);
+    if (showBar) {
+      const top = e.y - def.height - 10;
+      this.barBack.setPosition(e.x - 32, top).setDepth(depth);
+      this.bar.setPosition(e.x - 30, top).setSize(60 * Math.max(0, e.hpFrac), 5).setDepth(depth + 0.01);
     }
     this.fuse.setVisible(e.fuse);
     if (this.fuse.visible) this.fuse.setPosition(e.x, e.y - 20).setScale((1 + Math.sin(time * 0.05)) / TEX_SCALE).setDepth(depth);

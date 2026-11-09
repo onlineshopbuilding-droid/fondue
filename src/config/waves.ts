@@ -31,7 +31,7 @@ export const DAY = {
   /** Hard limit of living enemies; spawns wait while it is reached. */
   maxAlive: 200,
   /** Per-day growth after day 1: gate damage, walk speed, and hit points against weapons. */
-  damageGrowth: 0.13,
+  damageGrowth: 0.2,
   speedGrowth: 0.015,
   hpGrowth: 0.12,
   /** Share of the day over which spawning ramps from sparse to dense. */

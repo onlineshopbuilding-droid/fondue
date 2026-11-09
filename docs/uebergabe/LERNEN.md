@@ -38,7 +38,7 @@ Zufall kommt aus einem Generator mit Startwert (`src/sim/rng.ts`). Gleicher Star
 2. Beim Loslassen rechnet `velocity()` die Geschwindigkeit der letzten 80 ms aus. Neuere Abschnitte zählen stärker. Hält man am Ende still, gibt es kaum noch Samples und der Wurf fällt schwach aus.
 3. `Sim.throwEnemy` multipliziert mit dem Wurffaktor und begrenzt auf die Höchstgeschwindigkeit.
 4. In der Luft gilt einfache Physik pro Schritt: `v += g * dt`, dann `pos += v * dt`.
-5. Beim Bodenkontakt entscheidet die Aufprallgeschwindigkeit: ab 720 px/s tot, sonst abprallen und benommen sein.
+5. Beim Bodenkontakt entscheidet die Aufprallgeschwindigkeit: ab 900 px/s tot, sonst abprallen und benommen sein.
 
 Während des Haltens zieht eine **gedämpfte Feder** die Figur zur Hand: `a = k * (ziel - pos) - c * v`. Daher hängt sie leicht nach und schwingt.
 

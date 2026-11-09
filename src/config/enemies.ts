@@ -51,7 +51,7 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   },
   bomber: {
     name: 'Keg Hauler',
-    speed: 85, strike: 26, strikeEvery: 3.2, range: 150, hp: 40, radius: 28, height: 90,
+    speed: 85, strike: 26, strikeEvery: 3.2, range: 225, hp: 40, radius: 28, height: 90,
     gold: 15, score: 160, grabbable: true, firstDay: 2, weight: 3, maxPerDay: 40,
     tip: 'Keg Haulers lob bombs at the gate. A quick click makes them drop the keg. Pick up a thrown bomb and send it back.',
   },
@@ -123,8 +123,9 @@ export const BEHAVIOUR = {
   pogo: { hopSpeed: 1150, restAtGate: 0.5 },
   balloon: { altitudeMin: 200, altitudeMax: 300, dropEvery: 2.2 },
   crow: { speed: 260, altitude: 110, grabPad: 18 },
-  siegeCartTapDamage: 40,
-  yeti: { tugSpeed: 90, slowWhileHeld: 0.35 },
+  /** Clicks needed to break a siege cart, on any day. */
+  siegeCartTaps: 7,
+  yeti: { tugSpeed: 90, slowWhileHeld: 0.35, tugReach: 70 },
   frozen: { seconds: 6 },
   tapMaxSeconds: 0.2,
   tapMaxMove: 14,

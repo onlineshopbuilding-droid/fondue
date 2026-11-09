@@ -308,7 +308,7 @@ describe('enemy behaviours', () => {
   it('siege cart cannot be lifted and breaks after repeated clicks', () => {
     const sim = battleSim();
     const e = place(sim, 'siegeCart', 700);
-    const taps = Math.ceil(ENEMIES.siegeCart.hp / BEHAVIOUR.siegeCartTapDamage);
+    const taps = BEHAVIOUR.siegeCartTaps;
     for (let i = 0; i < taps; i++) {
       expect(e.dead).toBe(false);
       sim.command({ k: 'press', p: 0, x: e.x, y: e.y - 40 });
@@ -649,6 +649,123 @@ describe('weapons', () => {
       for (let i = 0; i < 90; i++) sim.step();
     }
     expect(sim.s.phase).toBe('battle');
+  });
+});
+
+describe('regressions from the first playtest', () => {
+  it('a flat sideways fling from road height flies in an arc', () => {
+    const sim = battleSim();
+    const e = place(sim, 'grunt', 700);
+    grabAt(sim, 0, e);
+    sim.setHand(0, 700, e.y);
+    for (let i = 0; i < 20; i++) sim.step();
+    sim.command({ k: 'release', p: 0, x: 780, y: e.y, vx: 1500, vy: 0 });
+    expect(e.st).toBe('air');
+    expect(e.vy).toBeLessThan(0);
+    for (let i = 0; i < 6; i++) sim.step();
+    expect(e.st).toBe('air');
+    expect(e.x).toBeGreaterThan(800);
+  });
+
+  it('a re-thrown bomb that had landed flies again', () => {
+    const sim = battleSim();
+    sim.s.projectiles = [];
+    const q = (sim as unknown as { spawnProjectile(k: string, x: number, y: number, vx: number, vy: number): any }).spawnProjectile('bomb', 680, 630, 0, 0);
+    q.t = 5; q.landed = true;
+    sim.setHand(0, q.x, q.y);
+    sim.command({ k: 'press', p: 0, x: q.x, y: q.y });
+    sim.command({ k: 'release', p: 0, x: 680, y: 400, vx: 200, vy: -500 });
+    for (let i = 0; i < 6; i++) sim.step();
+    expect(q.x).toBeGreaterThan(690);
+  });
+
+  it('picking a weapon mid-press does not fire on release', () => {
+    const sim = battleSim();
+    sim.s.meta.owned.push('stomper1');
+    const e = place(sim, 'grunt', 700);
+    grabAt(sim, 0, e);
+    sim.command({ k: 'activate', p: 0, slot: 'stomper' });
+    sim.command({ k: 'release', p: 0, x: 700, y: 400, vx: 0, vy: 0 });
+    expect(sim.s.cooldowns.stomper).toBe(0);
+    expect(sim.s.hands[0].mode).toBe('stomper');
+  });
+
+  it('one hand cannot hold a yeti back for good', () => {
+    const sim = battleSim();
+    const e = place(sim, 'yeti', 700);
+    grabAt(sim, 0, e);
+    sim.setHand(0, 1250, 300);
+    for (let i = 0; i < 60 * 3; i++) sim.step();
+    expect(e.x).toBeLessThanOrEqual(700 + BEHAVIOUR.yeti.tugReach);
+    const x3 = e.x;
+    for (let i = 0; i < 60 * 4; i++) sim.step();
+    expect(e.x).toBeLessThan(x3);
+  });
+
+  it('a frozen balloonist drops and shatters', () => {
+    const sim = battleSim();
+    sim.s.meta.owned.push('frost');
+    sim.s.meta.hornEquipped = 'frost';
+    const e = place(sim, 'balloonist', 800);
+    sim.command({ k: 'activate', p: 0, slot: 'horn' });
+    sim.command({ k: 'press', p: 0, x: e.x, y: e.y - 60 });
+    sim.command({ k: 'release', p: 0, x: e.x, y: e.y - 60, vx: 0, vy: 0 });
+    expect(e.st).toBe('air');
+    runUntil(sim, () => e.dead, 200);
+    expect(e.dead).toBe(true);
+  });
+
+  it('letting go during a pause is not a throw', () => {
+    const sim = battleSim();
+    const e = place(sim, 'grunt', 700);
+    grabAt(sim, 0, e);
+    sim.setHand(0, 700, 200);
+    for (let i = 0; i < 30; i++) sim.step();
+    sim.command({ k: 'pause', p: 0, paused: true });
+    sim.command({ k: 'release', p: 0, x: 700, y: 200, vx: 0, vy: -2000 });
+    expect(e.st).toBe('held');
+    sim.command({ k: 'pause', p: 0, paused: false });
+    expect(e.st).toBe('air');
+    expect(e.vy).toBe(0);
+  });
+
+  it('pogo bandits stop attacking once the day is over', () => {
+    const sim = battleSim();
+    const e = place(sim, 'pogo', 300);
+    for (let i = 0; i < 40; i++) sim.step();
+    sim.s.dayT = DAY.seconds;
+    sim.step();
+    expect(e.st).toBe('flee');
+  });
+
+  it('counts gold from enemies that land after the day ended', () => {
+    const sim = battleSim();
+    const e = place(sim, 'grunt', 700);
+    flingUp(sim, e, 2200);
+    sim.s.dayT = DAY.seconds;
+    runUntil(sim, () => sim.s.phase === 'intermission', 400);
+    expect(e.dead).toBe(true);
+    expect(sim.s.meta.lastDay?.goldEarned).toBe(sim.s.gold);
+  });
+
+  it('short drops daze, drops from well up kill', () => {
+    const heightKills = (h: number) => {
+      const sim = battleSim();
+      const e = place(sim, 'grunt', 700);
+      e.st = 'air'; e.y = WORLD.groundY + e.lane - h; e.vx = 0; e.vy = 0;
+      runUntil(sim, () => e.dead || e.st === 'stun', 200);
+      return e.dead;
+    };
+    expect(heightKills(70)).toBe(false);
+    expect(heightKills(140)).toBe(true);
+  });
+
+  it('siege carts break in the same number of clicks on later days', () => {
+    const sim = battleSim();
+    sim.s.day = 9;
+    const e = place(sim, 'siegeCart', 700);
+    for (let i = 0; i < BEHAVIOUR.siegeCartTaps; i++) sim.command({ k: 'press', p: 0, x: e.x, y: e.y - 40 });
+    expect(e.dead).toBe(true);
   });
 });
 

@@ -11,7 +11,7 @@ import type {
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 function newHand(): Hand {
-  return { x: 640, y: 300, down: false, mode: 'none', holding: -1, holdingProj: -1, pressX: 0, pressY: 0, pressTick: 0, connected: true };
+  return { x: 640, y: 300, down: false, mode: 'none', holding: -1, holdingProj: -1, pressX: 0, pressY: 0, pressTick: 0, modePress: false, connected: true };
 }
 
 /**
@@ -100,7 +100,15 @@ export class Sim {
     if (s.phase === 'gameover' || s.phase === 'intermission') return;
     s.paused = paused;
     s.meta.pausedBy = paused ? (s.meta.names[p] ?? 'Someone') : null;
+    if (!paused) this.dropReleasedDuringPause();
     this.touchMeta();
+  }
+
+  /** A button let go during a pause must not count as a throw; the enemy just drops afterwards. */
+  private dropReleasedDuringPause() {
+    this.s.hands.forEach((h, p) => {
+      if (!h.down && (h.holding >= 0 || h.holdingProj >= 0)) this.dropHeld(p);
+    });
   }
 
   /** Pause caused by a lost connection rather than a player. */
@@ -118,6 +126,7 @@ export class Sim {
     h.x = x; h.y = y; h.down = true;
     h.pressX = x; h.pressY = y; h.pressTick = s.tick;
     if (s.phase !== 'battle' || s.paused) return;
+    h.modePress = h.mode !== 'none';
     if (h.mode === 'horn' || h.mode === 'stomper') return;
     if (h.mode === 'comet') {
       const c = s.projectiles.find((q) => q.id === h.holdingProj);
@@ -172,7 +181,7 @@ export class Sim {
     if (e.shieldOn) { this.emit({ e: 'shieldBlock', x: e.x, y: e.y - 40 }); return; }
     if (!ENEMIES[e.type].grabbable) {
       this.emit({ e: 'tapCart', x, y, hp: e.hp });
-      this.hurt(e, BEHAVIOUR.siegeCartTapDamage, 'tap', p);
+      this.hurt(e, e.maxHp / BEHAVIOUR.siegeCartTaps, 'tap', p);
       return;
     }
     e.heldBy.push(p);
@@ -181,6 +190,7 @@ export class Sim {
     e.grabOffY = clamp(e.y - y, 0, ENEMIES[e.type].height);
     if (e.type === 'yeti') {
       e.grabOffX = 0; e.grabOffY = ENEMIES.yeti.height * 0.5;
+      if (e.heldBy.length === 1) e.tugLimit = e.x + BEHAVIOUR.yeti.tugReach;
       if (e.heldBy.length === 2) { e.st = 'held'; e.vx = 0; e.vy = 0; }
     } else {
       e.st = 'held';
@@ -197,6 +207,9 @@ export class Sim {
     h.x = x; h.y = y; h.down = false;
 
     if (s.phase !== 'battle') { this.dropHeld(p); return; }
+    if (s.paused) return;
+    // This press began before the weapon was picked, so letting go is not an aimed shot.
+    if (h.mode !== 'none' && !h.modePress) return;
 
     if (h.mode === 'horn') { this.fireHorn(p, x, y); return; }
     if (h.mode === 'stomper') { this.fireStomper(p, x, vy); return; }
@@ -208,6 +221,7 @@ export class Sim {
         q.heldBy = -1;
         const v = this.clampThrow(vx, vy);
         q.vx = v.vx; q.vy = v.vy; q.x = x; q.y = y;
+        q.landed = false;
         if (q.kind === 'comet') { h.mode = 'none'; this.launchComet(q); }
       }
       return;
@@ -246,6 +260,7 @@ export class Sim {
     e.y = Math.min(y + e.grabOffY, this.groundOf(e));
     if (this.tryPerch(e)) return;
     this.throwEnemy(e, vx, vy, p);
+    this.liftFlatThrow(e);
     this.applyCauldronAssist(e);
   }
 
@@ -271,6 +286,14 @@ export class Sim {
     this.emit({ e: 'release', id: e.id, p, speed: Math.hypot(v.vx, v.vy), x: e.x, y: e.y });
   }
 
+  /** A sideways fling from road height would land in its first tick; give it a low arc instead. */
+  private liftFlatThrow(e: Enemy) {
+    const speed = Math.abs(e.vx);
+    if (this.groundOf(e) - e.y >= 20 || speed <= 250 || e.vy > speed * 0.5 || e.vy < -speed * 0.25) return;
+    e.y = this.groundOf(e) - 22;
+    e.vy = -speed * 0.25;
+  }
+
   private tryPerch(e: Enemy): boolean {
     const s = this.s;
     if (!this.owns('perch') || s.perchBusy > 0) return false;
@@ -283,7 +306,7 @@ export class Sim {
     e.vx = 0; e.vy = 0;
     e.rot = 0;
     e.t = 2.0;
-    s.perchBusy = 2.8;
+    s.perchBusy = 2.3;
     return true;
   }
 
@@ -367,6 +390,7 @@ export class Sim {
     if (!tier || s.cooldowns[slot] > 0) { this.emit({ e: 'denied', p }); return; }
     if (h.holding >= 0 || h.holdingProj >= 0) this.dropHeld(p);
     if (h.mode !== 'none') this.cancelMode(p);
+    h.modePress = false;
 
     switch (slot) {
       case 'wheel': {
@@ -432,7 +456,7 @@ export class Sim {
         if (e.dead || e.st === 'held' || e.st === 'hooked' || e.st === 'flee') continue;
         if (e.type === 'siegeCart' || e.crow) continue;
         if (Math.hypot(e.x - x, e.y - ENEMIES[e.type].height * 0.5 - y) > w.radius + ENEMIES[e.type].radius) continue;
-        this.freeze(e);
+        this.freeze(e, p);
       }
     } else {
       this.emit({ e: 'bellows', x, halfWidth: w.halfWidth });
@@ -440,7 +464,15 @@ export class Sim {
     }
   }
 
-  private freeze(e: Enemy) {
+  private freeze(e: Enemy, p: number) {
+    if (e.st === 'float') {
+      // Whatever kept it in the air is ice now: it drops and shatters.
+      e.st = 'air';
+      e.frozenHeld = true;
+      e.vx = 0; e.vy = 0;
+      e.thrownBy = p;
+      return;
+    }
     e.st = 'frozen';
     e.t = BEHAVIOUR.frozen.seconds;
     e.vx = 0; e.vy = 0;
@@ -506,7 +538,7 @@ export class Sim {
   private hurt(e: Enemy, amount: number, cause: DeathCause, p: number) {
     if (e.dead) return;
     e.hp -= amount;
-    if (e.hp <= 0) this.kill(e, cause, p);
+    if (e.hp <= 1e-6) this.kill(e, cause, p);
   }
 
   private kill(e: Enemy, cause: DeathCause, p: number) {
@@ -617,7 +649,6 @@ export class Sim {
 
   private endDay(win: boolean) {
     const s = this.s;
-    for (let p = 0; p < s.hands.length; p++) this.dropHeld(p);
     const gatePct = s.gateMax > 0 ? Math.round((100 * s.gateHp) / s.gateMax) : 0;
     const bonus = win ? Math.round(s.dayScore * (gatePct / 400)) : 0;
     s.dayScore += bonus;
@@ -650,25 +681,25 @@ export class Sim {
         if (s.gateHp <= 0) {
           s.phase = 'defeat';
           s.phaseT = DAY.endBannerSeconds + 0.8;
-          this.endDay(false);
+          for (let p = 0; p < s.hands.length; p++) this.dropHeld(p);
           this.emit({ e: 'defeat' });
         } else if (s.dayT >= DAY.seconds) {
           s.phase = 'victory';
           s.phaseT = DAY.endBannerSeconds;
+          for (let p = 0; p < s.hands.length; p++) this.dropHeld(p);
           for (const e of s.enemies) this.makeFlee(e);
-          this.endDay(true);
           this.emit({ e: 'victory' });
         }
         break;
       case 'victory':
         this.updateWorld();
         s.phaseT -= DT;
-        if (s.phaseT <= 0) { s.phase = 'intermission'; this.touchMeta(); }
+        if (s.phaseT <= 0) { this.endDay(true); s.phase = 'intermission'; this.touchMeta(); }
         break;
       case 'defeat':
         this.updateWorld();
         s.phaseT -= DT;
-        if (s.phaseT <= 0) { s.phase = 'gameover'; this.touchMeta(); }
+        if (s.phaseT <= 0) { this.endDay(false); s.phase = 'gameover'; this.touchMeta(); }
         break;
       case 'intermission':
       case 'gameover':
@@ -705,9 +736,10 @@ export class Sim {
     const s = this.s;
     const def = ENEMIES[type];
     const lane = this.rng.range(WORLD.laneMin, WORLD.laneMax);
+    const hp = def.hp * (1 + (s.day - 1) * DAY.hpGrowth);
     const e: Enemy = {
       id: s.nextId++, type, st: 'walk', x, y: WORLD.groundY + lane, vx: 0, vy: 0, rot: 0, rotV: 0, lane,
-      hp: def.hp * (1 + (s.day - 1) * DAY.hpGrowth), t: 0, strikeT: def.strikeEvery * this.rng.range(0.3, 1), heldBy: [], grabOffX: 0, grabOffY: 0,
+      hp, maxHp: hp, tugLimit: 0, t: 0, strikeT: def.strikeEvery * this.rng.range(0.3, 1), heldBy: [], grabOffX: 0, grabOffY: 0,
       shieldOn: false, cycleT: this.rng.range(0.3, 2.5), hidden: false, armed: type === 'bomber', crow: false,
       kegFuse: 0, altitude: 0, thrownBy: -1, dead: false, frozenHeld: false,
     };
@@ -737,7 +769,7 @@ export class Sim {
     e.shieldOn = false;
     e.hidden = false;
     e.kegFuse = 0;
-    if (e.st === 'air' || e.st === 'hooked' || e.st === 'held' || e.st === 'hop') return;
+    if (e.st === 'air' || e.st === 'hooked' || e.st === 'held') return;
     e.st = 'flee';
     if (!e.crow && e.type !== 'balloonist') e.y = this.groundOf(e);
   }
@@ -952,7 +984,9 @@ export class Sim {
     const h = s.hands[e.heldBy[0]];
     if (!h) return;
     const pull = clamp((h.x - e.x) * 2, -BEHAVIOUR.yeti.tugSpeed, BEHAVIOUR.yeti.tugSpeed);
-    e.x = Math.max(WORLD.gateX + ENEMIES.yeti.range, e.x + pull * DT);
+    // The limit creeps forward, so holding on slows a yeti but cannot stop it for good.
+    e.tugLimit -= this.speedOf(e) * 0.5 * DT;
+    e.x = Math.max(WORLD.gateX + ENEMIES.yeti.range, Math.min(e.tugLimit, e.x + pull * DT));
   }
 
   private updateAir(e: Enemy) {
