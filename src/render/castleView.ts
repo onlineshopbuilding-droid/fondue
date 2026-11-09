@@ -52,7 +52,8 @@ export class CastleView {
     this.gate = scene.add.image(WORLD.gateX - 74, 620, propKey('gate0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(11);
     this.cracks = scene.add.image(WORLD.gateX - 74, 620, propKey('crack1')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(12).setVisible(false);
     this.foot = scene.add.image(-40, 690, propKey('foot_meadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(36);
-    this.ring = scene.add.graphics().setDepth(13);
+    // Above the foreground, so that the wheel's ring is never cut off by the bank.
+    this.ring = scene.add.graphics().setDepth(37);
     for (const slot of WEAPON_SLOTS) {
       const { x, y } = WORLD.slots[slot];
       const img = scene.add.image(x, y, propKey('mountWheelReady')).setScale(1 / TEX_SCALE).setDepth(12.5).setVisible(false);

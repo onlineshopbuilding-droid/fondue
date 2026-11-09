@@ -495,7 +495,7 @@ export class GameScene extends Phaser.Scene {
         this.fx.fadingProp('cheese', ev.x, ev.y - 34, 0.5, 1);
         break;
       case 'nightfall':
-        this.showBanner('NIGHT FALLS! FINISH THEM!', 2.2);
+        this.showBanner('NIGHT FALLS!', 2.2);
         this.sfx('dayStart', 0.6);
         break;
       case 'aimHint':

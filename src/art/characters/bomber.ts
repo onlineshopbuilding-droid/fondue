@@ -1,10 +1,10 @@
 import type { CharacterRig } from '../types';
 import { PAL, circle, dot, ellipse, flat, leg, line, part, pin, rect, shape, stitch, tube } from './kit';
 
-/** Keg Hauler: stocky, soot-faced, with a fused keg strapped to its back. */
+/** Keg Hauler: stocky, with soot smudges and a fused keg strapped to its back. */
 export const bomberRig: CharacterRig = {
   parts: [
-    part('armBack', 12, -44, 'armBack', [-13, -9, 13, 30], tube('M0 0 L1 15', 9, PAL.rustD) + circle(1, 20, 6, PAL.soot)),
+    part('armBack', 12, -44, 'armBack', [-13, -9, 13, 30], tube('M0 0 L1 15', 9, PAL.rustD) + circle(1, 20, 6, PAL.skinD)),
     part(
       'keg',
       23,
@@ -45,9 +45,10 @@ export const bomberRig: CharacterRig = {
       -47,
       'head',
       [-22, -33, 21, 8],
-      circle(13, -9, 4, PAL.soot) +
-        ellipse(-1, -11, 14, 14, PAL.soot) +
-        flat('M-14 -9 Q-8 -14 -1 -11 Q4 -6 -2 -3 Q-10 -2 -14 -9 Z', PAL.sootD, 0.7) +
+      circle(13, -9, 4, PAL.skinD) +
+        ellipse(-1, -11, 14, 14, PAL.skin) +
+        flat('M3 -13 Q9 -13 10 -7 Q6 -3 2 -6 Z', PAL.sootD, 0.45) +
+        flat('M-13 -3 Q-9 -6 -6 -3 Q-9 -1 -13 -3 Z', PAL.sootD, 0.35) +
         shape('M-15 -15 Q-14 -30 -1 -30 Q13 -30 13 -15 Z', PAL.mustard) +
         rect(-17, -18, 32, 7, PAL.mustardD, 3.5) +
         stitch('M-7 -28 L-7 -20', PAL.cream) +
@@ -56,7 +57,7 @@ export const bomberRig: CharacterRig = {
         dot(-1, -8, 3.6, PAL.cream) +
         dot(-10, -8, 1.8) +
         dot(-2, -8, 1.8) +
-        ellipse(-15, -3, 4.5, 3.5, PAL.sootD) +
+        ellipse(-15, -3, 4.5, 3.5, PAL.skinD) +
         shape('M-16 2 Q-9 -3 -3 1 Q2 -2 6 3 Q1 7 -4 5 Q-11 8 -16 2 Z', PAL.ashD),
     ),
     part(
@@ -65,7 +66,7 @@ export const bomberRig: CharacterRig = {
       -43,
       'armFront',
       [-37, -32, 12, 12],
-      tube('M0 0 L-13 -5 L-20 -14', 9, PAL.rust) + circle(-22, -18, 7, PAL.soot) + pin(),
+      tube('M0 0 L-13 -5 L-20 -14', 9, PAL.rust) + circle(-22, -18, 7, PAL.skin) + pin(),
     ),
   ],
 };

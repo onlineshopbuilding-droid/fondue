@@ -420,20 +420,6 @@ function slotPlates(s: PlateStyle, shrinePlate: boolean): string {
   );
 }
 
-/** Shading and courses for a tower whose lower part tapers down into the gatehouse. */
-function towerButtress(d: string, x0: number, hi: string, line: string, trim = ''): string {
-  return (
-    clip(
-      d,
-      hl('M222 334C222 400 224 440 226 480M250 334C248 400 238 446 232 480M272 334C270 394 250 446 238 480', line, 3, 0.75) +
-        hl('M206 372Q256 384 292 368M206 408Q250 418 280 406M206 442Q240 450 262 442', hi, 3, 0.8) +
-        shade('sD', x0, 370, 96, 112, 1) +
-        shade('sR', 252, 330, 46, 150, 1),
-    ) +
-    (trim ? hl(`M${x0 + 2} 332H292`, trim, 4) : hl(`M${x0 + 2} 332H286`, line, 3))
-  );
-}
-
 // ---------------------------------------------------------------------------------------------
 // Tier 0: a plain wooden palisade fort with a watchtower.
 // ---------------------------------------------------------------------------------------------
@@ -469,7 +455,7 @@ function tier0(): string {
         shade('sU', -14, 359, 258, 26, 0.6) +
         beam('M-20 418H136', WOODD, 5) +
         beam('M-20 528H136', WOODD, 5) +
-        l('M20 410V428M24 410V428M28 410V428M108 410V428M112 410V428M116 410V428M20 520V538M24 520V538M28 520V538M108 520V538M112 520V538', 3, CREAM) +
+        l('M20 410V428M24 410V428M28 410V428M108 410V428M112 410V428M116 410V428M20 520V538M24 520V538M28 520V538', 3, CREAM) +
         hoistBay(WOOD, WOODD) +
         sallyPort(WOOD, WOODD) +
         footShade +
@@ -680,8 +666,7 @@ const WINS3: Win[] = [
   { x: 90, y: 120, w: 16, h: 22, arch: true },
   { x: 52, y: 176, w: 22, h: 46, arch: true },
   { x: 118, y: 176, w: 22, h: 46, arch: true },
-  { x: 252, y: 206, w: 22, h: 40, arch: true },
-  { x: 252, y: 324, w: 22, h: 40, arch: true },
+  { x: 207, y: 186, w: 20, h: 40, arch: true },
 ];
 
 /** Runes cut into the stone with a dull verdigris inlay. */
@@ -690,7 +675,7 @@ const runeLine = (d: string) => hl(d, '#3f4756', 5.5, 0.9) + hl(d, '#7fae9f', 2.
 function tier3(): string {
   const keepD = 'M-20 146H166V352H-20Z';
   const upperD = 'M44 110H128V150H44Z';
-  const towerD = 'M212 174H288V330C288 400 262 440 246 478H212Z';
+  const towerD = 'M180 174H255V352H180Z';
   return (
     SHADE_DEFS +
     ink(
@@ -715,18 +700,20 @@ function tier3(): string {
         runeLine('M46 300V330M38 310L54 322M54 310L38 322') +
         alcove('#bcc3cd', '#5b6271', '#4a5160') +
         runeLine('M70 262L86 256L102 262') +
-        // The extra tower, carried down into the gatehouse by a long buttress.
-        clip(towerD, masonry(208, 170, 292, 482, { ...SLATE, seed: 63 })) +
+        // The extra tower: a straight drum standing on the walkway, its plinth on the stonework.
+        clip(towerD, masonry(176, 170, 259, 356, { ...SLATE, seed: 63 })) +
         `<path d="${towerD}" fill="none"/>` +
-        shade('sR', 258, 176, 30, 154, 0.55) +
-        towerButtress(towerD, 204, '#bcc3cd', '#4a5160', MUST) +
-        windowsBody(WINS3.slice(4, 6), '#bcc3cd') +
-        merlons(206, 288, 158, 18, 12, 7, '#9aa2af') +
-        spire(250, 158, 50, 108, TEALD, '#163f42', MUSTL) +
-        banner(226, 262, 20, 50, TEAL, TEALD, MUSTL, emblem(236, 284, 0.55)) +
-        banner(266, 262, 18, 50, RUST, RUSTD, MUSTL, emblem(275, 284, 0.5)) +
-        flag(250, 122, 96, 34, RUST, MUSTL) +
-        runeLine('M224 214V240M216 222L232 234M232 222L216 234') +
+        shade('sR', 226, 176, 29, 170, 0.6) +
+        shade('sL', 180, 176, 16, 170, 0.35) +
+        r(174, 332, 86, 14, '#9aa2af', 3) +
+        hl('M180 336H254', '#c6ccd5', 2.5) +
+        windowsBody(WINS3.slice(4, 5), '#bcc3cd') +
+        merlons(176, 256, 158, 18, 12, 7, '#9aa2af') +
+        spire(217, 158, 46, 108, TEALD, '#163f42', MUSTL) +
+        banner(186, 186, 14, 40, TEAL, TEALD, MUSTL, emblem(193, 202, 0.4)) +
+        banner(234, 186, 14, 40, RUST, RUSTD, MUSTL, emblem(241, 202, 0.4)) +
+        flag(217, 122, 96, 34, RUST, MUSTL) +
+        runeLine('M246 296V322M238 304L254 314M254 304L238 314') +
         // Lower wall.
         clip(rect(-20, 352, 158, 276), masonry(-20, 352, 140, 628, { ...SLATE, seed: 64 })) +
         clip(rect(136, 352, 108, 126), masonry(136, 352, 244, 478, { ...SLATE, seed: 65 })) +
@@ -759,8 +746,7 @@ const MARBLE: Omit<Stonework, 'seed'> = { h: 24, base: '#d1c9b6', fills: ['#f6f1
 const WINS4: Win[] = [
   { x: 72, y: 156, w: 28, h: 54, arch: true },
   { x: 140, y: 160, w: 18, h: 40, arch: true },
-  { x: 239, y: 180, w: 22, h: 40, arch: true },
-  { x: 239, y: 284, w: 22, h: 44, arch: true },
+  { x: 207, y: 182, w: 20, h: 40, arch: true },
 ];
 const GOLDEN = MUST;
 
@@ -809,7 +795,7 @@ function bartizan(cx: number): string {
 
 function tier4(): string {
   const keepD = 'M-20 146H176V352H-20Z';
-  const towerD = 'M206 168H294V330C294 400 264 442 246 478H206Z';
+  const towerD = 'M180 168H255V352H180Z';
   return (
     SHADE_DEFS +
     ink(
@@ -839,21 +825,22 @@ function tier4(): string {
         pilaster(160, 152, 340) +
         alcove('#f6f1e6', '#d9d1bf', '#bdb29a') +
         hl('M46 296Q46 252 86 252Q126 252 126 296', GOLDEN, 3) +
-        // The tall tower, carried down into the gatehouse by a long buttress.
-        clip(towerD, masonry(204, 164, 296, 482, { ...MARBLE, seed: 83 })) +
+        // The tall tower: a straight drum standing on the walkway, its plinth on the stonework.
+        clip(towerD, masonry(176, 164, 259, 356, { ...MARBLE, seed: 83 })) +
         `<path d="${towerD}" fill="none"/>` +
-        shade('sR', 262, 168, 32, 162, 0.3) +
-        towerButtress(towerD, 204, '#fffaf0', '#a89c82', GOLDEN) +
-        goldBand(204, 296, 164) +
-        merlons(202, 292, 146, 18, 13, 7, '#f6f1e6') +
-        goldStuds(208, 292, 143, 20) +
-        spire(250, 148, 54, 108, TEAL, TEALD, MUSTL) +
-        windowsBody(WINS4.slice(2, 4), GOLDEN) +
-        goldBand(204, 296, 268) +
-        banner(222, 226, 16, 34, RUST, RUSTD, MUSTL, emblem(230, 243, 0.4)) +
-        banner(262, 226, 16, 34, RUST, RUSTD, MUSTL, emblem(270, 243, 0.4)) +
-        flag(250, 122, 96, 34, RUST, MUSTL) +
-        carvedPanel(214, 338, 62, 38, 2) +
+        shade('sR', 228, 168, 27, 170, 0.32) +
+        goldBand(178, 257, 164) +
+        merlons(176, 258, 146, 18, 13, 7, '#f6f1e6') +
+        goldStuds(182, 256, 143, 20) +
+        spire(217, 148, 48, 108, TEAL, TEALD, MUSTL) +
+        windowsBody(WINS4.slice(2, 3), GOLDEN) +
+        banner(186, 182, 14, 40, RUST, RUSTD, MUSTL, emblem(193, 198, 0.38)) +
+        banner(234, 182, 14, 40, RUST, RUSTD, MUSTL, emblem(241, 198, 0.38)) +
+        goldBand(178, 257, 236) +
+        pilaster(240, 246, 326) +
+        flag(217, 122, 96, 34, RUST, MUSTL) +
+        r(174, 330, 86, 16, '#f6f1e6', 3) +
+        goldBand(176, 258, 336) +
         // Lower wall.
         clip(rect(-20, 352, 158, 276), masonry(-20, 352, 140, 628, { ...MARBLE, h: 30, line: '#a89c82', fills: ['#efe8d8', '#e4ddcb', '#f6f1e6', '#d9d1bf'], seed: 84 })) +
         clip(rect(136, 352, 108, 126), masonry(136, 352, 244, 478, { ...MARBLE, seed: 85 })) +
@@ -1500,8 +1487,8 @@ function eagleHead(open: boolean): string {
   const PALE = '#f2ead6';
   const PALED = '#c9bb9b';
   const CROWN = '#5a3a1e';
-  const AMBER = '#e2901f';
-  const AMBERD = '#a85f14';
+  const BEAK = '#f0d67a';
+  const BEAKD = '#c9a24a';
   // Everything but the beak sits 34px further left than it is drawn here.
   const neck =
     'M196 44C290 26 410 34 620 14V210L590 200L576 214L548 202L534 216L512 196L500 210L470 198L456 214L428 200L412 216L382 200L368 214L338 198L324 212L294 196L280 208L250 192L232 200L196 180Z';
@@ -1522,10 +1509,10 @@ function eagleHead(open: boolean): string {
     }
   }
   const featherLines = 'M178 96l22 6M186 118l22 2M170 138l22 8M152 148l14 8M226 62l20 16M238 100l22 2M232 134l18 14M270 70l22 12M286 118l26 2M274 150l18 16';
-  const upperShut = 'M92 76C74 62 52 64 40 80C28 96 20 110 22 128C28 116 38 112 50 112L94 112Z';
-  const lowerShut = 'M46 114Q70 110 94 110L92 128Q70 136 54 130Z';
-  const upperOpen = 'M92 68C74 54 52 56 40 72C28 88 20 102 22 120C28 108 38 100 50 98L94 94Z';
-  const lowerOpen = 'M36 146Q60 134 94 118L90 146Q70 164 52 160Q38 156 36 146Z';
+  const upperShut = 'M94 86C76 78 56 80 44 92C32 104 23 116 22 132C28 121 36 115 46 113L94 108Z';
+  const lowerShut = 'M46 115Q70 111 94 109L92 120Q68 126 52 122Z';
+  const upperOpen = 'M94 80C76 70 56 72 44 84C32 98 23 110 22 126C28 114 36 107 46 105L94 99Z';
+  const lowerOpen = 'M40 146Q62 134 94 119L92 132Q68 156 50 156Q40 152 40 146Z';
   return (
     `<defs>${linear('es', 0, 1, [[0, INK, 0], [1, INK, 0.62]])}</defs>` +
     ink(
@@ -1544,21 +1531,22 @@ function eagleHead(open: boolean): string {
         clip(body, n(rect(100, 104, 560, 120), 'url(#es)')) +
         `</g>` +
         (open
-          ? p('M50 98L94 94L94 118Q60 134 36 146Q42 120 50 98Z', '#6b1f22') + hl('M52 126Q70 118 88 110', '#b3282d', 7) + p(lowerOpen, AMBERD)
+          ? p('M46 105L94 99L94 119Q62 134 40 146Q42 124 46 105Z', '#6b1f22') + hl('M48 128Q66 120 86 112', '#b3282d', 5) + p(lowerOpen, BEAKD)
           : '') +
-        p(open ? upperOpen : upperShut, AMBER) +
-        n(open ? 'M36 86Q52 64 80 62Q58 74 44 96Z' : 'M34 104Q48 76 80 72Q60 88 46 110Z', '#f7c46a', 0.9) +
-        n(open ? 'M22 120C24 106 30 96 40 88L46 98C38 100 30 108 22 120Z' : 'M22 128C24 114 30 104 40 94L48 110C38 112 30 118 22 128Z', '#5a3312') +
-        (open ? '' : p(lowerShut, AMBERD)) +
+        p(open ? upperOpen : upperShut, BEAK) +
+        n(open ? 'M38 94Q52 76 80 76Q58 84 44 102Z' : 'M36 110Q50 84 80 82Q60 94 46 114Z', '#fbeeb8', 0.9) +
+        // Dark hooked tip.
+        n(open ? 'M22 126C23 112 30 101 38 93L46 105C36 107 28 114 22 126Z' : 'M22 132C23 118 30 106 38 99L46 113C36 115 28 121 22 132Z', '#5a3312') +
+        (open ? '' : p(lowerShut, BEAKD)) +
         // Cere at the base of the beak.
-        p(open ? 'M78 58Q92 58 100 72L96 96L78 96Z' : 'M78 66Q92 66 100 80L98 112L78 112Z', MUSTL) +
-        hl(open ? 'M86 74h.01' : 'M86 84h.01', INK, 5) +
-        // Fierce eye under a heavy brow.
-        c(114, 94, 11, '#f0a92c') +
-        c(112, 95, 5.5, INK) +
-        n('M109 91a2.2 2.2 0 1 0 .1 0Z', WHITE) +
-        p('M86 92L112 74L152 70L150 84L116 86Z', '#6e4626') +
-        l('M86 92L116 84L150 84', 5),
+        p(open ? 'M80 74Q92 74 100 84L97 100L80 100Z' : 'M80 80Q92 80 100 90L98 109L80 109Z', '#d9a93f') +
+        hl(open ? 'M88 84h.01' : 'M88 92h.01', INK, 4) +
+        // Fierce eye under a heavy, overhanging brow.
+        c(116, 98, 10, '#f0a92c') +
+        c(114, 99, 5, INK) +
+        n('M111 95a2 2 0 1 0 .1 0Z', WHITE) +
+        p('M78 100L108 72L156 62L160 82L120 92Z', '#4a2f19') +
+        n('M104 78L152 68L153 74L112 84Z', '#8e5a22', 0.9),
       5,
     )
   );
@@ -1622,12 +1610,12 @@ const SNOW_TIERS: string[] = [
   snowCap('M-30 190Q14 156 64 112Q118 156 168 190Z', -30, 168, 110, 154, 521) +
     snowCap(spireD(220, 208, 42, 128), 176, 264, 126, 172, 522) +
     drift(-26, 160, 186, 523) + drift(184, 256, 206, 524) + drift(146, 196, 210, 525) + snowLedges(530),
-  snowCap(spireD(250, 158, 50, 108), 198, 302, 106, 132, 532) +
-    snowMerlons(42, 128, 98, 15, 9, 526) + snowMerlons(-20, 164, 128, 15, 10, 533) + snowMerlons(206, 288, 158, 12, 7, 540) + drift(154, 222, 190, 546) + snowLedges(551),
+  snowCap(spireD(217, 158, 46, 108), 168, 266, 106, 132, 532) +
+    snowMerlons(42, 128, 98, 15, 9, 526) + snowMerlons(-20, 164, 128, 15, 10, 533) + snowMerlons(176, 256, 158, 12, 7, 540) + drift(154, 222, 190, 546) + snowLedges(551),
   snowCap(spireD(100, 142, 66, 110), 30, 170, 108, 126, 561) +
-    snowCap(spireD(250, 148, 54, 108), 194, 306, 106, 126, 562) +
+    snowCap(spireD(217, 148, 48, 108), 166, 268, 106, 126, 562) +
     snowCap(spireD(52, 124, 22, 108), 28, 76, 106, 115, 564) + snowCap(spireD(150, 124, 22, 108), 126, 174, 106, 115, 565) +
-    snowMerlons(-20, 174, 124, 15, 9, 566) + snowMerlons(202, 292, 146, 13, 7, 570) + drift(164, 216, 184, 576) + snowLedges(581),
+    snowMerlons(-20, 174, 124, 15, 9, 566) + snowMerlons(176, 258, 146, 13, 7, 570) + drift(164, 216, 184, 576) + snowLedges(581),
 ];
 
 /** Sand blown against the wall foot and settled on the ledges. Tier-independent: only the shared lower wall. */
