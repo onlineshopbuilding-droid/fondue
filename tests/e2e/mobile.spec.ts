@@ -156,8 +156,9 @@ for (const d of DEVICES) {
     await page.locator('.tab', { hasText: 'Wheels' }).click();
     await page.evaluate(() => { document.querySelector('.items')!.scrollTop = 40; });
     const before = await page.evaluate(() => document.querySelector('.items')!.scrollTop);
-    await page.evaluate(() => { (window as any).__fondue.session.sim.s.gold += 1; });
-    await waitFor(() => page.evaluate(() => (document.querySelector('#gold') as HTMLElement).innerText), (t) => t === '60001', 3000);
+    // Late kills can still pay out, so only a rise matters here: it is what redraws the market.
+    const goldBefore = await page.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.gold += 1; return s.gold - 1; });
+    await waitFor(() => page.evaluate(() => Number((document.querySelector('#gold') as HTMLElement).innerText)), (g) => g > goldBefore, 3000);
     expect(await page.evaluate(() => document.querySelector('.items')!.scrollTop)).toBe(before);
     await page.screenshot({ path: `mobile-screenshots/${d.name}-shop-wheels.png` });
 
