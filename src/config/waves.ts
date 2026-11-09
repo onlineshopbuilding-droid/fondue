@@ -25,11 +25,15 @@ export const DAY = {
   endBannerSeconds: 2.6,
   /** Enemies per day: base + perDay * (day - 1), slower growth after softCapDay. */
   base: 38,
-  perDay: 10,
+  perDay: 14,
   softCapDay: 12,
-  perDayAfterCap: 6,
+  perDayAfterCap: 12,
   /** Hard limit of living enemies; spawns wait while it is reached. */
   maxAlive: 200,
+  /** Per-day growth after day 1: gate damage, walk speed, and hit points against weapons. */
+  damageGrowth: 0.13,
+  speedGrowth: 0.015,
+  hpGrowth: 0.12,
   /** Share of the day over which spawning ramps from sparse to dense. */
   rampPower: 0.8,
 };

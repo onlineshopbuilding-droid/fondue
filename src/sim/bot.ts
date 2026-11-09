@@ -17,9 +17,9 @@ export interface BotSkill {
 }
 
 export const BOT_SKILLS: Record<string, BotSkill> = {
-  beginner: { name: 'Beginner', actionTime: 1.0, missRate: 0.25, offeringRate: 0.1, weaponEvery: 7 },
-  average: { name: 'Average', actionTime: 0.62, missRate: 0.1, offeringRate: 0.25, weaponEvery: 3.5 },
-  pro: { name: 'Pro', actionTime: 0.38, missRate: 0.03, offeringRate: 0.35, weaponEvery: 1.2 },
+  beginner: { name: 'Beginner', actionTime: 1.5, missRate: 0.3, offeringRate: 0.1, weaponEvery: 12 },
+  average: { name: 'Average', actionTime: 0.95, missRate: 0.15, offeringRate: 0.2, weaponEvery: 6 },
+  pro: { name: 'Pro', actionTime: 0.6, missRate: 0.05, offeringRate: 0.3, weaponEvery: 2.5 },
 };
 
 const WISHLIST = [

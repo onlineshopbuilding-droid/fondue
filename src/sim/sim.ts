@@ -538,7 +538,7 @@ export class Sim {
   private damageGate(amount: number, x: number, y: number, etype: EnemyType) {
     const s = this.s;
     if (s.gateHp <= 0) return;
-    const scaled = amount * DIFFICULTIES[s.meta.difficulty].damage;
+    const scaled = amount * DIFFICULTIES[s.meta.difficulty].damage * (1 + (s.day - 1) * DAY.damageGrowth);
     s.gateHp = Math.max(0, s.gateHp - scaled);
     this.emit({ e: 'gateHit', x, y, amount: scaled, etype });
   }
@@ -707,7 +707,7 @@ export class Sim {
     const lane = this.rng.range(WORLD.laneMin, WORLD.laneMax);
     const e: Enemy = {
       id: s.nextId++, type, st: 'walk', x, y: WORLD.groundY + lane, vx: 0, vy: 0, rot: 0, rotV: 0, lane,
-      hp: def.hp, t: 0, strikeT: def.strikeEvery * this.rng.range(0.3, 1), heldBy: [], grabOffX: 0, grabOffY: 0,
+      hp: def.hp * (1 + (s.day - 1) * DAY.hpGrowth), t: 0, strikeT: def.strikeEvery * this.rng.range(0.3, 1), heldBy: [], grabOffX: 0, grabOffY: 0,
       shieldOn: false, cycleT: this.rng.range(0.3, 2.5), hidden: false, armed: type === 'bomber', crow: false,
       kegFuse: 0, altitude: 0, thrownBy: -1, dead: false, frozenHeld: false,
     };
@@ -729,7 +729,7 @@ export class Sim {
 
   private speedOf(e: Enemy): number {
     const s = this.s;
-    return ENEMIES[e.type].speed * this.tuning.walkSpeed * DIFFICULTIES[s.meta.difficulty].speed;
+    return ENEMIES[e.type].speed * this.tuning.walkSpeed * DIFFICULTIES[s.meta.difficulty].speed * (1 + (s.day - 1) * DAY.speedGrowth);
   }
 
   private makeFlee(e: Enemy) {
