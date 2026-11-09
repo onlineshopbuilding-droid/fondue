@@ -2,7 +2,8 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e',
-  timeout: 180_000,
+  // GitHub's machines render the game in software several times slower than the laptop.
+  timeout: process.env.CI ? 420_000 : 180_000,
   fullyParallel: false,
   workers: 1,
   reporter: [['list']],
