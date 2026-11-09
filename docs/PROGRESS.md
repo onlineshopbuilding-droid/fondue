@@ -27,3 +27,21 @@
 - `npx playwright test`: 1 von 16 rot (Koop mit Latenz, Gast ohne Meta). Das war eine sinnvolle Verbesserung, die Runde zählt nicht als „ohne Befund“.
 - Ursachen und Behebung: ENTSCHEIDUNGEN E-015. Neuer Unit-Test war auf dem alten Code rot, auf dem neuen grün.
 - Belege: `npx playwright test ... -g "simulated latency" --repeat-each=10` 10/10 grün; `npx vitest run` 88/88 grün; `npx playwright test` 16/16 grün; FPS 57,6 Mittel, Median 16,7 ms, p95 19,3 ms.
+
+## 2026-11-09 12:32 – Qualitätsrunde 2
+- Zeit per Get-Date: 12:28:09.
+- `npx vitest run` 88/88 grün; `npx playwright test` 16/16 grün.
+- Live-Tests auf Build c4cad29 (`EXPECT_BUILD=c4cad29 npx playwright test --config playwright.live.config.ts --project=chromium --project=msedge`): 4 grün, 2 übersprungen (Tunnel-Test braucht TUNNEL_URL).
+- `npm run balance`: Werte unverändert zum dokumentierten Stand.
+- Ergebnis: keine sinnvolle Verbesserung gefunden.
+
+## 2026-11-09 12:39 – Qualitätsrunde 3
+- Zeit per Get-Date: 12:33:04.
+- `npx vitest run` 88/88 grün; `npx playwright test` 16/16 grün; Koop mit Latenz 4/4 Wiederholungen grün.
+- Regelprüfung: keine Dateien aus reference/ und kein AUFTRAG im Repo, keine private Mailadresse in versionierten Dateien, Originalname nicht in src/ oder index.html, Commits nur mit Noreply-Adresse. Downloads-Ordner: 6 ältere Einträge von Tim (letzte Änderung 26.10.2026), nichts aus dieser Arbeit, unangetastet.
+- Einziger Fund: veraltete Zahlen in STATUS.md, im Abschluss korrigiert; keine Änderung am Spiel.
+- Ergebnis: keine sinnvolle Verbesserung am Spiel gefunden. Damit zwei aufeinanderfolgende Runden ohne Befund.
+- Bewusst offen und als geringfügig bewertet: Gate Mortar ohne sichtbares Geschoss (Explosion, Klang und Wackeln sind da), kein Hinweis am besetzten Adlerhaken.
+
+## 2026-11-09 12:40 – Abschluss
+- Energieeinstellungen nie geändert (ENTSCHEIDUNGEN E-002). Lesend geprüft: AC Standby 0, AC Hibernate 0.

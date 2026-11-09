@@ -240,8 +240,8 @@
     "bereich": "qualitaet",
     "beschreibung": "Unit-Tests und Playwright-Tests grün.",
     "pruefung": "npm test",
-    "passes": false,
-    "beleg": ""
+    "passes": true,
+    "beleg": "09.11.2026 12:33: npx vitest run 88/88 grün; npx playwright test 16/16 grün, darunter Koop mit zwei Browsern ohne und mit simulierter Latenz; Latenz-Test zusätzlich 14 Wiederholungen grün"
   },
   {
     "id": 31,
@@ -256,7 +256,7 @@
     "bereich": "doku",
     "beschreibung": "Alle Dokumente im Drive-Ordner vollständig und aktuell.",
     "pruefung": "Dateiprüfung",
-    "passes": false,
-    "beleg": ""
+    "passes": true,
+    "beleg": "09.11.2026 12:40: START-HIER, STATUS, BERICHT, ENTSCHEIDUNGEN, LERNEN, IDEEN, CREDITS in Documents/Claude-Austausch/Fondue, per cmp identisch mit docs/"
   }
 ]
