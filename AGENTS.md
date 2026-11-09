@@ -22,9 +22,20 @@ Aktuelle Phase: Alpha, Tim und Lenny testen zu zweit. Jede Version muss auf Lapt
 
 ## Veröffentlichen
 - Gearbeitet wird direkt auf `main`, ohne Pull Requests.
+- Vor jedem Commit genau prüfen, welche Dateien dazugehören, und sie einzeln mit Namen hinzufügen. Kein `git add -A` oder `git add .`: Andere Sitzungen können parallel arbeiten, und Testläufe ändern `docs/screenshots/`.
 - Jeder Push auf `main` geht sofort live. Deshalb wird nur gepusht, wenn Tim oder Lenny das sagt, etwa mit „veröffentlichen“.
 - Vor dem Push: alle Tests grün (`npm test`, `npm run test:e2e`), dann `git pull --rebase`, dann `git push origin main`. Der veröffentlichte Stand ist immer spielbar.
 - Kontrollen wie Pull Requests und Schutz von `main` kommen erst später, wenn das Spiel etwas zu verlieren hat. Die KI schlägt das vor, sobald es so weit ist, spätestens bevor Freunde mitspielen.
+
+## Am Ende jeder Sitzung
+Egal wer wo mit welcher KI arbeitet: Wurde in der Sitzung etwas geändert, sagt die KI am Ende kurz und verständlich, was geändert wurde und ob es schon committet und veröffentlicht ist. Dann fragt sie deutlich sichtbar, in einer eigenen Zeile am Schluss ihrer Nachricht:
+
+> **Sage „committen“, um die Änderungen im Repo zu sichern, oder „veröffentlichen“, um sie live zu stellen.**
+
+- **committen:** Die Änderungen werden gesichert, gehen aber nicht live.
+- **veröffentlichen:** Die Änderungen werden committet, und bei grünen Tests gepusht. Sie sind dann live.
+
+Ohne eines dieser Worte wird nichts committet oder gepusht. Ist schon alles committet, fragt die KI nur noch nach „veröffentlichen“.
 
 ## Grenze für das ganze Projekt (hat Vorrang vor docs/AUFTRAG.md)
 Fondue ist ein eigenständiges Spiel mit ähnlichen Mechaniken, keine Nachbildung von Knights Onrush.
