@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { WEAPON_SLOTS, type WeaponSlot } from '../config/shop';
+import { SHOP_ITEMS, WEAPON_SLOTS, type WeaponSlot } from '../config/shop';
 import { DAY } from '../config/waves';
 import type { ViewState } from '../net/snapshot';
 import type { Meta } from '../sim/types';
@@ -34,6 +34,7 @@ export class Hud {
   private dayText: Phaser.GameObjects.Text;
   private sun: Phaser.GameObjects.Graphics;
   private slots: Slot[] = [];
+  private tooltip!: Phaser.GameObjects.Text;
   private shown = 0;
   private bump = 0;
 
@@ -65,6 +66,8 @@ export class Hud {
     this.dayText = add(scene.add.text(640, 22, '', { ...small, fontSize: '26px' }).setOrigin(0.5));
     this.sun = add(scene.add.graphics());
 
+    this.tooltip = add(scene.add.text(0, SLOT_Y - 46, '', { ...small, fontSize: '20px', strokeThickness: 4 }).setOrigin(0.5));
+
     WEAPON_SLOTS.forEach((slot, i) => {
       const x = SLOT_X0 + i * SLOT_DX;
       const icon = add(scene.add.image(x, SLOT_Y, propKey(ICONS[slot])).setScale(1 / TEX_SCALE));
@@ -75,6 +78,18 @@ export class Hud {
   }
 
   setVisible(v: boolean) { for (const o of this.all) o.setVisible(v); }
+
+  /** Shows the owned item's name while the pointer rests on its icon. */
+  hover(x: number, y: number, meta: Meta | null) {
+    const slot = this.hitSlot(x, y);
+    let id: string | null | undefined = null;
+    if (slot && meta) {
+      id = slot === 'horn' ? meta.hornEquipped : SHOP_ITEMS.filter((i) => i.id.startsWith(slot) && meta.owned.includes(i.id)).pop()?.id;
+    }
+    const item = SHOP_ITEMS.find((i) => i.id === id);
+    this.tooltip.setVisible(!!item);
+    if (item && slot) this.tooltip.setText(item.name).setX(this.slotPos(slot).x);
+  }
 
   /** Hit test for a press in world coordinates. */
   hitSlot(x: number, y: number): WeaponSlot | null {

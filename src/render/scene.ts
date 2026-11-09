@@ -184,6 +184,7 @@ export class GameScene extends Phaser.Scene {
       this.renderHands(view, s);
       const me = view.hands[s.me];
       this.hud.update(view, s.meta(), me ? MODE_TO_SLOT[me.mode] : '', Math.min(0.05, deltaMs / 1000));
+      this.hud.hover(this.tracker.x, this.tracker.y, s.meta());
       this.bg.update(view.dayT, this.tracker.x, Math.min(0.05, deltaMs / 1000));
       this.bg.setDay(view.day);
       this.updatePhase(view);

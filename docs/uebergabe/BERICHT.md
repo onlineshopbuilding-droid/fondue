@@ -44,7 +44,7 @@ Zwei unabhängige Tester (Subagents) haben gespielt und Code geprüft, zusammen 
 3. **Sound nicht angehört.** Technisch geprüft (kein Übersteuern, alle Klänge hörbar), aber nicht nach Gehör abgemischt.
 4. **Balance:** Durchschnitts-Bots kommen solo auf etwa Tag 14 (Ziel 8–12), zu zweit auf etwa Tag 18. Bots sind keine Menschen; die Werte stehen in `src/config/waves.ts`.
 5. **Datenkanal:** Snapshots laufen über einen zuverlässigen Kanal. Bei viel Paketverlust ruckelt es kurz. Wird der Kanal voll, werden Snapshots übersprungen.
-6. **Kleinere Punkte aus den Tests** ohne Behebung: keine Namen an den Waffen-Icons, kein Hinweis auf einem besetzten Adlerhaken, Interpolation mit Ankunftszeit statt Host-Tick.
+6. **Kleinere Punkte aus den Tests** ohne Behebung: kein Hinweis auf einem besetzten Adlerhaken, Interpolation mit Ankunftszeit statt Host-Tick.
 7. **Energieeinstellungen** wurden nicht verändert, siehe ENTSCHEIDUNGEN E-002. Der Laptop muss mit offenem Deckel laufen.
 8. Abschnitt 6.2 und 6.3 des Auftrags (Skills, freie Asset-Pakete suchen) habe ich nur knapp umgesetzt: keine fremden Skills oder Assets, weil die eigene Grafik und der eigene Sound einheitlicher sind.
 
