@@ -39,7 +39,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'wheel2', name: 'Heavy Wheel', tab: 'wheels', gold: 1200, offerings: 11, requires: 'wheel1', desc: 'Wider, and it does not stop for much.' },
   { id: 'wheel3', name: 'Colossal Wheel', tab: 'wheels', gold: 3200, offerings: 32, requires: 'wheel2', desc: 'Flattens the whole road.' },
 
-  { id: 'stomper1', name: 'Stomper', tab: 'stompers', gold: 900, offerings: 8, desc: 'Click its icon, hover where it should land, then press to slam.' },
+  { id: 'stomper1', name: 'Stomper', tab: 'stompers', gold: 900, offerings: 8, desc: 'Tap its icon, then press where it should land and let go.' },
   { id: 'stomper2', name: 'Great Stomper', tab: 'stompers', gold: 2200, offerings: 12, requires: 'stomper1', desc: 'A wider slab, reloaded faster.' },
   { id: 'stomper3', name: 'Titan Stomper', tab: 'stompers', gold: 5200, offerings: 32, requires: 'stomper2', desc: 'The ground remembers this one.' },
 
@@ -48,7 +48,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'comet3', name: 'Falling Star', tab: 'comets', gold: 3000, offerings: 34, requires: 'comet2', desc: 'A piece of the sky.' },
 
   { id: 'mortar', name: 'Gate Mortar', tab: 'horns', gold: 1400, offerings: 0, desc: 'Press and move to aim, let go to fire. The shell takes a moment to land.' },
-  { id: 'frost', name: 'Frost Horn', tab: 'horns', gold: 2800, offerings: 8, desc: 'Freezes a patch of enemies. Click a frozen enemy to shatter it.' },
+  { id: 'frost', name: 'Frost Horn', tab: 'horns', gold: 2800, offerings: 8, desc: 'Freezes a patch of enemies. Tap a frozen enemy to shatter it.' },
   { id: 'bellows', name: 'Dragon Bellows', tab: 'horns', gold: 3800, offerings: 30, desc: 'Sets a long stretch of road on fire.' },
 
   { id: 'bolter1', name: 'Roof Bolter I', tab: 'bolters', gold: 2300, offerings: 0, desc: 'A volley from the keep roof at the nearest enemies.' },

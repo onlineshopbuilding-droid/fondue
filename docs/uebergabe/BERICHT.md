@@ -29,11 +29,11 @@ Details und Messwerte in `docs/GDD.md`.
 ## Testergebnisse
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| Unit-Tests | `npm test` | 88 von 88 grün |
-| Browser-Tests | `npm run test:e2e` | 16 von 16 grün, darunter Koop mit zwei Browsern ohne und mit Latenz, Relay, Touch |
+| Unit-Tests | `npm test` | 100 von 100 grün |
+| Browser-Tests | `npm run test:e2e` | 29 von 29 grün, darunter Koop mit zwei Browsern ohne und mit Latenz, Relay, Touch und acht Handy- und Tablet-Größen |
 | Live-Seite | `npx playwright test --config playwright.live.config.ts` | Chrome und Edge grün, echte PeerJS-Verbindung grün |
 | Plan B über echten Tunnel | `tests/live/tunnel.spec.ts` | grün am 09.11.2026 |
-| FPS mit 200 Gegnern und Effekten | `playwright.perf.config.ts`, Edge | 57,6 FPS im Mittel, Median 16,7 ms, 95. Perzentil 19,3 ms; das 60-FPS-Ziel wird im Mittel knapp verfehlt, der Median entspricht 60 FPS |
+| FPS mit 200 Gegnern und Effekten | `playwright.perf.config.ts`, Edge | 57,6 FPS im Mittel, Median 16,7 ms, 95. Perzentil 20,6 ms; das 60-FPS-Ziel wird im Mittel knapp verfehlt, der Median entspricht 60 FPS |
 | Balance | `npm run balance` | `docs/balance.md` |
 
 Unabhängige Tester (Subagents) haben gespielt und Code geprüft, dazu ein dritter für Spielgefühl und Tempo, zusammen rund 70 Befunde. Die wichtigen sind behoben und durch Tests abgesichert.
@@ -59,3 +59,4 @@ Unabhängige Tester (Subagents) haben gespielt und Code geprüft, dazu ein dritt
 | 03:30 | Zweiter unabhängiger Test (Koop), Befunde behoben |
 | 04:10 | Dritter unabhängiger Test (Gefühl, Tempo), Befunde eingearbeitet |
 | 12:00 | Abschlussrunden: unzuverlässiger Koop-Test aufgeklärt und behoben |
+| 17:30 | Mörser-Granate, Anpassung an Handys und Tablets |

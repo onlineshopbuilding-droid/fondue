@@ -5,7 +5,6 @@ import { ENEMIES } from '../config/enemies';
 import { GAME_NAME } from '../config/game';
 import { SHOP_ITEMS, SHOP_TABS, type ShopTab } from '../config/shop';
 import { DIFFICULTIES, type Difficulty } from '../config/waves';
-import { WORLD } from '../config/world';
 import { GuestSession, HostSession, type Session } from '../game/session';
 import { addScore, loadScores, loadSettings, saveSettings, type Settings } from '../game/storage';
 import { loopbackTransport } from '../net/loopback';
@@ -16,6 +15,7 @@ import type { ViewState } from '../net/snapshot';
 import { makeRoomCode, normalizeRoomCode, withLatency, type RoomHost, type Transport, type TransportKind } from '../net/transport';
 import { GameScene } from '../render/scene';
 import { buildTextures } from '../render/textures';
+import { computeView, readSafeArea, sameView } from '../render/viewport';
 import type { Meta } from '../sim/types';
 import { CREDITS_HTML, HELP_SLIDES, LOADING_TIPS } from './content';
 import { TuningPanel } from './tuningPanel';
@@ -23,6 +23,9 @@ import { TuningPanel } from './tuningPanel';
 declare const __GAME_VERSION__: string;
 // A test can pretend to be an out-of-date client with ?fakever=x.
 const BUILD = new URLSearchParams(location.search).get('fakever') ?? `${PROTOCOL_VERSION}-${__GAME_VERSION__}`;
+
+/** Upright touch devices are asked to rotate; the game is built for landscape. */
+const UPRIGHT_PHONE = '(orientation: portrait) and (pointer: coarse)';
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const artUri = (name: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(PROPS[name].svg)}`;
@@ -92,6 +95,11 @@ export class App {
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
     window.addEventListener('pagehide', () => this.session?.dispose());
+    const rotate = document.createElement('div');
+    rotate.id = 'rotate';
+    rotate.innerHTML = '<div class="phone-icon"></div><div>Turn your phone sideways to play</div>';
+    document.body.appendChild(rotate);
+    window.matchMedia(UPRIGHT_PHONE).addEventListener('change', (e) => { if (e.matches) this.pauseSoloFight(); });
     this.startBackgroundTicker();
     window.addEventListener('pointerdown', () => {
       this.audio.resume();
@@ -129,11 +137,13 @@ export class App {
       isInputBlocked: () => this.overlay !== null,
       onBuyNotice: (t) => { if (this.session?.role !== 'solo') this.toast(t); },
     };
+    const view = computeView(innerWidth, innerHeight, readSafeArea());
+    this.scene.view = view;
     this.game = new Phaser.Game({
       type: Phaser.WEBGL,
       parent: 'app',
-      width: WORLD.width,
-      height: WORLD.height,
+      width: view.width,
+      height: view.height,
       backgroundColor: '#1c2a33',
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
       render: { antialias: true, roundPixels: false },
@@ -145,6 +155,7 @@ export class App {
     await buildTextures(this.game);
     this.game.scene.add('game', this.scene, true);
     (window as unknown as Record<string, unknown>).__fondue = this;
+    window.addEventListener('resize', () => this.applyView());
 
     if (this.params.get('relay')) this.settings.relayAddress = this.params.get('relay')!;
     const invite = this.params.get('join');
@@ -155,6 +166,21 @@ export class App {
     } else {
       this.show('main');
     }
+  }
+
+  /** Follows window resizes and phone rotation. */
+  private applyView() {
+    const v = computeView(innerWidth, innerHeight, readSafeArea());
+    if (sameView(v, this.scene.view)) return;
+    this.game.scale.setGameSize(v.width, v.height);
+    this.scene.setView(v);
+  }
+
+  /** Turning a phone upright hides the game; a solo fight should wait for the player. */
+  private pauseSoloFight() {
+    const s = this.session;
+    const v = s?.view();
+    if (s?.role === 'solo' && v && !v.paused && (v.phase === 'battle' || v.phase === 'banner')) this.togglePause();
   }
 
   private applyAudioSettings() {
@@ -520,6 +546,7 @@ export class App {
   // ---------------------------------------------------------------------------
 
   show(screen: Screen, arg?: string) {
+    const samePage = this.screen === screen;
     this.screen = screen;
     if (screen === 'none') {
       this.overlay?.remove();
@@ -537,7 +564,25 @@ export class App {
     const focused = document.activeElement as HTMLInputElement | null;
     const focusId = focused?.id;
     const caret = focused?.selectionStart ?? null;
+    // A purchase redraws the market; the player's place in the lists must survive that.
+    const list = samePage ? this.overlay.querySelector('.items') : null;
+    const tabs = samePage ? this.overlay.querySelector('.tabs') : null;
+    const panel = samePage ? this.overlay.querySelector('.panel') : null;
+    const listTop = list?.scrollTop ?? 0;
+    const tabsLeft = tabs?.scrollLeft ?? 0;
+    const panelTop = panel?.scrollTop ?? 0;
+    const tabBefore = tabs?.querySelector('.tab.on')?.getAttribute('data-tab');
     this.overlay.innerHTML = html;
+    // Only a new screen pops in; a redraw of the same one must not flicker.
+    if (!samePage) this.overlay.querySelector('.panel')?.classList.add('enter');
+    if (samePage) {
+      const items = this.overlay.querySelector('.items');
+      if (items && tabBefore === this.shopTab) items.scrollTop = listTop;
+      const newTabs = this.overlay.querySelector('.tabs');
+      if (newTabs) newTabs.scrollLeft = tabsLeft;
+      const newPanel = this.overlay.querySelector('.panel');
+      if (newPanel) newPanel.scrollTop = panelTop;
+    }
     if (focusId) {
       const el = this.overlay.querySelector<HTMLInputElement>(`#${focusId}`);
       if (el) { el.focus(); if (caret !== null) el.setSelectionRange(caret, caret); }

@@ -64,6 +64,7 @@ Drei Datenarten, die man unterscheiden muss:
 | `src/render/enemyView.ts` | Eine Figur zeichnen und animieren (`applyPose`) |
 | `src/render/effects.ts` | Partikel, Blut, Explosionen, schwebende Texte |
 | `src/render/hud.ts` | Gold, Torleiste, Waffen-Icons |
+| `src/render/viewport.ts` | Rechnet Bildschirmgröße in den sichtbaren Weltausschnitt um (`computeView`) |
 | `src/render/background.ts` | Himmel und Parallax-Ebenen |
 | `src/render/textures.ts` | Macht beim Start aus allen SVGs Texturen |
 | `src/art/characters/` | Eine Datei pro Gegner, Sammlung in `RIGS` (`index.ts`), Bausteine und Farben in `kit.ts` |
@@ -138,7 +139,9 @@ Die Logik dazu: `velocity()` in `src/input/pointer.ts`, `release`, `clampThrow`,
 | Blut, Partikel, Explosion | `src/render/effects.ts` |
 | Welcher Effekt und Klang bei welchem Ereignis | `handleEvent`, `onImpact`, `onDeath` in `src/render/scene.ts` |
 | Handfarben | `HAND_COLORS` in `src/render/scene.ts` |
-| HUD-Anordnung | `src/render/hud.ts` |
+| HUD-Anordnung | `src/render/hud.ts`, Verankerung an den Bildschirmrändern in `layout` |
+| Wie viel auf breiten oder hohen Bildschirmen sichtbar ist | `src/render/viewport.ts` |
+| Handy-Layout der Menüs | Blöcke `@media (pointer: coarse)` und `@media (max-height: 520px)` in `src/ui/style.css` |
 | Menüfarben und -layout | `src/ui/style.css` |
 | Klang eines Effekts | Funktion in `src/audio/sfx.ts`, Zuordnung in `SFX_RECIPES` |
 | Musik | `CHORDS`, `SECTION_A`, `SECTION_B`, `STYLES` in `src/audio/music.ts` |
@@ -203,6 +206,8 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 8. **Balance-Bots sind Näherungen.** Sie zielen ohne Bewegung und besiegen Yetis nur mit Waffen. Die Zahlen sagen, ob eine Änderung in die richtige Richtung geht, nicht wie ihr tatsächlich abschneidet.
 9. **Tests dürfen nie abgeschwächt werden.** Ändert sich eine Zahl, ist es in Ordnung, das Szenario eines Tests anzupassen; die Prüfung selbst bleibt. Ausfälle erst erklären, nicht einfach wiederholen.
 10. **Testläufe überschreiben `docs/screenshots/`.** Das erzeugt Git-Änderungen ohne inhaltliche Bedeutung.
+11. **Welt- und Bildschirmkoordinaten sind nicht dasselbe.** Die Welt ist immer 1280 × 720, der Bildschirm zeigt je nach Seitenverhältnis mehr davon. Figuren, Geschosse und die Hand stehen in Weltkoordinaten. HUD-Elemente stehen in Bildschirmkoordinaten und werden in `layout` an einen Rand verankert. Umrechnung: Bildschirm = Welt minus `offsetX`/`offsetY` aus `GameView`.
+12. **Neue Dinge links von x = 0 oder oberhalb von y = 0 sind nur auf manchen Bildschirmen sichtbar.** Alles Spielrelevante muss zwischen 0 und 1280 liegen, sonst sehen Host und Gast nicht dasselbe.
 
 ## 7. Testen und veröffentlichen
 
@@ -210,12 +215,12 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 |---|---|---|
 | `npm run dev` | Spiel lokal auf http://localhost:5173 | |
 | `npm test` | Regeln, Wurf, Sitzung, Klänge, Latenz-Simulator | `tests/unit/` |
-| `npm run test:e2e` | Browser: Ablauf, Koop, Relay, Touch, Landschaften | `tests/e2e/` |
+| `npm run test:e2e` | Browser: Ablauf, Koop, Relay, Touch, Landschaften, Handy-Größen | `tests/e2e/` |
 | `npm run balance` | Bots spielen, schreibt `docs/balance-latest.md` | `tests/balance/` |
 | `npx playwright test --config playwright.perf.config.ts` | FPS mit 200 Gegnern in Edge | `tests/perf/` |
 | `npx playwright test --config playwright.live.config.ts` | Veröffentlichte Seite | `tests/live/` |
 
-Veröffentlichen: alle Tests grün, dann `git push origin main`. Die Pipeline steht in `.github/workflows/deploy.yml`. Danach mit `EXPECT_BUILD=<kurzer Hash>` die Live-Tests laufen lassen.
+Veröffentlichen, sobald Tim oder Lenny es sagt: alle Tests grün, `git pull --rebase`, dann `git push origin main`. Die Pipeline steht in `.github/workflows/deploy.yml`. Danach mit `EXPECT_BUILD=<kurzer Hash>` die Live-Tests laufen lassen.
 
 Die Testregeln gelten weiter: Browser-Tests laufen mit Playwright. Firefox und das volle Playwright-Chromium startet Windows auf diesem Laptop nicht (E-011), Edge läuft über `channel: 'msedge'`.
 
@@ -238,7 +243,7 @@ Eine Änderung ist erst fertig, wenn das ganze Spiel danach noch zusammenpasst. 
 | Wirtschaft | Bleibt die Preisleiter sinnvoll, sind höhere Stufen teurer und besser? Ist alles erreichbar? | `SHOP_ITEMS`, `WEAPONS`, `npm run balance` |
 | Schwierigkeit | Liegt der Verlauf noch im Ziel? | `docs/balance.md`; Durchschnitts-Bot solo auf Medium Tag 8 bis 12 |
 | Koop | Sieht der Gast dasselbe? Reagiert er genauso? | Abschnitt 6, Falle 4; `src/net/snapshot.ts` |
-| Bedienung | Geht es gut mit der Maus? Bleibt ein Weg für Touch offen? | Abschnitt 10 |
+| Bedienung | Geht es mit Maus und Finger? Sieht es auf dem Handy gut aus? | Abschnitt 10; Screenshots in `mobile-screenshots/` ansehen |
 | Aussehen | Passt es zum Stil: gleiche Farben, Umrisse, Schriften? Überlappt etwas, wird etwas abgeschnitten? | `PAL` in `src/art/characters/kit.ts`, `src/ui/style.css`; Screenshot ansehen |
 | Rückmeldung | Hat etwas Neues Klang, Effekt und einen Hinweis für Spielende? | `handleEvent`, `SFX_RECIPES` |
 | Leistung | Bleibt es flüssig mit 200 Gegnern? | FPS-Test |
@@ -247,28 +252,55 @@ Eine Änderung ist erst fertig, wenn das ganze Spiel danach noch zusammenpasst. 
 
 Am Ende steht ein kurzer Bericht für Tim und Lenny: was geändert wurde, was dadurch mitgeändert wurde, wo es liegt, was geprüft wurde und was nur Menschen beurteilen können, etwa Spielgefühl und Klang.
 
-## 10. Endziel: App Store und Google Play
+## 10. Handy und Endziel App Store / Google Play
 
-Das Spiel soll in beide Stores, zuerst privat. Noch ist nichts davon gebaut.
+Jede Version muss auf Laptop und Handy funktionieren. Das Spiel soll später in beide Stores, zuerst privat.
 
-**Aktuelle Phase: Alpha am Laptop.** Tim und Lenny testen zu zweit am Laptop, Freunde kommen erst mit späteren Versionen dazu. Das Handy wird schrittweise wichtiger, sobald das Spiel größer und besser steht.
+**So funktioniert die Anpassung an jeden Bildschirm**
+- Die Spielwelt bleibt immer 1280 × 720. Regeln und Koop sind dadurch für alle gleich, auch wenn einer am Handy und einer am Laptop spielt.
+- `computeView` bestimmt, was sichtbar ist. Breite Bildschirme sehen links mehr Landschaft, Tablets oben mehr Himmel. Rechter und unterer Rand bleiben fest, damit Gegner weiter unsichtbar starten.
+- Das HUD ist in Gruppen an die Bildschirmränder verankert und wächst auf kleinen Bildschirmen, bis Finger es treffen.
+- Menüs nutzen auf niedrigen Bildschirmen ein kompaktes Layout, der Markt scrollt nur die Liste. Hochkant erscheint ein Hinweis zum Drehen, ein laufendes Solo-Spiel pausiert.
+- Notch und Home-Leiste kommen über `readSafeArea` und werden im HUD freigehalten.
 
-**Geräte:** Tim: ASUS Zenbook (Windows), iPhone 16. Lenny: Windows-Laptop, Linux-Laptop, Android-Handy. Es gibt keinen Mac, iOS-Builds brauchen deshalb später einen Cloud-Dienst mit macOS. Getestet wird dann per TestFlight auf dem iPhone, Android direkt auf Lennys Handy.
+**So wird geprüft:** `tests/e2e/mobile.spec.ts` läuft mit `npm run test:e2e` in acht Bildschirmgrößen vom kleinen Android bis zum iPad, in simuliertem Chrome mit Touch. Geprüft wird: nichts ragt aus dem Bild, alle Bedienflächen sind mindestens 44 Pixel groß, das Bild füllt den Bildschirm, Hinweise verdecken nicht das Spielfeld, Waffen, Pause und Greifen gehen per Finger. Die Screenshots liegen danach in `mobile-screenshots/` und werden bei Änderungen an Aussehen oder Bedienung angesehen.
 
-**Für neue Funktionen schon jetzt**
-- Nichts darf so gebaut werden, dass es nur mit Hover, Rechtsklick oder Tastatur überhaupt möglich ist. Eine Touch-Variante muss sich ergänzen lassen.
+**Grenzen der Simulation:** Safari verhält sich manchmal anders als Chrome, und Leistung oder Spielgefühl auf echten Geräten sieht man so nicht. Dafür testen Tim (iPhone 16) und Lenny (Android) von Zeit zu Zeit auf dem echten Gerät.
+
+**Für jede neue Funktion**
+- Alles muss per Finger gehen. Tastatur, Hover und Rechtsklick sind nur Zusatz.
+- Neue Bildschirme und Menüs bekommen einen Eintrag in `tests/e2e/mobile.spec.ts`.
+- Neue HUD-Elemente kommen in eine der Gruppen in `src/render/hud.ts`.
+- Spieltexte sprechen von „tap“, nicht von „click“, und nennen keine Tasten als einzigen Weg.
 - Keine neue Abhängigkeit, die nur im Desktop-Browser läuft.
 
-**Beim Übergang zum Handy dazu:** Bedienelemente groß genug für Finger, Layout im Querformat auch mit Notch, Prüfung auf echten Geräten.
+**Geräte:** Tim: ASUS Zenbook (Windows), iPhone 16. Lenny: Windows-Laptop, Linux-Laptop, Android-Handy. Es gibt keinen Mac, iOS-Builds brauchen später einen Cloud-Dienst mit macOS.
 
-**Bekannte Lücken bis zur Store-Version**
+**Noch offen bis zur Store-Version**
 
 | Thema | Heute | Nötig |
 |---|---|---|
 | Verpackung als App | Nur Webseite | Hülle um das Web-Spiel, voraussichtlich Capacitor |
-| Bedienung ohne Maus | Touch-Grundtest vorhanden; Waffennamen nur bei Hover, Pause und Waffen auch per Taste, Abbrechen per Rechtsklick, Esc oder erneutem Tippen aufs Icon; Hilfe-Texte sind mausbezogen | Auf echten Geräten prüfen und anpassen |
-| Leistung | Nur auf dem Laptop gemessen | Auf echten Handys messen |
+| Leistung | Nur auf dem Laptop gemessen | Auf echten Handys messen, bei Bedarf Einstellung mit weniger Effekten |
 | Koop über Mobilfunk | Direktverbindung über STUN, öffentlicher PeerJS-Dienst, kein TURN | Eigener Vermittlungs- und Relay-Dienst, weil Mobilnetze Direktverbindungen oft blockieren |
+| Versionsprüfung | Host und Gast brauchen exakt denselben Build | Lockerer, weil in Stores nicht alle gleichzeitig aktualisieren |
 | Spielstand | Nur Bestenliste und Einstellungen im `localStorage`; ein Lauf wird nicht gespeichert | Dauerhafter Speicher, Fortsetzen unterbrochener Läufe |
 | Zugang nur per Code | Fehlt | Über Store-Testkanäle oder eigene Code-Abfrage |
 | Store-Unterlagen | Fehlen | App-Icon, Name, Datenschutzerklärung, Altersfreigabe |
+
+## 11. Mit mehreren Menschen und KIs arbeiten
+
+Die Regeln stehen in `AGENTS.md`. `CLAUDE.md` und `GEMINI.md` verweisen nur darauf, damit jede KI dasselbe liest. Neue Regeln kommen immer nach `AGENTS.md`.
+
+**Ablauf**
+1. `git pull`, damit alle vom selben Stand ausgehen.
+2. Eine KI bearbeitet ein Thema, direkt auf `main`.
+3. Commit lokal. Live geht erst etwas, wenn Tim oder Lenny „veröffentlichen“ sagt.
+4. Vor dem Push: Tests grün, `git pull --rebase`, `git push origin main`.
+
+**Damit nichts verloren geht**
+- Kurz absprechen, wer woran sitzt. Nicht zwei Personen oder KI-Sitzungen gleichzeitig an denselben Dateien.
+- Ein Chat ist nur für diese Sitzung sichtbar. Beschlüsse gehören nach `docs/ENTSCHEIDUNGEN.md`.
+- Am Ende einer Sitzung ist alles Wichtige committet, damit die nächste KI es vorfindet.
+
+**Werkzeuge:** Arbeiten am Projekt können nur Programmier-Werkzeuge, die im Ordner laufen (Claude Code, Codex, Gemini CLI). Normale Web-Chats sehen das Projekt nicht.

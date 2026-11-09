@@ -11,6 +11,7 @@ import { Background } from './background';
 import { Effects } from './effects';
 import { EnemyView } from './enemyView';
 import { Hud } from './hud';
+import { computeView, type GameView } from './viewport';
 import { propKey, TEX_SCALE } from './textures';
 
 const HAND_COLORS = [0xfff1d0, 0x9fe0ff];
@@ -65,6 +66,8 @@ export class GameScene extends Phaser.Scene {
   private lastFrameMs = 16.7;
   /** For the debug overlay and tests. */
   debug = { fps: 60, enemies: 0, frameMs: 16 };
+  /** What this screen shows of the world. */
+  view: GameView = computeView(WORLD.width, WORLD.height);
 
   constructor() { super('game'); }
 
@@ -90,12 +93,32 @@ export class GameScene extends Phaser.Scene {
     for (let i = 0; i < 2; i++) {
       const img = this.add.image(0, 0, propKey('handOpen')).setScale(1 / TEX_SCALE).setDepth(100).setVisible(false).setTint(HAND_COLORS[i]);
       const label = this.add.text(0, 0, '', { fontFamily: FONT, fontSize: '18px', color: '#fff6df', stroke: '#2b2118', strokeThickness: 4 }).setOrigin(0.5, 1).setDepth(100).setVisible(false);
-      const reticle = this.add.image(0, 0, propKey('reticle')).setScale(1 / TEX_SCALE).setDepth(45).setVisible(false);
+      const reticle = this.add.image(0, 0, propKey('reticle')).setScale(1 / TEX_SCALE).setDepth(101).setVisible(false);
       const ghost = this.add.image(0, 0, propKey('slab')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setAlpha(0.35).setDepth(44).setVisible(false);
       this.hands.push({ img, label, reticle, ghost });
     }
 
     this.bindInput();
+    this.setView(this.view);
+  }
+
+  /** Applies a new screen shape to the camera and everything anchored to the screen edges. */
+  setView(v: GameView) {
+    this.view = v;
+    if (!this.hud) return;
+    this.cameras.main.setSize(v.width, v.height).setScroll(v.offsetX, v.offsetY);
+    this.bg.layout(v);
+    this.hud.layout(v);
+    this.banner.x = v.width / 2;
+  }
+
+  /** CSS position of a world point. */
+  worldToCss(x: number, y: number) { return this.screenToCss(x - this.view.offsetX, y - this.view.offsetY); }
+
+  /** CSS position of a point in screen coordinates. */
+  screenToCss(x: number, y: number) {
+    const r = this.game.canvas.getBoundingClientRect();
+    return { x: r.left + (x / this.view.width) * r.width, y: r.top + (y / this.view.height) * r.height };
   }
 
   private bindInput() {
@@ -103,12 +126,15 @@ export class GameScene extends Phaser.Scene {
     const { tracker } = bindPointer(canvas, {
       onMove: () => { /* the hand position is read every frame */ },
       windowMs: () => this.session?.meta()?.tuning.velWindowMs ?? 80,
+      view: () => this.view,
       onDown: (x, y) => {
         this.audio.resume();
         const s = this.session;
         if (!s || this.hooks.isInputBlocked()) return true;
-        if (this.hud.hitPause(x, y)) { this.hooks.togglePause(); return true; }
-        const slot = this.hud.hitSlot(x, y);
+        const sx = x - this.view.offsetX;
+        const sy = y - this.view.offsetY;
+        if (this.hud.hitPause(sx, sy)) { this.hooks.togglePause(); return true; }
+        const slot = this.hud.hitSlot(sx, sy);
         if (slot) {
           s.send({ k: 'activate', slot });
           this.audio.play('uiClick');
@@ -186,7 +212,7 @@ export class GameScene extends Phaser.Scene {
       this.renderHands(view, s);
       const me = view.hands[s.me];
       this.hud.update(view, s.meta(), me ? MODE_TO_SLOT[me.mode] : '', Math.min(0.05, deltaMs / 1000));
-      this.hud.hover(this.tracker.x, this.tracker.y, s.meta());
+      this.hud.hover(this.tracker.x - this.view.offsetX, this.tracker.y - this.view.offsetY, s.meta());
       this.bg.update(view.dayT, this.tracker.x, Math.min(0.05, deltaMs / 1000));
       this.bg.setDay(view.day);
       this.updatePhase(view);
@@ -202,8 +228,9 @@ export class GameScene extends Phaser.Scene {
   private applyShake(dt: number) {
     const cam = this.cameras.main;
     this.shakeAmp *= Math.exp(-dt * 14);
-    if (this.shakeAmp < 0.3) { this.shakeAmp = 0; cam.setScroll(0, 0); return; }
-    cam.setScroll((Math.random() - 0.5) * 2 * this.shakeAmp, (Math.random() - 0.5) * 2 * this.shakeAmp);
+    const { offsetX, offsetY } = this.view;
+    if (this.shakeAmp < 0.3) { this.shakeAmp = 0; cam.setScroll(offsetX, offsetY); return; }
+    cam.setScroll(offsetX + (Math.random() - 0.5) * 2 * this.shakeAmp, offsetY + (Math.random() - 0.5) * 2 * this.shakeAmp);
   }
 
   private renderWorld(view: ViewState, dt: number) {
@@ -312,7 +339,8 @@ export class GameScene extends Phaser.Scene {
       const y = isMe ? this.tracker.y : h.y;
       const blocked = isMe && this.hooks.isInputBlocked();
       const visible = h.connected && !blocked && (view.phase !== 'intermission' && view.phase !== 'gameover');
-      hv.img.setVisible(visible);
+      // A finger leaves no cursor behind, so the hand only shows while it is touching.
+      hv.img.setVisible(visible && !(isMe && this.tracker.touch && !this.tracker.pressed));
       hv.label.setVisible(visible && view.hands.length > 1);
       hv.reticle.setVisible(visible && h.mode === 'horn');
       hv.ghost.setVisible(visible && h.mode === 'stomper');
@@ -540,17 +568,23 @@ export class GameScene extends Phaser.Scene {
       this.fx.splat(ev.x, ev.y, big ? 1 : 0.5);
       this.sfx('impactSplat', 0.6);
     }
-    this.fx.coin(ev.x, ev.y, this.hud.goldPos.x, this.hud.goldPos.y);
+    const purse = this.hud.goldTarget();
+    this.fx.coin(ev.x, ev.y, purse.x, purse.y);
     this.fx.floatText(ev.x, ev.y - 60, `+${ev.gold}`);
     this.sfx('coin', 0.45);
     if (ev.cause === 'cauldron' || ev.cause === 'eagle') {
-      this.fx.offering(ev.x, ev.y, this.hud.offeringPos.x, this.hud.offeringPos.y);
+      const pot = this.hud.offeringTarget();
+      this.fx.offering(ev.x, ev.y, pot.x, pot.y);
       this.sfx('offering');
     }
   }
 
   /** Test hook: reports where a weapon icon is. */
   slotPosition(slot: WeaponSlot) { return this.hud.slotPos(slot); }
+  pauseCss() { const p = this.hud.pausePos(); return this.screenToCss(p.x, p.y); }
+  slotDiameterCss() { return this.hud.slotDiameterCss(); }
+  pauseDiameterCss() { return this.hud.pauseDiameterCss(); }
+  hudBottomCss() { return this.hud.bottomCss(); }
   viewEnemies(): ViewEnemy[] { return this.lastView?.enemies ?? []; }
   get frameMs() { return this.lastFrameMs; }
 }

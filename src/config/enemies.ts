@@ -53,7 +53,7 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
     name: 'Keg Hauler',
     speed: 85, strike: 16, strikeEvery: 3.2, range: 225, hp: 40, radius: 28, height: 90,
     gold: 15, score: 160, grabbable: true, firstDay: 2, weight: 3, maxPerDay: 40,
-    tip: 'Keg Haulers lob bombs at the gate. A quick click makes them drop the keg. Pick up a thrown bomb and send it back.',
+    tip: 'Keg Haulers lob bombs at the gate. A quick tap makes them drop the keg. Pick up a thrown bomb and send it back.',
   },
   goatRider: {
     name: 'Goat Rider',
@@ -83,7 +83,7 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
     name: 'Siege Cart',
     speed: 50, strike: 34, strikeEvery: 3.6, range: 470, hp: 260, radius: 71, height: 113,
     gold: 60, score: 600, grabbable: false, firstDay: 7, weight: 0.5, maxPerDay: 5,
-    tip: 'Too heavy to lift! Click a Siege Cart again and again to smash it apart.',
+    tip: 'Too heavy to lift! Tap a Siege Cart again and again to smash it apart.',
   },
   balloonist: {
     name: 'Balloonist',

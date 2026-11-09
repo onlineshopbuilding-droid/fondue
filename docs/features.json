@@ -217,7 +217,7 @@
     "beschreibung": "Touch-Steuerung funktioniert.",
     "pruefung": "Playwright-Touch-Emulation",
     "passes": true,
-    "beleg": "tests/e2e/touch.spec.ts über CDP-Touch-Events"
+    "beleg": "tests/e2e/touch.spec.ts über CDP-Touch-Events; tests/e2e/mobile.spec.ts in Handy-Größen"
   },
   {
     "id": 28,
@@ -225,7 +225,7 @@
     "beschreibung": "60 FPS mit 200 Gegnern plus Effekten, gemessen, Ergebnis in PROGRESS.md.",
     "pruefung": "Messung",
     "passes": true,
-    "beleg": "npx playwright test --config playwright.perf.config.ts mit Edge und echter GPU: 57,6 FPS Mittel, Median 16,7 ms, 95. Perzentil 19,3 ms, 200 Gegner mit laufenden Effekten (docs/perf-latest.json). Das Mittel liegt knapp unter 60, der Median entspricht 60 FPS"
+    "beleg": "npx playwright test --config playwright.perf.config.ts mit Edge und echter GPU: 57,6 FPS Mittel, Median 16,6 ms, 95. Perzentil 20,6 ms, 200 Gegner mit laufenden Effekten (docs/perf-latest.json). Das Mittel liegt knapp unter 60, der Median entspricht 60 FPS"
   },
   {
     "id": 29,
@@ -241,7 +241,7 @@
     "beschreibung": "Unit-Tests und Playwright-Tests grün.",
     "pruefung": "npm test",
     "passes": true,
-    "beleg": "09.11.2026 12:33: npx vitest run 88/88 grün; npx playwright test 16/16 grün, darunter Koop mit zwei Browsern ohne und mit simulierter Latenz; Latenz-Test zusätzlich 14 Wiederholungen grün"
+    "beleg": "09.11.2026: npx vitest run 100/100 grün; npx playwright test 29/29 grün, darunter Koop mit zwei Browsern ohne und mit simulierter Latenz sowie Handy-Größen"
   },
   {
     "id": 31,
@@ -258,5 +258,13 @@
     "pruefung": "Dateiprüfung",
     "passes": true,
     "beleg": "09.11.2026 12:40: START-HIER, STATUS, BERICHT, ENTSCHEIDUNGEN, LERNEN, IDEEN, CREDITS in Documents/Claude-Austausch/Fondue, per cmp identisch mit docs/"
+  },
+  {
+    "id": 33,
+    "bereich": "handy",
+    "beschreibung": "Spiel passt sich an Handys und Tablets an: alle Bildschirme passen, Bedienflächen mindestens 44 Pixel, Bild füllt den Bildschirm, Greifen, Waffen und Pause per Finger.",
+    "pruefung": "Playwright mit acht Bildschirmgrößen und Touch",
+    "passes": true,
+    "beleg": "09.11.2026: tests/e2e/mobile.spec.ts in acht Größen von 640x320 bis 1024x768 grün. Nur in simuliertem Chrome, noch nicht auf echten Geräten"
   }
 ]

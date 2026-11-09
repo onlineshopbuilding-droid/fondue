@@ -11,6 +11,9 @@ const HISTORY = 64;
 export class PointerTracker {
   x = WORLD.width / 2;
   y = WORLD.height / 2;
+  /** The current or last press came from a finger, which leaves no cursor behind. */
+  touch = false;
+  pressed = false;
   private samples: Sample[] = [];
 
   /** Adds a sample in world coordinates. */
@@ -57,19 +60,23 @@ export interface PointerHandlers {
   onDown(x: number, y: number, tracker: PointerTracker): boolean;
   onUp(x: number, y: number, vx: number, vy: number): void;
   windowMs(): number;
+  /** The part of the world the canvas shows. */
+  view(): { width: number; height: number; offsetX: number; offsetY: number };
 }
 
 /** Binds pointer events on the game canvas. Mouse and touch both arrive here. */
 export function bindPointer(canvas: HTMLCanvasElement, h: PointerHandlers): { tracker: PointerTracker; dispose(): void } {
   const tracker = new PointerTracker();
+  tracker.touch = window.matchMedia('(pointer: coarse)').matches;
   let hudPress = false;
   let activeId: number | null = null;
 
   const toWorld = (ev: { clientX: number; clientY: number }) => {
     const r = canvas.getBoundingClientRect();
+    const v = h.view();
     return {
-      x: ((ev.clientX - r.left) / r.width) * WORLD.width,
-      y: ((ev.clientY - r.top) / r.height) * WORLD.height,
+      x: v.offsetX + ((ev.clientX - r.left) / r.width) * v.width,
+      y: v.offsetY + ((ev.clientY - r.top) / r.height) * v.height,
     };
   };
 
@@ -87,6 +94,8 @@ export function bindPointer(canvas: HTMLCanvasElement, h: PointerHandlers): { tr
     // Only the primary button plays; the right button is reserved for cancelling.
     if (activeId !== null || ev.button !== 0) return;
     activeId = ev.pointerId;
+    tracker.touch = ev.pointerType === 'touch';
+    tracker.pressed = true;
     canvas.setPointerCapture(ev.pointerId);
     const p = toWorld(ev);
     tracker.clear();
@@ -99,6 +108,7 @@ export function bindPointer(canvas: HTMLCanvasElement, h: PointerHandlers): { tr
   const onUp = (ev: PointerEvent) => {
     if (ev.pointerId !== activeId) return;
     activeId = null;
+    tracker.pressed = false;
     const p = toWorld(ev);
     tracker.addRelease(ev.timeStamp, p.x, p.y);
     if (hudPress) { hudPress = false; return; }

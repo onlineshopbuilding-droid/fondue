@@ -87,5 +87,8 @@ npm run balance
 
 Neuer Gegner in vier Schritten: Typ und Werte in `config/enemies.ts`, Verhalten in `Sim.updateEnemy`, Figur in `src/art/characters/`, Test in `tests/unit/sim.test.ts`. Alle Rezepte und Fallen stehen in `docs/HANDBUCH.md`.
 
+## Bildschirme jeder Größe
+Die Spielwelt ist immer 1280 mal 720 Einheiten groß. Ein Handy ist aber breiter als das und ein Tablet höher. `computeView` in `src/render/viewport.ts` rechnet deshalb aus, welcher Ausschnitt sichtbar ist: Auf breiten Bildschirmen schiebt sich die Kamera nach links, auf Tablets nach oben. Dort steht nur Deko, darum sehen zwei Spieler trotz verschiedener Geräte dasselbe Spielfeld. Mehr dazu im Handbuch, Abschnitt 10.
+
 ## Timer in Browsern überholen sich
 `setTimeout` schneidet Verzögerungen auf ganze Millisekunden ab. Wer pro Nachricht einen eigenen Timer setzt, kann die Reihenfolge verlieren, auch wenn die Zielzeiten aufsteigen. Für alles, was geordnet ankommen muss, gehört eine Warteschlange mit einem einzigen Timer her (`orderedDelivery` in `src/net/transport.ts`).
