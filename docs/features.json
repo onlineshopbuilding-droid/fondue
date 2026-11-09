@@ -1,0 +1,262 @@
+[
+  {
+    "id": 1,
+    "bereich": "deploy",
+    "beschreibung": "Spiel läuft unter der Live-URL in Chrome, Edge und Firefox.",
+    "pruefung": "Playwright gegen Live-URL in allen drei Browsern",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 2,
+    "bereich": "menue",
+    "beschreibung": "Hauptmenü mit Play (Single Player, Host Co-op, Join Co-op), Scores, Options, Help, Credits; Versionsnummer sichtbar.",
+    "pruefung": "Playwright + Screenshot",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 3,
+    "bereich": "ablauf",
+    "beschreibung": "Tagesablauf: Banner, ca. 50 Sekunden, Himmel von Tag zu Nacht, Sieg, Ergebnis-Screen, Shop, nächster Tag.",
+    "pruefung": "Playwright E2E",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 4,
+    "bereich": "ablauf",
+    "beschreibung": "Niederlage mit Endergebnis, Highscore-Eintrag, Neustart.",
+    "pruefung": "Playwright E2E",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 5,
+    "bereich": "werfen",
+    "beschreibung": "Packen, Halten (Federn, Zappeln, Schreie), Werfen (Geschwindigkeit aus Mausbewegung), Fallenlassen.",
+    "pruefung": "Unit-Tests + Playwright mit Mausbahnen",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 6,
+    "bereich": "werfen",
+    "beschreibung": "Tödlicher Aufprall mit Hitstop, Wackeln, Blut, Rüstungsteilen, Staub, Münze, Sound-Varianten; sanfter Aufprall mit Abprallen und Weiterlaufen.",
+    "pruefung": "Unit-Tests + Video",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 7,
+    "bereich": "werfen",
+    "beschreibung": "Wurfgefühl kalibriert: Flugzeit, Flughöhe und Lauftempo gemessen, Messwerte in docs/GDD.md, mit Playwright-Videos geprüft.",
+    "pruefung": "Messung + Video",
+    "passes": false,
+    "beleg": "",
+    "hinweis": "Abweichend vom Auftrag formuliert, siehe ENTSCHEIDUNGEN E-001."
+  },
+  {
+    "id": 8,
+    "bereich": "tuning",
+    "beschreibung": "Tuning-Panel mit allen Reglern, Voreinstellungen, Speichern, Export und Import; im Koop gelten die Host-Werte.",
+    "pruefung": "Playwright",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 9,
+    "bereich": "gegner",
+    "beschreibung": "Alle 11 Gegnertypen mit eigenem Verhalten, eigener Optik und eigener Animation.",
+    "pruefung": "Unit-Tests + Screenshots",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 10,
+    "bereich": "gegner",
+    "beschreibung": "Endlos-Eskalation mit schrittweiser Einführung neuer Gegner und Tipp beim ersten Auftauchen.",
+    "pruefung": "Unit-Tests + Playwright",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 11,
+    "bereich": "opfer",
+    "beschreibung": "Beide Opferstätten funktionieren (eine davon mit herabstoßendem Wesen) und bringen die Zweitwährung.",
+    "pruefung": "Unit-Tests + Playwright",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 12,
+    "bereich": "shop",
+    "beschreibung": "Shop mit allen Reitern und 22 Upgrades, eigene Namen und eigene Preise, Markierung für aktive Gegenstände.",
+    "pruefung": "Unit-Tests + Playwright",
+    "passes": false,
+    "beleg": "",
+    "hinweis": "Abweichend vom Auftrag formuliert, siehe ENTSCHEIDUNGEN E-001."
+  },
+  {
+    "id": 13,
+    "bereich": "tor",
+    "beschreibung": "Fünf Türstufen mit eigener Optik, Tor mit Schadensstufen.",
+    "pruefung": "Screenshots",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 14,
+    "bereich": "waffen",
+    "beschreibung": "Roll-, Stampf- und Feuerwaffen (je S/M/L) mit Geste und Abklingzeit.",
+    "pruefung": "Unit-Tests + Playwright",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 15,
+    "bereich": "waffen",
+    "beschreibung": "Drei Torwaffen mit Zielen und Loslassen; gefrorene Gegner zerbrechen bei Antippen.",
+    "pruefung": "Unit-Tests + Playwright",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 16,
+    "bereich": "waffen",
+    "beschreibung": "Dachgeschütz in drei Stufen.",
+    "pruefung": "Unit-Tests",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 17,
+    "bereich": "gegner",
+    "beschreibung": "Belagerungsgerät wird durch mehrfaches Antippen zerstört; Schild verhindert Greifen; Riese braucht zwei Hände.",
+    "pruefung": "Unit-Tests",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 18,
+    "bereich": "hud",
+    "beschreibung": "HUD: Gold, Zweitwährung, Burgleben, Pause, Waffen-Icons mit Ladeanzeige in eigenem Aufbau.",
+    "pruefung": "Screenshot",
+    "passes": false,
+    "beleg": "",
+    "hinweis": "Abweichend vom Auftrag formuliert, siehe ENTSCHEIDUNGEN E-001."
+  },
+  {
+    "id": 19,
+    "bereich": "balance",
+    "beschreibung": "Schwierigkeitsgrade Easy/Medium/Hard wirken spürbar.",
+    "pruefung": "Balance-Simulation",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 20,
+    "bereich": "koop",
+    "beschreibung": "Raumcode und Einladungslink, Beitritt, zwei farbige Hände mit Namen, gemeinsame Kasse, gemeinsames Tor, gemeinsamer Shop mit Ready, gemeinsame Pause, Koop-Skalierung.",
+    "pruefung": "Playwright mit zwei Browsern",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 21,
+    "bereich": "koop",
+    "beschreibung": "Gast-Vorhersage für eigene Hand und gehaltene Gegner; Werfen fühlt sich beim Gast genauso an (geprüft mit simulierter Latenz).",
+    "pruefung": "Playwright mit Latenz",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 22,
+    "bereich": "koop",
+    "beschreibung": "Verbindungsstatus und Ping, Verhalten bei Abbruch, erneuter Beitritt, Versionsprüfung.",
+    "pruefung": "Playwright",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 23,
+    "bereich": "koop",
+    "beschreibung": "Plan B: Relay-Server plus cloudflared-Anleitung lokal getestet.",
+    "pruefung": "Lokaler Test",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 24,
+    "bereich": "sound",
+    "beschreibung": "Musik und alle Soundeffekte, getrennte Lautstärkeregler, Stummschalten.",
+    "pruefung": "Playwright + Code-Review",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 25,
+    "bereich": "menue",
+    "beschreibung": "Help-Diashow mit Gesten und Waffen-Erklärungen in eigenen Texten; Lade-Tipps zwischen den Tagen.",
+    "pruefung": "Playwright",
+    "passes": false,
+    "beleg": "",
+    "hinweis": "Abweichend vom Auftrag formuliert, siehe ENTSCHEIDUNGEN E-001."
+  },
+  {
+    "id": 26,
+    "bereich": "grafik",
+    "beschreibung": "Landschaftswechsel und Parallax-Hintergrund.",
+    "pruefung": "Screenshots",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 27,
+    "bereich": "touch",
+    "beschreibung": "Touch-Steuerung funktioniert.",
+    "pruefung": "Playwright-Touch-Emulation",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 28,
+    "bereich": "performance",
+    "beschreibung": "60 FPS mit 200 Gegnern plus Effekten, gemessen, Ergebnis in PROGRESS.md.",
+    "pruefung": "Messung",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 29,
+    "bereich": "balance",
+    "beschreibung": "Balance-Simulation durchgeführt und dokumentiert (docs/balance.md).",
+    "pruefung": "Simulation",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 30,
+    "bereich": "qualitaet",
+    "beschreibung": "Unit-Tests und Playwright-Tests grün.",
+    "pruefung": "npm test",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 31,
+    "bereich": "qualitaet",
+    "beschreibung": "Unabhängiger Review durchgeführt und wichtigste Punkte behoben.",
+    "pruefung": "Subagent-Bericht",
+    "passes": false,
+    "beleg": ""
+  },
+  {
+    "id": 32,
+    "bereich": "doku",
+    "beschreibung": "Alle Dokumente im Drive-Ordner vollständig und aktuell.",
+    "pruefung": "Dateiprüfung",
+    "passes": false,
+    "beleg": ""
+  }
+]

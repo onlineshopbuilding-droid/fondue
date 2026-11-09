@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.vite/
+
+# Reference and inbox material never enters the repo
+reference/
+asset-inbox/
+
+# Test output
+test-results/
+playwright-report/
+coverage/
+
+# Contains personal details; the repo is public
+docs/AUFTRAG.md
