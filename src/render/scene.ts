@@ -7,16 +7,18 @@ import type { Session } from '../game/session';
 import type { ViewEnemy, ViewHand, ViewProjectile, ViewState } from '../net/snapshot';
 import type { SimEvent } from '../sim/types';
 import { bindPointer, type PointerTracker } from '../input/pointer';
+import { AimView } from './aimView';
 import { Background } from './background';
+import { CastleView } from './castleView';
 import { Effects } from './effects';
 import { EnemyView } from './enemyView';
 import { Hud } from './hud';
+import { Stations } from './stations';
 import { computeView, type GameView } from './viewport';
 import { propKey, TEX_SCALE } from './textures';
 
 const HAND_COLORS = [0xfff1d0, 0x9fe0ff];
 const FONT = 'Lilita One';
-const MODE_TO_SLOT: Record<string, WeaponSlot | ''> = { none: '', stomper: 'stomper', comet: 'comet', horn: 'horn' };
 
 export interface SceneHooks {
   /** Called once per frame with the latest view, after rendering. */
@@ -28,7 +30,14 @@ export interface SceneHooks {
 
 interface HandView { img: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; reticle: Phaser.GameObjects.Image; ghost: Phaser.GameObjects.Image; }
 
-const PROJ_KEYS = { bomb: 'bomb', stone: 'stone', bolt: 'bolt', wheel: 'wheel', comet: 'comet', slab: 'slab', roofBolt: 'roofBolt', shell: 'shell' } as const;
+/** Spoken by the keep when a weapon waits for the next tap, or a pull was too short. */
+const ARMED_HINT: Record<string, string> = {
+  comet: 'Tap where the comet should fall',
+  stomper: 'Tap where the slab should land',
+};
+const PULL_HINT = 'Pull away from it, then let go';
+
+const PROJ_KEYS = { bomb: 'bomb', stone: 'stone', bolt: 'bolt', wheel: 'wheel', comet: 'comet', slab: 'slab', roofBolt: 'roofBolt', shell: 'shell', frostShell: 'shell', fireShell: 'shell' } as const;
 
 export class GameScene extends Phaser.Scene {
   session: Session | null = null;
@@ -37,15 +46,11 @@ export class GameScene extends Phaser.Scene {
   private bg!: Background;
   private fx!: Effects;
   private hud!: Hud;
-  private keepGate!: Phaser.GameObjects.Image;
-  private cracks!: Phaser.GameObjects.Image;
-  private cauldronBack!: Phaser.GameObjects.Image;
-  private cauldronFront!: Phaser.GameObjects.Image;
-  private perch!: Phaser.GameObjects.Image;
-  private eagle!: Phaser.GameObjects.Image;
-  private eagleT = -1;
-  private eagleX = 0;
-  private eagleY = 0;
+  private castle!: CastleView;
+  private stations!: Stations;
+  private aim!: AimView;
+  private hint!: Phaser.GameObjects.Text;
+  private hintT = 0;
   private banner!: Phaser.GameObjects.Container;
   private bannerText!: Phaser.GameObjects.Text;
   private bannerT = -1;
@@ -62,7 +67,6 @@ export class GameScene extends Phaser.Scene {
   private lastView: ViewState | null = null;
   private lastPhase = '';
   private lastDay = 0;
-  private gateFlash = 0;
   private lastFrameMs = 16.7;
   /** For the debug overlay and tests. */
   debug = { fps: 60, enemies: 0, frameMs: 16 };
@@ -73,13 +77,12 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     this.bg = new Background(this);
-    this.add.image(-40, 632, propKey('keep')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10);
-    this.keepGate = this.add.image(WORLD.gateX - 74, 620, propKey('gate0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(11);
-    this.cracks = this.add.image(WORLD.gateX - 74, 620, propKey('crack1')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(12).setVisible(false);
-    this.cauldronBack = this.add.image(WORLD.cauldron.x, 650, propKey('cauldronBack')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(19).setVisible(false);
-    this.cauldronFront = this.add.image(WORLD.cauldron.x, 650, propKey('cauldronFront')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(19.8).setVisible(false);
-    this.perch = this.add.image(WORLD.perch.x, 640, propKey('perch')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(18).setVisible(false);
-    this.eagle = this.add.image(0, 0, propKey('eagleA')).setScale(1 / TEX_SCALE).setDepth(40).setVisible(false);
+    this.castle = new CastleView(this);
+    this.stations = new Stations(this);
+    this.aim = new AimView(this);
+    this.hint = this.add.text(0, 0, '', {
+      fontFamily: FONT, fontSize: '24px', color: '#fff6df', stroke: '#2b2118', strokeThickness: 6, align: 'left',
+    }).setOrigin(0, 0.5).setDepth(92).setVisible(false);
 
     this.fx = new Effects(this);
     this.hud = new Hud(this);
@@ -109,6 +112,8 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setSize(v.width, v.height).setScroll(v.offsetX, v.offsetY);
     this.bg.layout(v);
     this.hud.layout(v);
+    this.castle.layout(v);
+    this.stations.layout(v);
     this.banner.x = v.width / 2;
   }
 
@@ -134,13 +139,13 @@ export class GameScene extends Phaser.Scene {
         const sx = x - this.view.offsetX;
         const sy = y - this.view.offsetY;
         if (this.hud.hitPause(sx, sy)) { this.hooks.togglePause(); return true; }
-        const slot = this.hud.hitSlot(sx, sy);
-        if (slot) {
-          s.send({ k: 'activate', slot });
-          this.audio.play('uiClick');
-          return true;
-        }
         s.setHand(x, y);
+        const slot = this.castle.hitSlot(x, y, s.meta());
+        if (slot && s.view()?.phase === 'battle') {
+          s.send({ k: 'pressSlot', slot, x, y });
+          this.audio.play('uiClick');
+          return false;
+        }
         s.localPress(x, y);
         return false;
       },
@@ -176,6 +181,9 @@ export class GameScene extends Phaser.Scene {
     this.lastView = null;
     this.bannerT = -1;
     this.banner.y = -170;
+    this.stations.reset();
+    this.hintT = 0;
+    this.hint.setVisible(false);
   }
 
   update(_time: number, deltaMs: number) {
@@ -210,17 +218,15 @@ export class GameScene extends Phaser.Scene {
         this.lastView = view;
       }
       this.renderHands(view, s);
-      const me = view.hands[s.me];
-      this.hud.update(view, s.meta(), me ? MODE_TO_SLOT[me.mode] : '', Math.min(0.05, deltaMs / 1000));
-      this.hud.hover(this.tracker.x - this.view.offsetX, this.tracker.y - this.view.offsetY, s.meta());
+      this.hud.update(view, Math.min(0.05, deltaMs / 1000));
       this.bg.update(view.dayT, this.tracker.x, Math.min(0.05, deltaMs / 1000));
       this.bg.setDay(view.day);
+      this.renderKeep(view, s, Math.min(0.05, deltaMs / 1000), now);
       this.updatePhase(view);
     }
 
     this.fx.update(dt);
     this.updateBanner(Math.min(0.05, deltaMs / 1000));
-    this.updateEagle(Math.min(0.05, deltaMs / 1000));
     this.applyShake(Math.min(0.05, deltaMs / 1000));
     this.hooks.onFrame(view);
   }
@@ -245,7 +251,7 @@ export class GameScene extends Phaser.Scene {
         v.bind(e.id);
         this.active.set(e.id, v);
       }
-      v.update(e, time, dt);
+      v.update(e, time, dt, view.potMax > 0 ? 1 - view.potBusy / view.potMax : 0);
       if (e.st === 'air' && v.speed > fastest) fastest = v.speed;
       if (e.st === 'air' && v.speed > 1300 && dt > 0) this.fx.streak(e.x, e.y - 40);
     }
@@ -257,7 +263,25 @@ export class GameScene extends Phaser.Scene {
 
     this.renderProjectiles(view.projectiles);
     this.renderFlames(view, time);
-    this.renderGate(view);
+  }
+
+  private renderKeep(view: ViewState, s: Session, dt: number, time: number) {
+    const meta = s.meta();
+    if (!meta) return;
+    const me = view.hands[s.me];
+    this.castle.update(view, meta, this.bg.tint, this.bg.night, me?.mode ?? 'none', dt, time);
+    this.stations.update(view, meta, this.bg.tint, dt, time);
+    this.updateHint(me?.mode ?? 'none', dt);
+  }
+
+  /** One line next to the keep while a weapon waits for its target, and after a too short pull. */
+  private updateHint(mode: string, dt: number) {
+    this.hintT = Math.max(0, this.hintT - dt);
+    const armed = ARMED_HINT[mode];
+    if (armed) this.hint.setText(armed);
+    const show = !!armed || this.hintT > 0;
+    this.hint.setVisible(show);
+    if (show) this.hint.setPosition(WORLD.gateX + 26, this.view.offsetY + Math.max(120, this.view.height * 0.32));
   }
 
   private renderProjectiles(list: ViewProjectile[]) {
@@ -268,15 +292,15 @@ export class GameScene extends Phaser.Scene {
       if (!img) {
         img = this.add.image(q.x, q.y, propKey(PROJ_KEYS[q.kind])).setDepth(32);
         if (q.kind === 'slab') img.setOrigin(0.5, 1);
+        if (q.kind === 'frostShell') img.setTint(0x9fe6ff);
+        if (q.kind === 'fireShell') img.setTint(0xff7a3a);
         this.projViews.set(q.id, img);
       }
       img.setPosition(q.x, q.y).setRotation(q.rot);
       if (q.kind === 'wheel') img.setScale((q.size / 50) / TEX_SCALE);
       else if (q.kind === 'slab') img.setScale((q.size / 80) / TEX_SCALE);
-      else if (q.kind === 'comet') {
-        const swell = q.heldBy >= 0 ? 1 + Math.min(1, q.charge / 900) * 0.8 : 1;
-        img.setScale((swell * (q.size / 80)) / TEX_SCALE);
-      } else img.setScale(1 / TEX_SCALE);
+      else if (q.kind === 'comet') img.setScale((q.size / 80) / TEX_SCALE);
+      else img.setScale(1 / TEX_SCALE);
     }
     for (const [id, img] of this.projViews) {
       if (!seen.has(id)) { img.destroy(); this.projViews.delete(id); }
@@ -309,28 +333,9 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private renderGate(view: ViewState) {
-    const meta = this.session?.meta();
-    if (!meta) return;
-    const tier = ['gate4', 'gate3', 'gate2', 'gate1', 'gate0'].find((g) => meta.owned.includes(g)) ?? 'gate0';
-    this.keepGate.setTexture(propKey(tier));
-    const f = view.gateMax > 0 ? view.gateHp / view.gateMax : 1;
-    const stage = f < 0.25 ? 3 : f < 0.5 ? 2 : f < 0.75 ? 1 : 0;
-    this.cracks.setVisible(stage > 0);
-    if (stage > 0) this.cracks.setTexture(propKey(`crack${stage}`));
-    this.gateFlash = Math.max(0, this.gateFlash - 0.12);
-    const off = this.gateFlash * 3 * (Math.random() - 0.5);
-    this.keepGate.x = WORLD.gateX - 74 + off;
-    this.cracks.x = this.keepGate.x;
-    this.keepGate.setTint(this.gateFlash > 0.5 ? 0xffb0a0 : 0xffffff);
-    const showCauldron = meta.owned.includes('cauldron');
-    this.cauldronBack.setVisible(showCauldron);
-    this.cauldronFront.setVisible(showCauldron);
-    this.perch.setVisible(meta.owned.includes('perch'));
-  }
-
   private renderHands(view: ViewState, s: Session) {
     const meta = s.meta();
+    this.aim.clear();
     view.hands.forEach((h: ViewHand, i: number) => {
       const hv = this.hands[i];
       if (!hv) return;
@@ -342,9 +347,10 @@ export class GameScene extends Phaser.Scene {
       // A finger leaves no cursor behind, so the hand only shows while it is touching.
       hv.img.setVisible(visible && !(isMe && this.tracker.touch && !this.tracker.pressed));
       hv.label.setVisible(visible && view.hands.length > 1);
-      hv.reticle.setVisible(visible && h.mode === 'horn');
+      hv.reticle.setVisible(visible && h.mode === 'comet');
       hv.ghost.setVisible(visible && h.mode === 'stomper');
       if (!visible) return;
+      if (meta) this.aim.draw(view, meta, h, x, y, isMe);
       const closed = h.down || h.holding >= 0 || h.holdingProj >= 0;
       hv.img.setTexture(propKey(closed ? 'handClosed' : 'handOpen'));
       hv.img.setTint(HAND_COLORS[i]);
@@ -378,27 +384,6 @@ export class GameScene extends Phaser.Scene {
     this.bannerT -= dt;
     this.banner.y += (target - this.banner.y) * Math.min(1, dt * 9);
     void this.bannerLine;
-  }
-
-  private updateEagle(dt: number) {
-    if (this.eagleT < 0) { this.eagle.setVisible(false); return; }
-    this.eagleT += dt;
-    const t = this.eagleT;
-    const swoop = 0.7;
-    let x: number;
-    let y: number;
-    if (t < swoop) {
-      const k = t / swoop;
-      x = this.eagleX + 640 * (1 - k);
-      y = this.eagleY - 420 * (1 - k) * (1 - k);
-    } else {
-      const k = (t - swoop) / 0.9;
-      x = this.eagleX + k * k * -700;
-      y = this.eagleY - k * 520;
-    }
-    this.eagle.setVisible(true).setPosition(x, y);
-    this.eagle.setTexture(propKey(Math.floor(t * 12) % 2 === 0 ? 'eagleA' : 'eagleB'));
-    if (t > swoop + 0.9) this.eagleT = -1;
   }
 
   // ---------------------------------------------------------------------------
@@ -439,7 +424,7 @@ export class GameScene extends Phaser.Scene {
         this.onDeath(ev);
         break;
       case 'gateHit':
-        this.gateFlash = 1;
+        this.castle.hit();
         this.sfx('gateHit', 0.5 + Math.min(0.5, ev.amount / 40));
         this.fx.sparks(ev.x, ev.y, 3);
         if (ev.amount >= 25) this.shake(6);
@@ -495,14 +480,26 @@ export class GameScene extends Phaser.Scene {
         break;
       case 'bolters':
         this.sfx('bolter');
+        this.fx.dust(ev.x + 30, ev.y, 0);
         break;
       case 'eagle':
         this.sfx('eagleScreech');
-        this.eagleX = ev.x; this.eagleY = ev.y - 60; this.eagleT = 0;
+        this.stations.eagleComes(ev.x, ev.y - 60);
         break;
       case 'splash':
         this.fx.splash(ev.x, ev.y + 30);
         this.sfx('cauldronSplash');
+        break;
+      case 'cheese':
+        this.fx.floatText(ev.x, ev.y - 90, 'Cheese!');
+        this.fx.fadingProp('cheese', ev.x, ev.y - 34, 0.5, 1);
+        break;
+      case 'nightfall':
+        this.showBanner('NIGHT FALLS! FINISH THEM!', 2.2);
+        this.sfx('dayStart', 0.6);
+        break;
+      case 'aimHint':
+        if (ev.p === s.me) { this.hint.setText(PULL_HINT); this.hintT = 1.8; }
         break;
       case 'crow':
         this.sfx('crow');
@@ -541,6 +538,7 @@ export class GameScene extends Phaser.Scene {
         break;
       case 'weaponReady':
         this.sfx('weaponReady', 0.6);
+        this.castle.ready(ev.slot);
         break;
     }
   }
@@ -580,9 +578,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** Test hook: reports where a weapon icon is. */
-  slotPosition(slot: WeaponSlot) { return this.hud.slotPos(slot); }
+  slotPosition(slot: WeaponSlot) {
+    const p = this.castle.slotWorld(slot);
+    return { x: p.x - this.view.offsetX, y: p.y - this.view.offsetY };
+  }
   pauseCss() { const p = this.hud.pausePos(); return this.screenToCss(p.x, p.y); }
-  slotDiameterCss() { return this.hud.slotDiameterCss(); }
+  slotDiameterCss() { return this.castle.diameterCss(); }
   pauseDiameterCss() { return this.hud.pauseDiameterCss(); }
   hudBottomCss() { return this.hud.bottomCss(); }
   viewEnemies(): ViewEnemy[] { return this.lastView?.enemies ?? []; }

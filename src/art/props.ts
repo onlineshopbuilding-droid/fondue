@@ -2,63 +2,12 @@
  * Environment and prop art in Fondue's folk-art felt puppet style: chunky rounded shapes, a thick
  * dark outline, flat fills and at most one simple highlight.
  */
-import { svg, type Art } from './types';
-
-const INK = '#2b2118';
-const TEAL = '#2f7f7a';
-const TEALD = '#1f5a5c';
-const RUST = '#b5502e';
-const RUSTD = '#853820';
-const MUST = '#dfa22d';
-const MUSTL = '#f3cb5e';
-const CREAM = '#f3e6c8';
-const FOREST = '#3f6b45';
-const PLUM = '#6b3a5e';
-const WOOD = '#9a6a3c';
-const WOODD = '#6e4626';
-const WOODL = '#bb8c56';
-const STONE = '#9a9484';
-const STONED = '#756f63';
-const STONEL = '#bfb9a6';
-const IRON = '#4b4f55';
-const IRONL = '#777d83';
-const RED = '#b3282d';
-const REDL = '#d9534a';
-const GLOW = '#9ff5ea';
-const WHITE = '#fbfaf6';
-
-// Small SVG writers. Shapes inherit their outline from the enclosing ink() group.
-const ink = (b: string, w = 3.5) =>
-  `<g stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round">${b}</g>`;
-const r = (x: number, y: number, w: number, h: number, f: string, rx = 3) =>
-  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${f}"/>`;
-const c = (x: number, y: number, rad: number, f: string) => `<circle cx="${x}" cy="${y}" r="${rad}" fill="${f}"/>`;
-const e = (x: number, y: number, rx: number, ry: number, f: string) =>
-  `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}"/>`;
-const p = (d: string, f: string) => `<path d="${d}" fill="${f}"/>`;
-/** An open line. */
-const l = (d: string, w?: number, col?: string) =>
-  `<path d="${d}" fill="none"${w ? ` stroke-width="${w}"` : ''}${col ? ` stroke="${col}"` : ''}/>`;
-/** A shape with no outline, for highlights. */
-const n = (d: string, f: string, o = 1) => `<path d="${d}" fill="${f}" stroke="none"${o < 1 ? ` opacity="${o}"` : ''}/>`;
-/** A stroke with no ink, for highlights and carved lines. */
-const hl = (d: string, col: string, w = 2.5, o = 1) =>
-  `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${o < 1 ? ` opacity="${o}"` : ''}/>`;
-/** Draws shapes twice so that overlapping pieces merge under one shared outline. */
-const blob = (shapes: string, f: string, w = 3.5, col = INK) =>
-  `<g fill="${col}" stroke="${col}" stroke-width="${w * 2}" stroke-linejoin="round">${shapes}</g><g fill="${f}">${shapes}</g>`;
-const art = (w: number, h: number, px: number, py: number, b: string): Art => ({ svg: svg(w, h, b), w, h, px, py });
-const centred = (w: number, h: number, b: string) => art(w, h, w / 2, h / 2, b);
-
-function starPoints(cx: number, cy: number, outer: number, inner: number, count: number, rotDeg = -90): string {
-  const out: string[] = [];
-  for (let i = 0; i < count * 2; i++) {
-    const a = ((rotDeg + (i * 180) / count) * Math.PI) / 180;
-    const rad = i % 2 === 0 ? outer : inner;
-    out.push(`${(cx + Math.cos(a) * rad).toFixed(1)} ${(cy + Math.sin(a) * rad).toFixed(1)}`);
-  }
-  return `M${out.join('L')}Z`;
-}
+import type { Art } from './types';
+import { CASTLE_ART } from './castle';
+import {
+  INK, TEAL, TEALD, RUST, RUSTD, MUST, MUSTL, CREAM, FOREST, PLUM, WOOD, WOODD, WOODL, STONE, STONED, STONEL, IRON, IRONL,
+  RED, REDL, GLOW, WHITE, GOLD, GOLDD, ink, r, c, e, p, l, n, hl, blob, art, centred, starPoints,
+} from './draw';
 
 // ---------------------------------------------------------------------------------------------
 // The keep. Art coordinates = world - (-40, 52), so the gate opening spans art x 151..225.
@@ -268,9 +217,6 @@ const cauldronFront = art(
 // ---------------------------------------------------------------------------------------------
 // Eagle
 // ---------------------------------------------------------------------------------------------
-
-const GOLD = '#c98a2b';
-const GOLDD = '#8e5a22';
 
 const eagleBody =
   p('M152 82L214 78L203 94L216 104L203 112L212 124L152 112Z', GOLDD) +
@@ -796,4 +742,5 @@ export const PROPS: Record<string, Art> = {
   iconPause,
   iconLocked,
   iconCastle,
+  ...CASTLE_ART,
 };

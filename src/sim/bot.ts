@@ -138,10 +138,6 @@ export class Bot {
       sim.command({ k: 'activate', p, slot: 'comet' });
       sim.setHand(p, c.x, 500);
       sim.command({ k: 'press', p, x: c.x, y: 500 });
-      for (let i = 0; i < 12; i++) sim.setHand(p, c.x + (i % 2 ? 60 : -60), 500);
-      const q = s.projectiles.find((o) => o.kind === 'comet' && o.heldBy === p);
-      if (q) q.charge = 400;
-      sim.setHand(p, c.x, 500);
       sim.command({ k: 'release', p, x: c.x, y: 500, vx: 0, vy: 400 });
       return true;
     }

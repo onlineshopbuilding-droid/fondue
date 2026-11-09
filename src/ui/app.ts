@@ -3,7 +3,8 @@ import { PROPS } from '../art/props';
 import { AudioEngine } from '../audio/audio';
 import { ENEMIES } from '../config/enemies';
 import { GAME_NAME } from '../config/game';
-import { SHOP_ITEMS, SHOP_TABS, type ShopTab } from '../config/shop';
+import { SHOP_ITEMS, SHOP_TABS, WEAPON_SLOTS, type ShopTab, type WeaponSlot } from '../config/shop';
+import { fieldForAspect } from '../config/world';
 import { DIFFICULTIES, type Difficulty } from '../config/waves';
 import { GuestSession, HostSession, type Session } from '../game/session';
 import { addScore, loadScores, loadSettings, saveSettings, type Settings } from '../game/storage';
@@ -17,7 +18,8 @@ import { GameScene } from '../render/scene';
 import { buildTextures } from '../render/textures';
 import { computeView, readSafeArea, sameView } from '../render/viewport';
 import type { Meta } from '../sim/types';
-import { CREDITS_HTML, HELP_SLIDES, LOADING_TIPS } from './content';
+import { ownsSlot } from '../sim/keep';
+import { CREDITS_HTML, HELP_SLIDES, LOADING_TIPS, WEAPON_TIPS } from './content';
 import { TuningPanel } from './tuningPanel';
 
 declare const __GAME_VERSION__: string;
@@ -26,6 +28,8 @@ const BUILD = new URLSearchParams(location.search).get('fakever') ?? `${PROTOCOL
 
 /** Upright touch devices are asked to rotate; the game is built for landscape. */
 const UPRIGHT_PHONE = '(orientation: portrait) and (pointer: coarse)';
+
+const LOGO_HOLD_MS = 700;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const artUri = (name: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(PROPS[name].svg)}`;
@@ -48,6 +52,9 @@ export class App {
   private debugEl: HTMLDivElement | null = null;
   private screen: Screen = 'none';
   private tuning: TuningPanel;
+  /** Day the next game starts on; set from the developer menu, 1 for a normal run. */
+  private startDay = 1;
+  private shownWeaponTips = new Set<WeaponSlot>();
   private params = new URLSearchParams(location.search);
 
   // Lobby state
@@ -91,10 +98,20 @@ export class App {
         saveSettings(this.settings);
         if (this.session instanceof HostSession) this.session.sim.setTuning(t);
       },
+      flags: () => this.session?.meta()?.flags ?? this.settings.flags,
+      setFlag: (id, value) => {
+        this.settings.flags = { ...this.settings.flags, [id]: value };
+        saveSettings(this.settings);
+        if (this.session instanceof HostSession) this.session.sim.setFlags(this.settings.flags);
+      },
+      startDay: () => this.startDay,
+      setStartDay: (day) => { this.startDay = day; if (this.screen === 'play' || this.screen === 'host') this.show(this.screen); },
+      startSoloNow: () => this.startSolo(),
     });
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
     window.addEventListener('pagehide', () => this.session?.dispose());
+    this.bindLogoLongPress();
     const rotate = document.createElement('div');
     rotate.id = 'rotate';
     rotate.innerHTML = '<div class="phone-icon"></div><div>Turn your phone sideways to play</div>';
@@ -105,6 +122,18 @@ export class App {
       this.audio.resume();
       if (!this.session) this.audio.startMusic('menu');
     });
+  }
+
+  /** Phones have no F1: holding the logo in the main menu opens the developer menu. */
+  private bindLogoLongPress() {
+    let timer = 0;
+    const stop = () => { clearTimeout(timer); timer = 0; };
+    this.ui.addEventListener('pointerdown', (e) => {
+      if (!(e.target as HTMLElement).closest?.('.logo')) return;
+      stop();
+      timer = window.setTimeout(() => { timer = 0; this.audio.play('uiClick'); if (!this.tuning.open) this.tuning.toggle(); }, LOGO_HOLD_MS);
+    });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) this.ui.addEventListener(ev, stop);
   }
 
   /** Browsers stop drawing hidden tabs; a co-op game must keep running for the other player. */
@@ -170,7 +199,11 @@ export class App {
 
   /** Follows window resizes and phone rotation. */
   private applyView() {
-    const v = computeView(innerWidth, innerHeight, readSafeArea());
+    const s = this.session;
+    const shared = s && s.role !== 'solo' ? s.meta()?.fieldW : undefined;
+    const v = computeView(innerWidth, innerHeight, readSafeArea(), shared);
+    // Alone there is nobody to stay in step with, so the field simply follows the screen.
+    if (s instanceof HostSession && s.role === 'solo') s.sim.setFieldWidth(v.fieldW);
     if (sameView(v, this.scene.view)) return;
     this.game.scale.setGameSize(v.width, v.height);
     this.scene.setView(v);
@@ -229,6 +262,8 @@ export class App {
       this.lastMetaRev = meta.rev;
       if (this.screen === 'results' || this.screen === 'shop') this.show(this.screen);
     }
+    // A guest learns the field width from the host once the game has started.
+    if (meta && s.role !== 'solo' && meta.fieldW !== this.scene.view.fieldW) this.applyView();
     const purse = `${view.gold}/${view.offerings}`;
     if (purse !== this.lastPurse) {
       this.lastPurse = purse;
@@ -238,8 +273,18 @@ export class App {
     this.syncConnection();
     if (view.phase === 'banner' && meta && this.tipShownDay !== view.day) {
       this.tipShownDay = view.day;
-      if (view.day === 1) this.toast('Hold the gate until the sun crosses the bar at the top. Gold buys upgrades between days.', 'tip', 5500);
+      if (view.day === 1) this.toast('Hold the gate until the sun has set and the last raider is gone. Gold buys upgrades between days.', 'tip', 5500);
       for (const t of meta.newTipTypes) this.toast(ENEMIES[t].tip, 'tip', 5500);
+      this.tipNewWeapons(meta);
+    }
+  }
+
+  /** Each weapon explains itself the first time it stands on the keep. */
+  private tipNewWeapons(meta: Meta) {
+    for (const slot of WEAPON_SLOTS) {
+      if (this.shownWeaponTips.has(slot) || !ownsSlot(slot, meta)) continue;
+      this.shownWeaponTips.add(slot);
+      if (meta.quickStart === 0) this.toast(WEAPON_TIPS[slot], 'tip', 5500);
     }
   }
 
@@ -257,7 +302,7 @@ export class App {
         break;
       case 'gameover':
         this.audio.stopMusic();
-        if (meta && !this.scoreSaved && this.runKey(meta, view) !== this.lastSavedRun) {
+        if (meta && meta.quickStart === 0 && !this.scoreSaved && this.runKey(meta, view) !== this.lastSavedRun) {
           this.scoreSaved = true;
           this.lastSavedRun = this.runKey(meta, view);
           addScore({
@@ -345,7 +390,17 @@ export class App {
     this.lastMetaRev = -1;
     this.scoreSaved = false;
     this.tipShownDay = 0;
+    this.shownWeaponTips.clear();
     this.show('none');
+    this.applyView();
+  }
+
+  /** What a new game takes from the host's settings and screen. */
+  private gameOptions() {
+    return {
+      seed: this.seed(), difficulty: this.settings.difficulty, tuning: this.settings.tuning, flags: this.settings.flags,
+      fieldW: fieldForAspect(innerWidth / innerHeight), quickStart: this.startDay > 1 ? this.startDay : undefined,
+    };
   }
 
   private seed(): number {
@@ -357,9 +412,7 @@ export class App {
     this.room?.close();
     this.room = null;
     this.lobbyLink = null;
-    this.useSession(new HostSession({
-      seed: this.seed(), difficulty: this.settings.difficulty, names: [this.playerName()], tuning: this.settings.tuning, coop: false,
-    }));
+    this.useSession(new HostSession({ ...this.gameOptions(), names: [this.playerName()], coop: false }));
   }
 
   private playerName(): string { return this.settings.name.trim() || 'Player'; }
@@ -452,9 +505,7 @@ export class App {
 
   startCoopAsHost() {
     if (!this.lobbyLink) return;
-    const session = new HostSession({
-      seed: this.seed(), difficulty: this.settings.difficulty, names: [this.playerName(), this.guestName], tuning: this.settings.tuning, coop: true,
-    });
+    const session = new HostSession({ ...this.gameOptions(), names: [this.playerName(), this.guestName], coop: true });
     const link = this.lobbyLink;
     this.lobbyLink = link;
     session.attach(link);
@@ -608,6 +659,7 @@ export class App {
           <div class="stack">
             <label class="field">Your name<input id="name" type="text" maxlength="14" value="${esc(this.settings.name)}" placeholder="Player"></label>
             <label class="field">Difficulty<select id="difficulty">${this.difficultyOptions()}</select></label>
+            ${this.quickNote()}
             <button data-a="solo">Single Player</button>
             <button class="alt" data-a="openRoom">Host Co-op</button>
             <button class="alt" data-a="gotoJoin">Join Co-op</button>
@@ -658,6 +710,10 @@ export class App {
     return url.toString();
   }
 
+  private quickNote(): string {
+    return this.startDay > 1 ? `<div class="status" id="quickNote">Quick start: day ${this.startDay}. Does not count for the scores.</div>` : '';
+  }
+
   private difficultyOptions(): string {
     return (Object.keys(DIFFICULTIES) as Difficulty[])
       .map((d) => `<option value="${d}" ${d === this.settings.difficulty ? 'selected' : ''}>${DIFFICULTIES[d].label}</option>`).join('');
@@ -673,6 +729,7 @@ export class App {
       <div class="stack">
         <button class="secondary" data-a="copyInvite">Copy invite link</button>
         <label class="field">Difficulty<select id="difficulty">${opts}</select></label>
+        ${this.quickNote()}
         <label class="field">Relay server (optional, only if the direct link fails)
           <input id="relay" type="text" value="${esc(this.settings.relayAddress)}" placeholder="https://....trycloudflare.com"></label>
         <button data-a="reopen" class="small secondary">Re-open room with this relay setting</button>
@@ -804,6 +861,7 @@ export class App {
         <span>Raiders defeated</span><b>${meta.totalKills}</b>
         <span>Final score</span><b id="finalScore">${meta.totalScore}</b>
       </div>
+      ${meta.quickStart > 0 ? '<p style="text-align:center;margin:4px 0">Quick start: not added to the scores.</p>' : ''}
       <div class="stack">${restart}<button class="secondary" data-a="scores2">Scores</button><button class="alt" data-a="quit">Quit to menu</button></div></div>`;
   }
 

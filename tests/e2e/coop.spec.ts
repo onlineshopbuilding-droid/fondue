@@ -29,7 +29,7 @@ async function setupCoop(browser: Browser, query: string) {
   return { host, guest, code, errors, context };
 }
 
-const skipDay = (host: Page) => host.evaluate(() => { (window as any).__fondue.session.sim.s.dayT = 49.9; });
+const skipDay = (host: Page) => host.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.enemies = []; s.spawnQueue = []; s.dayT = 49.9; });
 
 async function grabAndFling(page: Page, target: any) {
   await drag(page, [target.x - 10, target.y - 44], [target.x - 60, 110], 10, 8);

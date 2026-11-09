@@ -26,7 +26,7 @@ test('day, results, market, next day', async ({ page }) => {
   await waitFor(() => gameState(page), (s) => s?.phase === 'battle');
   const startT = await page.evaluate(() => (window as any).__fondue.session.view().dayT);
   expect(startT).toBeLessThan(3);
-  await page.evaluate(`${sim('dayT')} = 49.5; ${sim('gold')} = 5000; ${sim('offerings')} = 40;`);
+  await page.evaluate(`${sim('dayT')} = 49.5; ${sim('gold')} = 5000; ${sim('offerings')} = 40; ${sim('enemies')} = []; ${sim('spawnQueue')} = [];`);
   await waitFor(() => gameState(page), (s) => s?.phase === 'victory', 8000);
   await page.waitForSelector('#toShop', { timeout: 10000 });
   await page.screenshot({ path: 'docs/screenshots/results.png' });
@@ -73,7 +73,7 @@ test('tuning panel changes values, exports and imports', async ({ page }) => {
   await startSolo(page, '?seed=13');
   await page.keyboard.press('F1');
   await expect(page.locator('#tuning')).toBeVisible();
-  await expect(page.locator('#tuning input[type=range]')).toHaveCount(11);
+  await expect(page.locator('#tuning input[type=range]')).toHaveCount(12);
   await page.locator('#tuning input[data-key="gravity"]').fill('2000');
   expect(await page.evaluate(() => (window as any).__fondue.session.meta().tuning.gravity)).toBe(2000);
   await page.click('#tuning button[data-act="export"]');

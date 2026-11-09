@@ -59,6 +59,9 @@ export class EnemyView {
   speed = 0;
   private lastX = 0;
   private lastY = 0;
+  private cookFromX = NaN;
+  private cookFromY = NaN;
+  private cookAge = 0;
 
   constructor(private scene: Phaser.Scene) {
     this.shadow = scene.add.image(0, 0, 'fx:shadow').setDepth(15).setVisible(false);
@@ -85,6 +88,8 @@ export class EnemyView {
     this.squash = 0;
     this.speed = 0;
     this.lastX = NaN;
+    this.cookFromX = NaN;
+    this.cookAge = 0;
   }
 
   hide() {
@@ -103,7 +108,8 @@ export class EnemyView {
   /** Called when a soft landing happens. */
   bump() { this.squash = 1; }
 
-  update(e: ViewEnemy, time: number, dt: number) {
+  /** potProgress is how far the melt has got, from 0 to 1. */
+  update(e: ViewEnemy, time: number, dt: number, potProgress = 0) {
     const rigName = e.crow ? 'crow' : e.type;
     const pup = this.puppet(rigName);
     if (this.current !== pup) {
@@ -115,16 +121,32 @@ export class EnemyView {
     if (!Number.isNaN(this.lastX) && dt > 0) {
       this.speed = Math.hypot(e.x - this.lastX, e.y - this.lastY) / dt;
     }
-    this.lastX = e.x;
-    this.lastY = e.y;
+    const cooking = e.st === 'cooking';
+    let drawX = e.x;
+    let drawY = e.y;
+    if (cooking) {
+      if (Number.isNaN(this.cookFromX)) {
+        this.cookFromX = Number.isNaN(this.lastX) ? e.x : this.lastX;
+        this.cookFromY = Number.isNaN(this.lastX) ? e.y : this.lastY;
+        this.cookAge = 0;
+      }
+      this.cookAge += dt;
+      // The pull into the pot is quick, but it is seen.
+      const k = Math.min(1, this.cookAge / 0.14);
+      drawX = this.cookFromX + (e.x - this.cookFromX) * k;
+      drawY = this.cookFromY + (e.y - this.cookFromY) * k;
+    }
+    this.lastX = drawX;
+    this.lastY = drawY;
+    if (e.st !== 'cooking') this.cookFromX = NaN;
 
     const def = ENEMIES[e.type];
     const ground = WORLD.groundY + e.lane;
     const h = (e.crow ? 40 : def.height) * 0.5;
     const rot = e.rot;
     // Rotate around the belly rather than the feet, otherwise a thrown figure looks pinned.
-    const cx = e.x;
-    const cy = e.y - h;
+    const cx = drawX;
+    const cy = drawY - h;
     const ox = cx - Math.sin(rot) * h;
     const oy = cy + Math.cos(rot) * h;
 
@@ -133,22 +155,30 @@ export class EnemyView {
     root.setRotation(rot);
     // A figure falling into the cauldron passes between its back and its rim.
     const intoCauldron = e.st === 'air' && e.y > WORLD.groundY - 70 && Math.abs(e.x - WORLD.cauldron.x) < WORLD.cauldron.halfWidth + 20;
-    root.setDepth(intoCauldron ? 19.5 : 20 + e.lane / 100 + (e.st === 'held' ? 5 : 0) + (e.st === 'air' ? 3 : 0));
+    const inRearPot = cooking && e.y < WORLD.groundY - 100;
+    root.setDepth(inRearPot ? 8.6 : cooking || intoCauldron ? 19.5 : 20 + e.lane / 100 + (e.st === 'held' ? 5 : 0) + (e.st === 'air' ? 3 : 0));
 
     this.squash = Math.max(0, this.squash - dt * 5);
     const sq = this.squash * 0.35;
     root.setScale(CHAR_SCALE * (1 + sq), CHAR_SCALE * (1 - sq));
+    if (cooking) {
+      // It sinks and melts away while cheese takes its place.
+      const sink = Math.min(1, potProgress * 1.5);
+      const k = (inRearPot ? 0.72 : 1) * (1 - sink * 0.75);
+      root.setScale(CHAR_SCALE * k, CHAR_SCALE * k * (1 - sink * 0.2));
+      root.y += sink * 34;
+    }
 
     pup.setPartVisible('keg', e.armed);
     pup.setPartVisible('balloon', e.st === 'float');
-    root.setAlpha(e.hidden ? 0.1 + Math.abs(Math.sin(time * 0.01 + this.seed * 10)) * 0.1 : 1);
+    root.setAlpha(e.hidden ? 0.1 + Math.abs(Math.sin(time * 0.01 + this.seed * 10)) * 0.1 : cooking ? Math.max(0, 1 - potProgress * 1.4) : 1);
 
     this.applyPose(pup, e, time);
 
     // Shadow shrinks with height above the ground.
     const height = Math.max(0, ground - e.y);
     const k = Math.max(0.25, 1 - height / 520);
-    this.shadow.setVisible(!e.hidden);
+    this.shadow.setVisible(!e.hidden && !cooking && e.st !== 'hooked');
     this.shadow.setPosition(e.x, ground + 2);
     this.shadow.setScale((def.radius / 44) * k * CHAR_SCALE, k);
     this.shadow.setAlpha(0.4 + k * 0.5);
@@ -254,6 +284,7 @@ export class EnemyView {
             case 'armBack': return { rot: Math.sin(t * 5) * 0.2, dy: 0 };
             default: return { rot: 0, dy: 0 };
           }
+        case 'cooking':
         case 'hooked':
           switch (anim) {
             case 'legFront': return { rot: Math.sin(t * 18) * 0.7, dy: 0 };

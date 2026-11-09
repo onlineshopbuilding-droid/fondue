@@ -30,7 +30,6 @@ export interface ViewProjectile {
   rot: number;
   size: number;
   heldBy: number;
-  charge: number;
 }
 
 export interface ViewHand {
@@ -41,6 +40,8 @@ export interface ViewHand {
   holding: number;
   holdingProj: number;
   connected: boolean;
+  /** This press is aiming a weapon on the keep. */
+  aiming: boolean;
 }
 
 export interface ViewState {
@@ -55,15 +56,21 @@ export interface ViewState {
   gateMax: number;
   cooldowns: Record<WeaponSlot, number>;
   cooldownMax: Record<WeaponSlot, number>;
+  /** Seconds until the eagle hook is free. */
+  perchBusy: number;
+  /** Seconds until the cauldron is free, and the length of this melt. */
+  potBusy: number;
+  potMax: number;
+  nightfall: boolean;
   enemies: ViewEnemy[];
   projectiles: ViewProjectile[];
   flames: Flame[];
   hands: ViewHand[];
 }
 
-const STATES: EnemyState[] = ['walk', 'attack', 'hop', 'float', 'held', 'air', 'stun', 'frozen', 'hooked', 'flee'];
-const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt', 'shell'];
-const MODES: HandMode[] = ['none', 'stomper', 'comet', 'horn'];
+const STATES: EnemyState[] = ['walk', 'attack', 'hop', 'float', 'held', 'air', 'stun', 'frozen', 'hooked', 'cooking', 'flee'];
+const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt', 'shell', 'frostShell', 'fireShell'];
+const MODES: HandMode[] = ['none', 'stomper', 'comet', 'horn', 'bolter'];
 const PHASES: Phase[] = ['banner', 'battle', 'victory', 'intermission', 'defeat', 'gameover'];
 
 const F_HIDDEN = 1;
@@ -86,6 +93,10 @@ export interface WireSnapshot {
   hm: number;
   cd: number[];
   cm: number[];
+  pb: number;
+  pt: number;
+  pm: number;
+  nf: number;
   e: number[][];
   q: number[][];
   f: number[][];
@@ -108,6 +119,10 @@ export function encodeSnapshot(s: SimState): WireSnapshot {
     hm: s.gateMax,
     cd: WEAPON_SLOTS.map((k) => r2(s.cooldowns[k])),
     cm: WEAPON_SLOTS.map((k) => r2(s.cooldownMax[k])),
+    pb: r2(s.perchBusy),
+    pt: r2(s.potBusy),
+    pm: r2(s.potMax),
+    nf: s.nightfall ? 1 : 0,
     e: s.enemies.map((e) => {
       const flags = (e.hidden ? F_HIDDEN : 0) | (e.shieldOn ? F_SHIELD : 0) | (e.armed ? F_ARMED : 0)
         | (e.crow ? F_CROW : 0) | (e.kegFuse > 0 ? F_FUSE : 0) | (e.frozenHeld || e.st === 'frozen' ? F_FROZEN : 0);
@@ -117,9 +132,9 @@ export function encodeSnapshot(s: SimState): WireSnapshot {
         r2(e.hp / e.maxHp),
       ];
     }),
-    q: s.projectiles.map((q) => [q.id, KINDS.indexOf(q.kind), r1(q.x), r1(q.y), r2(q.rot), r1(q.size), q.heldBy, Math.round(q.charge)]),
+    q: s.projectiles.map((q) => [q.id, KINDS.indexOf(q.kind), r1(q.x), r1(q.y), r2(q.rot), r1(q.size), q.heldBy]),
     f: s.flames.map((f) => [f.id, r1(f.x), r1(f.halfWidth), r2(f.t), r2(f.dur)]),
-    h: s.hands.map((h) => [r1(h.x), r1(h.y), h.down ? 1 : 0, MODES.indexOf(h.mode), h.holding, h.holdingProj, h.connected ? 1 : 0]),
+    h: s.hands.map((h) => [r1(h.x), r1(h.y), h.down ? 1 : 0, MODES.indexOf(h.mode), h.holding, h.holdingProj, h.connected ? 1 : 0, h.mode !== 'none' && h.down && h.modePress ? 1 : 0]),
   };
 }
 
@@ -138,6 +153,10 @@ export function decodeSnapshot(w: WireSnapshot): ViewState {
     gateMax: w.hm,
     cooldowns: toRecord(w.cd),
     cooldownMax: toRecord(w.cm),
+    perchBusy: w.pb,
+    potBusy: w.pt,
+    potMax: w.pm,
+    nightfall: w.nf === 1,
     enemies: w.e.map((a) => ({
       id: a[0], type: ENEMY_TYPES[a[1]], st: STATES[a[2]], x: a[3], y: a[4], rot: a[5], lane: a[6],
       hidden: (a[7] & F_HIDDEN) !== 0, shield: (a[7] & F_SHIELD) !== 0, armed: (a[7] & F_ARMED) !== 0,
@@ -145,11 +164,11 @@ export function decodeSnapshot(w: WireSnapshot): ViewState {
       heldBy: [a[8], a[9]].filter((p) => p >= 0), hpFrac: a[10],
     })),
     projectiles: w.q.map((a) => ({
-      id: a[0], kind: KINDS[a[1]], x: a[2], y: a[3], rot: a[4], size: a[5], heldBy: a[6], charge: a[7],
+      id: a[0], kind: KINDS[a[1]], x: a[2], y: a[3], rot: a[4], size: a[5], heldBy: a[6],
     })),
     flames: w.f.map((a) => ({ id: a[0], x: a[1], halfWidth: a[2], t: a[3], dur: a[4] })),
     hands: w.h.map((a) => ({
-      x: a[0], y: a[1], down: a[2] === 1, mode: MODES[a[3]], holding: a[4], holdingProj: a[5], connected: a[6] === 1,
+      x: a[0], y: a[1], down: a[2] === 1, mode: MODES[a[3]], holding: a[4], holdingProj: a[5], connected: a[6] === 1, aiming: a[7] === 1,
     })),
   };
 }
