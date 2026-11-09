@@ -13,12 +13,7 @@
 
 ## Veröffentlicht?
 
-**Nein.** PR #2 ist noch offen, deshalb ist nichts gemergt. Die Live-Seite ist unverändert, die Vorschau unter /next/ fehlt (Workflows gesperrt). Alles liegt fertig auf dem Branch `feature/grosse-runde`.
-
-## Was Tim noch tun muss
-
-1. PR #2 mergen.
-2. In einer Sitzung sagen: „Die große Runde veröffentlichen“. Dann wird der Branch auf den Stand von `main` gebracht und die eine Zeile in `tests/e2e/mobile.spec.ts` geändert, die in `docs/PROGRESS-GROSSE-RUNDE.md` steht: Das Szenario muss das Feld leeren, weil der Tag jetzt erst nach dem letzten Gegner endet. Danach Pull Request, die Prüfung `test` abwarten, mergen, Live-Seite prüfen.
+PR #2 wurde während der Arbeit gemergt, der Branch ist danach auf den Stand von `main` gebracht worden. Die Runde geht per Pull Request nach `main`, sobald die Prüfung `test` grün ist. Lokal waren vor dem Pull Request grün: `npx tsc --noEmit`, 156 Unit-Tests und alle Browser-Tests. Die Vorschau unter /next/ wurde weggelassen, weil sie erst am Ende möglich gewesen wäre.
 
 ## Entscheidung Spielfeldbreite
 
@@ -54,4 +49,4 @@ Feldbreite 1560 und 1760 liegen auf Höhe von 1280. Kessel vorne und hinten sind
 
 ## Benötigte Zeit
 
-Start 20:24 Uhr, fertig gegen 22:40 Uhr am 09.11.2026, also gut zwei Stunden.
+Start 20:24 Uhr, Pull Request gegen 22:50 Uhr am 09.11.2026, also knapp zweieinhalb Stunden.

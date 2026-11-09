@@ -137,7 +137,7 @@ for (const d of DEVICES) {
     await open('resume');
     await page.waitForSelector('.overlay', { state: 'detached' });
 
-    await page.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.gold = 60000; s.offerings = 300; s.dayT = 49.9; });
+    await page.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.gold = 60000; s.offerings = 300; s.enemies = []; s.spawnQueue = []; s.dayT = 49.9; });
     await waitFor(() => gameState(page), (s) => s?.phase === 'intermission', 15000);
     await page.waitForSelector('#toShop');
     await check(page, d.name, 'results', true);
