@@ -18,6 +18,7 @@ import type { ViewState } from '../net/snapshot';
 import { makeRoomCode, normalizeRoomCode, withLatency, type RoomHost, type Transport, type TransportKind } from '../net/transport';
 import { GameScene } from '../render/scene';
 import { allArtReady, buildTextures } from '../render/textures';
+import { RIGS } from '../art/characters';
 import { computeView, readSafeArea, renderScale, sameView } from '../render/viewport';
 import type { Meta } from '../sim/types';
 import { ownsSlot } from '../sim/keep';
@@ -50,6 +51,8 @@ export class App {
   textureMs = 0;
   /** True once the art loaded in the background after boot is complete too (for tests). */
   get artReady(): boolean { return allArtReady(); }
+  /** The raw art, so the art test can check it in the built game as well as on the dev server. */
+  readonly art = { rigs: RIGS, props: PROPS };
   private settings: Settings = loadSettings();
   private ui: HTMLElement;
   private overlay: HTMLDivElement | null = null;

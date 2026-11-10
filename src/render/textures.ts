@@ -8,11 +8,12 @@ import { CLOUDS, LANDSCAPE_ART } from '../art/landscapes';
 export const TEX_SCALE = 2;
 
 /**
- * Texture pixels per world pixel for the landscape layers. Nearer layers are sharper; the far ones
- * may stay a little soft, like distance. Larger values cost memory: four landscapes are kept loaded.
+ * Texture pixels per world pixel for the landscape layers. Finer layers looked a little sharper on
+ * phones, but drawing them scaled down every frame was too slow without a GPU (GitHub's test
+ * machines, weak phones) and slowed loading; 1 keeps world size, as before the art redraw.
  */
-export const LAND_SCALE = { far: 1, mid: 1.25, near: 1.5, ground: 2 } as const;
-export const CLOUD_SCALE = 1.5;
+export const LAND_SCALE = { far: 1, mid: 1, near: 1, ground: 1 } as const;
+export const CLOUD_SCALE = 1;
 
 function rasterise(art: Art, scale: number): Promise<HTMLCanvasElement> {
   return new Promise((resolve, reject) => {
