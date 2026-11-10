@@ -14,7 +14,7 @@ import { Effects } from './effects';
 import { EnemyView } from './enemyView';
 import { Hud } from './hud';
 import { Stations } from './stations';
-import { computeView, type GameView } from './viewport';
+import { computeView, renderScale, type GameView } from './viewport';
 import { propKey, TEX_SCALE } from './textures';
 
 const HAND_COLORS = [0xfff1d0, 0x9fe0ff];
@@ -72,6 +72,8 @@ export class GameScene extends Phaser.Scene {
   debug = { fps: 60, enemies: 0, frameMs: 16 };
   /** What this screen shows of the world. */
   view: GameView = computeView(WORLD.width, WORLD.height);
+  /** Canvas pixels per world unit (see `renderScale`). */
+  renderScale = 1;
 
   constructor() { super('game'); }
 
@@ -109,12 +111,30 @@ export class GameScene extends Phaser.Scene {
   setView(v: GameView) {
     this.view = v;
     if (!this.hud) return;
-    this.cameras.main.setSize(v.width, v.height).setScroll(v.offsetX, v.offsetY);
+    // The canvas has as many pixels as the device shows; the camera zoom maps world units onto them.
+    const rs = renderScale(v, window.devicePixelRatio);
+    this.renderScale = rs;
+    const w = Math.round(v.width * rs);
+    const h = Math.round(v.height * rs);
+    if (this.scale.gameSize.width !== w || this.scale.gameSize.height !== h) this.scale.setGameSize(w, h);
+    this.cameras.main.setSize(w, h).setOrigin(0, 0).setZoom(rs).setScroll(v.offsetX, v.offsetY);
+    this.sharpenText(rs);
     this.bg.layout(v);
     this.hud.layout(v);
     this.castle.layout(v);
     this.stations.layout(v);
     this.banner.x = v.width / 2;
+  }
+
+  /** Text is drawn into its own texture; it must be as fine as the canvas, or it looks blurred. */
+  private sharpenText(rs: number) {
+    const walk = (list: Phaser.GameObjects.GameObject[]) => {
+      for (const o of list) {
+        if (o instanceof Phaser.GameObjects.Text) { if (o.style.resolution !== rs) o.setResolution(rs); }
+        else if (o instanceof Phaser.GameObjects.Container) walk(o.list);
+      }
+    };
+    walk(this.children.list);
   }
 
   /** CSS position of a world point. */
@@ -269,7 +289,7 @@ export class GameScene extends Phaser.Scene {
     const meta = s.meta();
     if (!meta) return;
     const me = view.hands[s.me];
-    this.castle.update(view, meta, this.bg.tint, this.bg.night, me?.mode ?? 'none', dt, time);
+    this.castle.update(view, meta, this.bg.shown, this.bg.tint, this.bg.night, me?.mode ?? 'none', dt, time);
     this.stations.update(view, meta, this.bg.tint, dt, time);
     this.updateHint(me?.mode ?? 'none', dt);
   }

@@ -71,13 +71,15 @@ Drei Datenarten, die man unterscheiden muss:
 | `src/render/castleView.ts` | Burg je Ausbaustufe, Tor, Schatten, Vordergrund, Waffen an der Burg mit Nachladering, Griffzonen |
 | `src/render/stations.ts` | Kessel (beide Varianten), Adlerhaken, Adlerkopf |
 | `src/render/aimView.ts` | Zielhilfe: Band, Flugbahn, Einschlagring |
-| `src/render/viewport.ts` | Rechnet Bildschirmgröße in den sichtbaren Weltausschnitt um (`computeView`) |
-| `src/render/background.ts` | Himmel und Parallax-Ebenen |
-| `src/render/textures.ts` | Macht beim Start aus allen SVGs Texturen |
+| `src/render/viewport.ts` | Rechnet Bildschirmgröße in den sichtbaren Weltausschnitt um (`computeView`), Schärfe der Zeichenfläche (`renderScale`) |
+| `src/render/background.ts` | Himmel mit Sonne, Mond, Sternen und Wolken, Parallax-Ebenen, Dunst über den Tag |
+| `src/render/textures.ts` | Macht aus allen SVGs Texturen: beim Start das Nötige, den Rest im Hintergrund |
+| `src/render/glFix.ts` | Korrektur an Phasers Shader, damit keine Bildblöcke verschwinden (E-031) |
+| `src/art/shade.ts` | Licht und Schatten für alle Grafiken: `lit`, `litTube`, `crescent`, `within`, `tone`, Verläufe, `rng` |
 | `src/art/characters/` | Eine Datei pro Gegner, Sammlung in `RIGS` (`index.ts`), Bausteine und Farben in `kit.ts` |
-| `src/art/props.ts` | Tore, Icons, Geschosse (`PROPS`) |
-| `src/art/castle.ts` | Burg in 5 Stufen, Vordergrund je Landschaft, Waffen an der Burg, Kessel hinten, Haken, Adlerkopf |
-| `src/art/draw.ts` | Zeichen-Bausteine und Farben für die Requisiten |
+| `src/art/props.ts` | Icons, Hand, Geschosse, Effekt-Bilder (`PROPS`, enthält auch alles aus `castle.ts`) |
+| `src/art/castle.ts` | Burg in 5 Stufen mit Nachtlicht, Tore und Risse, Kessel, Boden am Mauerfuß (`keepGround_*`), Vordergrund (`foot_*`), Wetter, Waffen an der Burg, Haken, Adlerkopf |
+| `src/art/draw.ts` | Zeichen-Bausteine und Farben für Burg und Requisiten |
 | `src/art/landscapes.ts` | Vier Landschaften mit je vier Ebenen, Wolken |
 | `src/audio/sfx.ts` | Soundeffekte aus Code (`SFX_RECIPES`) |
 | `src/audio/music.ts` | Musik: Akkorde, Abschnitte, Stile `menu` und `battle` |
@@ -150,10 +152,14 @@ Die Logik dazu: `velocity()` in `src/input/pointer.ts`, `release`, `clampThrow`,
 |---|---|
 | Figur umzeichnen | Datei in `src/art/characters/`; Figuren schauen in der Grafik **nach links** |
 | Lauf-, Halte-, Fluganimation | `applyPose` in `src/render/enemyView.ts` |
-| Burg und Waffen an der Burg | `CASTLE_ART` in `src/art/castle.ts`, Name gleich Texturname |
-| Tor, Icons, Geschosse | `PROPS` in `src/art/props.ts`, Name gleich Texturname |
+| Burg, Tore, Kessel und Waffen an der Burg | `CASTLE_ART` und `KEEP_PROPS` in `src/art/castle.ts`, Name gleich Texturname |
+| Icons, Hand, Geschosse | `PROPS` in `src/art/props.ts`, Name gleich Texturname |
+| Licht und Schatten, Materialien | Bausteine in `src/art/shade.ts`; Licht immer von links oben (E-031) |
 | Landschaften | `LANDSCAPE_ART` in `src/art/landscapes.ts`, Reihenfolge `LANDSCAPES`, Wechsel `DAYS_PER_LANDSCAPE` |
-| Himmelsfarben | `paintSky` in `src/render/background.ts` |
+| Himmelsfarben | Vier Farben je Tageszeit in `tint` von `LANDSCAPE_ART`, gemalt von `paintSky` in `src/render/background.ts` |
+| Sonne, Mond, Sterne, Dunst | `src/render/background.ts` |
+| Schärfe der Texturen | `TEX_SCALE`, `LAND_SCALE`, `CLOUD_SCALE` in `src/render/textures.ts` |
+| Schärfe des ganzen Bildes | `MAX_RENDER_SCALE`, `MAX_RENDER_PIXELS` in `src/render/viewport.ts` |
 | Blut, Partikel, Explosion | `src/render/effects.ts` |
 | Welcher Effekt und Klang bei welchem Ereignis | `handleEvent`, `onImpact`, `onDeath` in `src/render/scene.ts` |
 | Handfarben | `HAND_COLORS` in `src/render/scene.ts` |
@@ -174,7 +180,7 @@ Spieltexte sind Englisch. Hilfe, Tipps, Credits: `src/ui/content.ts`. Bildschirm
 | Ziel | Stelle |
 |---|---|
 | Verbindungsaufbau, Lobby, Wiedereinstieg | `openRoom`, `onGuestLink`, `joinRoom`, `onHostMessage`, `enterRejoin` in `src/ui/app.ts` |
-| Snapshot-Takt, Abbruchzeit | `SNAPSHOT_EVERY_STEPS`, `SILENCE_LIMIT_MS` in `src/game/session.ts` |
+| Snapshot-Takt, Abbruchzeit | `SNAPSHOT_EVERY_STEPS`, `SILENCE_LIMIT_MS`, `OWN_STALL_MS` in `src/game/session.ts` |
 | Glättung beim Gast | `INTERP_DELAY_MS`, `EVENT_DELAY_MS` in `src/game/session.ts` |
 | STUN-Server, PeerJS | `src/net/peer.ts` |
 
@@ -206,6 +212,8 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 
 **Neue Burg-Ausbaustufe:** Grafik `keepN` und `keepGlowN` in `CASTLE_ART`, Tor in `SHOP_ITEMS`, `GATE_HP`, `GATES` (`src/sim/keep.ts`). Die Waffenplätze aus `WORLD.slots` müssen auf der Grafik frei bleiben.
 
+**Neue oder geänderte Grafik:** Licht von links oben, Formen mit `lit` oder `litTube` aus `src/art/shade.ts` schattieren, keine SVG-Masken und keine Filter (Falle 14). Der Rahmen eines Teils (`box` bei Figuren, Größe bei Requisiten) muss die Zeichnung mit Rand umfassen, auch wenn sich Arme und Beine drehen; `tests/e2e/art.spec.ts` prüft das. Gehört eine Requisite zu einer Landschaft, endet ihr Name auf `_<landschaft>` (z. B. `foot_marsh`); dann wird sie mit der Landschaft im Hintergrund geladen.
+
 **Neuer Effekt zu einem Ereignis:** Variante in `SimEvent`, in der Sim `this.emit(...)`, in `handleEvent` den Effekt auslösen. Beim Gast kommt das automatisch an.
 
 **Neue Eigenschaft, die man sehen soll:** Feld in `Enemy`, in `ViewEnemy`, in der Kodierung und Dekodierung von `src/net/snapshot.ts`. Ohne den Snapshot-Teil fehlt sie beim Gast und beim Host gleichermaßen, weil auch der Host über `decodeSnapshot(encodeSnapshot(...))` zeichnet.
@@ -236,6 +244,9 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 11. **Welt- und Bildschirmkoordinaten sind nicht dasselbe.** Die Feldbreite ist 1280 bis 1760 und steht in `meta.fieldW`, nie fest in `WORLD.width` rechnen. Der Bildschirm beginnt immer bei x = 0, oben zeigt er je nach Format mehr oder weniger Himmel. Figuren, Geschosse und die Hand stehen in Weltkoordinaten. HUD-Elemente stehen in Bildschirmkoordinaten und werden in `layout` an einen Rand verankert. Umrechnung: Bildschirm = Welt minus `offsetX`/`offsetY` aus `GameView`.
 12. **Neue Dinge links von x = 0 sieht niemand, oberhalb von y = 120 kann der Himmel abgeschnitten sein.** Alles Spielrelevante muss darunter liegen und im Feld (`meta.fieldW`), sonst sehen Host und Gast nicht dasselbe.
 13. **`Math.random` und `window` sind in `src/sim/` tabu.** Auch ein Import aus `src/render/` zieht Phaser in die Unit-Tests. Gemeinsame reine Helfer gehören nach `src/sim/`, zum Beispiel `keep.ts`.
+14. **SVG-Masken und Filter machen den Start langsam.** Jede Maske kostet beim Umwandeln eine Ebene so groß wie die ganze Textur; bei Burg und Landschaften waren das Sekunden. Schattierung über `crescent` und `within` (Clip-Pfade) aus `src/art/shade.ts`. Den Aufwand misst `textureMs` in `window.__fondue`.
+15. **Nicht alle Texturen gibt es sofort.** Die Landschaften Canyon, Sumpf, Schnee und die Burgstufen 1 bis 4 entstehen erst nach dem Start im Hintergrund (`landscapeReady`, `keepStagesReady` in `src/render/textures.ts`). Wer solche Texturen anzeigt, prüft vorher, ob sie fertig sind, sonst zeigt Phaser ein Ersatzbild für fehlende Texturen. Die Burg zeigt bis dahin Stufe 0, der Hintergrund die vorige Landschaft. Geladen wird eine Textur nach der anderen mit kurzer Pause, damit Eingaben, Bilder und Koop-Nachrichten durchkommen; nie wieder eine ganze Gruppe auf einmal starten. Browser-Tests warten in `waitForGame` (`tests/e2e/helpers.ts`), bis `__fondue.artReady` wahr ist, und prüfen so das fertig geladene Spiel.
+16. **Eingefrorene Seite ist keine Funkstille.** Ein Koop-Spiel gilt nach `SILENCE_LIMIT_MS` ohne Nachricht als getrennt. Zeit, in der die eigene Seite selbst stand (Frame mehr als `OWN_STALL_MS` zu spät), zählt nicht mit, weil die Nachrichten des anderen dann noch in der Warteschlange hängen (`excuseOwnStall` in `src/game/session.ts`). Zeitkritische Eingaben wie das lange Drücken aufs Logo messen mit den Zeitstempeln der Ereignisse, nicht nur mit einem Timer.
 
 ## 7. Testen und veröffentlichen
 
@@ -243,7 +254,7 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 |---|---|---|
 | `npm run dev` | Spiel lokal auf http://localhost:5173 | |
 | `npm test` | Regeln, Wurf, Sitzung, Klänge, Latenz-Simulator | `tests/unit/` |
-| `npm run test:e2e` | Browser: Ablauf, Koop, Relay, Touch, Landschaften, Handy-Größen | `tests/e2e/` |
+| `npm run test:e2e` | Browser: Ablauf, Koop, Relay, Touch, Landschaften, Handy-Größen, abgeschnittene Grafik (`art.spec.ts`) | `tests/e2e/` |
 | `npm run balance` | Bots spielen, schreibt `docs/balance-latest.md` | `tests/balance/` |
 | `npx playwright test --config playwright.perf.config.ts` | FPS mit 200 Gegnern in Edge | `tests/perf/` |
 | `npx playwright test --config playwright.live.config.ts` | Veröffentlichte Seite | `tests/live/` |

@@ -5,9 +5,9 @@ import type { ViewState } from '../net/snapshot';
 import { slotAt } from '../sim/aim';
 import { SLOT_TIERS, buildTier, gateOfTier, ownsSlot } from '../sim/keep';
 import type { Meta } from '../sim/types';
-import { propKey, TEX_SCALE } from './textures';
+import { keepStagesReady, propKey, TEX_SCALE, wantKeepStages } from './textures';
 import type { GameView } from './viewport';
-import { landscapeForDay } from './background';
+import type { Landscape } from '../config/waves';
 
 const FINGER_CSS = 27;
 const RING_RADIUS = 40;
@@ -35,6 +35,7 @@ export class CastleView {
   private keep: Phaser.GameObjects.Image;
   private glow: Phaser.GameObjects.Image;
   private weather: Phaser.GameObjects.Image;
+  private ground: Phaser.GameObjects.Image;
   private gate: Phaser.GameObjects.Image;
   private cracks: Phaser.GameObjects.Image;
   private foot: Phaser.GameObjects.Image;
@@ -48,7 +49,10 @@ export class CastleView {
     this.shadow = scene.add.image(-40, 668, propKey('keepShadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(7);
     this.keep = scene.add.image(-40, 640, propKey('keep0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10);
     this.glow = scene.add.image(-40, 640, propKey('keepGlow0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.1).setAlpha(0);
-    this.weather = scene.add.image(-40, 640, propKey('keepWeather_canyon')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.05).setVisible(false);
+    // Starts hidden; its real texture comes with the landscape, which may still be loading at boot.
+    this.weather = scene.add.image(-40, 640, propKey('keep0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.05).setVisible(false);
+    // Grass, earth and paving of the landscape at the wall foot: behind the gate and the raiders.
+    this.ground = scene.add.image(-40, 670, propKey('keepGround_meadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.06);
     this.gate = scene.add.image(WORLD.gateX - 74, 620, propKey('gate0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(11);
     this.cracks = scene.add.image(WORLD.gateX - 74, 620, propKey('crack1')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(12).setVisible(false);
     this.foot = scene.add.image(-40, 690, propKey('foot_meadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(36);
@@ -81,26 +85,32 @@ export class CastleView {
     return slotAt(x, y, this.hitRadius(), (s) => ownsSlot(s, meta));
   }
 
-  update(view: ViewState, meta: Meta, tint: number, night: number, activeMode: string, dt: number, time: number) {
-    const tier = buildTier(meta);
-    const name = `${tier}:${landscapeForDay(view.day)}`;
+  /** `land` is the landscape on screen (Background.shown), which lags behind the day while it loads. */
+  update(view: ViewState, meta: Meta, land: Landscape, tint: number, night: number, activeMode: string, dt: number, time: number) {
+    // Stages beyond the first are prepared in the background after boot; until then stage 0 stands in.
+    const built = buildTier(meta);
+    if (built > 0 && !keepStagesReady()) wantKeepStages();
+    const tier = built > 0 && !keepStagesReady() ? 0 : built;
+    const name = `${tier}:${land}`;
     if (name !== this.tierName) {
       this.tierName = name;
       this.keep.setTexture(propKey(`keep${tier}`));
       this.glow.setTexture(propKey(`keepGlow${tier}`));
-      this.foot.setTexture(propKey(`foot_${landscapeForDay(view.day)}`));
-      const land = landscapeForDay(view.day);
+      this.foot.setTexture(propKey(`foot_${land}`));
+      this.ground.setTexture(propKey(`keepGround_${land}`));
       const weather = land === 'snowpine' ? `keepWeather_snowpine_${tier}` : land === 'meadow' ? null : `keepWeather_${land}`;
       this.weather.setVisible(weather !== null);
       if (weather) this.weather.setTexture(propKey(weather));
     }
     this.keep.setTint(tint);
     this.weather.setTint(tint);
+    this.ground.setTint(tint);
     this.foot.setTint(tint);
     this.glow.setAlpha(Math.min(1, night * 1.6));
     this.shadow.setAlpha(1 - night * 0.45);
 
-    const gate = gateOfTier(tier);
+    // Gates are made at boot, so the bought gate shows at once.
+    const gate = gateOfTier(built);
     this.gate.setTexture(propKey(gate));
     const f = view.gateMax > 0 ? view.gateHp / view.gateMax : 1;
     const stage = f < 0.25 ? 3 : f < 0.5 ? 2 : f < 0.75 ? 1 : 0;

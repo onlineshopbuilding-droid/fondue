@@ -40,6 +40,24 @@ const FINGER_CSS = 52;
 const MAX_HUD_SCALE = 1.7;
 const MAX_TOP_SCALE = 1.3;
 
+/** Never draw more than twice as fine as world units; textures are made for that. */
+export const MAX_RENDER_SCALE = 2;
+/** Canvas pixel budget, so that tablets and big monitors stay smooth. */
+export const MAX_RENDER_PIXELS = 2560 * 1440;
+
+/**
+ * Canvas pixels per world unit. A phone has three device pixels per CSS pixel; drawing the world at
+ * one pixel per unit and stretching it would leave everything soft, so the canvas follows the
+ * device's real pixels, up to the limits above. A plain laptop screen stays at 1.
+ */
+export function renderScale(v: GameView, devicePixelRatio: number): number {
+  const wanted = v.cssPerUnit * Math.max(1, devicePixelRatio || 1);
+  const budget = Math.sqrt(MAX_RENDER_PIXELS / (v.width * v.height));
+  const s = Math.min(MAX_RENDER_SCALE, budget, wanted);
+  // Rounded so that small resizes don't rebuild the canvas for nothing.
+  return Math.max(1, Math.round(s * 20) / 20);
+}
+
 export function computeView(cssWidth: number, cssHeight: number, safe: SafeArea = { left: 0, right: 0, top: 0, bottom: 0 }, field?: number): GameView {
   const w = Math.max(1, cssWidth);
   const h = Math.max(1, cssHeight);

@@ -330,5 +330,13 @@
     "pruefung": "npm run balance",
     "passes": true,
     "beleg": "09.11.2026: docs/balance-latest.md: Median solo 6,5 / 22 / 38, zu zweit 7 / 25 / 34,5. Bots sind Näherungen, Spielgefühl der ersten Tage braucht Menschen"
+  },
+  {
+    "id": 42,
+    "bereich": "grafik",
+    "beschreibung": "Grafik mit Licht von links oben: Figuren, Burg, Landschaften, Requisiten und Menüs schattiert und detailliert; keine Figur und keine freie Requisite wird vom Texturrahmen abgeschnitten; auf Handys in echter Bildschirmschärfe.",
+    "pruefung": "tests/e2e/art.spec.ts, tests/unit/viewport.test.ts 'draws as fine as the device shows', Screenshots",
+    "passes": true,
+    "beleg": "10.11.2026: tests/e2e/art.spec.ts grün, tests/unit/viewport.test.ts grün, alle Browser-Tests grün (51), FPS-Test 56,6 bei 200 Gegnern (vorher 57,2), Screenshots docs/screenshots/gallery.png und land-*.png"
   }
 ]

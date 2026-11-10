@@ -44,6 +44,8 @@ const headline = (p: Page) => p.locator('.panel h2').innerText().catch(() => '')
 
 for (const [label, query] of [['no added latency', ''], ['simulated latency', '&lat=45&jit=20&loss=0.02']] as const) {
   test(`co-op with two browsers, ${label}`, async ({ browser }) => {
+    // Three game windows start one after another; on GitHub's software-drawn machines that alone takes minutes.
+    if (process.env.CI) test.setTimeout(720_000);
     const { host, guest, errors, context } = await setupCoop(browser, query);
 
     // Both hands exist and each is visible on the other side.
@@ -125,7 +127,8 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await waitFor(() => gameState(guest), (v) => v?.day === 2, 6000);
 
     // Disconnect: the game pauses, then the guest rejoins.
-    await waitFor(() => gameState(host), (v) => v?.phase === 'battle', 10000);
+    // The day banner runs in game time; on GitHub's software-drawn machines game time runs slower than the clock.
+    await waitFor(() => gameState(host), (v) => v?.phase === 'battle', process.env.CI ? 40000 : 10000);
     await guest.close();
     // A closed tab cannot say goodbye over BroadcastChannel; signal it the way a dropped link would.
     await host.evaluate(() => (window as any).__fondue.lobbyLink.onClose());
@@ -134,7 +137,8 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     const code = await host.evaluate(() => (window as any).__fondue.code);
     const back = await context.newPage();
     await back.goto(`/?net=loopback&join=${code}${query}`);
-    await waitForGame(back);
+    // Rejoining right away, while the rest of the art still loads in the background, as a player would.
+    await waitForGame(back, { allArt: false });
     await back.fill('#name', 'Lenny');
     await back.click('button[data-a="doJoin"]');
     await waitFor(() => gameState(back), (v) => v?.day === 2, 10000);
