@@ -13,13 +13,16 @@ const FREE_PROPS = [
 ];
 
 test('no figure or free prop is cut off by its texture box', async ({ page }) => {
+  // On GitHub the dev server serves the game under /fondue/ (vite.config.ts); it redirects / there.
+  const root = await page.request.get('/', { maxRedirects: 0 });
+  const base = root.status() >= 300 && root.status() < 400 ? new URL(root.headers().location, 'http://x').pathname : '/';
   // A plain module URL of the dev server: same origin, so modules can be imported, but no game boots.
-  await page.goto('/src/config/game.ts');
+  await page.goto(`${base}src/config/game.ts`);
   await page.setContent('<html><body></body></html>');
-  const clips = await page.evaluate(async (free) => {
+  const clips = await page.evaluate(async ([free, b]) => {
     // Loaded by the dev server inside the page; held in variables so TypeScript does not resolve them.
-    const charsUrl = '/src/art/characters/index.ts';
-    const propsUrl = '/src/art/props.ts';
+    const charsUrl = `${b}src/art/characters/index.ts`;
+    const propsUrl = `${b}src/art/props.ts`;
     const { RIGS } = await import(/* @vite-ignore */ charsUrl);
     const { PROPS } = await import(/* @vite-ignore */ propsUrl);
     type A = { svg: string; w: number; h: number };
@@ -52,13 +55,13 @@ test('no figure or free prop is cut off by its texture box', async ({ page }) =>
       }
     }
     const props = PROPS as Record<string, A>;
-    const names = [...free, ...Object.keys(props).filter((n) => n.startsWith('icon'))];
+    const names = [...(free as string[]),...Object.keys(props).filter((n) => n.startsWith('icon'))];
     for (const n of names) {
       if (!props[n]) { found.push(`${n}: missing`); continue; }
       const s = await touches(props[n]);
       if (s) found.push(`${n}: ${s}`);
     }
     return found;
-  }, FREE_PROPS);
+  }, [FREE_PROPS, base] as const);
   expect(clips, 'Art that runs past its texture box').toEqual([]);
 });

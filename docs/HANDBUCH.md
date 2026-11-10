@@ -180,7 +180,7 @@ Spieltexte sind Englisch. Hilfe, Tipps, Credits: `src/ui/content.ts`. Bildschirm
 | Ziel | Stelle |
 |---|---|
 | Verbindungsaufbau, Lobby, Wiedereinstieg | `openRoom`, `onGuestLink`, `joinRoom`, `onHostMessage`, `enterRejoin` in `src/ui/app.ts` |
-| Snapshot-Takt, Abbruchzeit | `SNAPSHOT_EVERY_STEPS`, `SILENCE_LIMIT_MS` in `src/game/session.ts` |
+| Snapshot-Takt, Abbruchzeit | `SNAPSHOT_EVERY_STEPS`, `SILENCE_LIMIT_MS`, `OWN_STALL_MS` in `src/game/session.ts` |
 | Glättung beim Gast | `INTERP_DELAY_MS`, `EVENT_DELAY_MS` in `src/game/session.ts` |
 | STUN-Server, PeerJS | `src/net/peer.ts` |
 
@@ -245,7 +245,8 @@ Der Tipp beim ersten Auftauchen läuft automatisch über `firstDay` und `tip`.
 12. **Neue Dinge links von x = 0 sieht niemand, oberhalb von y = 120 kann der Himmel abgeschnitten sein.** Alles Spielrelevante muss darunter liegen und im Feld (`meta.fieldW`), sonst sehen Host und Gast nicht dasselbe.
 13. **`Math.random` und `window` sind in `src/sim/` tabu.** Auch ein Import aus `src/render/` zieht Phaser in die Unit-Tests. Gemeinsame reine Helfer gehören nach `src/sim/`, zum Beispiel `keep.ts`.
 14. **SVG-Masken und Filter machen den Start langsam.** Jede Maske kostet beim Umwandeln eine Ebene so groß wie die ganze Textur; bei Burg und Landschaften waren das Sekunden. Schattierung über `crescent` und `within` (Clip-Pfade) aus `src/art/shade.ts`. Den Aufwand misst `textureMs` in `window.__fondue`.
-15. **Nicht alle Texturen gibt es sofort.** Die Landschaften Canyon, Sumpf, Schnee und die Burgstufen 1 bis 4 entstehen erst nach dem Start im Hintergrund (`landscapeReady`, `keepStagesReady` in `src/render/textures.ts`). Wer solche Texturen anzeigt, prüft vorher, ob sie fertig sind, sonst zeigt Phaser ein Ersatzbild für fehlende Texturen. Die Burg zeigt bis dahin Stufe 0, der Hintergrund die vorige Landschaft.
+15. **Nicht alle Texturen gibt es sofort.** Die Landschaften Canyon, Sumpf, Schnee und die Burgstufen 1 bis 4 entstehen erst nach dem Start im Hintergrund (`landscapeReady`, `keepStagesReady` in `src/render/textures.ts`). Wer solche Texturen anzeigt, prüft vorher, ob sie fertig sind, sonst zeigt Phaser ein Ersatzbild für fehlende Texturen. Die Burg zeigt bis dahin Stufe 0, der Hintergrund die vorige Landschaft. Geladen wird eine Textur nach der anderen mit kurzer Pause, damit Eingaben, Bilder und Koop-Nachrichten durchkommen; nie wieder eine ganze Gruppe auf einmal starten. Browser-Tests warten in `waitForGame` (`tests/e2e/helpers.ts`), bis `__fondue.artReady` wahr ist, und prüfen so das fertig geladene Spiel.
+16. **Eingefrorene Seite ist keine Funkstille.** Ein Koop-Spiel gilt nach `SILENCE_LIMIT_MS` ohne Nachricht als getrennt. Zeit, in der die eigene Seite selbst stand (Frame mehr als `OWN_STALL_MS` zu spät), zählt nicht mit, weil die Nachrichten des anderen dann noch in der Warteschlange hängen (`excuseOwnStall` in `src/game/session.ts`). Zeitkritische Eingaben wie das lange Drücken aufs Logo messen mit den Zeitstempeln der Ereignisse, nicht nur mit einem Timer.
 
 ## 7. Testen und veröffentlichen
 

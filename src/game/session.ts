@@ -34,6 +34,17 @@ const SNAPSHOT_EVERY_STEPS = 2; // 30 Hz
 const MAX_CATCHUP_TICKS = 6;
 /** No message from the other side for this long means the link is gone. */
 const SILENCE_LIMIT_MS = 4000;
+/** A frame later than this means this tab itself was frozen, so it could not have heard anything. */
+const OWN_STALL_MS = 500;
+
+/**
+ * Silence only counts while this tab is running. After a freeze (art loading in the background, a
+ * slow phone, a busy machine) the other side's messages are still queued behind the frame that runs
+ * first, so the frozen time is added to the last-heard time instead of ending the link.
+ */
+function excuseOwnStall(lastHeard: number, lastUpdate: number, now: number): number {
+  return lastUpdate > 0 && now - lastUpdate > OWN_STALL_MS ? lastHeard + (now - lastUpdate) : lastHeard;
+}
 /** Long event lists are split so that no message exceeds the data channel limit. */
 const MAX_EVENTS_PER_MESSAGE = 60;
 
@@ -51,6 +62,7 @@ export class HostSession implements Session {
   private ping = 0;
   private pingTimer = 0;
   private lastHeard = 0;
+  private lastUpdate = 0;
   /** Counts steps even while paused, so that a paused game keeps sending its state. */
   private stepCounter = 0;
 
@@ -126,7 +138,12 @@ export class HostSession implements Session {
       if (this.netEvents.length > 0) this.broadcast();
       this.pingTimer += dtMs;
       if (this.pingTimer > 1000) { this.pingTimer = 0; this.link.send({ k: 'ping', t: performance.now() }); }
-      if (performance.now() - this.lastHeard > SILENCE_LIMIT_MS) this.onLinkLost();
+      const now = performance.now();
+      this.lastHeard = excuseOwnStall(this.lastHeard, this.lastUpdate, now);
+      this.lastUpdate = now;
+      if (now - this.lastHeard > SILENCE_LIMIT_MS) this.onLinkLost();
+    } else {
+      this.lastUpdate = 0;
     }
   }
 
@@ -210,6 +227,7 @@ export class GuestSession implements Session {
   /** The host left on purpose, so rejoining makes no sense. */
   hostLeft = false;
   private lastHeard = performance.now();
+  private lastUpdate = 0;
   private modeGuardUntil = 0;
   private projReleasedAt = -Infinity;
   private ping = 0;
@@ -272,7 +290,10 @@ export class GuestSession implements Session {
     this.pingTimer += dtMs;
     if (this.pingTimer > 1000) { this.pingTimer = 0; this.link.send({ k: 'ping', t: performance.now() }); }
 
-    if (!this.lost && performance.now() - this.lastHeard > SILENCE_LIMIT_MS) {
+    const now = performance.now();
+    this.lastHeard = excuseOwnStall(this.lastHeard, this.lastUpdate, now);
+    this.lastUpdate = now;
+    if (!this.lost && now - this.lastHeard > SILENCE_LIMIT_MS) {
       this.lost = true;
       this.onDisconnect();
     }

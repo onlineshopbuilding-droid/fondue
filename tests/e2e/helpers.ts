@@ -27,7 +27,9 @@ export const gameState = (page: Page) => page.evaluate(() => {
 
 export async function waitForGame(page: Page) {
   // GitHub's machines draw in software; a second window starting beside a running game takes a while there.
-  await page.waitForFunction(() => (window as any).__fondue?.scene?.sys?.isActive?.() === true, null, { timeout: process.env.CI ? 180_000 : 60_000 });
+  // The menu is usable before the other landscapes and keep stages exist; they follow in the
+  // background. Tests start once everything is there, so slow machines measure the game, not the loading.
+  await page.waitForFunction(() => { const a = (window as any).__fondue; return a?.scene?.sys?.isActive?.() === true && a.artReady === true; }, null, { timeout: process.env.CI ? 180_000 : 60_000 });
   await page.waitForSelector('.overlay .panel', { timeout: 30_000 });
 }
 

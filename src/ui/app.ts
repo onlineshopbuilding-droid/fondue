@@ -17,7 +17,7 @@ import { relayTransport } from '../net/relay';
 import type { ViewState } from '../net/snapshot';
 import { makeRoomCode, normalizeRoomCode, withLatency, type RoomHost, type Transport, type TransportKind } from '../net/transport';
 import { GameScene } from '../render/scene';
-import { buildTextures } from '../render/textures';
+import { allArtReady, buildTextures } from '../render/textures';
 import { computeView, readSafeArea, renderScale, sameView } from '../render/viewport';
 import type { Meta } from '../sim/types';
 import { ownsSlot } from '../sim/keep';
@@ -48,6 +48,8 @@ export class App {
   readonly audio = new AudioEngine();
   /** How long turning all art into textures took at boot, for the debug overlay and tests. */
   textureMs = 0;
+  /** True once the art loaded in the background after boot is complete too (for tests). */
+  get artReady(): boolean { return allArtReady(); }
   private settings: Settings = loadSettings();
   private ui: HTMLElement;
   private overlay: HTMLDivElement | null = null;
@@ -131,13 +133,23 @@ export class App {
   /** Phones have no F1: holding the logo in the main menu opens the developer menu. */
   private bindLogoLongPress() {
     let timer = 0;
+    let downAt = 0;
+    const open = () => { timer = 0; this.audio.play('uiClick'); if (!this.tuning.open) this.tuning.toggle(); };
     const stop = () => { clearTimeout(timer); timer = 0; };
     this.ui.addEventListener('pointerdown', (e) => {
       if (!(e.target as HTMLElement).closest?.('.logo')) return;
       stop();
-      timer = window.setTimeout(() => { timer = 0; this.audio.play('uiClick'); if (!this.tuning.open) this.tuning.toggle(); }, LOGO_HOLD_MS);
+      downAt = e.timeStamp;
+      timer = window.setTimeout(open, LOGO_HOLD_MS);
     });
-    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) this.ui.addEventListener(ev, stop);
+    // If the page was busy, the release can arrive before the timer had a chance to run. The
+    // events' own time stamps say how long the finger really stayed down.
+    this.ui.addEventListener('pointerup', (e) => {
+      const held = timer !== 0 && e.timeStamp - downAt >= LOGO_HOLD_MS;
+      stop();
+      if (held) open();
+    });
+    for (const ev of ['pointercancel', 'pointerleave']) this.ui.addEventListener(ev, stop);
   }
 
   /** Browsers stop drawing hidden tabs; a co-op game must keep running for the other player. */

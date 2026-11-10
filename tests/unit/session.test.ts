@@ -130,7 +130,9 @@ describe('host and guest sessions', () => {
   it('long silence counts as a lost connection on both sides', () => {
     const { host, guest, tick } = setup();
     toBattle(tick, host);
-    vi.advanceTimersByTime(4100);
+    // Both tabs keep running frame by frame, but nothing arrives for a bit over four seconds.
+    // (A single frame that comes four seconds late is the tab's own freeze; see the test below.)
+    for (let i = 0; i < 4100 / 16; i++) { vi.advanceTimersByTime(16); host.update(16); guest.update(16); }
     host.update(16);
     guest.update(16);
     expect(host.connection()).toBe('lost');
@@ -176,6 +178,22 @@ describe('host and guest sessions', () => {
     expect(host.sim.s.meta.pausedBy).toBe('Connection lost');
     host.continueAlone();
     expect(host.sim.s.paused).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it('a tab that froze for a while does not mistake the freeze for silence', () => {
+    const { host, guest, p, tick } = setup();
+    toBattle(tick, host);
+    // Both tabs freeze for six seconds; the first frame after it runs before the queued messages.
+    vi.advanceTimersByTime(6000);
+    host.update(1000 / 60);
+    guest.update(1000 / 60);
+    expect(host.connection()).toBe('connected');
+    expect(guest.connection()).toBe('connected');
+    p.flush();
+    for (let i = 0; i < 30; i++) tick();
+    expect(host.connection()).toBe('connected');
+    expect(guest.connection()).toBe('connected');
     vi.useRealTimers();
   });
 });

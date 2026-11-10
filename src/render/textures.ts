@@ -156,6 +156,10 @@ function want(group: Group) {
   if (ready.has(group) || !queue.includes(group)) return;
   queue = [group, ...queue.filter((l) => l !== group)];
 }
+/** True once the background queue is through: every landscape and keep stage exists. */
+export function allArtReady(): boolean {
+  return ready.has(KEEP_STAGES) && LANDS.every((l) => ready.has(l));
+}
 export const wantLandscape = (land: string) => want(land as Group);
 export const wantKeepStages = () => want(KEEP_STAGES);
 
@@ -163,21 +167,31 @@ async function addAll(tex: Phaser.Textures.TextureManager, jobs: [string, Art, n
   await Promise.all(jobs.map(([key, art, scale]) => rasterise(art, scale).then((c) => { tex.addCanvas(key, c); })));
 }
 
-/** Loads the remaining groups one after another while the player is already in the menu. */
+/** Pause between two background textures, so input, frames and co-op messages get through. */
+const BACKGROUND_GAP_MS = 40;
+const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Loads the remaining groups while the player is already in the menu or the first day. One texture
+ * at a time with a pause in between: started all at once, a group kept the page busy for seconds on
+ * slow machines, long enough to drop a co-op link or swallow a long press.
+ */
 async function loadRest(tex: Phaser.Textures.TextureManager) {
   if (loading) return;
   loading = true;
   while (queue.length > 0) {
     const group = queue.shift()!;
     try {
-      await addAll(tex, groupJobs(group));
+      for (const [key, art, scale] of groupJobs(group)) {
+        tex.addCanvas(key, await rasterise(art, scale));
+        await pause(BACKGROUND_GAP_MS);
+      }
       ready.add(group);
     } catch (e) {
       // The game keeps showing what it has; better than broken art.
       console.error(`Art group ${group} could not be prepared`, e);
     }
-    // Let a few frames through between landscapes, so the menu never stutters.
-    await new Promise((r) => setTimeout(r, 120));
+    await pause(120);
   }
   loading = false;
 }
