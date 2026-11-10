@@ -43,7 +43,8 @@ export class AimView {
     const px = (-dy / n) * 18;
     const py = (dx / n) * 18;
     const tense = 5 + shot.strength * 3;
-    for (const [w, c, a] of [[tense + 5, 0x2b2118, alpha * 0.8], [tense, color, alpha]] as [number, number, number][]) {
+    // Ink outline, the band itself, then a thin light streak so it reads as a stretched rubber cord.
+    for (const [w, c, a] of [[tense + 5, 0x2b2118, alpha * 0.8], [tense, color, alpha], [Math.max(1.5, tense * 0.28), 0xffffff, alpha * 0.45]] as [number, number, number][]) {
       g.lineStyle(w, c, a);
       g.beginPath();
       g.moveTo(ox + px, oy + py);
@@ -51,18 +52,25 @@ export class AimView {
       g.lineTo(ox - px, oy - py);
       g.strokePath();
     }
+    // The two pegs the band is tied to.
+    for (const s of [1, -1]) {
+      g.fillStyle(0x2b2118, alpha * 0.9);
+      g.fillCircle(ox + px * s, oy + py * s, 6.5);
+      g.fillStyle(color, alpha);
+      g.fillCircle(ox + px * s, oy + py * s, 4);
+    }
   }
 
+  /** The flight path as a row of beads: ink ring, colour, a small glint. */
   private dashes(points: { x: number; y: number }[], color: number, alpha: number, width: number) {
     const g = this.g;
-    for (let i = 0; i + 1 < points.length; i += 2) {
-      g.lineStyle(width + 4, 0x2b2118, alpha * 0.55);
-      g.lineBetween(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
-    }
-    for (let i = 0; i + 1 < points.length; i += 2) {
-      g.lineStyle(width, color, alpha);
-      g.lineBetween(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
-    }
+    const r = width * 0.72;
+    g.fillStyle(0x2b2118, alpha * 0.6);
+    for (let i = 1; i < points.length; i++) g.fillCircle(points[i].x, points[i].y, r + 2.2);
+    g.fillStyle(color, alpha);
+    for (let i = 1; i < points.length; i++) g.fillCircle(points[i].x, points[i].y, r);
+    g.fillStyle(0xffffff, alpha * 0.55);
+    for (let i = 1; i < points.length; i++) g.fillCircle(points[i].x - r * 0.3, points[i].y - r * 0.3, r * 0.35);
   }
 
   private line(shot: AimShot, color: number, alpha: number, fieldW: number) {
@@ -105,10 +113,16 @@ export class AimView {
     }
     g.lineStyle(9, 0x2b2118, alpha * 0.6);
     g.strokeEllipse(x, y, radius * 2, radius * 0.56);
-    g.fillStyle(color, alpha * 0.28);
+    g.fillStyle(color, alpha * 0.22);
     g.fillEllipse(x, y, radius * 2, radius * 0.56);
+    g.fillStyle(color, alpha * 0.18);
+    g.fillEllipse(x, y, radius * 1.1, radius * 0.31);
     g.lineStyle(4, color, alpha);
     g.strokeEllipse(x, y, radius * 2, radius * 0.56);
+    g.fillStyle(0x2b2118, alpha * 0.7);
+    g.fillEllipse(x, y, 11, 6);
+    g.fillStyle(color, alpha);
+    g.fillEllipse(x, y, 6, 3);
     if (shot.strength >= 0.995) {
       g.lineStyle(3, 0xffffff, alpha);
       g.strokeEllipse(x, y, radius * 1.3, radius * 0.36);

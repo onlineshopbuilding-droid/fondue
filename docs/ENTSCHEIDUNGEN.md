@@ -107,3 +107,13 @@ Lange Würfe an den Haken verfehlten fast immer, weil die Schwerkraft den Gegner
 
 ## E-030 – Browser-Tests standardmäßig auf drei Bildschirmen
 Tim hat am 09.11.2026 entschieden: Laptop, iPhone 16 und Android reichen für die laufende Prüfung, die anderen Größen kommen später. Sie bleiben im Code und laufen mit `ALL_SCREENS=1`. Android ist im Test ein aktuelles breites Gerät mit 960 × 400.
+
+## E-031 – Grafik-Überarbeitung: ein Licht, keine Masken, echte Bildschirmschärfe
+Tim hat am 10.11.2026 eine deutlich detailliertere Grafik beauftragt, ohne dass das Wesentliche untergeht. Der Stil bleibt (Filzfiguren mit dunkler Umrisslinie, warme Palette), dazu kommen:
+
+- **Ein Licht für alles:** Licht von links oben, Schatten nach rechts unten, Schatten kühl, Lichter warm. Die Bausteine dafür stehen in `src/art/shade.ts` (`lit`, `litTube`, `crescent`, `within`, `tone`). Figuren haben den höchsten Kontrast, Hintergründe werden mit der Entfernung heller und dunstiger.
+- **Keine SVG-Masken und kaum Filter:** Browser malen jede Maske in eine Ebene so groß wie die ganze Textur. Mit Masken dauerte der Start auf dem Laptop mehrere Sekunden länger. Schattierungen laufen deshalb über Clip-Pfade (`crescent`) oder versetzte Linien (`crescentStroke`). Einziger Filter: der weiche Wandschatten der Waffen an der Burg (kleine Texturen).
+- **Echte Bildschirmschärfe:** Das Spielbild wurde bisher in Weltgröße gezeichnet und auf dem Handy hochgezogen, alles wirkte weich. Jetzt hat die Zeichenfläche so viele Pixel wie das Gerät, höchstens doppelt so fein wie die Welt und höchstens 2560 × 1440 (`renderScale` in `src/render/viewport.ts`). Am normalen Laptop ändert sich nichts.
+- **Laden im Hintergrund:** Beim Start entstehen nur die Texturen für die Wiese und die erste Burgstufe. Die drei anderen Landschaften und die Burgstufen 1 bis 4 folgen im Menü nacheinander (`src/render/textures.ts`). Bis eine fertig ist, bleibt das Bild davor stehen.
+- **Messwerte (Entwicklungsserver, Laptop, Edge):** Start 5,3 s statt 3,7 s, 60 Bilder pro Sekunde auf Laptop- und iPhone-Größe. Im Testbrowser ohne Grafikkarte etwa 10 s statt 6 s.
+- **Gefundener Fehler:** Phaser 4 wählt im Shader die Textur über einen exakten Zahlenvergleich. Manche Grafikchips rechnen dort minimal ungenau, dann verschwinden ganze Bildblöcke einer Figur (beim Yeti sichtbar als weiße Flächen mit geraden Kanten). `src/render/glFix.ts` rundet den Wert vor dem Vergleich.

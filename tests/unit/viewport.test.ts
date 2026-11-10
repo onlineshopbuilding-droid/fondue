@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { WORLD } from '../../src/config/world';
-import { computeView, MAX_ASPECT } from '../../src/render/viewport';
+import { computeView, MAX_ASPECT, MAX_RENDER_PIXELS, MAX_RENDER_SCALE, renderScale } from '../../src/render/viewport';
 
 describe('computeView', () => {
   it('leaves a 16:9 screen exactly as the world is', () => {
@@ -67,6 +67,23 @@ describe('computeView', () => {
       expect(64 * v.hudScale * v.cssPerUnit).toBeGreaterThanOrEqual(44);
     }
     expect(computeView(1920, 1080).hudScale).toBe(1);
+  });
+
+  it('draws as fine as the device shows, within the limits', () => {
+    // A plain laptop screen: nothing changes.
+    expect(renderScale(computeView(1280, 720), 1)).toBe(1);
+    // iPhone 16 in landscape, three device pixels per CSS pixel: the canvas matches the real pixels.
+    const phone = computeView(852, 393);
+    const s = renderScale(phone, 3);
+    expect(s).toBeGreaterThan(1.5);
+    expect(s).toBeLessThanOrEqual(MAX_RENDER_SCALE);
+    expect(Math.abs(phone.width * s - 852 * 3)).toBeLessThan(852 * 3 * 0.05);
+    // A big retina tablet stays within the pixel budget.
+    const tablet = computeView(1366, 1024);
+    const t = renderScale(tablet, 2);
+    expect(tablet.width * t * tablet.height * t).toBeLessThanOrEqual(MAX_RENDER_PIXELS * 1.06);
+    // Never coarser than world pixels.
+    expect(renderScale(computeView(640, 360), 1)).toBe(1);
   });
 
   it('turns the safe area of a notch into world units', () => {

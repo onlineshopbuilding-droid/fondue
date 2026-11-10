@@ -1,3 +1,5 @@
+// First: patches WebGL shader source before Phaser compiles anything.
+import '../render/glFix';
 import Phaser from 'phaser';
 import { PROPS } from '../art/props';
 import { AudioEngine } from '../audio/audio';
@@ -16,7 +18,7 @@ import type { ViewState } from '../net/snapshot';
 import { makeRoomCode, normalizeRoomCode, withLatency, type RoomHost, type Transport, type TransportKind } from '../net/transport';
 import { GameScene } from '../render/scene';
 import { buildTextures } from '../render/textures';
-import { computeView, readSafeArea, sameView } from '../render/viewport';
+import { computeView, readSafeArea, renderScale, sameView } from '../render/viewport';
 import type { Meta } from '../sim/types';
 import { ownsSlot } from '../sim/keep';
 import { CREDITS_HTML, HELP_SLIDES, LOADING_TIPS, STATION_TIPS, WEAPON_TIPS } from './content';
@@ -44,6 +46,8 @@ export class App {
   scene!: GameScene;
   session: Session | null = null;
   readonly audio = new AudioEngine();
+  /** How long turning all art into textures took at boot, for the debug overlay and tests. */
+  textureMs = 0;
   private settings: Settings = loadSettings();
   private ui: HTMLElement;
   private overlay: HTMLDivElement | null = null;
@@ -168,11 +172,12 @@ export class App {
     };
     const view = computeView(innerWidth, innerHeight, readSafeArea());
     this.scene.view = view;
+    const rs = renderScale(view, window.devicePixelRatio);
     this.game = new Phaser.Game({
       type: Phaser.WEBGL,
       parent: 'app',
-      width: view.width,
-      height: view.height,
+      width: Math.round(view.width * rs),
+      height: Math.round(view.height * rs),
       backgroundColor: '#1c2a33',
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
       render: { antialias: true, roundPixels: false },
@@ -181,7 +186,9 @@ export class App {
       scene: [],
     });
     await new Promise<void>((r) => this.game.events.once(Phaser.Core.Events.READY, () => r()));
+    const texStart = performance.now();
     await buildTextures(this.game);
+    this.textureMs = Math.round(performance.now() - texStart);
     this.game.scene.add('game', this.scene, true);
     (window as unknown as Record<string, unknown>).__fondue = this;
     window.addEventListener('resize', () => this.applyView());
@@ -204,8 +211,8 @@ export class App {
     const v = computeView(innerWidth, innerHeight, readSafeArea(), shared);
     // Alone there is nobody to stay in step with, so the field simply follows the screen.
     if (s instanceof HostSession && s.role === 'solo') s.sim.setFieldWidth(v.fieldW);
-    if (sameView(v, this.scene.view)) return;
-    this.game.scale.setGameSize(v.width, v.height);
+    // The device pixel ratio changes when a window moves to another monitor or the page is zoomed.
+    if (sameView(v, this.scene.view) && renderScale(v, window.devicePixelRatio) === this.scene.renderScale) return;
     this.scene.setView(v);
   }
 
