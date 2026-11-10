@@ -44,6 +44,8 @@ const headline = (p: Page) => p.locator('.panel h2').innerText().catch(() => '')
 
 for (const [label, query] of [['no added latency', ''], ['simulated latency', '&lat=45&jit=20&loss=0.02']] as const) {
   test(`co-op with two browsers, ${label}`, async ({ browser }) => {
+    // Three game windows start one after another; on GitHub's software-drawn machines that alone takes minutes.
+    if (process.env.CI) test.setTimeout(720_000);
     const { host, guest, errors, context } = await setupCoop(browser, query);
 
     // Both hands exist and each is visible on the other side.
@@ -135,7 +137,8 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     const code = await host.evaluate(() => (window as any).__fondue.code);
     const back = await context.newPage();
     await back.goto(`/?net=loopback&join=${code}${query}`);
-    await waitForGame(back);
+    // Rejoining right away, while the rest of the art still loads in the background, as a player would.
+    await waitForGame(back, { allArt: false });
     await back.fill('#name', 'Lenny');
     await back.click('button[data-a="doJoin"]');
     await waitFor(() => gameState(back), (v) => v?.day === 2, 10000);
