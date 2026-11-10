@@ -125,7 +125,8 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await waitFor(() => gameState(guest), (v) => v?.day === 2, 6000);
 
     // Disconnect: the game pauses, then the guest rejoins.
-    await waitFor(() => gameState(host), (v) => v?.phase === 'battle', 10000);
+    // The day banner runs in game time; on GitHub's software-drawn machines game time runs slower than the clock.
+    await waitFor(() => gameState(host), (v) => v?.phase === 'battle', process.env.CI ? 40000 : 10000);
     await guest.close();
     // A closed tab cannot say goodbye over BroadcastChannel; signal it the way a dropped link would.
     await host.evaluate(() => (window as any).__fondue.lobbyLink.onClose());

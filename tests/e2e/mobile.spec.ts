@@ -170,7 +170,8 @@ for (const d of DEVICES) {
     await page.click('#ready');
     await waitFor(() => gameState(page), (s) => s?.day === 2, 8000);
     await page.evaluate(() => { (window as any).__fondue.session.sim.s.gateHp = 0; });
-    await page.waitForSelector('button[data-a="restart"]', { timeout: 15000 });
+    // The fall of the gate plays in game time, which runs slower than the clock on GitHub's machines.
+    await page.waitForSelector('button[data-a="restart"]', { timeout: process.env.CI ? 45000 : 15000 });
     await check(page, d.name, 'gameover', false);
 
     expect(errors).toEqual([]);
