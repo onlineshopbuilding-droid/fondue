@@ -1,6 +1,8 @@
 import type { CharacterRig } from '../types';
 import { glint, lit, litTube, paint, stroke, tone } from '../shade';
-import { PAL, bead, blush, brassPin, brow, felt, fold, hand, litLeg, metal, oval, part, rim, rrect, seam } from './kit';
+import { MOUSE, PAL, bead, blush, brassPin, brow, felt, fold, hand, litLeg, metal, mouseEar, oval, part, rim, rrect, seam, snout, tail } from './kit';
+
+const C = MOUSE;
 
 const TORSO = 'M-7 -18 Q-10 -7 -9 4 Q0 7 9 4 Q10 -7 7 -18 Q0 -21 -7 -18 Z';
 const POUCH = 'M6 -2 L14 -2 L15 6 Q10 9 6 6 Z';
@@ -47,8 +49,10 @@ const head =
   // Neckerchief knotted at the front.
   felt('M-5.4 -1 Q0 3 5.4 -1 L5 4 Q0 7 -5 4 Z', PAL.rust, fold('M-3 3 Q0 4.6 3 3', PAL.rust, 0.9, 0.7), { outline: 2.4, shadow: 1, light: 0.6 }) +
   felt('M-6 3 L-9.4 9 L-5.6 8 L-4 4 Z', PAL.rust, '', { outline: 2, shadow: 0.8, light: 0.5 }) +
+  // Far ear behind the cap.
+  mouseEar(-8, -21.5, 6, C, { back: true }) +
   // Face.
-  felt(oval(-1, -9, 10.5), PAL.skin, paint('M-12 -9 H11 V-6.6 Q-1 -7.6 -12 -6.6 Z', tone(PAL.skin, -0.3), 0.5), { shadow: 3.6, light: 1.7 }) +
+  felt(oval(-1, -9, 10.5), C.fur, paint('M-12 -9 H11 V-6.6 Q-1 -7.6 -12 -6.6 Z', tone(C.fur, -0.3), 0.5), { shadow: 3.6, light: 1.7 }) +
   blush(-6.4, -1.4, 2.6, 1.8) +
   // Stitched ear flap of the cap.
   felt('M4 -11 L14 -11 L13 3 Q9 6 5 2 Z', PAL.woodD, seam('M6 -9 L12.2 -9 L11.6 1.2 Q9 3.4 6.6 1', PAL.creamD, 0.9, 0.8), { shadow: 1.6, light: 0.9, lightK: 0.3 }) +
@@ -62,16 +66,18 @@ const head =
       rim('M-9.6 -13 Q-8.4 -19.4 -2 -20.2', 1.4, 0.55),
     { shadow: 2.4, light: 1.4 },
   ) +
+  // Near ear, poking through a hole in the cap.
+  mouseEar(6.5, -20.5, 7.5, C) +
+  stroke('M0.8 -15.6 Q6 -12.8 12 -14.8', tone(PAL.wood, -0.45), 1.6, 0.9) +
   felt('M-11 -11 L-21 -7 L-11 -6 Z', PAL.woodD, '', { outline: 3, shadow: 1, light: 0.7, lightK: 0.35 }) +
   lit(rrect(-3, -22.4, 6, 3, 1.5), PAL.woodD, { outline: 1.8, shadow: 0.7, light: 0.4 }) +
+  // Long pointed muzzle with a pink nose and whiskers.
+  snout(-10.5, -0.6, 12, 7, C, { drop: 1.4 }) +
   // Aiming: front eye wide and focused, back eye squeezed shut.
   brow('M-11 -7.6 L-5.6 -6.4', 2) +
   bead(-8, -3.8, 1.9) +
   brow('M-4.2 -6.4 L0.8 -7.8', 2) +
   stroke('M-4 -3.6 Q-2 -4.8 0.2 -3.4', '#2b2118', 1.6) +
-  // Long pointed nose.
-  felt('M-11 -3 L-19 1 L-10 2 Z', PAL.skinD, '', { outline: 2, shadow: 1, light: 0.7, lightK: 0.38 }) +
-  glint(-15.4, -0.4, 0.6, '#fffaf0', 0.7) +
   // Tight mouth with the tongue poking out in concentration.
   stroke('M-9 5 Q-5.6 3.8 -2.4 4.4', '#2b2118', 1.8) +
   `<ellipse cx="-2.6" cy="5.4" rx="1.6" ry="1.2" fill="${TONGUE}" stroke="#2b2118" stroke-width="0.9"/>`;
@@ -96,24 +102,25 @@ const slingArm =
   // Sleeve with a cuff, hand gripping the fork.
   litTube('M0 0 L-22 -2', 4.5, PAL.forest, { shadow: 1.5, light: 0.8 }) +
   stroke('M-19 -4.8 L-19.4 0.6', tone(PAL.forest, -0.38), 1.4, 0.9) +
-  hand(-26, -2, 5, PAL.skin) +
+  hand(-26, -2, 5, C.fur) +
   brassPin(0, 0, 2.5);
 
-/** Slinger: long and thin, in a leather cap, sighting along a slingshot. */
+/** Slinger: a long, thin mouse in a leather cap, sighting along a slingshot. */
 export const slingerRig: CharacterRig = {
   parts: [
+    part('tail', 6, -31, 'legBack', [-6, -15, 35, 15], tail([0, 0], [12, 10], [25, 8], [28, -8], 5.6, 2.4, C.tail)),
     part(
       'armBack',
       4,
       -46,
       'armBack',
       [-10, -15, 24, 16],
-      litTube('M0 0 L13 6 L6 -4', 4.5, PAL.forestD, { shadow: 1.5, light: 0.8 }) + hand(5, -6, 4.4, PAL.skinD),
+      litTube('M0 0 L13 6 L6 -4', 4.5, PAL.forestD, { shadow: 1.5, light: 0.8 }) + hand(5, -6, 4.4, C.furD),
     ),
     part('legBack', 5, -32, 'legBack', [-17, -10, 12, 35], slingLeg(PAL.woodD, false)),
     part('legFront', -4, -32, 'legFront', [-17, -10, 12, 35], slingLeg(PAL.mustardD, true)),
     part('body', 0, -32, 'body', [-14, -25, 19, 12], body),
-    part('head', 0, -50, 'head', [-25, -26, 19, 13], head),
+    part('head', 0, -50, 'head', [-32, -33, 19, 18], head),
     part('armFront', -3, -44, 'armFront', [-46, -34, 10, 17], slingArm),
   ],
 };

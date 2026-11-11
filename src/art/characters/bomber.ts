@@ -1,6 +1,9 @@
 import type { CharacterRig } from '../types';
 import { glint, lit, litTube, paint, radial, stroke, tone } from '../shade';
-import { PAL, bead, blush, brassPin, brow, felt, fold, hand, litLeg, metal, oval, part, rim, rivet, rrect, seam } from './kit';
+import { PAL, RAT, bead, blush, brassPin, brow, felt, fold, hand, litLeg, metal, mouseEar, oval, part, rim, rivet, rrect, seam, snout, tail } from './kit';
+
+/** Heavy lifting is rat work. */
+const C = RAT;
 
 const BARREL = 'M-14 -22 Q-23 0 -14 22 L14 22 Q23 0 14 -22 Z';
 const TORSO = 'M-14 -26 Q-23 -12 -20 3 Q0 9 20 3 Q23 -12 14 -26 Q0 -31 -14 -26 Z';
@@ -90,16 +93,15 @@ const torso =
   glint(-2.6, -1.8, 0.8);
 
 const head =
-  // Ear.
-  lit(oval(13, -9, 4), PAL.skinD, { shadow: 1.5, light: 0.9 }) +
-  stroke('M14.4 -11 Q11.8 -10.6 12.2 -8.2 Q12.8 -6.6 14.2 -7', tone(PAL.skinD, -0.4), 1.1, 0.85) +
+  // Far ear behind the cap.
+  mouseEar(-9, -31, 6.5, C, { back: true }) +
   // Face, sooty from the last bang.
   felt(
     oval(-1, -11, 14),
-    PAL.skin,
+    C.fur,
     paint('M3 -13 Q9 -13 10 -7 Q6 -3 2 -6 Z', PAL.sootD, 0.4) +
       paint('M-14 -3 Q-9 -6.4 -5.6 -2.6 Q-9 -0.6 -14 -3 Z', PAL.sootD, 0.3) +
-      paint('M-20 -17 H20 V-13.6 Q0 -14.8 -20 -13.4 Z', tone(PAL.skin, -0.3), 0.5),
+      paint('M-20 -17 H20 V-13.6 Q0 -14.8 -20 -13.4 Z', tone(C.fur, -0.3), 0.5),
     { shadow: 5, light: 2.2 },
   ) +
   blush(-6.2, -3.8, 3.6, 2.4) +
@@ -116,6 +118,8 @@ const head =
   litTube('M-1 -31.2 L-1 -18.6', 2.6, PAL.mustardD, { outline: 1.6, shadow: 0.8, light: 0.5 }) +
   rivet(-1, -27.6, 0.9, PAL.ironL) +
   rivet(-1, -22.6, 0.9, PAL.ironL) +
+  // Near ear, poking out between cap and brim.
+  mouseEar(12.5, -26.5, 7.5, C) +
   // Brim.
   felt(rrect(-17.5, -20, 32.5, 6.2, 3.1), PAL.mustardD, seam('M-15 -17 H12.6', PAL.cream, 1, 0.7) + rim('M-15 -19 H12', 1, 0.45), {
     outline: 3.2,
@@ -129,9 +133,6 @@ const head =
   bead(-2, -7.8, 1.8) +
   brow('M-12.4 -11.4 Q-9.6 -14 -6.6 -12', 2) +
   brow('M-3.6 -12.4 Q-1.2 -13.6 1.6 -12.6', 2) +
-  // Nose with a soot smudge on the tip.
-  lit(oval(-15, -3, 4.5, 3.5), PAL.skinD, { shadow: 1.6, light: 1, lightK: 0.38 }) +
-  glint(-16.4, -4.4, 0.8, '#fffaf0', 0.75) +
   // Bushy beard with a gap-toothed grin.
   felt(
     BEARD,
@@ -143,7 +144,10 @@ const head =
   paint(MOUTH, '#3a1d18') +
   `<path d="M-11 3.3 Q-6.4 5.4 -0.8 3.4 L-1.4 4.6 Q-6.4 6.4 -10.6 4.4 Z" fill="${PAL.cream}" stroke="none"/>` +
   stroke('M-7.4 4.6 V6 M-4.4 4.6 V5.8', '#3a1d18', 0.9) +
-  `<path d="${MOUTH}" fill="none" stroke="#2b2118" stroke-width="1.3" stroke-linejoin="round"/>`;
+  `<path d="${MOUTH}" fill="none" stroke="#2b2118" stroke-width="1.3" stroke-linejoin="round"/>` +
+  // Long rat snout over the beard, sooty on top, whiskers hanging into the beard.
+  snout(-13.5, -1.8, 14, 9, C) +
+  paint('M-22 -5.4 Q-19 -6.6 -16 -5.6 Q-19 -4 -22 -5.4 Z', PAL.sootD, 0.4);
 
 const fistArm =
   litTube('M0 0 L-13 -5 L-20 -14', 9, PAL.rust, { shadow: 2.8, light: 1.4 }) +
@@ -152,11 +156,11 @@ const fistArm =
   stroke('M-21.2 -9.8 L-14.6 -15', '#fff3d1', 0.9, 0.35) +
   felt(oval(-12.6, -4.6, 3.4, 2.8), PAL.copper, seam(oval(-12.6, -4.6, 2.1, 1.6), PAL.cream, 0.9, 0.85), { outline: 1.5, shadow: 0.9, light: 0.6 }) +
   // Raised fist with knuckles.
-  hand(-22, -18, 7, PAL.skin) +
-  stroke('M-27.6 -20.6 Q-26.2 -23.2 -23.6 -23.4 M-26 -16.6 Q-24.2 -19.6 -21.2 -19.6', tone(PAL.skin, -0.38), 1.1, 0.75) +
+  hand(-22, -18, 7, C.fur) +
+  stroke('M-27.6 -20.6 Q-26.2 -23.2 -23.6 -23.4 M-26 -16.6 Q-24.2 -19.6 -21.2 -19.6', tone(C.fur, -0.38), 1.1, 0.75) +
   brassPin();
 
-/** Keg Hauler: stocky, with soot smudges and a fused keg strapped to its back. */
+/** Keg Hauler: a stocky rat, with soot smudges and a fused keg strapped to its back. */
 export const bomberRig: CharacterRig = {
   parts: [
     part(
@@ -165,13 +169,15 @@ export const bomberRig: CharacterRig = {
       -44,
       'armBack',
       [-14, -11, 14, 31],
-      litTube('M0 0 L1 15', 9, PAL.rustD, { shadow: 2.6, light: 1.3 }) + stroke('M-3.6 12.6 L5.8 12.4', tone(PAL.rustD, -0.35), 2, 0.9) + hand(1, 20, 6, PAL.skinD),
+      litTube('M0 0 L1 15', 9, PAL.rustD, { shadow: 2.6, light: 1.3 }) + stroke('M-3.6 12.6 L5.8 12.4', tone(PAL.rustD, -0.35), 2, 0.9) + hand(1, 20, 6, C.furD),
     ),
     part('keg', 23, -37, 'static', [-28, -54, 28, 30], keg),
+    // Bare ringed tail, hanging out under the keg.
+    part('tail', 12, -19, 'legBack', [-6, -14, 42, 15], tail([0, 0], [12, 9], [30, 8], [35, -8], 6.5, 2.4, C.tail, { rings: true })),
     part('legBack', 8, -20, 'legBack', [-24, -13, 17, 23], litLeg(20, 11, PAL.woodD, PAL.sootD)),
     part('legFront', -7, -20, 'legFront', [-24, -13, 17, 23], litLeg(20, 11, PAL.forestD, PAL.sootD)),
     part('body', 0, -22, 'body', [-26, -35, 26, 13], torso),
-    part('head', 0, -47, 'head', [-25, -38, 24, 14], head),
+    part('head', 0, -47, 'head', [-36, -42, 24, 18], head),
     part('armFront', -11, -43, 'armFront', [-40, -36, 14, 14], fistArm),
   ],
 };
