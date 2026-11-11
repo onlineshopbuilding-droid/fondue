@@ -1,5 +1,10 @@
 name: Deploy to GitHub Pages
 
+# One site, several builds:
+#   /fondue/          the game from main
+#   /fondue/classic/  the frozen alpha from the branch "classic" (tag v0-alpha)
+# Each build needs its own base path, otherwise its files do not load.
+# After a change on "classic", start this workflow by hand (Run workflow, branch main).
 on:
   push:
     branches: [main]
@@ -16,6 +21,8 @@ concurrency:
 
 jobs:
   build:
+    # The Pages environment only accepts deployments that run from main.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +33,18 @@ jobs:
       - run: npm ci
       - run: npx vitest run
       - run: npm run build
+
+      - name: Check out the classic version
+        uses: actions/checkout@v4
+        with:
+          ref: classic
+          path: .classic-src
+      - name: Build the classic version into /classic/
+        working-directory: .classic-src
+        run: |
+          npm ci
+          npx vite build --base=/fondue/classic/ --outDir ../dist/classic --emptyOutDir
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
