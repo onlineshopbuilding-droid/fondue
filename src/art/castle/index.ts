@@ -11,6 +11,7 @@ import { groundMeadow, groundCanyon, groundMarsh, groundSnow } from './ground';
 import { footMeadow, footCanyon, footMarsh, footSnow } from './foreground';
 import { bolter, mortar, frost, bellows, stomper, shrine, wheelRamp } from './mounts';
 import { potLedge, potRearBack, potRearFront, cheese, steam } from './cauldron';
+import { potMound } from './mound';
 // Gates and KEEP_PROPS are evaluated here, between cauldron and perch, exactly as in the old single file.
 export { KEEP_PROPS } from './keepProps';
 import { hookChain, perchHook, eagleHead } from './perch';
@@ -72,6 +73,7 @@ export const CASTLE_ART: Record<string, Art> = {
   mountWheelReady: mount(wheelRamp(true)),
   mountWheelEmpty: mount(wheelRamp(false)),
   potLedge,
+  potMound,
   potRearBack,
   potRearFront,
   cheese,

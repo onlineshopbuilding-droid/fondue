@@ -367,3 +367,139 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
   .toast.tip { box-shadow: inset 0 1px 0 rgba(255, 230, 250, 0.22), inset 0 0 0 1.5px rgba(255, 246, 223, 0.18), 0 2px 0 rgba(20, 12, 8, 0.5); }
   .net-badge { top: 46px; right: 8px; font-size: 11px; padding: 1px 6px; }
 }
+
+/* ------------------------------------------------------------------------------------------- */
+/* Transition menus of the big update: campaign list, armoury, market list, rooms, win screen.  */
+/* ------------------------------------------------------------------------------------------- */
+
+/* The bottom line of every page: going back on the left, going on on the right. */
+.row.navrow { justify-content: space-between; margin-top: 14px; flex-wrap: nowrap; }
+.navrow .nav-back, .navrow .nav-forward { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.navrow .nav-forward { justify-content: flex-end; margin-left: auto; }
+
+.note-line { text-align: center; }
+.star { color: var(--mustard); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; }
+
+/* Main menu: progress line, big ways in, small extras. */
+.progress { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 26px; margin-bottom: 14px; text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8); }
+.menu-main { display: flex; flex-direction: column; gap: 12px; }
+.menu-more { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+
+/* Lists of cards: section titles run across the whole width. */
+.items .sect {
+  grid-column: 1 / -1; font-family: 'Lilita One', sans-serif; font-size: 22px; color: var(--wood-dark);
+  border-bottom: 3px solid rgba(94, 59, 32, 0.35); padding: 6px 2px 2px; margin-top: 4px;
+}
+.item .tier { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px; color: var(--teal); margin-left: 4px; }
+.item .why { font-size: 13px; font-weight: 800; color: var(--rust); margin: 0 6px; }
+.item .note-now { color: var(--teal); }
+.item .note-next { opacity: 0.8; }
+.item.dim { opacity: 0.8; }
+.item .foot { gap: 6px; flex-wrap: wrap; }
+.day-line { text-align: center; font-weight: 800; font-size: 16px; margin: 0 0 8px; color: var(--wood-dark); }
+
+/* Campaign list: one finger-sized line per level. */
+.items.levels { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+button.level {
+  --b: #f3e6c4; display: flex; align-items: center; gap: 10px; text-align: left; color: var(--ink); text-shadow: none;
+  font-size: 18px; padding: 8px 12px; min-height: 48px;
+}
+button.level.done { --b: #cfe6c6; }
+button.level.current { --b: var(--mustard); }
+button.level:disabled { opacity: 0.45; }
+.level .lv-num { font-size: 24px; min-width: 40px; text-align: center; color: var(--plum); }
+.level .lv-name { flex: 1; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; }
+.level .lv-tag { font-size: 14px; color: var(--wood-dark); }
+.boss-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 6px; background: var(--rust); color: var(--cream); font-family: 'Lilita One', sans-serif; font-size: 13px; }
+
+/* Win screen. */
+.won-name { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 28px; color: var(--plum); }
+.won-stars { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 72px; line-height: 1.1; color: var(--ink); }
+.won-stars .star { -webkit-text-stroke-width: 3px; }
+ul.unlocks { list-style: none; padding: 0; margin: 8px 0; text-align: center; font-family: 'Lilita One', sans-serif; font-size: 24px; color: var(--teal); }
+p.story { text-align: center; font-style: italic; }
+
+/* Co-op rooms: two columns, and the live list of who is in. */
+.panel.room { width: min(860px, 100%); }
+.room-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; }
+.room-col { display: flex; flex-direction: column; gap: 8px; }
+.room-label { text-align: center; margin: 0; }
+.room-title { font-family: 'Lilita One', sans-serif; font-size: 18px; color: var(--wood-dark); }
+.room-box { border: 3px solid var(--ink); border-radius: 12px; padding: 6px 12px; background: linear-gradient(180deg, #fffdf6 0%, #fbf3df 100%); }
+ul.seats { list-style: none; margin: 4px 0 0; padding: 0; }
+.seat { font-weight: 800; font-size: 18px; padding: 3px 0; border-top: 2px dashed rgba(138, 90, 51, 0.25); }
+.seat:first-child { border-top: none; }
+.seat.free { opacity: 0.5; font-style: italic; }
+.seat .you { font-size: 14px; color: var(--teal); }
+.plan-toggle { justify-content: flex-start; }
+@media (max-width: 600px) { .room-grid { grid-template-columns: 1fr; } }
+
+/* Options: profile export and import. */
+.panel.options { width: min(640px, 100%); }
+label.field.check { flex-direction: row; align-items: center; gap: 8px; }
+textarea { width: 100%; resize: vertical; font-size: 14px; }
+.profile-box { display: flex; flex-direction: column; gap: 6px; }
+.profile-box textarea { font: 600 13px monospace; word-break: break-all; }
+
+/* "New enemy" window: on top of the field, the game goes on; a tap closes it. */
+.enemy-popup {
+  position: absolute; top: 12%; left: 50%; transform: translateX(-50%); z-index: 15; pointer-events: auto; cursor: pointer;
+  display: flex; align-items: center; gap: 16px; width: min(560px, 86vw); padding: 12px 18px;
+  background: var(--parchment); border: 4px solid var(--ink); border-radius: 16px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.8), 0 6px 0 var(--wood-dark), 0 9px 0 var(--ink), 0 16px 30px rgba(10, 8, 22, 0.45);
+}
+.enemy-popup img { height: 110px; max-width: 120px; object-fit: contain; flex: none; }
+.ep-kicker { font-family: 'Lilita One', sans-serif; color: var(--rust); font-size: 16px; }
+.ep-title { font-family: 'Lilita One', sans-serif; font-size: 30px; line-height: 1; }
+.enemy-popup p { margin: 4px 0; font-size: 16px; }
+.ep-hint { font-size: 12px; opacity: 0.6; font-weight: 800; }
+
+/* Developer menu: a header that stays, number fields, a confirmation row. */
+#tuning .dev-head { position: sticky; top: -12px; z-index: 1; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 246, 223, 0.98); margin: -12px -12px 6px; padding: 8px 12px; border-bottom: 2px solid var(--ink); }
+#tuning .dev-head h3 { margin: 0; }
+#tuning .dev-section:first-of-type { border-top: none; margin-top: 0; }
+#tuning .dev-num { display: inline-flex; align-items: center; gap: 4px; }
+#tuning .dev-num input { width: 64px; font: 800 16px 'Nunito', sans-serif; padding: 4px 6px; border: 2px solid var(--ink); border-radius: 8px; }
+#tuning .dev-check { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+#tuning .dev-confirm { border: 2px solid var(--rust); border-radius: 10px; padding: 6px 8px; width: 100%; }
+#tuning .dev-confirm .navrow { margin-top: 6px; }
+
+@media (pointer: coarse) {
+  #tuning { width: min(380px, 70vw); -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  #tuning .dev-num input, #tuning input[type='checkbox'] { min-height: 44px; min-width: 44px; }
+  #tuning input[type='range'] { height: 44px; }
+  textarea { min-height: 44px; }
+  button.level { min-height: 48px; }
+}
+
+@media (max-height: 520px) {
+  .progress { font-size: 16px; margin-bottom: 4px; }
+  .menu-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; }
+  .menu-more { margin-top: 6px; gap: 6px; }
+  .row.navrow { margin-top: 5px !important; }
+  .items .sect { font-size: 15px; padding: 3px 2px 1px; border-bottom-width: 2px; }
+  .item .why { font-size: 11px; }
+  .item .tier { font-size: 12px; }
+  .day-line { font-size: 12px; margin: 0 0 4px; flex: none; text-align: left; }
+  .items.levels { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  button.level { font-size: 14px; padding: 3px 8px; gap: 6px; }
+  .level .lv-num { font-size: 18px; min-width: 28px; }
+  .level .lv-name { font-size: 13px; }
+  .level .lv-tag { font-size: 12px; }
+  .won-name { font-size: 18px; }
+  .won-stars { font-size: 40px; }
+  ul.unlocks { font-size: 16px; margin: 2px 0; }
+  .room-grid { gap: 4px 14px; }
+  .room-col { gap: 4px; }
+  .room-title { font-size: 14px; }
+  .room-box { padding: 2px 10px; border-width: 2px; }
+  .seat { font-size: 14px; padding: 1px 0; }
+  .options h3 { margin-top: 6px; }
+  .options .stack { grid-template-columns: 1fr 1fr; }
+  .profile-box textarea { font-size: 11px; }
+  .enemy-popup { top: calc(46px + env(safe-area-inset-top)); padding: 6px 12px; gap: 10px; border-width: 3px; }
+  .enemy-popup img { height: 70px; max-width: 80px; }
+  .ep-title { font-size: 20px; }
+  .ep-kicker { font-size: 12px; }
+  .enemy-popup p { font-size: 12px; }
+}

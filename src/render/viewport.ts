@@ -1,4 +1,4 @@
-import { WORLD, fieldForAspect } from '../config/world';
+import { WORLD, fieldForAspect } from '../config/field';
 
 export interface SafeArea { left: number; right: number; top: number; bottom: number; }
 

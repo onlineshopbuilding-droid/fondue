@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { CLOUDS, LANDSCAPE_ART, type SkyStops } from '../art/landscapes';
 import { rng } from '../art/shade';
-import { DAY, DAYS_PER_LANDSCAPE, LANDSCAPES, type Landscape } from '../config/waves';
-import { WORLD } from '../config/world';
+import type { Landscape } from '../config/waves';
+import { WORLD } from '../config/field';
 import { CLOUD_SCALE, LAND_SCALE, cloudKey, landscapeKey, landscapeReady, wantLandscape } from './textures';
 import type { GameView } from './viewport';
 
@@ -23,9 +23,8 @@ const SKY_STOPS = [-300, 200, 470, 575];
 const HAZE = { far: 0.6, mid: 0.38, near: 0.18, ground: 0 } as const;
 type Layer = keyof typeof HAZE;
 
-export function landscapeForDay(day: number): Landscape {
-  return LANDSCAPES[Math.floor((Math.max(1, day) - 1) / DAYS_PER_LANDSCAPE) % LANDSCAPES.length];
-}
+/** A night level is dark from the start: the light as late in the evening as this. */
+const NIGHT_LEVEL_U = 0.93;
 
 const hexToRgb = (h: string) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const mix = (a: number[], b: number[], f: number) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
@@ -235,8 +234,8 @@ export class Background {
   /** The landscape on screen; the keep dresses itself for this one. */
   get shown(): Landscape { return this.land ?? 'meadow'; }
 
-  setDay(day: number) {
-    const land = landscapeForDay(day);
+  /** Shows a landscape (from `meta.today.landscape`). */
+  setLandscape(land: Landscape) {
     if (land === this.land) return;
     // Later landscapes are prepared in the background after boot; until then the old one stays.
     if (!landscapeReady(land)) { wantLandscape(land); return; }
@@ -265,8 +264,11 @@ export class Background {
     return dusk.map((c, i) => mix(c, night[i], f));
   }
 
-  /** dayT in seconds; handX for a small parallax with the pointer. */
-  update(dayT: number, handX: number, dt: number) {
+  /**
+   * dayT and daySeconds in seconds (`meta.today.seconds`); `nightLevel` keeps the whole day dark;
+   * handX for a small parallax with the pointer.
+   */
+  update(dayT: number, daySeconds: number, nightLevel: boolean, handX: number, dt: number) {
     this.clock += dt;
     for (const c of this.clouds) {
       c.img.x -= c.v * dt;
@@ -280,7 +282,7 @@ export class Background {
     this.midEast.x = this.mid.x + this.mid.displayWidth;
     this.nearEast.x = this.near.x + this.near.displayWidth;
 
-    const u = Math.min(1, dayT / DAY.seconds);
+    const u = nightLevel ? NIGHT_LEVEL_U : daySeconds > 0 ? Math.min(1, dayT / daySeconds) : 0;
     const sky = this.skyAt(u);
     const starA = Math.max(0, (u - 0.72) / 0.2);
     this.stars.setAlpha(starA);

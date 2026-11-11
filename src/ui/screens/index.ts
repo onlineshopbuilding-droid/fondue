@@ -1,5 +1,8 @@
 // The directory of all HTML screens; the ScreenManager is built from this list.
 // A new screen is a new file in this folder, one line here and its id in `ScreenId` (screen.ts).
+import { armouryScreen } from './armoury';
+import { campaignScreen } from './campaign';
+import { coopScreen } from './coop';
 import { creditsScreen } from './credits';
 import { gameoverScreen } from './gameover';
 import { helpScreen } from './help';
@@ -15,8 +18,9 @@ import { resultsScreen } from './results';
 import { scoresScreen } from './scores';
 import type { Screen } from './screen';
 import { shopScreen } from './shop';
+import { wonScreen } from './won';
 
 export const SCREENS: readonly Screen[] = [
-  mainScreen, playScreen, hostScreen, joinScreen, optionsScreen, helpScreen, scoresScreen, creditsScreen,
-  resultsScreen, shopScreen, gameoverScreen, pauseScreen, lostHostScreen, lostGuestScreen,
+  mainScreen, playScreen, coopScreen, campaignScreen, armouryScreen, hostScreen, joinScreen, optionsScreen, helpScreen,
+  scoresScreen, creditsScreen, resultsScreen, shopScreen, gameoverScreen, wonScreen, pauseScreen, lostHostScreen, lostGuestScreen,
 ];

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
-import { DAY } from '../config/waves';
-import { WORLD } from '../config/world';
+import { WORLD } from '../config/field';
 import type { ViewState } from '../net/snapshot';
+import type { Meta } from '../sim/types';
 import { propKey, TEX_SCALE } from './textures';
 import { computeView, type GameView } from './viewport';
 
@@ -16,6 +16,9 @@ const WOOD_FACE = 0x5a3a22;
 const WOOD_LIGHT = 0x7d5434;
 const WOOD_LIP = 0x3a2516;
 const WOOD_GRAIN = 0x3f2817;
+/** Golden Fondue running: the coin socket gets a pulsing ring that runs down with the time left. */
+const RUSH_COLOR = 0xffd34d;
+const RUSH_RADIUS = 23;
 
 /** Gate bar colours: fill, its shaded lower half and the gloss tint. */
 const BAR = {
@@ -87,6 +90,10 @@ export class Hud {
   private gateText: Phaser.GameObjects.Text;
   private dayText: Phaser.GameObjects.Text;
   private sun: Phaser.GameObjects.Graphics;
+  private rush: Phaser.GameObjects.Graphics;
+  /** Longest Golden Fondue time seen since it started, for the countdown ring. */
+  private rushMax = 0;
+  private dayLine = '';
   private shown = 0;
   private bump = 0;
   private drawnFrac = -1;
@@ -105,6 +112,7 @@ export class Hud {
     this.centre = box();
 
     const leftPlate = scene.add.graphics();
+    this.rush = scene.add.graphics();
     // Nearly solid: the flags on the top of a big keep pass behind this plate.
     plank(leftPlate, 18, 8, 318, 52, 0.94);
     socket(leftPlate, this.goldPos.x, this.goldPos.y - 1, 19);
@@ -113,7 +121,7 @@ export class Hud {
     this.gold = scene.add.text(this.goldPos.x + 24, this.goldPos.y, '0', small).setOrigin(0, 0.5);
     const offering = scene.add.image(this.offeringPos.x, this.offeringPos.y, propKey('offering')).setScale(1.2 / TEX_SCALE);
     this.offerings = scene.add.text(this.offeringPos.x + 24, this.offeringPos.y, '0', small).setOrigin(0, 0.5);
-    this.left.add([leftPlate, coin, this.gold, offering, this.offerings]);
+    this.left.add([leftPlate, this.rush, coin, this.gold, offering, this.offerings]);
 
     const rightPlate = scene.add.graphics();
     // Solid: the chain of the eagle hook runs behind this plate.
@@ -170,7 +178,7 @@ export class Hud {
   pauseDiameterCss() { return this.pauseRadius() * 2 * this.view.cssPerUnit; }
   bottomCss() { return (this.left.y + PLATE_BOTTOM * this.left.scaleY) * this.view.cssPerUnit; }
 
-  update(v: ViewState, dt: number) {
+  update(v: ViewState, meta: Meta | null, dt: number) {
     if (Math.round(this.shown) !== v.gold) this.bump = 1;
     this.shown += (v.gold - this.shown) * Math.min(1, dt * 12);
     if (Math.abs(this.shown - v.gold) < 1) this.shown = v.gold;
@@ -184,10 +192,42 @@ export class Hud {
     if (frac !== this.drawnFrac) { this.drawnFrac = frac; this.drawGateBar(frac); }
     this.gateText.setText(`${Math.ceil(v.gateHp)}/${v.gateMax}`);
 
-    this.dayText.setText(v.nightfall ? `NIGHT ${v.day}: ${v.enemies.length} LEFT` : `DAY ${v.day}`);
-    const u = Math.min(1, v.dayT / DAY.seconds);
+    const line = this.dayLabel(v, meta);
+    if (line !== this.dayLine) {
+      this.dayLine = line;
+      this.dayText.setText(line).setFontSize(line.length > 18 ? 22 : 26);
+    }
+    const seconds = meta?.today.seconds ?? 0;
+    const u = seconds > 0 ? Math.min(1, v.dayT / seconds) : 0;
     const key = Math.round(u * 400) + (v.nightfall ? 1000 : 0);
     if (key !== this.drawnDay) { this.drawnDay = key; this.drawDayTrack(u, v.nightfall); }
+    this.drawRush(v.goldRushT);
+  }
+
+  /** "LEVEL 7 · DAY 2/5" in the campaign, "DAY 12" without an end; the count of raiders left after nightfall. */
+  private dayLabel(v: ViewState, meta: Meta | null): string {
+    const level = meta?.rules.level ?? null;
+    const last = meta?.rules.lastDay ?? null;
+    const day = last !== null ? `${v.day}/${last}` : `${v.day}`;
+    if (v.nightfall) return level !== null ? `LEVEL ${level} · NIGHT ${day}: ${v.enemies.length} LEFT` : `NIGHT ${v.day}: ${v.enemies.length} LEFT`;
+    return level !== null ? `LEVEL ${level} · DAY ${day}` : `DAY ${day}`;
+  }
+
+  /** While the Golden Fondue pays extra: a pulsing golden ring round the coin that runs down. */
+  private drawRush(t: number) {
+    const g = this.rush;
+    g.clear();
+    if (t <= 0) { this.rushMax = 0; return; }
+    if (t > this.rushMax) this.rushMax = t;
+    const left = this.rushMax > 0 ? t / this.rushMax : 0;
+    const pulse = 0.55 + 0.45 * Math.sin(performance.now() * 0.012);
+    const { x, y } = this.goldPos;
+    g.fillStyle(RUSH_COLOR, 0.18 + pulse * 0.16);
+    g.fillCircle(x, y - 1, RUSH_RADIUS + 5);
+    g.lineStyle(4, RUSH_COLOR, 1);
+    g.beginPath();
+    g.arc(x, y - 1, RUSH_RADIUS, -Math.PI / 2, -Math.PI / 2 + left * Math.PI * 2, false);
+    g.strokePath();
   }
 
   /** Gate health: a carved trough with a glossy fill that turns amber, then red. */

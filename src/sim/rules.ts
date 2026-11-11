@@ -130,6 +130,9 @@ export interface RunSetup {
 export interface RunResult {
   runId: string;
   won: boolean;
+  /** A developer tool shaped this run: no scores, no stars. */
+  devRun: boolean;
+  names: string[];
   /** Last day that was started. */
   day: number;
   score: number;

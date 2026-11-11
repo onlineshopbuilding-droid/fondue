@@ -3,23 +3,30 @@ import '../render/glFix';
 import Phaser from 'phaser';
 import { PROPS } from '../art/props';
 import { AudioEngine } from '../audio/audio';
-import { ENEMIES } from '../config/enemies';
-import { WEAPON_SLOTS } from '../config/shop';
-import { fieldForAspect } from '../config/world';
+import { FLAG_DEFS } from '../config/flags';
+import { fieldForAspect } from '../config/field';
+import { STATION_IDS } from '../config/keep';
+import { SLOT_COUNT } from '../config/slots';
+import { TUNING_DEFAULT, type Tuning } from '../config/tuning';
+import { WEAPONS, weaponById } from '../config/weapons';
+import { DEFAULT_WORLD, levelOf, worldById } from '../config/worlds';
 import { HostSession, type Session } from '../game/session';
-import { addScore, loadSettings, saveSettings, type Settings } from '../game/storage';
+import { CAMPAIGN, ENDLESS, MODES, TUTORIAL, modeOf, syncUnlocks, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from '../modes';
 import type { ViewState } from '../net/snapshot';
+import type { RoomPlan } from '../net/protocol';
 import { normalizeRoomCode, type Transport } from '../net/transport';
+import { LocalProfileStore, MemoryProfileStore, Profile, type ProfileSettings, type ProfileStore } from '../profile';
 import { GameScene } from '../render/scene';
 import { allArtReady, buildTextures } from '../render/textures';
 import { RIGS } from '../art/characters';
 import { computeView, readSafeArea, renderScale, sameView } from '../render/viewport';
+import type { RunResult, RunRules, RunSetup } from '../sim/rules';
 import type { Meta } from '../sim/types';
-import { ownsSlot } from '../sim/keep';
-import { LOADING_TIPS, STATION_TIPS, WEAPON_TIPS } from './content';
+import { FIRST_FIGHT_TIP, LOADING_TIPS, STATION_TIPS, weaponTip } from './content';
 import { BUILD, CoopRoom, type CoopRoomHost } from './coop/room';
+import { EnemyPopup } from './enemyPopup';
 import { SCREENS } from './screens';
-import type { ScreenContext } from './screens/context';
+import type { PendingRun, ScreenContext } from './screens/context';
 import { ScreenManager, type ScreenId } from './screens/screen';
 import { TuningPanel } from './tuningPanel';
 
@@ -28,11 +35,32 @@ const UPRIGHT_PHONE = '(orientation: portrait) and (pointer: coarse)';
 
 const LOGO_HOLD_MS = 700;
 
-/** The entry point: boots Phaser, owns the session and the settings, and keeps the screens in step with the game. */
+/** What started the current solo run, so "Try again" can start it once more. */
+interface RunPick { mode: string; choice: RunChoice }
+
+/** Reads the profile the page asks for: a throw-away one for tests, an imported one, or the saved one. */
+async function loadProfile(params: URLSearchParams): Promise<{ profile: Profile; temporary: boolean; importFailed: boolean }> {
+  const code = params.get('profile');
+  if (params.get('fresh') === '1' || code) {
+    const profile = await Profile.load(new MemoryProfileStore());
+    let importFailed = false;
+    if (code) {
+      try { profile.importCode(code); } catch { importFailed = true; }
+    }
+    return { profile, temporary: true, importFailed };
+  }
+  const store: ProfileStore = new LocalProfileStore();
+  return { profile: await Profile.load(store), temporary: false, importFailed: false };
+}
+
+/** The entry point: loads the profile, boots Phaser, owns the session, and keeps the screens in step with the game. */
 export class App implements ScreenContext, CoopRoomHost {
   game!: Phaser.Game;
   scene!: GameScene;
   session: Session | null = null;
+  profile!: Profile;
+  temporaryProfile = false;
+  readonly world = DEFAULT_WORLD;
   readonly audio = new AudioEngine();
   /** How long turning all art into textures took at boot, for the debug overlay and tests. */
   textureMs = 0;
@@ -40,28 +68,32 @@ export class App implements ScreenContext, CoopRoomHost {
   get artReady(): boolean { return allArtReady(); }
   /** The raw art, so the art test can check it in the built game as well as on the dev server. */
   readonly art = { rigs: RIGS, props: PROPS };
-  readonly settings: Settings = loadSettings();
   readonly params = new URLSearchParams(location.search);
   readonly coop = new CoopRoom(this);
-  /** Day the next game starts on; set from the developer menu, 1 for a normal run. */
+  /** Day the next endless game starts on; set from the developer menu, 1 for a normal run. */
   startDay = 1;
   loadingTip = LOADING_TIPS[0];
+  /** What the run that just ended brought; the result screens show it. */
+  reward: Reward | null = null;
+  result: RunResult | null = null;
+  resultRules: RunRules | null = null;
+  readonly popup: EnemyPopup;
   private ui: HTMLElement;
   private screens: ScreenManager;
   private toasts: HTMLDivElement;
   private badge: HTMLDivElement;
   private debugEl: HTMLDivElement | null = null;
-  private tuning: TuningPanel;
-  private shownWeaponTips = new Set<string>();
+  private tuning!: TuningPanel;
+  private lastPick: RunPick | null = null;
 
   private lastPhase = '';
   private lastMetaRev = -1;
-  private scoreSaved = false;
-  private tipShownDay = 0;
-  private lastSavedRun = '';
+  private handledRun = '';
+  private bannerKey = '';
   private lastPurse = '';
   private lostToastShown = false;
 
+  get settings(): Readonly<ProfileSettings> { return this.profile.data.settings; }
   /** The screen on show; tests read this. */
   get screen(): ScreenId { return this.screens.current; }
   /** Tests reach the host's link to the guest and the room code here. */
@@ -74,27 +106,46 @@ export class App implements ScreenContext, CoopRoomHost {
     this.toasts.className = 'toast-area';
     this.ui.appendChild(this.toasts);
     this.screens = new ScreenManager(this.ui, this.toasts, SCREENS, this);
+    this.popup = new EnemyPopup(this.ui);
     this.badge = document.createElement('div');
     this.badge.className = 'net-badge';
     this.badge.style.display = 'none';
     this.ui.appendChild(this.badge);
+  }
+
+  /** Everything that needs the profile; runs once it is loaded. */
+  private wireUp() {
     this.tuning = new TuningPanel(this.ui, {
       values: () => this.session?.meta()?.tuning ?? this.settings.tuning,
       canEdit: () => this.session?.role !== 'guest',
       apply: (t) => {
-        this.settings.tuning = t;
-        saveSettings(this.settings);
+        this.profile.updateSettings({ tuning: t });
         if (this.session instanceof HostSession) this.session.sim.setTuning(t);
       },
       flags: () => this.session?.meta()?.flags ?? this.settings.flags,
       setFlag: (id, value) => {
-        this.settings.flags = { ...this.settings.flags, [id]: value };
-        saveSettings(this.settings);
-        if (this.session instanceof HostSession) this.session.sim.setFlags(this.settings.flags);
+        this.profile.updateSettings({ flags: { [id]: value } });
+        if (this.session instanceof HostSession) this.session.sim.setFlags({ ...this.settings.flags });
       },
       startDay: () => this.startDay,
       setStartDay: (day) => { this.startDay = day; if (this.screen === 'play' || this.screen === 'host') this.show(this.screen); },
-      startSoloNow: () => this.startSolo(),
+      startQuickEndless: () => this.startEndless(),
+      profileSummary: () => `★ ${this.profile.data.stars} · levels won: ${this.profile.highestLevelDone(this.world)} · hand tier ${this.profile.data.handTier}${this.temporaryProfile ? ' · test profile' : ''}`,
+      addStars: (n) => { this.profile.addStars(n); this.redrawMenus(); },
+      unlockEverything: () => { this.unlockEverything(); this.redrawMenus(); },
+      replayTutorial: () => { this.profile.resetTutorial(); this.startTutorial(); },
+      resetProfile: () => {
+        this.profile.reset();
+        syncUnlocks(this.profile, this.world);
+        this.applyAudioSettings();
+        this.toast('Profile erased');
+        this.redrawMenus();
+      },
+      jumpTo: (level, day) => {
+        const max = worldById(this.world).campaign.length;
+        this.startSoloRun(CAMPAIGN, { world: this.world, level: Math.max(1, Math.min(max, level)), day });
+      },
+      levelCount: () => worldById(this.world).campaign.length,
     });
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
@@ -110,6 +161,19 @@ export class App implements ScreenContext, CoopRoomHost {
       this.audio.resume();
       if (!this.session) this.audio.startMusic('menu');
     });
+  }
+
+  /** Menus that show stars or unlocks are redrawn after a developer tool changed the profile. */
+  private redrawMenus() {
+    if (['main', 'armoury', 'campaign', 'options'].includes(this.screen)) this.show(this.screen);
+  }
+
+  /** Developer tool: every weapon, slot and offering site, as if the campaign were far along. */
+  private unlockEverything() {
+    for (const w of WEAPONS) if (w.enabled) this.profile.unlockWeapon(w.id);
+    for (let i = 0; i < SLOT_COUNT; i++) this.profile.unlockSlot(i);
+    for (const s of STATION_IDS) this.profile.unlockStation(s);
+    this.toast('Everything unlocked');
   }
 
   /** Phones have no F1: holding the logo in the main menu opens the developer menu. */
@@ -152,6 +216,15 @@ export class App implements ScreenContext, CoopRoomHost {
   }
 
   async boot() {
+    // The profile comes first: settings, name and progress decide what the first screen is.
+    const loaded = await loadProfile(this.params);
+    this.profile = loaded.profile;
+    this.temporaryProfile = loaded.temporary;
+    syncUnlocks(this.profile, this.world);
+    (window as unknown as Record<string, unknown>).__fondue = this;
+    this.wireUp();
+    if (this.params.get('relay')) this.profile.updateSettings({ relayAddress: this.params.get('relay')! });
+
     await Promise.all([
       document.fonts.load('30px "Lilita One"'),
       document.fonts.load('600 20px "Nunito"'),
@@ -184,18 +257,25 @@ export class App implements ScreenContext, CoopRoomHost {
     await buildTextures(this.game);
     this.textureMs = Math.round(performance.now() - texStart);
     this.game.scene.add('game', this.scene, true);
-    (window as unknown as Record<string, unknown>).__fondue = this;
     window.addEventListener('resize', () => this.applyView());
 
-    if (this.params.get('relay')) this.settings.relayAddress = this.params.get('relay')!;
     const invite = this.params.get('join');
     if (invite) {
+      // A friend's link goes straight into their room; the tutorial waits for the next solo start.
       this.show('join');
       const input = this.query<HTMLInputElement>('#code');
       if (input) input.value = normalizeRoomCode(invite);
+    } else if (this.params.get('tutorial') === '1' || this.tutorialDue()) {
+      this.startTutorial();
     } else {
       this.show('main');
     }
+    if (loaded.importFailed) this.toast('The profile code in the address is broken. Started with an empty test profile.', '', 5000);
+  }
+
+  /** A new player meets the tutorial before anything else, unless the page asks for the menu (tests). */
+  private tutorialDue(): boolean {
+    return !this.profile.data.tutorialDone && this.params.get('menu') !== '1';
   }
 
   /** Follows window resizes and phone rotation. */
@@ -218,15 +298,15 @@ export class App implements ScreenContext, CoopRoomHost {
   }
 
   private applyAudioSettings() {
-    this.audio.setMusicVolume(this.settings.musicVolume);
-    this.audio.setSfxVolume(this.settings.sfxVolume);
-    this.audio.setMuted(this.settings.muted);
+    const s = this.settings;
+    this.audio.setMusicVolume(s.musicVolume);
+    this.audio.setSfxVolume(s.sfxVolume);
+    this.audio.setMuted(s.muted);
   }
 
-  commitSettings() {
-    saveSettings(this.settings);
-    this.applyAudioSettings();
-  }
+  commitSettings() { this.applyAudioSettings(); }
+
+  openDevMenu() { if (!this.tuning.open) this.tuning.toggle(); }
 
   private onKey(e: KeyboardEvent) {
     if (e.key === 'F1' || e.key === '^') { e.preventDefault(); this.tuning.toggle(); }
@@ -268,6 +348,7 @@ export class App implements ScreenContext, CoopRoomHost {
       this.lastMetaRev = meta.rev;
       if (this.screen === 'results' || this.screen === 'shop') this.show(this.screen);
     }
+    if (meta) this.checkResult(meta);
     // A guest learns the field width from the host once the game has started.
     if (meta && s.role !== 'solo' && meta.fieldW !== this.scene.view.fieldW) this.applyView();
     const purse = `${view.gold}/${view.offerings}`;
@@ -277,58 +358,110 @@ export class App implements ScreenContext, CoopRoomHost {
     }
     this.syncPause(view, meta);
     this.syncConnection();
-    if (view.phase === 'banner' && meta && this.tipShownDay !== view.day) {
-      this.tipShownDay = view.day;
-      if (view.day === 1) this.toast('Hold the gate until the sun has set and the last raider is gone. Gold buys upgrades between days.', 'tip', 5500);
-      for (const t of meta.newTipTypes) this.toast(ENEMIES[t].tip, 'tip', 5500);
-      this.tipNewWeapons(meta);
-    }
+    if (view.phase === 'banner' && meta) this.onBanner(view, meta);
   }
 
-  /** Each weapon explains itself the first time it stands on the keep. */
-  private tipNewWeapons(meta: Meta) {
-    for (const slot of WEAPON_SLOTS) {
-      if (this.shownWeaponTips.has(slot) || !ownsSlot(slot, meta)) continue;
-      this.shownWeaponTips.add(slot);
-      if (meta.quickStart === 0) this.toast(WEAPON_TIPS[slot], 'tip', 5500);
+  /** Once per day at its start: windows for new raiders and short tips the profile has not seen yet. */
+  private onBanner(view: ViewState, meta: Meta) {
+    const key = `${meta.rules.runId}:${view.day}`;
+    if (this.bannerKey === key || meta.today === undefined) return;
+    this.bannerKey = key;
+    if (meta.rules.mode === 'tutorial') return;
+    const fresh = meta.today.newTypes.filter((t) => this.profile.markEnemySeen(t));
+    if (fresh.length > 0) this.popup.show(fresh);
+    if (meta.devRun) return;
+    if (this.profile.markTipSeen('firstFight')) this.toast(FIRST_FIGHT_TIP, 'tip', 5500);
+    for (const id of meta.loadout.slotWeapon) {
+      const def = id ? weaponById(id) : undefined;
+      if (def && this.profile.markTipSeen(`weapon:${def.id}`)) this.toast(weaponTip(def.name), 'tip', 5500);
     }
-    for (const station of ['cauldron', 'perch']) {
-      if (this.shownWeaponTips.has(station) || !meta.owned.includes(station)) continue;
-      this.shownWeaponTips.add(station);
-      const tip = station === 'cauldron' ? `cauldron${meta.flags.cauldron}` : station;
-      if (meta.quickStart === 0) this.toast(STATION_TIPS[tip], 'tip', 5500);
+    for (const st of STATION_IDS) {
+      if (meta.loadout.stations[st] && STATION_TIPS[st] && this.profile.markTipSeen(`station:${st}`)) this.toast(STATION_TIPS[st], 'tip', 5500);
     }
   }
 
   private onPhase(view: ViewState, meta: Meta | null) {
     switch (view.phase) {
       case 'banner':
+        if (meta) this.savePending(meta, view.day);
+        if (this.screen === 'results' || this.screen === 'shop') this.show('none');
+        this.audio.startMusic('battle');
+        break;
       case 'battle':
         if (this.screen === 'results' || this.screen === 'shop') this.show('none');
         this.audio.startMusic('battle');
         break;
       case 'intermission':
+        if (meta) this.savePending(meta, view.day + 1);
         this.loadingTip = LOADING_TIPS[Math.floor(Math.random() * LOADING_TIPS.length)];
         this.audio.startMusic('menu');
         this.show('results');
         break;
       case 'gameover':
+      case 'runWon':
+        this.popup.clear();
         this.audio.stopMusic();
-        if (meta && meta.quickStart === 0 && !this.scoreSaved && this.runKey(meta, view) !== this.lastSavedRun) {
-          this.scoreSaved = true;
-          this.lastSavedRun = this.runKey(meta, view);
-          addScore({
-            names: meta.names.join(' & '), coop: meta.names.length > 1, day: view.day,
-            score: meta.totalScore, kills: meta.totalKills, difficulty: meta.difficulty,
-            date: new Date().toISOString().slice(0, 10),
-          });
-        }
-        this.show('gameover');
         break;
     }
   }
 
-  private runKey(meta: Meta, view: ViewState) { return `${meta.names.join()}-${view.day}-${meta.totalScore}-${meta.totalKills}`; }
+  /** Solo campaign: keeps the start of this day, so the level can be continued after the app was closed. */
+  private savePending(meta: Meta, day: number) {
+    const s = this.session;
+    if (!(s instanceof HostSession) || s.role !== 'solo') return;
+    if (meta.rules.mode !== CAMPAIGN.id || meta.devRun || meta.result) return;
+    const pending: PendingRun = { v: 1, rules: meta.rules, seed: s.sim.s.seed, start: s.sim.dayStartSave(day) };
+    this.profile.setPendingRun(pending);
+  }
+
+  /** The interrupted level in the profile, if it still fits the level table. */
+  pendingRun(): PendingRun | null {
+    const p = this.profile.data.pendingRun as Partial<PendingRun> | null;
+    if (!p || p.v !== 1 || !p.rules || !p.start || typeof p.seed !== 'number') return null;
+    if (p.rules.mode !== CAMPAIGN.id || !levelOf(p.rules.world, p.rules.level ?? 0)) return null;
+    if (typeof p.start.day !== 'number' || p.start.day > (p.rules.lastDay ?? 0)) return null;
+    return p as PendingRun;
+  }
+
+  /** The run is over: each device pays its own reward exactly once, then shows the result. */
+  private checkResult(meta: Meta) {
+    const r = meta.result;
+    const s = this.session;
+    if (!r || !s || r.runId === this.handledRun) return;
+    this.handledRun = r.runId;
+    const mode = modeOf(meta.rules.mode);
+    this.reward = mode.reward(r, meta.rules, this.profile, s.role);
+    this.result = r;
+    this.resultRules = meta.rules;
+    // The prelude has no result screen: level 1 follows at once.
+    if (meta.rules.mode === TUTORIAL.id) { this.follow(mode.next(r, meta.rules, this.profile)); return; }
+    this.show(r.won ? 'won' : 'gameover');
+  }
+
+  /** Goes where a mode says after a run. */
+  private follow(step: NextStep) {
+    const role = this.session?.role ?? 'solo';
+    if (role === 'guest') return;
+    if (step.to === 'level') {
+      if (role === 'host') { this.coop.setPlan({ mode: CAMPAIGN.id, level: step.level }); this.coop.restartCoop(); return; }
+      this.startSoloRun(CAMPAIGN, { world: step.world, level: step.level }, true);
+      return;
+    }
+    if (role === 'host') { this.coop.returnToRoom(); return; }
+    this.leaveToMenu();
+  }
+
+  /** Continue on the win screen. */
+  afterRun() {
+    if (!this.result || !this.resultRules) { this.leaveToMenu(); return; }
+    this.follow(modeOf(this.resultRules.mode).next(this.result, this.resultRules, this.profile));
+  }
+
+  /** Back on a lost level: the campaign list alone, the room in co-op. */
+  backAfterRun() {
+    if (this.session?.role === 'host') { this.coop.returnToRoom(); return; }
+    this.leaveToMenu(this.resultRules?.mode === CAMPAIGN.id ? 'campaign' : 'main');
+  }
 
   private syncPause(view: ViewState, meta: Meta | null) {
     const isLoss = meta?.pausedBy === 'Connection lost';
@@ -374,19 +507,122 @@ export class App implements ScreenContext, CoopRoomHost {
   }
 
   // ---------------------------------------------------------------------------
+  // Building and starting runs
+  // ---------------------------------------------------------------------------
+
+  /** Changed tuning or switches: such runs count for nothing. */
+  private devValuesActive(): boolean {
+    const t = this.settings.tuning;
+    const tuningChanged = (Object.keys(TUNING_DEFAULT) as (keyof Tuning)[]).some((k) => t[k] !== TUNING_DEFAULT[k]);
+    const flagsChanged = FLAG_DEFS.some((f) => this.settings.flags[f.id] !== f.value);
+    return tuningChanged || flagsChanged;
+  }
+
+  private seedParam(): number | undefined {
+    const fixed = this.params.get('seed');
+    return fixed !== null && fixed !== '' && Number.isFinite(Number(fixed)) ? Number(fixed) : undefined;
+  }
+
+  /**
+   * What the app tells a mode about a new run. Saved tuning and switches only go in when a
+   * developer tool is in play; otherwise every run plays with the standard values.
+   */
+  private runEnv(choice: RunChoice, names: string[], handTiers: number[]): RunEnv {
+    const env: RunEnv = { names, fieldW: fieldForAspect(innerWidth / innerHeight), handTiers, seed: this.seedParam() };
+    const quick = (choice.quickStart ?? 0) > 0 || (choice.day ?? 1) > 1;
+    if (quick || this.devValuesActive()) {
+      env.tuning = { ...this.settings.tuning };
+      env.flags = { ...this.settings.flags };
+      env.devRun = true;
+    }
+    return env;
+  }
+
+  private buildSetup(mode: GameMode, choice: RunChoice, names: string[], handTiers: number[]): RunSetup {
+    return mode.buildRun(this.profile, choice, this.runEnv(choice, names, handTiers));
+  }
+
+  /** The host's run for what the co-op room plans. */
+  coopSetup(plan: RoomPlan, names: string[], handTiers: number[]): RunSetup {
+    return this.buildSetup(plan.mode === CAMPAIGN.id ? CAMPAIGN : ENDLESS, this.planChoice(plan), names, handTiers);
+  }
+
+  private planChoice(plan: RoomPlan): RunChoice {
+    if (plan.mode === CAMPAIGN.id) return { world: plan.world, level: plan.level ?? 1 };
+    return { world: plan.world, difficulty: plan.difficulty ?? this.settings.difficulty, quickStart: this.startDay > 1 ? this.startDay : undefined };
+  }
+
+  startPlanSolo(plan: RoomPlan) {
+    this.startSoloRun(plan.mode === CAMPAIGN.id ? CAMPAIGN : ENDLESS, this.planChoice(plan), true);
+  }
+
+  /**
+   * Starts a run alone. A new player gets the tutorial first, unless this is a developer start,
+   * a continued level, or the tutorial itself is what follows (`skipTutorial`).
+   */
+  private startSoloRun(mode: GameMode, choice: RunChoice, skipTutorial = false) {
+    const dev = (choice.quickStart ?? 0) > 0 || (choice.day ?? 1) > 1 || !!choice.resume;
+    if (!skipTutorial && !dev && this.tutorialDue()) { this.startTutorial(); return; }
+    this.coop.closeRoom();
+    // "Try again" starts a continued level from its first day.
+    const again: RunChoice = choice.resume ? { world: choice.world, level: choice.resume.rules.level ?? 1 } : choice;
+    this.lastPick = { mode: mode.id, choice: again };
+    const setup = this.buildSetup(mode, choice, [this.playerName()], [this.profile.data.handTier]);
+    this.useSession(new HostSession(setup, false));
+  }
+
+  startTutorial() {
+    this.coop.closeRoom();
+    this.lastPick = null;
+    const setup = TUTORIAL.buildRun(this.profile, { world: this.world }, {
+      names: [this.playerName()], fieldW: fieldForAspect(innerWidth / innerHeight), handTiers: [this.profile.data.handTier],
+    });
+    this.useSession(new HostSession(setup, false));
+  }
+
+  startCampaign(level: number) {
+    if (!CAMPAIGN.canPlay(this.profile, this.world, level)) return;
+    this.startSoloRun(CAMPAIGN, { world: this.world, level });
+  }
+
+  startEndless() {
+    this.startSoloRun(ENDLESS, {
+      world: this.world, difficulty: this.settings.difficulty, quickStart: this.startDay > 1 ? this.startDay : undefined,
+    });
+  }
+
+  continueLevel() {
+    const p = this.pendingRun();
+    if (!p) { this.show('main'); return; }
+    this.startSoloRun(CAMPAIGN, { world: p.rules.world, resume: { rules: p.rules, start: p.start, seed: p.seed } }, true);
+  }
+
+  restartRun() {
+    if (this.session?.role === 'host') { this.coop.restartCoop(); return; }
+    const pick = this.lastPick;
+    if (!pick) { this.leaveToMenu(); return; }
+    this.startSoloRun(MODES[pick.mode] ?? ENDLESS, pick.choice, true);
+  }
+
+  playerName(): string { return this.profile.data.name.trim() || 'Player'; }
+
+  // ---------------------------------------------------------------------------
   // Session lifecycle
   // ---------------------------------------------------------------------------
+
+  private resetRunState() {
+    this.lastPhase = '';
+    this.lastMetaRev = -1;
+    this.bannerKey = '';
+    this.popup.clear();
+  }
 
   useSession(s: Session) {
     this.session?.dispose();
     this.session = s;
     this.scene.resetForNewGame();
     this.scene.session = s;
-    this.lastPhase = '';
-    this.lastMetaRev = -1;
-    this.scoreSaved = false;
-    this.tipShownDay = 0;
-    this.shownWeaponTips.clear();
+    this.resetRunState();
     this.show('none');
     this.applyView();
   }
@@ -396,44 +632,31 @@ export class App implements ScreenContext, CoopRoomHost {
     if (alsoFromScene) this.scene.session = null;
   }
 
+  /** Leaves a finished co-op run but keeps the link to the other player open. */
+  leaveRunForRoom() {
+    this.session = null;
+    this.scene.session = null;
+    this.scene.resetForNewGame();
+    this.resetRunState();
+    this.audio.startMusic('menu');
+  }
+
   onGuestRestart() {
     this.scene.resetForNewGame();
-    this.lastPhase = '';
-    this.lastMetaRev = -1;
-    this.scoreSaved = false;
-    this.tipShownDay = 0;
+    this.resetRunState();
     this.show('none');
   }
 
-  /** What a new game takes from the host's settings and screen. */
-  gameOptions() {
-    return {
-      seed: this.seed(), difficulty: this.settings.difficulty, tuning: this.settings.tuning, flags: this.settings.flags,
-      fieldW: fieldForAspect(innerWidth / innerHeight), quickStart: this.startDay > 1 ? this.startDay : undefined,
-    };
-  }
-
-  private seed(): number {
-    const fixed = this.params.get('seed');
-    return fixed ? Number(fixed) : Math.floor(Math.random() * 2 ** 31);
-  }
-
-  startSolo() {
-    this.coop.closeRoom();
-    this.useSession(new HostSession({ ...this.gameOptions(), names: [this.playerName()], coop: false }));
-  }
-
-  playerName(): string { return this.settings.name.trim() || 'Player'; }
-
-  leaveToMenu() {
+  leaveToMenu(screen: ScreenId = 'main') {
     this.coop.hangUp(this.session?.role === 'host');
     this.session?.dispose();
     this.session = null;
     this.scene.session = null;
     this.scene.resetForNewGame();
+    this.resetRunState();
     this.coop.reset();
     this.audio.startMusic('menu');
-    this.show('main');
+    this.show(screen);
   }
 
   // ---------------------------------------------------------------------------

@@ -48,7 +48,7 @@ export const DAY = {
  * and easeTo, because the second pair of hands matters less once weapons do most of the work.
  * earlyAdjust is added on days 1, 2, ... (raiders before scaling): two weak players must survive day 1 too.
  */
-export const COOP = { countFactor: 2.3, lateFactor: 1.4, easeFrom: 22, easeTo: 36, earlyAdjust: [-8, -6, -3, 0], goldFactor: 0.7 };
+export const COOP = { countFactor: 2.3, lateFactor: 1.4, easeFrom: 22, easeTo: 36, earlyAdjust: [-8, -6, -3, 0], goldFactor: 0.7, /** Raiders of a campaign level times this when two play. */ campaignFactor: 1.9 };
 
 /** Landscape cycle: changes every N days. */
 export const LANDSCAPES = ['meadow', 'canyon', 'marsh', 'snowpine'] as const;

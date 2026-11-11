@@ -1,4 +1,4 @@
-// Form fields bound to the saved settings, shared by the play, host, join and options screens.
+// Form fields bound to the settings in the profile, shared by the play, host, join and options screens.
 // A field is recognised by its element id, so the same id always edits the same setting.
 import { DIFFICULTIES, type Difficulty } from '../../config/waves';
 import type { ScreenContext } from './context';
@@ -14,16 +14,16 @@ export function quickNote(ctx: ScreenContext): string {
   return ctx.startDay > 1 ? `<div class="status" id="quickNote">Quick start: day ${ctx.startDay}. Does not count for the scores.</div>` : '';
 }
 
-/** Use as a screen's `onInput`: writes a changed field into the settings and saves them. */
+/** Use as a screen's `onInput`: writes a changed field into the profile, which saves itself. */
 export function onSettingsInput(t: HTMLInputElement, ctx: ScreenContext) {
-  const s = ctx.settings;
+  const p = ctx.profile;
   switch (t.id) {
-    case 'name': s.name = t.value; break;
-    case 'difficulty': s.difficulty = t.value as Difficulty; break;
-    case 'music': s.musicVolume = Number(t.value); break;
-    case 'sfx': s.sfxVolume = Number(t.value); break;
-    case 'mute': s.muted = t.checked; break;
-    case 'relay': s.relayAddress = t.value; break;
+    case 'name': p.setName(t.value); return;
+    case 'difficulty': p.updateSettings({ difficulty: t.value as Difficulty }); break;
+    case 'music': p.updateSettings({ musicVolume: Number(t.value) }); break;
+    case 'sfx': p.updateSettings({ sfxVolume: Number(t.value) }); break;
+    case 'mute': p.updateSettings({ muted: t.checked }); break;
+    case 'relay': p.updateSettings({ relayAddress: t.value }); break;
     default: return;
   }
   ctx.commitSettings();

@@ -1,7 +1,7 @@
 // The help pages: one slide at a time with a picture, a short text and previous/next buttons.
 // The slides themselves live in content.ts; this screen only remembers which one is open.
 import { HELP_SLIDES } from '../content';
-import { artUri, BACK_BUTTON, esc } from '../html';
+import { artUri, BACK_BUTTON, esc, navRow } from '../html';
 import type { ScreenContext } from './context';
 import type { Screen } from './screen';
 
@@ -14,9 +14,7 @@ class HelpScreen implements Screen {
     return `<div class="panel"><h2>${esc(slide.title)}</h2>
       <div class="slide"><img src="${artUri(slide.icon)}" alt=""><p>${esc(slide.text)}</p></div>
       <div class="dots">${this.index + 1} / ${HELP_SLIDES.length}</div>
-      <div class="row" style="margin-top:12px">
-        <button class="secondary" data-a="helpPrev">Previous</button><button data-a="helpNext">Next</button>${BACK_BUTTON}
-      </div></div>`;
+      ${navRow(`${BACK_BUTTON}<button class="secondary" data-a="helpPrev">Previous</button>`, '<button data-a="helpNext">Next</button>')}</div>`;
   }
 
   onAction(action: string, _el: HTMLElement, ctx: ScreenContext) {

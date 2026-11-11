@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 import type { Art } from '../art/types';
-import { assetsOfGroup, BOOT, KEEP_STAGES, LAND_NAMES, type AssetEntry, type AssetGroup, type LandName } from '../art/registry';
+import { assetsOfGroup, BOOT, KEEP_STAGES, LAND_NAMES, WEAPON_TIERS, type AssetEntry, type AssetGroup, type LandName } from '../art/registry';
 
 // Names and scales live in the asset directory; scenes keep importing them from here.
-export { TEX_SCALE, LAND_SCALE, CLOUD_SCALE, partKey, propKey, landscapeKey, cloudKey } from '../art/registry';
+export { TEX_SCALE, LAND_SCALE, CLOUD_SCALE, partKey, propKey, landscapeKey, cloudKey, weaponKey } from '../art/registry';
 
 /** Loads a picture from `src` and draws it into a canvas of the art's size times `scale`. */
 function draw(src: string, art: Art, scale: number, what: string): Promise<HTMLCanvasElement> {
@@ -132,6 +132,11 @@ export function keepStagesReady(): boolean {
   return ready.has(KEEP_STAGES);
 }
 
+/** True once the weapon pictures of tiers 2 to 5 exist; until then tier 1 stands in. */
+export function weaponTiersReady(): boolean {
+  return ready.has(WEAPON_TIERS);
+}
+
 /** Moves a group to the front of the background queue, because it is wanted now. */
 function want(group: Group) {
   if (ready.has(group) || !queue.includes(group)) return;
@@ -139,10 +144,11 @@ function want(group: Group) {
 }
 /** True once the background queue is through: every landscape and keep stage exists. */
 export function allArtReady(): boolean {
-  return ready.has(KEEP_STAGES) && LANDS.every((l) => ready.has(l));
+  return ready.has(KEEP_STAGES) && ready.has(WEAPON_TIERS) && LANDS.every((l) => ready.has(l));
 }
 export const wantLandscape = (land: string) => want(land as Group);
 export const wantKeepStages = () => want(KEEP_STAGES);
+export const wantWeaponTiers = () => want(WEAPON_TIERS);
 
 async function addAll(tex: Phaser.Textures.TextureManager, jobs: AssetEntry[]) {
   await Promise.all(jobs.map((asset) => rasterise(asset).then((c) => { tex.addCanvas(asset.name, c); })));
@@ -190,7 +196,7 @@ export async function buildTextures(game: Phaser.Game): Promise<void> {
   tex.addCanvas('fx:shadow', shadowCanvas());
   tex.addCanvas('fx:burst', burstCanvas());
   tex.addCanvas('fx:ring', ringCanvas());
-  // Keep stages first: a gate can be bought after day 1, the next landscape comes on day 4.
-  queue = [KEEP_STAGES, ...LANDS.filter((l) => l !== FIRST_LAND)];
+  // Keep stages and weapon tiers first: both can be bought after day 1; a new landscape comes later.
+  queue = [KEEP_STAGES, WEAPON_TIERS, ...LANDS.filter((l) => l !== FIRST_LAND)];
   void loadRest(tex);
 }

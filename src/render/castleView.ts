@@ -1,35 +1,42 @@
 import Phaser from 'phaser';
-import { SHOP_ITEMS, WEAPON_SLOTS, type WeaponSlot } from '../config/shop';
-import { WORLD } from '../config/world';
-import type { ViewState } from '../net/snapshot';
-import { slotAt } from '../sim/aim';
-import { SLOT_TIERS, buildTier, gateOfTier, ownsSlot } from '../sim/keep';
-import type { Meta } from '../sim/types';
-import { keepStagesReady, propKey, TEX_SCALE, wantKeepStages } from './textures';
-import type { GameView } from './viewport';
+import { WORLD } from '../config/field';
+import { SLOTS, SLOT_COUNT } from '../config/slots';
+import { weaponById } from '../config/weapons';
 import type { Landscape } from '../config/waves';
+import type { ViewState } from '../net/snapshot';
+import { slotAt } from '../sim/slots';
+import type { Meta } from '../sim/types';
+import { keepStagesReady, propKey, TEX_SCALE, wantKeepStages, wantWeaponTiers, weaponKey, weaponTiersReady } from './textures';
+import type { GameView } from './viewport';
 
 const FINGER_CSS = 27;
 const RING_RADIUS = 40;
-/** Where the ring of a weapon sits, if not around the middle of its art. */
-const RING_OFFSET: Partial<Record<WeaponSlot, { x: number; y: number }>> = { wheel: { x: 4, y: -8 } };
-
-/** Art of a mounted weapon when ready and when reloading. */
-const MOUNTS: Record<WeaponSlot, (m: Meta) => string> = {
-  wheel: () => 'mountWheel',
-  stomper: () => 'mountStomper',
-  comet: () => 'mountComet',
-  bolter: () => 'mountBolter',
-  horn: (m) => (m.hornEquipped === 'frost' ? 'mountFrost' : m.hornEquipped === 'bellows' ? 'mountBellows' : 'mountMortar'),
-};
+/** Where the ring of a weapon sits, if not around the middle of its art (art grid offset times its scale). */
+const RING_OFFSET: Record<string, { x: number; y: number }> = { wheel: { x: 3, y: -6 } };
+/** A reloading weapon is drawn this much darker. */
+const RELOAD_SHADE = 0.62;
+/** Seconds the gate's thorns stay out after a burst, and how far they reach at most (world px). */
+const THORN_SECONDS = 0.5;
+const THORN_MAX = 46;
+/** Gate face spikes: from this height down to the road, one every THORN_STEP px. */
+const THORN_TOP = 486;
+const THORN_STEP = 16;
 
 interface Mount {
-  slot: WeaponSlot;
+  slot: number;
   img: Phaser.GameObjects.Image;
+  flash: Phaser.GameObjects.Image;
   pop: number;
+  kick: number;
+  weapon: string | null;
 }
 
-/** The keep as one thing: body per build stage, gate, shadow, foot dressing and mounted weapons. */
+const shade = (tint: number, k: number) => {
+  const c = Phaser.Display.Color.IntegerToColor(tint);
+  return Phaser.Display.Color.GetColor(Math.round(c.red * k), Math.round(c.green * k), Math.round(c.blue * k));
+};
+
+/** The keep as one thing: body per build stage, gate, shadow, foot dressing and the weapons in its five slots. */
 export class CastleView {
   private shadow: Phaser.GameObjects.Image;
   private keep: Phaser.GameObjects.Image;
@@ -40,8 +47,12 @@ export class CastleView {
   private cracks: Phaser.GameObjects.Image;
   private foot: Phaser.GameObjects.Image;
   private ring: Phaser.GameObjects.Graphics;
+  private thornGfx: Phaser.GameObjects.Graphics;
+  private beaconGlow: Phaser.GameObjects.Image;
   private mounts: Mount[] = [];
   private gateFlash = 0;
+  private thornT = 0;
+  private thornReach = 0;
   private view!: GameView;
   private tierName = '';
 
@@ -53,15 +64,18 @@ export class CastleView {
     this.weather = scene.add.image(-40, 640, propKey('keep0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.05).setVisible(false);
     // Grass, earth and paving of the landscape at the wall foot: behind the gate and the raiders.
     this.ground = scene.add.image(-40, 670, propKey('keepGround_meadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.06);
+    this.thornGfx = scene.add.graphics().setDepth(10.9);
     this.gate = scene.add.image(WORLD.gateX - 74, 620, propKey('gate0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(11);
     this.cracks = scene.add.image(WORLD.gateX - 74, 620, propKey('crack1')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(12).setVisible(false);
     this.foot = scene.add.image(-40, 690, propKey('foot_meadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(36);
     // Above the foreground, so that the wheel's ring is never cut off by the bank.
     this.ring = scene.add.graphics().setDepth(37);
-    for (const slot of WEAPON_SLOTS) {
-      const { x, y } = WORLD.slots[slot];
-      const img = scene.add.image(x, y, propKey('mountWheelReady')).setScale(1 / TEX_SCALE).setDepth(12.5).setVisible(false);
-      this.mounts.push({ slot, img, pop: 0 });
+    this.beaconGlow = scene.add.image(0, 0, 'fx:skyglow').setDepth(12.4).setBlendMode(Phaser.BlendModes.ADD).setTint(0xff9a40).setVisible(false);
+    for (let slot = 0; slot < SLOT_COUNT; slot++) {
+      const { x, y } = SLOTS[slot];
+      const img = scene.add.image(x, y, weaponKey('wheel', 1)).setScale(1 / TEX_SCALE).setDepth(12.5).setVisible(false);
+      const flash = scene.add.image(x, y, 'fx:burst').setDepth(12.6).setBlendMode(Phaser.BlendModes.ADD).setVisible(false);
+      this.mounts.push({ slot, img, flash, pop: 0, kick: 0, weapon: null });
     }
   }
 
@@ -70,25 +84,43 @@ export class CastleView {
   hit() { this.gateFlash = 1; }
 
   /** A little jump when a weapon has reloaded. */
-  ready(slot: WeaponSlot) {
-    const m = this.mounts.find((q) => q.slot === slot);
+  ready(slot: number) {
+    const m = this.mounts[slot];
     if (m) m.pop = 1;
+  }
+
+  /** The weapon in a slot has just been fired: it kicks back and flashes. */
+  fired(slot: number) {
+    const m = this.mounts[slot];
+    if (m) m.kick = 1;
+  }
+
+  /** The spikes of the Hedgehog Gate burst out of the gate. */
+  thorns(reach: number) {
+    this.thornT = THORN_SECONDS;
+    this.thornReach = Math.min(THORN_MAX, Math.max(18, reach * 0.35));
   }
 
   /** Radius of a grip zone: fat enough for a finger on every screen. */
   hitRadius() { return Math.max(WORLD.slotHitRadius, FINGER_CSS / this.view.cssPerUnit); }
   diameterCss() { return this.hitRadius() * 2 * this.view.cssPerUnit; }
 
-  /** Which owned weapon a press in world coordinates lands on. */
-  hitSlot(x: number, y: number, meta: Meta | null): WeaponSlot | null {
-    if (!meta) return null;
-    return slotAt(x, y, this.hitRadius(), (s) => ownsSlot(s, meta));
+  /** Which filled slot a press in world coordinates lands on, or -1. */
+  hitSlot(x: number, y: number, meta: Meta | null): number {
+    if (!meta) return -1;
+    return slotAt(x, y, this.hitRadius(), (i) => this.weaponIn(i, meta) !== null);
+  }
+
+  /** Weapon id in a slot that is open in this run, or null. */
+  weaponIn(slot: number, meta: Meta): string | null {
+    if (!meta.rules.slotsOpen[slot]) return null;
+    return meta.loadout.slotWeapon[slot] ?? null;
   }
 
   /** `land` is the landscape on screen (Background.shown), which lags behind the day while it loads. */
-  update(view: ViewState, meta: Meta, land: Landscape, tint: number, night: number, activeMode: string, dt: number, time: number) {
+  update(view: ViewState, meta: Meta, land: Landscape, tint: number, night: number, dt: number, time: number) {
     // Stages beyond the first are prepared in the background after boot; until then stage 0 stands in.
-    const built = buildTier(meta);
+    const built = meta.loadout.gateTier;
     if (built > 0 && !keepStagesReady()) wantKeepStages();
     const tier = built > 0 && !keepStagesReady() ? 0 : built;
     const name = `${tier}:${land}`;
@@ -110,10 +142,9 @@ export class CastleView {
     this.shadow.setAlpha(1 - night * 0.45);
 
     // Gates are made at boot, so the bought gate shows at once.
-    const gate = gateOfTier(built);
-    this.gate.setTexture(propKey(gate));
-    const f = view.gateMax > 0 ? view.gateHp / view.gateMax : 1;
-    const stage = f < 0.25 ? 3 : f < 0.5 ? 2 : f < 0.75 ? 1 : 0;
+    this.gate.setTexture(propKey(`gate${Math.max(0, Math.min(4, built))}`));
+    const frac = view.gateMax > 0 ? view.gateHp / view.gateMax : 1;
+    const stage = frac < 0.25 ? 3 : frac < 0.5 ? 2 : frac < 0.75 ? 1 : 0;
     this.cracks.setVisible(stage > 0);
     if (stage > 0) this.cracks.setTexture(propKey(`crack${stage}`));
     this.gateFlash = Math.max(0, this.gateFlash - 0.12);
@@ -123,25 +154,40 @@ export class CastleView {
     this.gate.setTint(this.gateFlash > 0.5 ? 0xffb0a0 : tint);
 
     this.ring.clear();
-    for (const m of this.mounts) this.updateMount(m, view, meta, tint, activeMode, dt, time);
+    for (const m of this.mounts) this.updateMount(m, view, meta, tint, dt, time);
+    this.updateThorns(meta, dt);
+    this.updateBeacon(view, meta, time);
   }
 
-  private updateMount(m: Mount, view: ViewState, meta: Meta, tint: number, activeMode: string, dt: number, time: number) {
-    const owned = ownsSlot(m.slot, meta);
-    m.img.setVisible(owned);
-    if (!owned) return;
-    const cd = view.cooldowns[m.slot];
-    const max = view.cooldownMax[m.slot];
-    const isReady = cd <= 0;
-    m.img.setTexture(propKey(`${MOUNTS[m.slot](meta)}${isReady ? 'Ready' : 'Empty'}`));
+  private updateMount(m: Mount, view: ViewState, meta: Meta, tint: number, dt: number, time: number) {
+    const id = this.weaponIn(m.slot, meta);
+    m.weapon = id;
+    m.img.setVisible(id !== null);
     m.pop = Math.max(0, m.pop - dt * 4);
-    const active = activeMode === m.slot;
-    m.img.setScale((1 + m.pop * 0.22 + (active ? 0.1 : 0)) / TEX_SCALE);
-    // Weapons sit in the same light as the wall; only their own glow is drawn into the art.
-    m.img.setTint(tint);
-    const off = RING_OFFSET[m.slot];
-    const x = WORLD.slots[m.slot].x + (off?.x ?? 0);
-    const y = WORLD.slots[m.slot].y + (off?.y ?? 0);
+    m.kick = Math.max(0, m.kick - dt * 5);
+    m.flash.setVisible(id !== null && m.kick > 0.4);
+    if (!id) return;
+    const owned = meta.loadout.weaponTier[id] ?? 1;
+    if (owned > 1 && !weaponTiersReady()) wantWeaponTiers();
+    const tier = owned > 1 && !weaponTiersReady() ? 1 : owned;
+    m.img.setTexture(weaponKey(id, tier));
+    const cd = view.cooldowns[m.slot] ?? 0;
+    const max = view.cooldownMax[m.slot] ?? 0;
+    const isReady = cd <= 0;
+    const { x: sx, y: sy } = SLOTS[m.slot];
+    // A shot kicks the weapon back towards the wall, then it springs into place.
+    const kick = Math.sin(m.kick * Math.PI) * 5;
+    m.img.setPosition(sx - kick, sy + kick * 0.3);
+    m.img.setScale((1 + m.pop * 0.18 - m.kick * 0.06) / TEX_SCALE);
+    // Weapons sit in the same light as the wall; a reloading one is darker.
+    m.img.setTint(isReady ? tint : shade(tint, RELOAD_SHADE));
+    if (m.flash.visible) {
+      const k = (m.kick - 0.4) / 0.6;
+      m.flash.setPosition(sx + 30, sy - 6).setScale(0.18 + (1 - k) * 0.35).setAlpha(k * 0.9);
+    }
+    const off = RING_OFFSET[id];
+    const x = sx + (off?.x ?? 0);
+    const y = sy + (off?.y ?? 0);
     const g = this.ring;
     if (!isReady && max > 0) {
       const done = 1 - cd / max;
@@ -154,37 +200,67 @@ export class CastleView {
     } else {
       // Same solid ring on every ready weapon; only a soft outer glow breathes.
       const glow = 0.16 + Math.sin(time * 0.005 + x) * 0.1;
-      g.lineStyle(10, 0xf3cb5e, active ? 0.5 : glow);
+      g.lineStyle(10, 0xf3cb5e, glow);
       g.strokeCircle(x, y, RING_RADIUS + 3);
       g.lineStyle(6, 0x2b2118, 0.7);
       g.strokeCircle(x, y, RING_RADIUS);
-      g.lineStyle(3.5, active ? 0xfff1c0 : 0xf3cb5e, 1);
+      g.lineStyle(3.5, 0xf3cb5e, 1);
       g.strokeCircle(x, y, RING_RADIUS);
     }
-    this.drawTier(m, meta, x, y);
+    this.drawTier(owned, x, y);
   }
 
-  /** Tier pips, so that an upgrade can be seen on the keep. */
-  private drawTier(m: Mount, meta: Meta, x: number, y: number) {
-    if (m.slot === 'horn') return;
-    const n = SLOT_TIERS[m.slot].filter((id) => meta.owned.includes(id)).length;
+  /** Tier pips, so that the tier can be read on the keep at a glance. */
+  private drawTier(tier: number, x: number, y: number) {
     const g = this.ring;
-    for (let i = 0; i < n; i++) {
-      const px = x - ((n - 1) * 11) / 2 + i * 11;
+    for (let i = 0; i < tier; i++) {
+      const px = x - ((tier - 1) * 11) / 2 + i * 11;
       g.fillStyle(0x2b2118, 1);
       g.fillCircle(px, y + RING_RADIUS + 8, 6);
-      g.fillStyle(0xf3cb5e, 1);
+      g.fillStyle(tier >= 4 ? 0xffe08a : 0xf3cb5e, 1);
       g.fillCircle(px, y + RING_RADIUS + 8, 3.6);
     }
   }
 
-  /** Position for tests and tips, in world coordinates. */
-  slotWorld(slot: WeaponSlot) { return WORLD.slots[slot]; }
+  /** Iron spikes slide out of the gate face and back. */
+  private updateThorns(meta: Meta, dt: number) {
+    const g = this.thornGfx;
+    g.clear();
+    const fitted = meta.loadout.slotWeapon.includes('thorns');
+    // Fitted thorns always show their tips; a burst drives them out.
+    const burst = this.thornT > 0 ? Math.sin((this.thornT / THORN_SECONDS) * Math.PI) : 0;
+    this.thornT = Math.max(0, this.thornT - dt);
+    if (!fitted && burst <= 0) return;
+    const len = 7 + burst * this.thornReach;
+    const x0 = WORLD.gateX - 4;
+    for (let y = THORN_TOP, i = 0; y < WORLD.groundY + 4; y += THORN_STEP, i++) {
+      const l = len * (i % 2 ? 0.8 : 1);
+      g.fillStyle(0x2b2118, 1);
+      g.fillTriangle(x0, y - 6.5, x0 + l + 3, y, x0, y + 6.5);
+      g.fillStyle(0x9aa1a9, 1);
+      g.fillTriangle(x0, y - 4, x0 + l, y, x0, y + 4);
+      g.fillStyle(0xd6dbe0, 1);
+      g.fillTriangle(x0, y - 4, x0 + l * 0.8, y - 0.6, x0, y - 1.5);
+    }
+  }
 
-  /** Name of the item mounted in a slot. */
-  nameOf(slot: WeaponSlot, meta: Meta): string {
-    if (slot === 'horn') return SHOP_ITEMS.find((i) => i.id === meta.hornEquipped)?.name ?? '';
-    const best = SLOT_TIERS[slot].filter((id) => meta.owned.includes(id)).pop();
-    return SHOP_ITEMS.find((i) => i.id === best)?.name ?? '';
+  /** While the Ember Beacon burns, its basket glows and flickers. */
+  private updateBeacon(view: ViewState, meta: Meta, time: number) {
+    const slot = meta.loadout.slotWeapon.indexOf('beacon');
+    const on = slot >= 0 && view.beaconT > 0 && !!meta.rules.slotsOpen[slot];
+    this.beaconGlow.setVisible(on);
+    if (!on) return;
+    const { x, y } = SLOTS[slot];
+    const flicker = 0.75 + Math.sin(time * 0.031) * 0.12 + Math.sin(time * 0.057) * 0.08;
+    this.beaconGlow.setPosition(x, y - 26).setScale(0.75 * flicker).setAlpha(Math.min(1, view.beaconT) * 0.7);
+  }
+
+  /** Position for tests and tips, in world coordinates. */
+  slotWorld(slot: number) { return SLOTS[slot]; }
+
+  /** Name of the weapon mounted in a slot, or ''. */
+  nameOf(slot: number, meta: Meta): string {
+    const id = this.weaponIn(slot, meta);
+    return id ? weaponById(id)?.name ?? '' : '';
   }
 }

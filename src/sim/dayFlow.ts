@@ -108,7 +108,7 @@ export class DayFlow {
   private finishRun(won: boolean) {
     const s = this.ctx.s;
     s.meta.result = {
-      runId: this.ctx.rules.runId, won, day: s.day, score: s.meta.totalScore, kills: s.meta.totalKills,
+      runId: this.ctx.rules.runId, won, devRun: s.meta.devRun, names: [...s.meta.names], day: s.day, score: s.meta.totalScore, kills: s.meta.totalKills,
       stats: JSON.parse(JSON.stringify(s.stats)),
     };
     s.phase = won ? 'runWon' : 'gameover';

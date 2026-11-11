@@ -7,6 +7,7 @@ import type { Anim, Art } from './types';
 import { RIGS } from './characters';
 import { PROPS } from './props';
 import { CLOUDS, LANDSCAPE_ART } from './landscapes';
+import { listWeaponArt, weaponKey } from './weapons';
 import { ASSET_OVERRIDES } from '../config/assets';
 
 /** Texture pixels per world pixel. Characters stay sharp when the game is scaled up. */
@@ -24,6 +25,7 @@ export const partKey = (rig: string, part: string) => `rig:${rig}:${part}`;
 export const propKey = (name: string) => `prop:${name}`;
 export const landscapeKey = (land: string, layer: string) => `land:${land}:${layer}`;
 export const cloudKey = (i: number) => `cloud:${i}`;
+export { weaponKey };
 
 export type LandName = keyof typeof LANDSCAPE_ART;
 export const LAND_NAMES = Object.keys(LANDSCAPE_ART) as LandName[];
@@ -31,14 +33,16 @@ export const LAND_LAYERS = ['far', 'mid', 'near', 'ground'] as const;
 
 /** Group of the bigger keep stages, which only matter once a gate has been bought. */
 export const KEEP_STAGES = 'keepStages';
+/** Group of the weapon pictures of tiers 2 to 5; tier 1 is made at boot. */
+export const WEAPON_TIERS = 'weaponTiers';
 /** Group of everything that is made before the game starts. */
 export const BOOT = 'boot';
 /**
  * When an asset is turned into a texture: at boot, with a landscape, or with the keep stages. The
  * first landscape of a game is made at boot as well; the other groups follow in the background.
  */
-export type AssetGroup = typeof BOOT | typeof KEEP_STAGES | LandName;
-export type AssetKind = 'rigPart' | 'prop' | 'landscape' | 'cloud';
+export type AssetGroup = typeof BOOT | typeof KEEP_STAGES | typeof WEAPON_TIERS | LandName;
+export type AssetKind = 'rigPart' | 'prop' | 'landscape' | 'cloud' | 'weapon';
 
 export interface AssetEntry {
   /** The texture name used all over the game, e.g. `rig:grunt:body` or `prop:coin`. */
@@ -101,6 +105,8 @@ export function buildAssets(): Record<string, AssetEntry> {
     }
   }
   for (const [name, art] of Object.entries(PROPS)) add({ name: propKey(name), art, scale: TEX_SCALE, group: groupOfProp(name), kind: 'prop' });
+  // Weapons on the keep: `weapon:<id>:<tier>`. Only tier 1 is needed before the first market.
+  for (const w of listWeaponArt()) add({ name: w.name, art: w.art, scale: TEX_SCALE, group: w.tier === 1 ? BOOT : WEAPON_TIERS, kind: 'weapon' });
   CLOUDS.forEach((art, i) => add({ name: cloudKey(i), art, scale: CLOUD_SCALE, group: BOOT, kind: 'cloud' }));
   for (const land of LAND_NAMES) {
     for (const layer of LAND_LAYERS) add({ name: landscapeKey(land, layer), art: LANDSCAPE_ART[land][layer], scale: LAND_SCALE[layer], group: land, kind: 'landscape' });

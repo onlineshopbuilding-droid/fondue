@@ -34,7 +34,18 @@ export type SfxName =
   | 'victory'
   | 'defeat'
   | 'weaponReady'
-  | 'crow';
+  | 'crow'
+  | 'cuckoo'
+  | 'thunder'
+  | 'horn'
+  | 'spikes'
+  | 'goldRush'
+  | 'ignite'
+  | 'cheer'
+  | 'squelch'
+  | 'thorns'
+  | 'sentry'
+  | 'kegLoose';
 
 export const SAMPLE_RATE = 44100;
 
@@ -618,6 +629,123 @@ function defeat(): Float32Array {
   return m.finish(0.6, 1.1);
 }
 
+// ---- weapons of the big update ----------------------------------------------
+
+/** Tick-tock of a clockwork, then a two-note "cuckoo". */
+function cuckoo(): Float32Array {
+  const m = new Mix(1.0, 101);
+  for (let i = 0; i < 4; i++) {
+    m.tone({ start: i * 0.09, dur: 0.04, freq: i % 2 ? 2400 : 3000, wave: 'tri', amp: perc(0.0005, 0.008, 0.6) });
+  }
+  for (const [start, note] of [[0.42, 'E6'], [0.66, 'C6']] as const) {
+    const f = hz(note);
+    m.tone({ start, dur: 0.22, freq: f, amp: adsr(0.01, 0.03, 0.7, 0.08, 0.22) });
+    m.tone({ start, dur: 0.22, freq: f * 2, wave: 'tri', amp: adsr(0.01, 0.03, 0.7, 0.08, 0.22, 0.15) });
+  }
+  return m.finish(0.55);
+}
+
+/** A crack of lightning with a short rumble behind it. */
+function thunder(): Float32Array {
+  const m = new Mix(1.1, 102);
+  m.noise({ dur: 0.08, amp: perc(0.0003, 0.015, 1.3), filter: { type: 'hp', freq: 2500 } });
+  m.crackle(18, 0, 0.25, 0.6, 5000);
+  m.noise({ start: 0.05, dur: 1.0, amp: perc(0.02, 0.32, 0.8), filter: { type: 'lp', freq: glide([0, 900], [1, 80]) } });
+  m.tone({ start: 0.04, dur: 0.8, freq: glide([0, 70], [0.8, 32]), amp: perc(0.01, 0.25, 0.7) });
+  return m.finish(0.9, 1.8);
+}
+
+/** The long, round note of an alphorn. */
+function horn(): Float32Array {
+  const m = new Mix(1.1, 103);
+  const f = hz('A2');
+  const amp = adsr(0.08, 0.15, 0.8, 0.35, 1.1);
+  const filter: Filter = { type: 'lp', freq: glide([0, 400], [0.15, 1400], [1.1, 700]) };
+  m.tone({ dur: 1.1, freq: (t) => f * (1 + 0.004 * Math.sin(TAU * 5 * t)), wave: 'saw', amp, filter });
+  m.tone({ dur: 1.1, freq: f * 1.5, wave: 'saw', amp: (t) => amp(t) * 0.35, filter });
+  m.noise({ dur: 0.15, amp: perc(0.01, 0.05, 0.25), filter: { type: 'bp', freq: 600, q: 1 } });
+  return m.finish(0.8, 1.2);
+}
+
+/** Forks bursting out of the earth: a thud and three metal pings. */
+function spikes(): Float32Array {
+  const m = new Mix(0.5, 104);
+  m.tone({ dur: 0.16, freq: glide([0, 140], [0.12, 50]), amp: perc(0.001, 0.05, 1) });
+  m.noise({ dur: 0.12, amp: perc(0.001, 0.03, 0.6), filter: { type: 'lp', freq: 1800 } });
+  [0, 0.04, 0.08].forEach((start, i) => m.tone({ start, dur: 0.3, freq: 1900 + i * 420, wave: 'tri', amp: perc(0.0005, 0.06, 0.35) }));
+  return m.finish(0.75, 1.3);
+}
+
+/** A cascade of bright coins for the Golden Fondue. */
+function goldRush(): Float32Array {
+  const m = new Mix(0.9, 105);
+  ['C6', 'E6', 'G6', 'C7', 'E7'].forEach((note, i) => {
+    m.tone({ start: i * 0.07, dur: 0.4, freq: hz(note), wave: 'tri', amp: perc(0.001, 0.12, 0.8) });
+  });
+  for (let i = 0; i < 10; i++) m.tone({ start: 0.1 + m.rand() * 0.6, dur: 0.1, freq: 2600 + m.rand() * 2400, amp: perc(0.001, 0.03, 0.25) });
+  return m.finish(0.5);
+}
+
+/** Embers catching: a soft whump and crackling. */
+function ignite(): Float32Array {
+  const m = new Mix(0.8, 106);
+  m.noise({ dur: 0.5, amp: adsr(0.03, 0.1, 0.5, 0.3, 0.5), filter: { type: 'lp', freq: glide([0, 300], [0.15, 1600], [0.5, 500]) } });
+  m.tone({ dur: 0.25, freq: glide([0, 90], [0.2, 50]), amp: perc(0.01, 0.08, 0.8) });
+  m.crackle(12, 0.05, 0.75, 0.5);
+  return m.finish(0.65, 1.3);
+}
+
+/** A little crowd cheering, with a bright fanfare note on top. */
+function cheer(): Float32Array {
+  const m = new Mix(1.4, 107);
+  m.noise({ dur: 1.4, amp: adsr(0.08, 0.2, 0.7, 0.6, 1.4), filter: { type: 'bp', freq: glide([0, 900], [0.4, 1500], [1.4, 1100]), q: 0.8 } });
+  for (let i = 0; i < 6; i++) {
+    const f = 500 + m.rand() * 500;
+    m.tone({ start: m.rand() * 0.5, dur: 0.35, freq: glide([0, f], [0.35, f * 1.5]), wave: 'saw', amp: adsr(0.02, 0.05, 0.5, 0.1, 0.35, 0.12), filter: { type: 'bp', freq: 1100, q: 3 } });
+  }
+  brass(m, 'C5', 0.1, 0.5, 0.5);
+  brass(m, 'G5', 0.1, 0.5, 0.4);
+  return m.finish(0.6, 1.1);
+}
+
+/** Thick cheese landing on the road. */
+function squelch(): Float32Array {
+  const m = new Mix(0.5, 108);
+  m.noise({ dur: 0.35, amp: perc(0.005, 0.1, 0.9), filter: { type: 'bp', freq: glide([0, 300], [0.3, 900]), q: 2 } });
+  for (let i = 0; i < 4; i++) {
+    const f = 180 + m.rand() * 160;
+    m.tone({ start: 0.08 + i * 0.07, dur: 0.08, freq: glide([0, f], [0.07, f * 2.4]), amp: perc(0.002, 0.025, 0.4) });
+  }
+  return m.finish(0.6, 1.2);
+}
+
+/** Spikes snapping out of the gate. */
+function thorns(): Float32Array {
+  const m = new Mix(0.4, 109);
+  for (let i = 0; i < 6; i++) {
+    m.noise({ start: i * 0.025, dur: 0.05, amp: perc(0.0005, 0.012, 0.7), filter: { type: 'bp', freq: 2800 + i * 300, q: 3 } });
+  }
+  m.tone({ dur: 0.2, freq: glide([0, 400], [0.18, 180]), wave: 'tri', amp: perc(0.001, 0.05, 0.6) });
+  return m.finish(0.6, 1.3);
+}
+
+/** The marmot's small crossbow: a short twang. */
+function sentry(): Float32Array {
+  const m = new Mix(0.16, 110);
+  m.tone({ dur: 0.1, freq: glide([0, 1500], [0.08, 500]), wave: 'tri', amp: perc(0.0005, 0.025, 0.8) });
+  m.noise({ dur: 0.05, amp: perc(0.0005, 0.01, 0.5), filter: { type: 'bp', freq: 4200, q: 2 } });
+  return m.finish(0.45);
+}
+
+/** A keg's strap snapping: a creak and a wooden knock. */
+function kegLoose(): Float32Array {
+  const m = new Mix(0.35, 111);
+  m.tone({ dur: 0.14, freq: glide([0, 300], [0.12, 520]), wave: 'saw', amp: perc(0.005, 0.04, 0.4), filter: { type: 'bp', freq: 900, q: 4 } });
+  m.tone({ start: 0.12, dur: 0.18, freq: glide([0, 210], [0.15, 120]), wave: 'tri', amp: perc(0.001, 0.05, 0.9) });
+  m.noise({ start: 0.12, dur: 0.05, amp: perc(0.0005, 0.012, 0.5), filter: { type: 'lp', freq: 1800 } });
+  return m.finish(0.6, 1.2);
+}
+
 export type Recipe = () => Float32Array;
 
 /** Every sound and its variants; the engine picks a variant at random. */
@@ -658,6 +786,17 @@ export const SFX_RECIPES: Record<SfxName, Recipe[]> = {
         0.5,
       ),
   ],
+  cuckoo: [cuckoo],
+  thunder: [thunder],
+  horn: [horn],
+  spikes: [spikes],
+  goldRush: [goldRush],
+  ignite: [ignite],
+  cheer: [cheer],
+  squelch: [squelch],
+  thorns: [thorns],
+  sentry: [sentry],
+  kegLoose: [kegLoose],
 };
 
 /** One march snare hit: noise plus a short drum-head tone. */
