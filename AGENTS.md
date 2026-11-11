@@ -44,12 +44,10 @@ Egal wer wo mit welcher KI arbeitet: Wurde in der Sitzung etwas geändert, sagt 
 
 Ohne eines dieser Worte wird nichts committet oder gepusht. Ist schon alles committet, fragt die KI nur noch nach „veröffentlichen“.
 
-## Grenze für das ganze Projekt (hat Vorrang vor docs/AUFTRAG.md)
-Fondue ist ein eigenständiges Spiel mit ähnlichen Mechaniken, keine Nachbildung von Knights Onrush.
-Nicht übernehmen: Name, Figuren, Grafik, Musik, Level, Look, Bildschirmaufbau, Original-Texte, Original-Itemnamen.
-Erlaubt: Mechaniken und Regeln (Greifen, Werfen, Tagesablauf, Shop, zwei Währungen, Waffen mit Abklingzeit) sowie Timing-Messungen.
-Originalvideos nur für Mechanik und Timing auswerten. Keine Farbproben, kein Look-Vergleich mit Original-Standbildern.
-Eigene Spielwelt, eigene Gegner- und Itemnamen. Siehe docs/ENTSCHEIDUNGEN.md, Eintrag E-001.
+## Eigenes Spiel (gilt für das ganze Projekt, hat Vorrang vor docs/AUFTRAG.md)
+Fondue ist das eigene Spiel von Tim und Lenny: eigene Welt, eigene Figuren, eigene Regeln, eigener Look.
+Nichts aus anderen Spielen übernehmen: keine Namen, Figuren, Grafik, Musik, Level, Bildschirmaufbau, Texte oder Itemnamen.
+Neue Inhalte entstehen aus Fondues eigener Welt (Alpenfestung, Räuberarmee, Käse). Siehe docs/ENTSCHEIDUNGEN.md, Eintrag E-001.
 
 ## Regeln
 - Skill „Unlazy“ nie verwenden.
