@@ -49,6 +49,17 @@ export const PAL = {
   iceD: '#9dc2d4',
   slate: '#54778e',
   slateD: '#3b566b',
+  // The mice and rats under the costumes.
+  fur: '#b9a48a',
+  furD: '#93806b',
+  furL: '#e6d8c0',
+  rat: '#9c897b',
+  ratD: '#756259',
+  ratL: '#c4b2a3',
+  earPink: '#eaa9a0',
+  nosePink: '#e8808a',
+  tailPink: '#e0a596',
+  tailRat: '#c98f86',
 } as const;
 
 /** [left, top, right, bottom] of the part's canvas, in joint-local coordinates. */
@@ -272,4 +283,135 @@ export function rope(p0: [number, number], p1: [number, number], p2: [number, nu
     marks += `M${r1(x - dx)} ${r1(y - dy)} L${r1(x + dx)} ${r1(y + dy)} `;
   }
   return litTube(d, w, color, { outline, shadow: w * 0.3, light: w * 0.18 }) + stroke(marks, tone(color, -0.4), 0.9, 0.85);
+}
+
+/* ---- Mouse and rat building blocks: the army under the knight costumes ---- */
+
+/** The coat of one animal: fur, its shadow side, the pale muzzle, ear lining, nose and bare tail. */
+export interface Coat {
+  fur: string;
+  furD: string;
+  muzzle: string;
+  ear: string;
+  nose: string;
+  tail: string;
+}
+
+/** Light, quick troops are mice. */
+export const MOUSE: Coat = { fur: PAL.fur, furD: PAL.furD, muzzle: PAL.furL, ear: PAL.earPink, nose: PAL.nosePink, tail: PAL.tailPink };
+/** Heavy and sinister troops are rats: darker fur, longer snout, bare ringed tail. */
+export const RAT: Coat = { fur: PAL.rat, furD: PAL.ratD, muzzle: PAL.ratL, ear: tone(PAL.earPink, -0.14), nose: PAL.nosePink, tail: PAL.tailRat };
+
+/** A big round ear with a pink cup. `back` is the far ear: darker, so the near one reads in front. */
+export function mouseEar(cx: number, cy: number, r: number, c: Coat, o: { outline?: number; back?: boolean } = {}): string {
+  const fur = o.back ? c.furD : c.fur;
+  const pink = o.back ? tone(c.ear, -0.2) : c.ear;
+  const cup = oval(r1(cx - r * 0.06), r1(cy + r * 0.1), r1(r * 0.62));
+  return (
+    lit(oval(cx, cy, r), fur, { outline: o.outline ?? 3, shadow: r * 0.3, light: r * 0.2 }) +
+    paint(cup, pink) +
+    // The rim shades the upper left of the cup; the lower right catches the light.
+    crescent(cup, r * 0.2, r * 0.24, tone(pink, -0.32), 0.75) +
+    crescent(cup, -r * 0.1, -r * 0.12, tone(pink, 0.4), 0.6)
+  );
+}
+
+export interface SnoutOptions {
+  /** How far the tip sits below the base line. */
+  drop?: number;
+  outline?: number;
+  /** Whisker length; 0 for none. */
+  whiskers?: number;
+  whiskerColor?: string;
+  /** Two buck teeth under the tip. */
+  teeth?: boolean;
+  /** Fill of the muzzle (default: the coat's pale muzzle). */
+  fill?: string;
+  /** Radius of the nose. */
+  nose?: number;
+}
+
+/**
+ * A muzzle pointing LEFT: its base sits inside the face at (x, y), `len` long and `h` high at the
+ * base, with a pink nose on the tip and whiskers fanning out below. The base edge has no outline,
+ * so it melts into the face it is painted over.
+ */
+export function snout(x: number, y: number, len: number, h: number, c: Coat, o: SnoutOptions = {}): string {
+  const tx = x - len;
+  const ty = y + (o.drop ?? 1);
+  const nr = o.nose ?? Math.max(2, h * 0.3);
+  const w = o.outline ?? 2.4;
+  const fill = o.fill ?? c.muzzle;
+  const top = `M${r1(x)} ${r1(y - h / 2)} Q${r1(x - len * 0.6)} ${r1(y - h / 2 - 0.4)} ${r1(tx + 0.6)} ${r1(ty - nr * 0.8)}`;
+  const bottom = `L${r1(tx + 0.6)} ${r1(ty + nr * 0.9)} Q${r1(x - len * 0.5)} ${r1(y + h / 2 + 1)} ${r1(x)} ${r1(y + h / 2)}`;
+  const d = `${top} ${bottom} Z`;
+  const wl = o.whiskers ?? len * 0.7 + 4;
+  const px = x - len * 0.58;
+  const py = ty + nr * 0.5;
+  const fan = wl > 0
+    ? [[-0.72, 0.62], [-0.2, 0.98], [0.42, 0.9]]
+        .map(([ux, uy], i) => `M${r1(px + i * 1.3)} ${r1(py)} Q${r1(px + i * 1.3 + ux * wl * 0.5)} ${r1(py + uy * wl * 0.62)} ${r1(px + i * 1.3 + ux * wl)} ${r1(py + uy * wl)}`)
+        .join(' ')
+    : '';
+  return (
+    lit(d, fill, { outline: 0, shadow: h * 0.2, light: h * 0.12 }) +
+    `<path d="${top} ${bottom}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"/>` +
+    (o.teeth
+      ? `<path d="M${r1(tx + 3)} ${r1(ty + nr * 0.9)} h3.4 v3 h-1.7 v-2.6 v2.6 h-1.7 Z" fill="#fffaf0" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>`
+      : '') +
+    (fan ? stroke(fan, INK, 2.2, 0.35) + stroke(fan, o.whiskerColor ?? '#fff6e2', 1.1) : '') +
+    // Whisker dots on the pad.
+    dot(r1(px + 0.4), r1(py - 1.6), 0.55, tone(fill, -0.45)) +
+    dot(r1(px + 2.4), r1(py - 1.2), 0.55, tone(fill, -0.45)) +
+    lit(oval(r1(tx), r1(ty - 0.2), r1(nr * 1.1), nr), c.nose, { outline: Math.min(w, 2), shadow: nr * 0.4, light: nr * 0.25, lightK: 0.45 }) +
+    glint(r1(tx - nr * 0.35), r1(ty - nr * 0.45), Math.max(0.5, nr * 0.24))
+  );
+}
+
+type Pt = readonly [number, number];
+
+/**
+ * A tapering tail along the cubic curve p0-p1-p2-p3, `w0` thick at the root and `w1` at the tip.
+ * Draw it in its own rig part with the root on the pivot, so it can swing. `rings` adds the ring
+ * marks of a bare rat tail.
+ */
+export function tail(p0: Pt, p1: Pt, p2: Pt, p3: Pt, w0: number, w1: number, color: string, o: { rings?: boolean; outline?: number } = {}): string {
+  const n = 18;
+  const at = (t: number): Pt => {
+    const u = 1 - t;
+    return [
+      u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+      u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+    ];
+  };
+  const left: string[] = [];
+  const right: string[] = [];
+  let rings = '';
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const [x, y] = at(t);
+    const [ax, ay] = at(Math.max(0, t - 0.02));
+    const [bx, by] = at(Math.min(1, t + 0.02));
+    const k = Math.hypot(bx - ax, by - ay) || 1;
+    const nx = -(by - ay) / k;
+    const ny = (bx - ax) / k;
+    const half = (w0 + (w1 - w0) * t) / 2;
+    left.push(`${r1(x + nx * half)} ${r1(y + ny * half)}`);
+    right.push(`${r1(x - nx * half)} ${r1(y - ny * half)}`);
+    if (o.rings && i > 1 && i < n - 1 && i % 2 === 0) rings += `M${r1(x + nx * half * 0.8)} ${r1(y + ny * half * 0.8)} L${r1(x - nx * half * 0.8)} ${r1(y - ny * half * 0.8)} `;
+  }
+  const d = `M${left.join(' L')} L${right.reverse().join(' L')} Z`;
+  return (
+    lit(d, color, { outline: o.outline ?? 2.6, shadow: w0 * 0.3, light: w0 * 0.18, lightK: 0.4 }) +
+    (rings ? stroke(rings, tone(color, -0.4), 0.9, 0.8) : '')
+  );
+}
+
+/** A paw: the shaded mitten of `hand` in fur, with pink toe pads on the lower left. */
+export function paw(cx: number, cy: number, r: number, fur: string, c: Coat): string {
+  return (
+    hand(cx, cy, r, fur) +
+    dot(r1(cx - r * 0.55), r1(cy + r * 0.2), r * 0.2, c.ear, 0.9) +
+    dot(r1(cx - r * 0.2), r1(cy + r * 0.52), r * 0.2, c.ear, 0.9)
+  );
 }

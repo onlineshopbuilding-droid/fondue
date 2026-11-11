@@ -1,6 +1,8 @@
 import type { CharacterRig } from '../types';
-import { glint, lit, litTube, paint, stroke, tone } from '../shade';
-import { PAL, blush, brassPin, felt, fold, hand, metal, oval, part, rim, rivet, rrect, seam } from './kit';
+import { lit, litTube, paint, stroke, tone } from '../shade';
+import { MOUSE, PAL, blush, brassPin, felt, fold, hand, metal, mouseEar, oval, part, rim, rivet, rrect, seam, snout, tail } from './kit';
+
+const C = MOUSE;
 
 const TORSO = 'M-9 -17 Q-14 -6 -12 3 Q0 7 12 3 Q14 -6 9 -17 Q0 -20 -9 -17 Z';
 const VEST = 'M3 -17 Q9 -17 10 -16 Q13 -6 11 2 Q7 4.5 3 5 Z';
@@ -96,10 +98,10 @@ const head =
       `<circle cx="20" cy="-15" r="1" fill="${PAL.cream}" stroke="none" opacity="0.85"/><circle cx="22" cy="-8.4" r="1" fill="${PAL.cream}" stroke="none" opacity="0.85"/>`,
     { shadow: 1.8, light: 1 },
   ) +
-  // Ear.
-  lit(oval(9.6, -5, 3.2), PAL.skinD, { shadow: 1.2, light: 0.7 }) +
+  // Far ear behind the bandana.
+  mouseEar(-7, -22.5, 6.5, C, { back: true }) +
   // Face.
-  felt(oval(-1, -8.5, 12), PAL.skin, paint('M-15 -1 Q-6 6 6 1 L8 6 H-15 Z', tone(PAL.skin, -0.12), 0.6), { shadow: 4, light: 1.8 }) +
+  felt(oval(-1, -8.5, 12), C.fur, paint('M-15 -1 Q-6 6 6 1 L8 6 H-15 Z', tone(C.fur, -0.12), 0.6), { shadow: 4, light: 1.8 }) +
   blush(-5.6, 0.6, 2.8, 1.8) +
   // Bandana cap, dotted, knotted at the back.
   felt(
@@ -112,6 +114,9 @@ const head =
       rim('M-11 -14 Q-10 -19.4 -2 -20.2', 1.3, 0.55),
     { shadow: 2.2, light: 1.3 },
   ) +
+  // Near ear, poking through the bandana.
+  mouseEar(7.5, -20.5, 8, C) +
+  stroke('M1.6 -15.4 Q7 -12.4 13 -14.4', tone(PAL.forest, -0.4), 1.6, 0.9) +
   lit(oval(12, -11, 2.6, 3), PAL.forestD, { outline: 2, shadow: 0.9, light: 0.6 }) +
   // Black mask with a sheen; heavy lids give the sly look.
   felt('M-15 -11 Q0 -15 12 -9 L12 -3 Q-2 -7 -15 -4 Z', PAL.ashD, rim('M-13.6 -10.6 Q0 -14.2 11 -8.8', 1, 0.35), { shadow: 1.4, light: 0.8, lightK: 0.25 }) +
@@ -128,31 +133,32 @@ const head =
     { outline: 1.4, shadow: 0, light: 0 },
   ) +
   `<circle cx="-10.5" cy="-7.9" r="0.55" fill="#fffaf0" stroke="none"/><circle cx="-3.5" cy="-7.9" r="0.55" fill="#fffaf0" stroke="none"/>` +
-  // Nose.
-  lit(oval(-14, -1, 3.4, 2.8), PAL.skinD, { outline: 2, shadow: 1.1, light: 0.7, lightK: 0.38 }) +
-  glint(-15, -2, 0.6, '#fffaf0', 0.7) +
   // Lopsided grin with a missing tooth.
   `<path d="M-11 1.2 Q-5 5.6 0.6 -0.2 Q-5 2.4 -11 1.2 Z" fill="#3a1d18" stroke="none"/>` +
   `<path d="M-10.2 1.6 Q-5 3.4 -0.2 0.4 L-0.6 1.4 Q-5 4.2 -9.8 2.4 Z" fill="${PAL.cream}" stroke="none"/>` +
   `<rect x="-6" y="2" width="1.6" height="1.8" fill="#3a1d18" stroke="none"/>` +
-  `<path d="M-11 1.2 Q-5 5.6 0.6 -0.2" fill="none" stroke="#2b2118" stroke-width="1.6" stroke-linecap="round"/>`;
+  `<path d="M-11 1.2 Q-5 5.6 0.6 -0.2" fill="none" stroke="#2b2118" stroke-width="1.6" stroke-linecap="round"/>` +
+  // Pointed muzzle with a pink nose and whiskers.
+  snout(-11, -1.6, 11, 7.6, C);
 
-/** Pogo Bandit: a masked rogue with tucked legs on a spring-loaded stick. */
+/** Pogo Bandit: a masked mouse rogue with tucked legs on a spring-loaded stick. */
 export const pogoRig: CharacterRig = {
   parts: [
+    // The tail streams out behind and flicks up on every hop.
+    part('tail', 16, -42, 'legBack', [-6, -6, 38, 19], tail([0, 0], [10, 11], [24, 14], [31, 3], 6, 2.6, C.tail)),
     part(
       'armBack',
       11,
       -56,
       'armBack',
       [-31, -10, 10, 16],
-      litTube('M0 0 Q-10 6 -19 4', 5.5, PAL.forestD, { shadow: 1.8, light: 0.9 }) + hand(-22, 4, 5, PAL.skinD),
+      litTube('M0 0 Q-10 6 -19 4', 5.5, PAL.forestD, { shadow: 1.8, light: 0.9 }) + hand(-22, 4, 5, C.furD),
     ),
     part('legBack', 11, -44, 'legBack', [-28, -12, 10, 17], tucked(PAL.plumD, PAL.woodD)),
     part('stick', -5, -30, 'static', [-24, -34, 21, 33], stick),
     part('legFront', 3, -44, 'legFront', [-28, -12, 10, 17], tucked(PAL.plum, PAL.woodD, true)),
     part('body', 7, -44, 'body', [-18, -24, 18, 12], body),
-    part('head', 7, -62, 'head', [-21, -27, 35, 9], head),
+    part('head', 7, -62, 'head', [-32, -34, 35, 17], head),
     part(
       'armFront',
       4,
@@ -161,7 +167,7 @@ export const pogoRig: CharacterRig = {
       [-28, -10, 10, 16],
       litTube('M0 0 Q-8 6 -14 4', 5.5, PAL.forest, { shadow: 1.8, light: 0.9 }) +
         stroke('M-11.6 0.6 L-11 7.4', tone(PAL.forest, -0.35), 1.4, 0.9) +
-        hand(-17, 4, 5.2, PAL.skin) +
+        hand(-17, 4, 5.2, C.fur) +
         brassPin(0, 0, 2.5),
     ),
   ],

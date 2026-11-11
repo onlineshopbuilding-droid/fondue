@@ -1,23 +1,14 @@
 import type { CharacterRig } from '../types';
-import { glint, lit, litTube, paint, rng, stroke, tone } from '../shade';
-import { PAL, bead, blush, brassPin, brow, felt, fold, hand, litLeg, metal, oval, part, rim, rivet, rope, rrect, seam } from './kit';
+import { glint, lit, litTube, paint, stroke, tone } from '../shade';
+import { MOUSE, PAL, bead, blush, brassPin, brow, felt, fold, hand, litLeg, metal, mouseEar, oval, part, paw, rim, rivet, rope, rrect, seam, snout, tail } from './kit';
+
+/** Under the saucepan: a field mouse. */
+const C = MOUSE;
 
 const TORSO = 'M-12 -26 Q-20 -10 -19 3 Q0 10 19 3 Q20 -10 12 -26 Q0 -31 -12 -26 Z';
 const POT = 'M-16 -14 L-14 -27 Q-1 -31 12 -27 L14 -14 Z';
 const LADLE = 'M-34 -27 L-14 -27 Q-14 -14 -24 -14 Q-34 -14 -34 -27 Z';
 const STEW = '#7a4526';
-
-/** Sparse stubble dots on the jaw. */
-function stubble(): string {
-  const r = rng(11);
-  let s = '';
-  for (let i = 0; i < 26; i++) {
-    const x = -14 + r() * 22;
-    const y = -1 + r() * 6;
-    s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="0.55" fill="${PAL.sootD}" stroke="none" opacity="0.4"/>`;
-  }
-  return s;
-}
 
 const torso =
   felt(
@@ -50,25 +41,17 @@ const torso =
   rope([-1, 0.4], [-2.4, 3.8], [-1.2, 7], 2.4, PAL.creamD, 1.6);
 
 const head =
-  // Hair sticking out under the pot at the back.
-  felt('M2 -16 Q15 -17 17 -7 Q14.5 -8 13.5 -4 Q11.5 -8 8.5 -4.5 Q7.5 -9 2 -9 Z', PAL.sootD, stroke('M6 -14 Q12 -13 14 -9', PAL.soot, 1, 0.8), {
-    outline: 2.4,
-    shadow: 1.4,
-    light: 0.9,
-  }) +
-  // Ear.
-  lit(oval(10, -6, 4.5), PAL.skinD, { shadow: 1.6, light: 1 }) +
-  stroke('M11.6 -8.2 Q8.6 -7.8 9 -5 Q9.6 -3.2 11.2 -3.6', tone(PAL.skinD, -0.4), 1.2, 0.85) +
-  // Face with jaw stubble and the shadow the pot rim casts.
+  // Far ear, peeking over the pot.
+  mouseEar(-8, -31, 7.5, C, { back: true }) +
+  // Furry face with a paler jaw and the shadow the pot rim casts.
   felt(
     oval(-1, -8, 13),
-    PAL.skin,
-    paint('M-15 -2 Q-8 7 2 6 Q9 3 12 -3 Q4 2 -3 1.4 Q-10 1 -15 -2 Z', tone(PAL.skin, -0.14), 0.7) +
-      stubble() +
-      paint('M-20 -11.5 H20 V-8.6 Q0 -9.6 -20 -8.8 Z', tone(PAL.skin, -0.32), 0.55),
+    C.fur,
+    paint('M-15 -2 Q-8 7 2 6 Q9 3 12 -3 Q4 2 -3 1.4 Q-10 1 -15 -2 Z', C.muzzle, 0.7) +
+      paint('M-20 -11.5 H20 V-8.6 Q0 -9.6 -20 -8.8 Z', tone(C.fur, -0.36), 0.6),
     { shadow: 4.5, light: 2 },
   ) +
-  blush(-7.5, -1.4, 3.6, 2.4) +
+  blush(-5.5, -0.6, 3.2, 2.2, 0.26) +
   // Pan handle with an iron strap and a hanging hole.
   litTube('M14 -15.5 L32 -21', 3.8, PAL.woodD, { shadow: 1.2, light: 0.7 }) +
   stroke('M20 -18.4 L26 -20.2', tone(PAL.woodD, -0.35), 0.9, 0.8) +
@@ -83,12 +66,14 @@ const head =
       stroke('M-10.6 -26 Q-9.8 -20 -10.8 -15', PAL.copperL, 2.4, 0.85) +
       stroke('M-6.8 -26.6 Q-6.4 -22 -6.9 -18', PAL.copperL, 1, 0.55) +
       // Two shallow dents: a shadowed dip with light catching its lower lip.
-      paint(oval(5, -22.6, 2.4, 1.6), tone(PAL.copper, -0.3), 0.7) +
-      stroke('M3.2 -21.4 Q5 -20.6 6.8 -21.6', PAL.copperL, 0.9, 0.7) +
-      paint(oval(-1, -18.8, 1.6, 1.1), tone(PAL.copper, -0.3), 0.6),
+      paint(oval(3, -22.6, 2.4, 1.6), tone(PAL.copper, -0.3), 0.7) +
+      stroke('M1.2 -21.4 Q3 -20.6 4.8 -21.6', PAL.copperL, 0.9, 0.7) +
+      paint(oval(-3, -18.8, 1.6, 1.1), tone(PAL.copper, -0.3), 0.6),
     { shadow: 2.6 },
   ) +
   glint(-10, -24.6, 1.1) +
+  // Near ear: too big for the pot, so it sticks out at the back.
+  mouseEar(12.5, -25.5, 9, C) +
   // Rolled rim of the pan.
   metal(
     rrect(-20, -17, 38, 6, 3),
@@ -102,13 +87,10 @@ const head =
   brow('M-4.4 -7.9 L1.6 -9.6', 2.2) +
   bead(-9, -5.4, 2.1) +
   bead(-1, -5.4, 2.1) +
-  // Big bulbous nose.
-  lit(oval(-14, -3, 5, 4), PAL.skinD, { shadow: 1.8, light: 1.1, lightK: 0.38 }) +
-  `<circle cx="-15.6" cy="-1.4" r="1" fill="${tone(PAL.skinD, -0.5)}" stroke="none"/>` +
-  glint(-15.4, -4.6, 0.9, '#fffaf0', 0.8) +
-  // Grumpy mouth with one snaggle tooth.
-  stroke('M-11 2.8 Q-6 0.2 -0.8 2.4', '#2b2118', 2.2) +
-  `<path d="M-8 2 L-7.1 0.1 L-6.1 1.7 Z" fill="${PAL.cream}" stroke="#2b2118" stroke-width="0.8" stroke-linejoin="round"/>`;
+  // Grumpy mouth tucked under the muzzle.
+  stroke('M-9.6 5 Q-5 3 -0.8 4.6', '#2b2118', 2) +
+  // Pointed muzzle with a pink nose, buck teeth and whiskers.
+  snout(-10, -2.4, 12, 9.5, C, { teeth: true });
 
 const ladleArm =
   // Iron ladle: long handle with a hook, a bowl full of stew.
@@ -129,14 +111,16 @@ const ladleArm =
   litTube('M0 0 L-7 14', 8, PAL.teal, { shadow: 2.6, light: 1.3 }) +
   stroke('M-9.4 9.4 L-2.2 13', tone(PAL.teal, -0.35), 1.6, 0.9) +
   seam('M-2.6 -1.4 L-8.6 10.6', PAL.creamD, 1, 0.6) +
-  hand(-9, 18, 6, PAL.skin) +
+  paw(-9, 18, 6, C.fur, C) +
   // Fingers wrapped round the handle.
-  stroke('M-14.4 16 Q-11 17.4 -7.6 15.8', tone(PAL.skin, -0.38), 1.1, 0.85) +
+  stroke('M-14.4 16 Q-11 17.4 -7.6 15.8', tone(C.fur, -0.38), 1.1, 0.85) +
   brassPin();
 
-/** Pothelm: stumpy peasant with a copper saucepan for a helmet and a ladle for a club. */
+/** Pothelm: a stumpy mouse with a copper saucepan for a helmet and a ladle for a club. */
 export const gruntRig: CharacterRig = {
   parts: [
+    // The tail swings against the stride and whips about when the mouse is held.
+    part('tail', 13, -22, 'legBack', [-6, -20, 36, 12], tail([0, 0], [13, 7], [28, 3], [28, -13], 6.2, 2.8, C.tail)),
     part(
       'armBack',
       10,
@@ -145,12 +129,12 @@ export const gruntRig: CharacterRig = {
       [-13, -11, 13, 31],
       litTube('M0 0 L-1 15', 8, PAL.tealD, { shadow: 2.4, light: 1.2 }) +
         stroke('M-5 11.6 L3.2 11.8', tone(PAL.tealD, -0.35), 1.5, 0.9) +
-        hand(-1, 19, 5.5, PAL.skinD),
+        hand(-1, 19, 5.5, C.furD),
     ),
     part('legBack', 7, -20, 'legBack', [-21, -12, 15, 23], litLeg(20, 9, PAL.rustD, PAL.woodD)),
     part('legFront', -6, -20, 'legFront', [-21, -12, 15, 23], litLeg(20, 9, PAL.rust, PAL.woodD)),
     part('body', 0, -20, 'body', [-25, -35, 25, 15], torso),
-    part('head', 0, -45, 'head', [-26, -36, 40, 11], head),
+    part('head', 0, -45, 'head', [-32, -43, 40, 15], head),
     part('armFront', -7, -41, 'armFront', [-42, -38, 14, 38], ladleArm),
   ],
 };
