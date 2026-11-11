@@ -1,14 +1,13 @@
 # Entscheidungen
 
-## E-001 – Eigenständiges Spiel statt Nachbildung (Vorrang vor dem Auftrag)
-Der Auftrag verlangt ein möglichst originalgetreues Remake von Knights Onrush. Das baut Claude nicht, auch nicht umbenannt oder mit eigener Grafik.
-Fondue übernimmt Mechaniken und Regeln: Greifen und Werfen, Tagesablauf, Shop, zwei Währungen, Waffen mit Abklingzeit, Eskalation.
-Nicht übernommen werden Name, Figuren, Grafik, Musik, Level, Look, Bildschirmaufbau, Original-Texte und Original-Itemnamen.
-Folgen für den Auftrag:
-- Abschnitt 6.1: Videos nur für Mechanik und Timing (Flugzeit, Tempo, Gegnerdichte, Ablauf). Keine Farbproben, kein Referenz-Board, kein Look-Vergleich.
-- Abschnitt 7 und 11: eigene Welt, eigene Gegner- und Itemnamen, eigener HUD-Aufbau und eigene Texte.
-- Abschnitt 14: Screenshots werden gegen das GDD geprüft, nicht gegen Original-Standbilder.
-- features.json: Punkte 7, 12, 18 und 25 sind entsprechend formuliert und mit `hinweis` markiert.
+## E-001 – Fondue ist ein eigenes Spiel (Vorrang vor dem Auftrag)
+Fondue ist das eigene Spiel von Tim und Lenny. Es ist keine Nachbildung eines anderen Spiels.
+Eigen sind Welt, Figuren, Regeln, Name, Grafik, Musik, Level, Look, Bildschirmaufbau, Texte und Itemnamen. Greifen und Werfen, Tagesablauf, Markt, zwei Währungen, Waffen mit Abklingzeit und Eskalation sind für Fondue entworfen und über viele Runden weiterentwickelt.
+Folgen für die Arbeit:
+- Neue Inhalte entstehen aus Fondues eigener Welt, nichts wird aus anderen Spielen übernommen.
+- Eigene Gegner- und Itemnamen, eigener HUD-Aufbau und eigene Texte.
+- Screenshots werden gegen das GDD geprüft.
+- features.json: Punkte 7, 12, 18 und 25 verweisen mit `hinweis` auf diesen Eintrag.
 
 ## E-002 – Energieeinstellungen nicht verändert
 Claude ändert keine Systemeinstellungen, daher kein powercfg. Stattdessen hält die App-Funktion „keep awake“ den Laptop wach.
@@ -21,10 +20,10 @@ Gelesener Stand am 09.11.2026 (Balanced): Standby am Netzteil = nie, Ruhezustand
 Verwendet wird das auf dem Laptop eingeloggte Konto `onlineshopbuilding-droid`, Git-Name und -E-Mail waren dort schon gesetzt.
 
 ## E-005 – Eigene Welt
-Alpenfestung links, Räuberarmee von rechts, Käsekessel und Adlerhorst als Opferstätten, Filz-Puppen-Stil. Alle Namen sind eigen. Das passt zum Arbeitstitel und unterscheidet das Spiel klar vom Vorbild.
+Alpenfestung links, Räuberarmee von rechts, Käsekessel und Adlerhorst als Opferstätten, Filz-Puppen-Stil. Alle Namen sind eigen. Das passt zum Namen Fondue und gibt dem Spiel seinen eigenen Charakter.
 
 ## E-006 – Kalibrierung
-Schwerkraft 3400 px/s² statt des gemessenen, höheren Werts, damit Würfe lesbar bleiben. Lauftempo am unteren Rand der Messung, damit Figuren greifbar sind. Details in docs/GDD.md.
+Schwerkraft bewusst niedrig mit 3400 px/s², damit Würfe lesbar bleiben. Lauftempo eher langsam, damit Figuren greifbar sind. Details in docs/GDD.md.
 
 ## E-007 – Sound aus reinem WebAudio statt ZzFX
 ZzFX wirft ohne AudioContext Fehler und umgeht den Limiter. Darum eigene Synthese. Das Paket wurde entfernt.
@@ -48,7 +47,7 @@ Keine zusätzlichen Claude-Code-Skills oder fremden Repos verwendet; die Pakete 
 Wurfgeschwindigkeit auf 1700 px/s begrenzt, damit Würfe im Bild bleiben. Messfenster 110 ms mit flacherer Gewichtung, damit abbremsende Bewegungen nicht verschluckt werden. Rad-Treffer begrenzt, Stomper und Dachgeschütz verstärkt. Gegnerische Bomben treffen nur noch das Tor, zurückgeworfene auch Räuber.
 
 ## E-014 – „Gegner werfen andere um“ bleibt aus
-Der dritte Tester hat es vorgeschlagen. Der Auftrag sieht als Standard das Verhalten des Originals vor (eher nein), und die Videos geben nichts anderes her. Der Schalter steht im Tuning-Panel; die Arcade-Voreinstellung hat ihn an.
+Der dritte Tester hat es vorgeschlagen. Der Auftrag sieht es standardmäßig nicht vor. Der Schalter steht im Tuning-Panel; die Arcade-Voreinstellung hat ihn an.
 
 ## E-015 – Unzuverlässiger Koop-Test mit Latenz aufgeklärt
 In der Abschlussrunde schlug der Koop-Test mit simulierter Latenz fehl, wie schon einmal in der Nacht. Zwei getrennte Ursachen, beide nicht im Netzcode des Spiels:

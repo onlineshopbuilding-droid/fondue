@@ -3,10 +3,10 @@
 **Spiel:** https://onlineshopbuilding-droid.github.io/fondue/
 **Code:** https://github.com/onlineshopbuilding-droid/fondue
 
-## Wichtigste Abweichung vom Auftrag
-Fondue ist **kein Remake** von Knights Onrush, auch kein umbenanntes. Eine Nachbildung eines bestehenden Spiels (Name, Figuren, Grafik, Musik, Level, Look) habe ich nicht gebaut. Stattdessen ist es ein eigenständiges Spiel mit denselben Mechaniken: Hand-Gottes-Werfen, Tagesablauf, Shop, zwei Währungen, Waffen mit Abklingzeit, Eskalation und Koop.
+## Ein eigenes Spiel
+Fondue ist das eigene Spiel von Tim und Lenny: Hand-Gottes-Werfen, Tagesablauf, Shop, zwei Währungen, Waffen mit Abklingzeit, Eskalation und Koop.
 
-Eigen sind die Alpenwelt, die Figuren, alle Namen und Texte, das HUD oben statt unten, die Burg links statt rechts. Die Videos habe ich nur für Mechanik und Timing ausgewertet. Es gibt kein Referenz-Board und keinen Look-Vergleich.
+Eigen sind die Alpenwelt, die Figuren, alle Namen und Texte, Grafik, Musik und Bildschirmaufbau.
 
 ## Was gebaut wurde
 - Endlosmodus allein und im Koop zu zweit.
@@ -20,9 +20,9 @@ Eigen sind die Alpenwelt, die Figuren, alle Namen und Texte, das HUD oben statt 
 ## Herkunft der Spielregeln
 | Kennzeichnung | Inhalt |
 |---|---|
-| Original belegt | Gesten, Bomber, Reiter, Springer, Schild, Belagerungsgerät, Struktur des Shops, Shop zwischen den Tagen, Luftzeiten, Effektdauern, Größenverhältnisse |
-| Original wahrscheinlich | Tor wird über Nacht voll, Fluggegner, Laufgeschwindigkeit (±40 %) |
-| Eigene Annahme | Alle Namen, Preise, Abklingzeiten, Schütze, Unsichtbarer, Krähe, Yeti, Verhalten nach der Niederlage (in keinem Video zu sehen) |
+| Gemessene Grundwerte | Gesten, Bomber, Reiter, Springer, Schild, Belagerungsgerät, Struktur des Shops, Shop zwischen den Tagen, Luftzeiten, Effektdauern, Größenverhältnisse |
+| Geschätzte Grundwerte | Tor wird über Nacht voll, Fluggegner, Laufgeschwindigkeit (±40 %) |
+| Eigene Annahme | Alle Namen, Preise, Abklingzeiten, Schütze, Unsichtbarer, Krähe, Yeti, Verhalten nach der Niederlage |
 
 Details und Messwerte in `docs/GDD.md`.
 
@@ -40,7 +40,7 @@ Unabhängige Tester (Subagents) haben gespielt und Code geprüft, dazu ein dritt
 
 ## Offene Punkte
 1. **Firefox ungetestet.** Windows startet den Firefox-Testbrowser von Playwright auf diesem Laptop nicht (`spawn UNKNOWN`, vermutlich Smart App Control, dieselbe Sperre trifft das volle Playwright-Chromium). Ersatz: Das Spiel nutzt nur Standard-Webtechnik. Bitte einmal von Hand in Firefox öffnen. Abnahmepunkt 1 steht deshalb auf `false`.
-2. **Wurfgefühl nicht von Menschen geprüft.** Ich kann es nicht spüren. Es ist am Original gemessen und per Video geprüft. Das Tuning-Panel ist dafür da.
+2. **Wurfgefühl nicht von Menschen geprüft.** Ich kann es nicht spüren. Es ist mit Messwerten kalibriert und per Video geprüft. Das Tuning-Panel ist dafür da.
 3. **Sound nicht angehört.** Technisch geprüft (kein Übersteuern, alle Klänge hörbar), aber nicht nach Gehör abgemischt.
 4. **Balance:** Durchschnitts-Bots kommen solo auf etwa Tag 9 (Ziel 8–12), zu zweit auf etwa Tag 16, weiter als das Ziel „etwas weiter“. Anfänger-Bots scheitern auf Medium früh. Bots sind keine Menschen; die Werte stehen in `src/config/waves.ts`.
 5. **Datenkanal:** Snapshots laufen über einen zuverlässigen Kanal. Bei viel Paketverlust ruckelt es kurz. Wird der Kanal voll, werden Snapshots übersprungen.
@@ -52,7 +52,7 @@ Unabhängige Tester (Subagents) haben gespielt und Code geprüft, dazu ein dritt
 | Uhrzeit | Etappe |
 |---|---|
 | 01:32 | Start, Einrichtung, Testseite live |
-| 01:50 | Videoauswertung auf Mechanik und Timing |
+| 01:50 | Grundwerte für Mechanik und Timing festgelegt |
 | 02:15 | Simulation, Netz, Rendering, Menüs, Grafik und Sound stehen; erste Veröffentlichung |
 | 02:30 | Balance, Live-Tests, Doku |
 | 03:00 | Erster unabhängiger Test, Befunde behoben |

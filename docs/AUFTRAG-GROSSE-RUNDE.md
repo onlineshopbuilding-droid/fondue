@@ -49,7 +49,7 @@ Tim und Lenny spielen und testen die aktuelle Version weiter, während du arbeit
 
 ## 3. Spielregeln für alle Änderungen
 
-- Keine Nachbildung von Knights Onrush: keine Namen, Figuren, Grafik, Musik, Level oder Texte daraus.
+- Fondue ist ein eigenes Spiel: keine Namen, Figuren, Grafik, Musik, Level oder Texte aus anderen Spielen.
 - Die Welt ist bisher 1280 x 720, Regeln liegen in src/sim/, Zahlen in src/config/.
 - Jede Änderung muss auf Laptop und Handy funktionieren, per Maus und per Finger.
 - Bestehendes prüfen und mitändern, wenn es durch Neues nicht mehr passt (HANDBUCH, Abschnitt 9): Texte, Hilfe, Tipps, Markt, Balance, Tests.

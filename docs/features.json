@@ -54,7 +54,7 @@
     "pruefung": "Messung + Video",
     "passes": true,
     "beleg": "docs/GDD.md Abschnitt Wurfphysik; Unit-Test Luftzeit 0,75-1,6 s; tests/perf/visual.spec.ts Video-Durchsicht. Nicht von einem Menschen gespürt",
-    "hinweis": "Abweichend vom Auftrag formuliert, siehe ENTSCHEIDUNGEN E-001."
+    "hinweis": "Eigene Welt und eigene Namen, siehe ENTSCHEIDUNGEN E-001."
   },
   {
     "id": 8,
@@ -95,7 +95,7 @@
     "pruefung": "Unit-Tests + Playwright",
     "passes": true,
     "beleg": "tests/unit/sim.test.ts 'shop' (22 Upgrades); tests/e2e/flow.spec.ts Markt mit Equipped",
-    "hinweis": "Abweichend vom Auftrag formuliert, siehe ENTSCHEIDUNGEN E-001."
+    "hinweis": "Eigene Welt und eigene Namen, siehe ENTSCHEIDUNGEN E-001."
   },
   {
     "id": 13,
@@ -144,7 +144,7 @@
     "pruefung": "Screenshot",
     "passes": true,
     "beleg": "Screenshot docs/screenshots/weapons-owned.png",
-    "hinweis": "Abweichend vom Auftrag formuliert, siehe ENTSCHEIDUNGEN E-001."
+    "hinweis": "Eigene Welt und eigene Namen, siehe ENTSCHEIDUNGEN E-001."
   },
   {
     "id": 19,
@@ -201,7 +201,7 @@
     "pruefung": "Playwright",
     "passes": true,
     "beleg": "tests/e2e/flow.spec.ts Hilfe mit 8 Seiten; Lade-Tipps in src/ui/content.ts und Ergebnis-Screen",
-    "hinweis": "Abweichend vom Auftrag formuliert, siehe ENTSCHEIDUNGEN E-001."
+    "hinweis": "Eigene Welt und eigene Namen, siehe ENTSCHEIDUNGEN E-001."
   },
   {
     "id": 26,

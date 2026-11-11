@@ -38,7 +38,7 @@ Drei Datenarten, die man unterscheiden muss:
 1. **`src/sim/` kennt weder Phaser noch DOM.** Nur so laufen Unit-Tests und Balance-Bots ohne Browser.
 2. **In `src/sim/` kein `Math.random`, nur `this.rng`.** Gleicher Startwert und gleiche Eingaben müssen denselben Verlauf ergeben. In `src/render/` ist `Math.random` in Ordnung.
 3. **Zahlen gehören nach `src/config/`.** Ausnahmen stehen in Abschnitt 6.
-4. **Fondue bleibt ein eigenes Spiel.** Keine Namen, Figuren, Grafik, Musik, Level oder Texte von Knights Onrush (`CLAUDE.md`, E-001). Der Name des Spiels steht nur in `src/config/game.ts`.
+4. **Fondue bleibt ein eigenes Spiel.** Nichts aus anderen Spielen übernehmen: keine Namen, Figuren, Grafik, Musik, Level oder Texte (`AGENTS.md`, E-001). Der Name des Spiels steht nur in `src/config/game.ts`.
 
 ## 3. Wo liegt was
 
