@@ -1,13 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/** Runs against the published site. */
+/**
+ * Runs against the published site. LIVE_URL picks another copy of it, for example
+ * LIVE_URL=https://onlineshopbuilding-droid.github.io/fondue/classic/ (keep the trailing slash).
+ */
 export default defineConfig({
   testDir: 'tests/live',
   timeout: 120_000,
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: 'https://onlineshopbuilding-droid.github.io/fondue/',
+    baseURL: process.env.LIVE_URL ?? 'https://onlineshopbuilding-droid.github.io/fondue/',
     viewport: { width: 1280, height: 720 },
   },
   projects: [
