@@ -1,6 +1,6 @@
 import { ENEMIES } from '../config/enemies';
 import { SHOP_ITEMS, type WeaponSlot } from '../config/shop';
-import { DT, WORLD, perchX } from '../config/world';
+import { DT, WORLD, perchX } from '../config/field';
 import { pointerFor } from './aim';
 import type { Sim } from './sim';
 import type { Enemy } from './types';

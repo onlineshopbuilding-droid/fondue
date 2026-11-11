@@ -1,6 +1,9 @@
+/**
+ * The picture of one frame (`ViewState`) and its compact form for the network.
+ * Host and guest both draw from a decoded snapshot, so what is missing here is missing for everyone.
+ */
 import { ENEMY_TYPES, type EnemyType } from '../config/enemies';
-import { WEAPON_SLOTS, type WeaponSlot } from '../config/shop';
-import type { EnemyState, Flame, HandMode, Phase, ProjectileKind, SimState } from '../sim/types';
+import type { EnemyState, Phase, ProjectileKind, SimState, Zone } from '../sim/types';
 
 /** What the renderer needs to draw one frame. The host and the guest both produce this. */
 export interface ViewEnemy {
@@ -13,10 +16,12 @@ export interface ViewEnemy {
   lane: number;
   hidden: boolean;
   shield: boolean;
+  /** A Keg Hauler that still carries its keg. */
   armed: boolean;
   crow: boolean;
-  fuse: boolean;
   frozen: boolean;
+  /** An oversized raider of a boss day. */
+  big: boolean;
   /** Who holds it: empty for nobody. */
   heldBy: number[];
   hpFrac: number;
@@ -36,48 +41,53 @@ export interface ViewHand {
   x: number;
   y: number;
   down: boolean;
-  mode: HandMode;
   holding: number;
   holdingProj: number;
   connected: boolean;
-  /** This press is aiming a weapon on the keep. */
-  aiming: boolean;
 }
+
+export type ViewZone = Pick<Zone, 'id' | 'kind' | 'x' | 'halfWidth' | 't' | 'dur'>;
 
 export interface ViewState {
   tick: number;
   phase: Phase;
   paused: boolean;
+  /** Everything stands still for the tutorial's gesture. */
+  hold: boolean;
   day: number;
   dayT: number;
   gold: number;
   offerings: number;
   gateHp: number;
   gateMax: number;
-  cooldowns: Record<WeaponSlot, number>;
-  cooldownMax: Record<WeaponSlot, number>;
+  /** Per slot: seconds until ready, and the full reload time of the last shot. */
+  cooldowns: number[];
+  cooldownMax: number[];
   /** Seconds until the eagle hook is free. */
   perchBusy: number;
   /** Seconds until the cauldron is free, and the length of this melt. */
   potBusy: number;
   potMax: number;
+  /** Seconds the Golden Fondue and the Ember Beacon still last. */
+  goldRushT: number;
+  beaconT: number;
   nightfall: boolean;
   enemies: ViewEnemy[];
   projectiles: ViewProjectile[];
-  flames: Flame[];
+  zones: ViewZone[];
   hands: ViewHand[];
 }
 
 const STATES: EnemyState[] = ['walk', 'attack', 'hop', 'float', 'held', 'air', 'stun', 'frozen', 'hooked', 'cooking', 'flee'];
 const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt', 'shell', 'frostShell', 'fireShell'];
-const MODES: HandMode[] = ['none', 'stomper', 'comet', 'horn', 'bolter'];
-const PHASES: Phase[] = ['banner', 'battle', 'victory', 'intermission', 'defeat', 'gameover'];
+const PHASES: Phase[] = ['banner', 'battle', 'victory', 'intermission', 'defeat', 'gameover', 'runWon'];
+const ZONES: Zone['kind'][] = ['fire', 'cheese'];
 
 const F_HIDDEN = 1;
 const F_SHIELD = 2;
 const F_ARMED = 4;
 const F_CROW = 8;
-const F_FUSE = 16;
+const F_BIG = 16;
 const F_FROZEN = 32;
 
 /** Compact wire form: arrays of small numbers, so JSON stays short. */
@@ -96,10 +106,12 @@ export interface WireSnapshot {
   pb: number;
   pt: number;
   pm: number;
+  gr: number;
+  bt: number;
   nf: number;
   e: number[][];
   q: number[][];
-  f: number[][];
+  z: number[][];
   h: number[][];
 }
 
@@ -110,22 +122,24 @@ export function encodeSnapshot(s: SimState): WireSnapshot {
   return {
     t: s.tick,
     ph: PHASES.indexOf(s.phase),
-    pa: s.paused ? 1 : 0,
+    pa: (s.paused ? 1 : 0) | (s.hold ? 2 : 0),
     d: s.day,
     dt: r2(s.dayT),
     g: s.gold,
     o: s.offerings,
     hp: Math.ceil(s.gateHp),
     hm: s.gateMax,
-    cd: WEAPON_SLOTS.map((k) => r2(s.cooldowns[k])),
-    cm: WEAPON_SLOTS.map((k) => r2(s.cooldownMax[k])),
+    cd: s.cooldowns.map(r2),
+    cm: s.cooldownMax.map(r2),
     pb: r2(s.perchBusy),
     pt: r2(s.potBusy),
     pm: r2(s.potMax),
+    gr: r1(s.goldRushT),
+    bt: r1(s.beaconT),
     nf: s.nightfall ? 1 : 0,
     e: s.enemies.map((e) => {
       const flags = (e.hidden ? F_HIDDEN : 0) | (e.shieldOn ? F_SHIELD : 0) | (e.armed ? F_ARMED : 0)
-        | (e.crow ? F_CROW : 0) | (e.kegFuse > 0 ? F_FUSE : 0) | (e.frozenHeld || e.st === 'frozen' ? F_FROZEN : 0);
+        | (e.crow ? F_CROW : 0) | (e.big ? F_BIG : 0) | (e.frozenHeld || e.st === 'frozen' ? F_FROZEN : 0);
       return [
         e.id, ENEMY_TYPES.indexOf(e.type), STATES.indexOf(e.st), r1(e.x), r1(e.y), r2(e.rot), Math.round(e.lane), flags,
         e.heldBy.length > 0 ? e.heldBy[0] : -1, e.heldBy.length > 1 ? e.heldBy[1] : -1,
@@ -133,43 +147,42 @@ export function encodeSnapshot(s: SimState): WireSnapshot {
       ];
     }),
     q: s.projectiles.map((q) => [q.id, KINDS.indexOf(q.kind), r1(q.x), r1(q.y), r2(q.rot), r1(q.size), q.heldBy]),
-    f: s.flames.map((f) => [f.id, r1(f.x), r1(f.halfWidth), r2(f.t), r2(f.dur)]),
-    h: s.hands.map((h) => [r1(h.x), r1(h.y), h.down ? 1 : 0, MODES.indexOf(h.mode), h.holding, h.holdingProj, h.connected ? 1 : 0, h.mode !== 'none' && h.down && h.modePress ? 1 : 0]),
+    z: s.zones.map((z) => [z.id, ZONES.indexOf(z.kind), r1(z.x), r1(z.halfWidth), r2(z.t), r2(z.dur)]),
+    h: s.hands.map((h) => [r1(h.x), r1(h.y), h.down ? 1 : 0, h.holding, h.holdingProj, h.connected ? 1 : 0]),
   };
 }
 
 export function decodeSnapshot(w: WireSnapshot): ViewState {
-  const toRecord = (a: number[]) =>
-    Object.fromEntries(WEAPON_SLOTS.map((k, i) => [k, a[i]])) as Record<WeaponSlot, number>;
   return {
     tick: w.t,
     phase: PHASES[w.ph],
-    paused: w.pa === 1,
+    paused: (w.pa & 1) !== 0,
+    hold: (w.pa & 2) !== 0,
     day: w.d,
     dayT: w.dt,
     gold: w.g,
     offerings: w.o,
     gateHp: w.hp,
     gateMax: w.hm,
-    cooldowns: toRecord(w.cd),
-    cooldownMax: toRecord(w.cm),
+    cooldowns: w.cd,
+    cooldownMax: w.cm,
     perchBusy: w.pb,
     potBusy: w.pt,
     potMax: w.pm,
+    goldRushT: w.gr,
+    beaconT: w.bt,
     nightfall: w.nf === 1,
     enemies: w.e.map((a) => ({
       id: a[0], type: ENEMY_TYPES[a[1]], st: STATES[a[2]], x: a[3], y: a[4], rot: a[5], lane: a[6],
       hidden: (a[7] & F_HIDDEN) !== 0, shield: (a[7] & F_SHIELD) !== 0, armed: (a[7] & F_ARMED) !== 0,
-      crow: (a[7] & F_CROW) !== 0, fuse: (a[7] & F_FUSE) !== 0, frozen: (a[7] & F_FROZEN) !== 0,
+      crow: (a[7] & F_CROW) !== 0, big: (a[7] & F_BIG) !== 0, frozen: (a[7] & F_FROZEN) !== 0,
       heldBy: [a[8], a[9]].filter((p) => p >= 0), hpFrac: a[10],
     })),
     projectiles: w.q.map((a) => ({
       id: a[0], kind: KINDS[a[1]], x: a[2], y: a[3], rot: a[4], size: a[5], heldBy: a[6],
     })),
-    flames: w.f.map((a) => ({ id: a[0], x: a[1], halfWidth: a[2], t: a[3], dur: a[4] })),
-    hands: w.h.map((a) => ({
-      x: a[0], y: a[1], down: a[2] === 1, mode: MODES[a[3]], holding: a[4], holdingProj: a[5], connected: a[6] === 1, aiming: a[7] === 1,
-    })),
+    zones: w.z.map((a) => ({ id: a[0], kind: ZONES[a[1]], x: a[2], halfWidth: a[3], t: a[4], dur: a[5] })),
+    hands: w.h.map((a) => ({ x: a[0], y: a[1], down: a[2] === 1, holding: a[3], holdingProj: a[4], connected: a[5] === 1 })),
   };
 }
 

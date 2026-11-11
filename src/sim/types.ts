@@ -1,8 +1,11 @@
+/**
+ * The data the simulation works on: raiders, projectiles, hands, the whole state of a run, the
+ * events it reports and the commands it accepts.
+ */
 import type { Flags } from '../config/flags';
 import type { Tuning } from '../config/tuning';
 import type { EnemyType } from '../config/enemies';
-import type { Difficulty } from '../config/waves';
-import type { WeaponSlot } from '../config/shop';
+import type { Loadout, RunResult, RunRules, RunStatsData, TodayInfo } from './rules';
 
 export type EnemyState =
   | 'walk' // moving toward the gate
@@ -11,7 +14,7 @@ export type EnemyState =
   | 'float' // balloonist or crow
   | 'held' // in a hand
   | 'air' // thrown, flying, falling
-  | 'stun' // landed softly, dazed
+  | 'stun' // landed softly, pinned or dazed
   | 'frozen'
   | 'hooked' // hanging on the eagle perch
   | 'cooking' // melting into cheese in the cauldron
@@ -42,18 +45,19 @@ export interface Enemy {
   /** Seconds until shield or stealth toggles. */
   cycleT: number;
   hidden: boolean;
+  /** A Keg Hauler that still carries its keg. */
   armed: boolean;
   crow: boolean;
-  /** Fuse when a keg was dropped, otherwise 0. */
-  kegFuse: number;
   altitude: number;
   thrownBy: number;
   dead: boolean;
   /** Was frozen at the moment it was grabbed. */
   frozenHeld: boolean;
   maxHp: number;
-  /** How far right a single hand may drag a yeti. */
+  /** How far right a single weak hand may drag a yeti. */
   tugLimit: number;
+  /** An oversized raider of a boss day: more hit points, harder strikes, much heavier. */
+  big: boolean;
 }
 
 export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell' | 'frostShell' | 'fireShell';
@@ -66,9 +70,9 @@ export interface Projectile {
   vx: number;
   vy: number;
   rot: number;
-  /** Seconds alive, or fuse for bombs. */
+  /** Seconds alive, or fuse for bombs. Negative means spent. */
   t: number;
-  /** Tier-dependent size value used by rendering and damage. */
+  /** Size value used by rendering and damage (radius or half width). */
   size: number;
   damage: number;
   /** Player holding this, or -1. */
@@ -85,24 +89,33 @@ export interface Projectile {
   /** A bomb the player has touched: only those hurt raiders. */
   byPlayer: boolean;
   landed: boolean;
+  /** A duration the weapon gave it: seconds of fire it leaves, of ice it makes, or of daze after a slam. */
+  seconds: number;
+  /** A second value of the weapon that fired it: burn strength of fire, reach of a slam's tremor. */
+  aux: number;
+  /** A keg shaken loose: it bursts the moment it touches the ground. */
+  burstOnLand: boolean;
 }
 
-export interface Flame {
+/** A patch of road that does something to whoever stands in it. */
+export interface Zone {
   id: number;
+  kind: 'fire' | 'cheese';
   x: number;
   halfWidth: number;
+  /** Seconds left, and how long it lasts in total. */
   t: number;
   dur: number;
+  /** Damage per second. */
+  dps: number;
+  /** Walk speed factor inside the zone; 1 means no slowing. */
+  slow: number;
 }
-
-/** A weapon this hand is working with: armed for a tap on the field, or being aimed. */
-export type HandMode = 'none' | 'stomper' | 'comet' | 'horn' | 'bolter';
 
 export interface Hand {
   x: number;
   y: number;
   down: boolean;
-  mode: HandMode;
   /** Enemy id held, or -1. */
   holding: number;
   /** Projectile id held, or -1. */
@@ -110,12 +123,10 @@ export interface Hand {
   pressX: number;
   pressY: number;
   pressTick: number;
-  /** The current press began after the weapon mode started, so its release may fire. */
-  modePress: boolean;
   connected: boolean;
 }
 
-export type Phase = 'banner' | 'battle' | 'victory' | 'intermission' | 'defeat' | 'gameover';
+export type Phase = 'banner' | 'battle' | 'victory' | 'intermission' | 'defeat' | 'gameover' | 'runWon';
 
 export interface DayStats {
   day: number;
@@ -129,27 +140,44 @@ export interface DayStats {
 export interface SpawnEntry {
   t: number;
   type: EnemyType;
+  big?: boolean;
 }
 
+/** A follow-up of a weapon that fires more than once per tap: second slam, second wheel, next pulse. */
+export interface DelayedShot {
+  /** Seconds until it happens. */
+  t: number;
+  slot: number;
+  weapon: string;
+  tier: number;
+  /** Which follow-up this is, counted from 1. */
+  step: number;
+  /** Where the first shot went. */
+  x: number;
+  p: number;
+}
+
+/** Rarely changing data of a run. Sent to the guest whenever `rev` rises. */
 export interface Meta {
   rev: number;
-  difficulty: Difficulty;
-  owned: string[];
-  hornEquipped: string | null;
   names: string[];
   ready: boolean[];
   lastDay: DayStats | null;
   totalScore: number;
   totalKills: number;
-  newTipTypes: EnemyType[];
   pausedBy: string | null;
   tuning: Tuning;
   /** Experiment switches of the host. */
   flags: Flags;
   /** Width of the field in world units, decided by the host. */
   fieldW: number;
-  /** Day this run was quick-started on, or 0 for a normal run. Such runs do not reach the scores. */
-  quickStart: number;
+  rules: RunRules;
+  loadout: Loadout;
+  today: TodayInfo;
+  /** A developer tool shaped this run: it reaches neither the scores nor the stars. */
+  devRun: boolean;
+  /** Set once the run has ended, won or lost. */
+  result: RunResult | null;
 }
 
 export interface SimState {
@@ -164,10 +192,22 @@ export interface SimState {
   gateMax: number;
   enemies: Enemy[];
   projectiles: Projectile[];
-  flames: Flame[];
+  zones: Zone[];
   hands: Hand[];
-  cooldowns: Record<WeaponSlot, number>;
-  cooldownMax: Record<WeaponSlot, number>;
+  /** Seconds until each slot's weapon is ready, and the full reload time of its last shot. */
+  cooldowns: number[];
+  cooldownMax: number[];
+  delayed: DelayedShot[];
+  /** Seconds the Golden Fondue still pays extra, and by which factor. */
+  goldRushT: number;
+  goldRushFactor: number;
+  /** Seconds the Ember Beacon still burns. */
+  beaconT: number;
+  /** Seconds fliers still hang motionless (Cuckoo Clock). */
+  airStopT: number;
+  /** Seconds until the sentry shoots on its own again, and shots left in a burst. */
+  sentryT: number;
+  sentryBurst: number;
   spawnQueue: SpawnEntry[];
   spawned: number;
   /** Seconds until the eagle hook is free. */
@@ -177,7 +217,10 @@ export interface SimState {
   potMax: number;
   /** The sun has set: no more arrivals, the day ends when the field is clear. */
   nightfall: boolean;
+  /** Everything stands still until `resume` (tutorial); not a pause, no pause window. */
+  hold: boolean;
   nextId: number;
+  seed: number;
   rngState: number;
   dayKills: number;
   dayGold: number;
@@ -185,10 +228,11 @@ export interface SimState {
   dayScore: number;
   paused: boolean;
   seenTypes: EnemyType[];
+  stats: RunStatsData;
   meta: Meta;
 }
 
-export type DeathCause = 'impact' | 'blast' | 'crush' | 'fire' | 'bolt' | 'shatter' | 'cauldron' | 'eagle' | 'tap';
+export type DeathCause = 'impact' | 'blast' | 'crush' | 'fire' | 'bolt' | 'shatter' | 'cauldron' | 'eagle' | 'tap' | 'shock' | 'spike';
 
 /** Things the renderer and audio need to hear about, in order. */
 export type SimEvent =
@@ -199,55 +243,52 @@ export type SimEvent =
   | { e: 'gateHit'; x: number; y: number; amount: number; etype: EnemyType }
   | { e: 'explosion'; x: number; y: number; radius: number }
   | { e: 'throwKeg'; x: number; y: number }
-  | { e: 'kegDrop'; x: number; y: number }
+  | { e: 'kegLoose'; x: number; y: number; p: number }
   | { e: 'strike'; x: number; y: number; etype: EnemyType }
   | { e: 'shoot'; x: number; y: number; kind: ProjectileKind }
+  | { e: 'fire'; slot: number; weapon: string; tier: number; p: number }
   | { e: 'wheel'; size: number }
-  | { e: 'slam'; x: number; y: number; halfWidth: number }
+  | { e: 'slam'; x: number; y: number; halfWidth: number; shock: number }
   | { e: 'freeze'; x: number; y: number; radius: number }
   | { e: 'shatter'; x: number; y: number }
-  | { e: 'flame'; x: number; halfWidth: number }
+  | { e: 'zone'; kind: Zone['kind']; x: number; halfWidth: number }
   | { e: 'bellows'; x: number; halfWidth: number }
   | { e: 'mortar'; x: number; y: number }
   | { e: 'bolters'; x: number; y: number }
+  | { e: 'spikes'; x: number; halfWidth: number }
+  | { e: 'hornBlast'; reach: number }
+  | { e: 'cuckoo'; seconds: number }
+  | { e: 'lightning'; points: number[] }
+  | { e: 'goldRush'; seconds: number }
+  | { e: 'beacon'; seconds: number }
+  | { e: 'thorns'; reach: number }
+  | { e: 'sentryShot'; x: number; y: number; tx: number; ty: number }
   | { e: 'eagle'; x: number; y: number; id: number }
   | { e: 'splash'; x: number; y: number; etype: EnemyType }
   | { e: 'cheese'; x: number; y: number; etype: EnemyType }
   | { e: 'nightfall' }
-  | { e: 'aimHint'; p: number; slot: WeaponSlot }
   | { e: 'crow'; x: number; y: number }
   | { e: 'shieldUp'; x: number; y: number }
   | { e: 'shieldBlock'; x: number; y: number }
   | { e: 'tapCart'; x: number; y: number; hp: number }
   | { e: 'dayStart'; day: number }
   | { e: 'victory' }
+  | { e: 'runWon' }
   | { e: 'defeat' }
   | { e: 'buy'; p: number; item: string; name: string }
   | { e: 'denied'; p: number }
-  | { e: 'weaponReady'; slot: WeaponSlot };
+  | { e: 'weaponReady'; slot: number };
 
-/** Everything players can ask the simulation to do. */
+/**
+ * Everything players can ask the simulation to do. `buy` names what is wanted as one text:
+ * 'gate', 'station:cauldron', 'weapon:<slot>:<id>' (build or swap), 'upgrade:<id>', 'hand'.
+ */
 export type Command =
   | { k: 'press'; p: number; x: number; y: number }
   | { k: 'release'; p: number; x: number; y: number; vx: number; vy: number }
-  | { k: 'activate'; p: number; slot: WeaponSlot }
-  | { k: 'pressSlot'; p: number; slot: WeaponSlot; x: number; y: number }
-  | { k: 'cancelMode'; p: number }
+  | { k: 'fireSlot'; p: number; slot: number }
+  | { k: 'shake'; p: number }
   | { k: 'buy'; p: number; item: string }
-  | { k: 'equip'; p: number; item: string }
   | { k: 'ready'; p: number; ready: boolean }
   | { k: 'forceStart'; p: number }
   | { k: 'pause'; p: number; paused: boolean };
-
-export interface SimOptions {
-  seed: number;
-  difficulty: Difficulty;
-  names: string[];
-  tuning: Tuning;
-  /** Experiment switches; defaults apply when left out. */
-  flags?: Flags;
-  /** Width of the field; the base width when left out. */
-  fieldW?: number;
-  /** Start on this quick-start day instead of day 1. */
-  quickStart?: number;
-}

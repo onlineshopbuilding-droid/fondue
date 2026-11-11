@@ -14,20 +14,14 @@ export const WORLD = {
   /** Depth lanes: pixels added to groundY. */
   laneMin: 0,
   laneMax: 44,
-  /** The pot on the road (experiment "in front"). */
-  cauldron: { x: 345, halfWidth: 58 },
-  /** The pot on the keep (experiment "behind"): where its rim is, and how far it pulls things in. */
-  cauldronBack: { x: 290, rimY: 456, snapRadius: 92, assistRadius: 190, headingCos: 0.6 },
+  /**
+   * The Great Cauldron stands behind the road on a small mound beside the keep. Raiders only get in
+   * when thrown: x and rimY are the middle of its rim, snapRadius catches what is let go or flies
+   * close by, and a throw headed for it within assistRadius is bent into it.
+   */
+  cauldron: { x: 318, rimY: 468, snapRadius: 92, assistRadius: 190, headingCos: 0.6 },
   /** The hook hangs from the top edge, this far left of the field's right end. x is for the base width. */
   perch: { x: 1110, insetRight: 170, hookY: 262, snapRadius: 104, flySnapRadius: 66, assistRadius: 170, headingCos: 0.9 },
-  /** Where each weapon sits on the keep: centre of its art, aim origin, centre of its grip zone. */
-  slots: {
-    comet: { x: 46, y: 282 },
-    bolter: { x: 136, y: 272 },
-    stomper: { x: 46, y: 392 },
-    horn: { x: 146, y: 410 },
-    wheel: { x: 52, y: 590 },
-  },
   /** A press on the keep may reach this far right of it, never onto the road in front of the gate. */
   slotZoneMaxX: 183,
   /** Radius of a weapon's grip zone in world units, widened on small screens. */

@@ -1,28 +1,18 @@
-import { ENEMIES, ENEMY_TYPES } from '../config/enemies';
+import type { EnemyType } from '../config/enemies';
+import { ECONOMY } from '../config/economy';
+import { DT, fieldEntry } from '../config/field';
+import { GATES } from '../config/keep';
 import { DAY } from '../config/waves';
-import { DT, fieldEntry } from '../config/world';
-import { ECONOMY, GATE_HP, WEAPON_SLOTS } from '../config/shop';
-import { quickStartFor } from '../config/quickstart';
-import { buildDayPlan, newTypesOnDay } from './spawn';
+import { daySeed } from './plan';
+import { Rng } from './rng';
 import type { SimContext } from './context';
 
 /**
- * The course of a day: banner, fight, nightfall, the market in between, and the end of a run.
- * It also steps everything that lives on the field while a fight is on.
+ * The course of a run: banner, fight, nightfall, the market in between, and how it ends
+ * (the gate falls, or the last day is won). It also steps everything on the field during a fight.
  */
 export class DayFlow {
   constructor(private ctx: SimContext) {}
-
-  applyQuickStart(q: NonNullable<ReturnType<typeof quickStartFor>>) {
-    const s = this.ctx.s;
-    s.meta.quickStart = q.day;
-    s.meta.owned.push(...q.owned);
-    s.meta.hornEquipped = q.hornEquipped;
-    s.gold = q.gold;
-    s.offerings = q.offerings;
-    // Nobody needs the tips for everything that appeared on the skipped days.
-    s.seenTypes = ENEMY_TYPES.filter((t) => ENEMIES[t].firstDay < q.day);
-  }
 
   startDayIfAllReady() {
     const s = this.ctx.s;
@@ -33,7 +23,7 @@ export class DayFlow {
 
   setPaused(p: number, paused: boolean) {
     const s = this.ctx.s;
-    if (s.phase === 'gameover' || s.phase === 'intermission') return;
+    if (s.phase === 'gameover' || s.phase === 'runWon' || s.phase === 'intermission') return;
     s.paused = paused;
     s.meta.pausedBy = paused ? (s.meta.names[p] ?? 'Someone') : null;
     if (!paused) this.dropReleasedDuringPause();
@@ -49,11 +39,15 @@ export class DayFlow {
 
   /** Pause caused by a lost connection rather than a player. */
   pauseForDisconnect(reason: string) {
-    if (this.ctx.s.phase === 'gameover' || this.ctx.s.phase === 'intermission') return;
-    this.ctx.s.paused = true;
-    this.ctx.s.meta.pausedBy = reason;
+    const s = this.ctx.s;
+    if (s.phase === 'gameover' || s.phase === 'runWon' || s.phase === 'intermission') return;
+    s.paused = true;
+    s.meta.pausedBy = reason;
     this.ctx.touchMeta();
   }
+
+  /** Freezes or releases the whole simulation without a pause window (tutorial). */
+  setHold(hold: boolean) { this.ctx.s.hold = hold; }
 
   setReady(p: number, ready: boolean) {
     const s = this.ctx.s;
@@ -65,27 +59,33 @@ export class DayFlow {
 
   startDay(day: number) {
     const s = this.ctx.s;
+    const rules = this.ctx.rules;
     s.day = day;
     s.dayT = 0;
     s.phase = 'banner';
     s.phaseT = DAY.bannerSeconds;
-    s.gateMax = GATE_HP[this.ctx.economy.currentGateId()];
-    s.gateHp = day === 1 ? s.gateMax : Math.min(s.gateMax, s.gateHp + s.gateMax * ECONOMY.gateRefill);
+    s.gateMax = GATES[this.ctx.loadout.gateTier].hp;
+    s.gateHp = s.gateHp <= 0 ? s.gateMax : Math.min(s.gateMax, s.gateHp + s.gateMax * ECONOMY.gateRefill);
     s.enemies = [];
     s.projectiles = [];
-    s.flames = [];
+    s.zones = [];
     s.perchBusy = 0;
     s.potBusy = 0;
     s.potMax = 0;
     s.nightfall = false;
     s.dayKills = 0; s.dayGold = 0; s.dayOfferings = 0; s.dayScore = 0;
-    for (const slot of WEAPON_SLOTS) { s.cooldowns[slot] = 0; s.cooldownMax[slot] = 0; }
-    for (const h of s.hands) { h.mode = 'none'; h.holding = -1; h.holdingProj = -1; }
+    this.ctx.weapons.resetForDay();
+    for (const h of s.hands) { h.holding = -1; h.holdingProj = -1; }
     s.spawned = 0;
-    s.spawnQueue = buildDayPlan(day, s.meta.difficulty, s.meta.names.length, this.ctx.tuning.spawnRate, this.ctx.rng);
+
+    // The plan comes from a random stream of its own, so it never depends on the fights before.
+    const plan = this.ctx.planner.plan(day, { seed: s.seed, players: rules.players }, new Rng(daySeed(s.seed, day)));
+    s.spawnQueue = plan.entries;
+    const types = [...new Set(plan.entries.map((e) => e.type))] as EnemyType[];
+    const newTypes = types.filter((t) => !s.seenTypes.includes(t));
+    s.seenTypes.push(...newTypes);
+    s.meta.today = { landscape: plan.landscape, night: plan.night, boss: plan.boss, newTypes, seconds: plan.seconds };
     s.meta.ready = s.meta.ready.map(() => false);
-    s.meta.newTipTypes = newTypesOnDay(day).filter((t) => !s.seenTypes.includes(t));
-    s.seenTypes.push(...s.meta.newTipTypes);
     this.ctx.touchMeta();
     this.ctx.emit({ e: 'dayStart', day });
   }
@@ -100,12 +100,24 @@ export class DayFlow {
     s.meta.lastDay = {
       day: s.day, kills: s.dayKills, goldEarned: s.dayGold, offeringsEarned: s.dayOfferings, score: s.dayScore, gatePct,
     };
+    if (win) this.ctx.stats.dayCleared();
+    this.ctx.touchMeta();
+  }
+
+  /** The run is over: the result goes into Meta, where every device reads it for its own reward. */
+  private finishRun(won: boolean) {
+    const s = this.ctx.s;
+    s.meta.result = {
+      runId: this.ctx.rules.runId, won, day: s.day, score: s.meta.totalScore, kills: s.meta.totalKills,
+      stats: JSON.parse(JSON.stringify(s.stats)),
+    };
+    s.phase = won ? 'runWon' : 'gameover';
     this.ctx.touchMeta();
   }
 
   step() {
     const s = this.ctx.s;
-    if (s.paused) return;
+    if (s.paused || s.hold) return;
     s.tick++;
     switch (s.phase) {
       case 'banner':
@@ -114,7 +126,8 @@ export class DayFlow {
         break;
       case 'battle':
         s.dayT += DT;
-        this.tickCooldowns();
+        this.ctx.weapons.tick();
+        this.ctx.stations.tick();
         this.ctx.spawner.spawn();
         this.updateWorld();
         if (s.gateHp <= 0) {
@@ -122,7 +135,7 @@ export class DayFlow {
           s.phaseT = DAY.endBannerSeconds + 0.8;
           for (let p = 0; p < s.hands.length; p++) this.ctx.hands.dropHeld(p);
           this.ctx.emit({ e: 'defeat' });
-        } else if (s.dayT >= DAY.seconds) {
+        } else if (s.dayT >= s.meta.today.seconds) {
           if (!s.nightfall) {
             s.nightfall = true;
             this.ctx.emit({ e: 'nightfall' });
@@ -140,33 +153,34 @@ export class DayFlow {
       case 'victory':
         this.updateWorld();
         s.phaseT -= DT;
-        if (s.phaseT <= 0) { this.endDay(true); s.phase = 'intermission'; this.ctx.touchMeta(); }
+        if (s.phaseT <= 0) this.afterVictory();
         break;
       case 'defeat':
         this.updateWorld();
         s.phaseT -= DT;
-        if (s.phaseT <= 0) { this.endDay(false); s.phase = 'gameover'; this.ctx.touchMeta(); }
+        if (s.phaseT <= 0) { this.endDay(false); this.finishRun(false); }
         break;
       case 'intermission':
       case 'gameover':
+      case 'runWon':
         break;
     }
     s.rngState = this.ctx.rng.state;
   }
 
-  tickCooldowns() {
+  private afterVictory() {
     const s = this.ctx.s;
-    for (const slot of WEAPON_SLOTS) {
-      if (s.cooldowns[slot] > 0) {
-        s.cooldowns[slot] -= DT;
-        if (s.cooldowns[slot] <= 0) {
-          s.cooldowns[slot] = 0;
-          this.ctx.emit({ e: 'weaponReady', slot });
-        }
-      }
+    const rules = this.ctx.rules;
+    this.endDay(true);
+    if (rules.lastDay !== null && s.day >= rules.lastDay) {
+      this.finishRun(true);
+      this.ctx.emit({ e: 'runWon' });
+    } else if (rules.hasMarket) {
+      s.phase = 'intermission';
+      this.ctx.touchMeta();
+    } else {
+      this.startDay(s.day + 1);
     }
-    if (s.perchBusy > 0) s.perchBusy = Math.max(0, s.perchBusy - DT);
-    if (s.potBusy > 0) s.potBusy = Math.max(0, s.potBusy - DT);
   }
 
   updateWorld() {
@@ -177,7 +191,7 @@ export class DayFlow {
       if (!e.dead) this.ctx.enemies.updateEnemy(e);
     }
     this.ctx.projectiles.updateProjectiles();
-    this.ctx.combat.updateFlames();
+    this.ctx.zones.update();
     s.enemies = s.enemies.filter((e) => !e.dead && !(e.st === 'flee' && e.x > fieldEntry(s.meta.fieldW) + 40));
     s.projectiles = s.projectiles.filter((q) => q.t >= 0);
   }

@@ -1,11 +1,10 @@
 import { ENEMIES } from '../config/enemies';
-import { DT, WORLD, fieldWall } from '../config/world';
-import type { Flags } from '../config/flags';
-import type { Tuning } from '../config/tuning';
-import type { Difficulty } from '../config/waves';
+import { DT, WORLD, fieldWall } from '../config/field';
 import type { ClientCommand, NetMessage } from '../net/protocol';
 import { decodeSnapshot, encodeSnapshot, interpolateViews, type ViewEnemy, type ViewState } from '../net/snapshot';
 import type { Transport } from '../net/transport';
+import { followFactor, handStrength, launchVelocity, liftFlat, massOfType, springStep, throwFactor } from '../sim/physics';
+import type { RunSetup } from '../sim/rules';
 import { Sim } from '../sim/sim';
 import type { Command, Meta, SimEvent } from '../sim/types';
 
@@ -66,9 +65,9 @@ export class HostSession implements Session {
   /** Counts steps even while paused, so that a paused game keeps sending its state. */
   private stepCounter = 0;
 
-  constructor(opts: { seed: number; difficulty: Difficulty; names: string[]; tuning: Tuning; coop: boolean; flags?: Flags; fieldW?: number; quickStart?: number }) {
-    this.role = opts.coop ? 'host' : 'solo';
-    this.sim = new Sim(opts);
+  constructor(setup: RunSetup, coop: boolean) {
+    this.role = coop ? 'host' : 'solo';
+    this.sim = new Sim(setup);
   }
 
   /** Attaches the guest connection. Works mid-game for reconnects. */
@@ -204,6 +203,8 @@ interface Prediction {
   vy: number;
   offX: number;
   offY: number;
+  /** Weight of the raider, which decides how it follows the hand and how far it flies. */
+  mass: number;
   pressedAt: number;
   thrown: boolean;
   lane: number;
@@ -228,7 +229,6 @@ export class GuestSession implements Session {
   hostLeft = false;
   private lastHeard = performance.now();
   private lastUpdate = 0;
-  private modeGuardUntil = 0;
   private projReleasedAt = -Infinity;
   private ping = 0;
   private pingTimer = 0;
@@ -340,12 +340,7 @@ export class GuestSession implements Session {
       q.acc += Math.min(dt, 0.1);
       while (q.acc >= DT) {
         q.acc -= DT;
-        const k = t.holdSpring;
-        const c = 2 * Math.sqrt(k) * 0.72;
-        q.vx += (k * (this.handX + q.offX - q.x) - c * q.vx) * DT;
-        q.vy += (k * (this.handY + q.offY - q.y) - c * q.vy) * DT;
-        q.x += q.vx * DT;
-        q.y += q.vy * DT;
+        springStep(q, this.handX + q.offX, this.handY + q.offY, t.holdSpring * followFactor(q.mass, this.strength()), DT);
         const ground = WORLD.groundY + q.lane;
         if (q.y > ground) { q.y = ground; q.vy = Math.min(0, q.vy); }
       }
@@ -396,18 +391,16 @@ export class GuestSession implements Session {
     return this.events.splice(0, n).map((q) => q.ev);
   }
 
-  send(c: ClientCommand) {
-    if (c.k === 'activate' || c.k === 'pressSlot') this.modeGuardUntil = performance.now() + 500 + this.ping;
-    this.link.send({ k: 'c', c });
-  }
+  send(c: ClientCommand) { this.link.send({ k: 'c', c }); }
+
+  /** Strength of this player's hand, as the host's rules give it. */
+  private strength(): number { return handStrength(this.curMeta?.loadout.handTier[this.me] ?? 1); }
   setHand(x: number, y: number) { this.handX = x; this.handY = y; }
 
   localPress(x: number, y: number) {
     this.send({ k: 'press', x, y });
     const v = this.latest;
     if (!v || v.phase !== 'battle') return;
-    const me = v.hands[this.me];
-    if ((me && me.mode !== 'none') || performance.now() < this.modeGuardUntil) return;
     // Same order as the host: a bomb within reach is taken before any enemy.
     const pad = (this.tuning()?.grabRadius ?? 30) * 0.5 + 44;
     if (v.projectiles.some((q) => q.kind === 'bomb' && q.heldBy < 0 && Math.hypot(q.x - x, q.y - y) < pad)) return;
@@ -418,6 +411,7 @@ export class GuestSession implements Session {
       id: target.id, x: target.x, y: target.y, vx: 0, vy: 0,
       offX: Math.max(-def.radius, Math.min(def.radius, target.x - x)),
       offY: Math.max(0, Math.min(def.height, target.y - y)),
+      mass: massOfType(target.type, target.big, target.crow),
       pressedAt: performance.now(), thrown: false, lane: target.lane, confirmed: false, acc: 0,
     };
   }
@@ -428,7 +422,7 @@ export class GuestSession implements Session {
     let bestD = Infinity;
     for (const e of list) {
       const def = ENEMIES[e.type];
-      if (e.hidden || e.shield || !def.grabbable || e.type === 'yeti' || e.heldBy.length > 0 || e.st === 'hooked' || e.st === 'cooking' || e.st === 'flee') continue;
+      if (e.hidden || e.shield || !def.grabbable || e.type === 'yeti' || e.big || e.heldBy.length > 0 || e.st === 'hooked' || e.st === 'cooking' || e.st === 'flee') continue;
       const top = e.y - (e.crow ? 40 : def.height);
       const dx = Math.max(0, Math.abs(x - e.x) - def.radius);
       const dy = y < top ? top - y : y > e.y ? y - e.y : 0;
@@ -449,16 +443,11 @@ export class GuestSession implements Session {
     // The host starts the throw from hand plus grip offset, not from where the spring lagged to.
     p.x = Math.max(WORLD.gateX + 10, Math.min(this.wall() - 10, this.handX + p.offX));
     p.y = Math.min(this.handY + p.offY, WORLD.groundY + p.lane);
-    // Mirrors the host's throw clamp so the prediction flies the same arc.
-    let ax = vx * t.throwMult;
-    let ay = vy * t.throwMult;
-    const sp = Math.hypot(ax, ay);
-    if (sp > t.maxThrow) { ax *= t.maxThrow / sp; ay *= t.maxThrow / sp; }
-    p.vx = ax; p.vy = ay;
-    // Same low arc the host gives a flat throw from road height.
-    const groundY = WORLD.groundY + p.lane;
-    const flat = Math.abs(ax);
-    if (groundY - p.y < 20 && flat > 250 && ay <= flat * 0.5 && ay >= -flat * 0.25) { p.y = groundY - 22; p.vy = -flat * 0.25; }
+    // The same functions the host uses, so the prediction flies the same arc.
+    const v = launchVelocity(vx, vy, t, throwFactor(p.mass, this.strength()));
+    p.vx = v.vx; p.vy = v.vy;
+    const lift = liftFlat(p.y, WORLD.groundY + p.lane, p.vx, p.vy);
+    if (lift) { p.y = lift.y; p.vy = lift.vy; }
     p.thrown = true;
     p.confirmed = false;
     p.pressedAt = performance.now();

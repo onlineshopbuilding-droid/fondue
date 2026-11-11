@@ -1,12 +1,12 @@
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
-import { DT, WORLD } from '../config/world';
-import type { WeaponSlot } from '../config/shop';
-import { isAimSlot } from './aim';
+import { DT, WORLD } from '../config/field';
+import { HAND_RULES } from '../config/hand';
+import { followFactor, launchVelocity, liftFlat, springStep, throwFactor } from './physics';
 import type { Enemy, Projectile } from './types';
 import { clamp, type SimContext } from './context';
 
 /**
- * Everything a hand does: grabbing, holding, throwing and pressing a weapon on the keep.
+ * Everything a hand does: grabbing, holding, shaking and throwing.
  * The guest predicts some of this on its own machine, see GuestSession (handbook, trap 4).
  */
 export class Hands {
@@ -19,8 +19,6 @@ export class Hands {
     h.x = x; h.y = y; h.down = true;
     h.pressX = x; h.pressY = y; h.pressTick = s.tick;
     if (s.phase !== 'battle' || s.paused) return;
-    h.modePress = h.mode !== 'none';
-    if (h.mode !== 'none') return;
     if (this.tryGrabBomb(p, x, y)) return;
     this.tryGrabEnemy(p, x, y);
   }
@@ -30,7 +28,7 @@ export class Hands {
     let best: Projectile | null = null;
     let bestD = 44 + this.ctx.tuning.grabRadius * 0.5;
     for (const q of this.ctx.s.projectiles) {
-      if (q.kind !== 'bomb' || q.heldBy >= 0) continue;
+      if (q.kind !== 'bomb' || q.heldBy >= 0 || q.burstOnLand) continue;
       const d = Math.hypot(q.x - x, q.y - y);
       if (d < bestD) { bestD = d; best = q; }
     }
@@ -43,11 +41,18 @@ export class Hands {
 
   grabDistance(e: Enemy, x: number, y: number): number {
     const def = ENEMIES[e.type];
-    const halfW = def.radius;
-    const top = e.y - (e.crow ? 40 : def.height);
+    const scale = e.big ? BEHAVIOUR.big.scale : 1;
+    const halfW = def.radius * scale;
+    const top = e.y - (e.crow ? 40 : def.height * scale);
     const dx = Math.max(0, Math.abs(x - e.x) - halfW);
     const dy = y < top ? top - y : y > e.y ? y - e.y : 0;
     return Math.hypot(dx, dy);
+  }
+
+  /** A yeti leaves the ground only when the hands on it are strong enough together. */
+  private canLift(e: Enemy): boolean {
+    if (e.type !== 'yeti') return true;
+    return this.ctx.strengthOf(e.heldBy) >= HAND_RULES.yetiLift * (e.big ? BEHAVIOUR.big.mass : 1);
   }
 
   tryGrabEnemy(p: number, x: number, y: number) {
@@ -80,7 +85,7 @@ export class Hands {
     if (e.type === 'yeti') {
       e.grabOffX = 0; e.grabOffY = ENEMIES.yeti.height * 0.5;
       if (e.heldBy.length === 1) e.tugLimit = e.x + BEHAVIOUR.yeti.tugReach;
-      if (e.heldBy.length === 2) { e.st = 'held'; e.vx = 0; e.vy = 0; }
+      if (this.canLift(e)) { e.st = 'held'; e.vx = 0; e.vy = 0; }
     } else {
       e.st = 'held';
       e.vx = 0; e.vy = 0;
@@ -97,19 +102,13 @@ export class Hands {
 
     if (s.phase !== 'battle') { this.dropHeld(p); return; }
     if (s.paused) return;
-    // This press began before the weapon was picked, so letting go is not an aimed shot.
-    if (h.mode !== 'none' && !h.modePress) return;
-
-    if (h.mode === 'horn' || h.mode === 'bolter') { this.ctx.weapons.fireAimed(p, h.mode, x, y); return; }
-    if (h.mode === 'stomper') { this.ctx.weapons.fireStomper(p, x, vy); return; }
-    if (h.mode === 'comet') { this.ctx.weapons.fireComet(p, x); return; }
 
     if (h.holdingProj >= 0) {
       const q = s.projectiles.find((o) => o.id === h.holdingProj);
       h.holdingProj = -1;
       if (q) {
         q.heldBy = -1;
-        const v = this.clampThrow(vx, vy);
+        const v = launchVelocity(vx, vy, this.ctx.tuning, 1);
         q.vx = v.vx; q.vy = v.vy; q.x = x; q.y = y;
         q.landed = false;
       }
@@ -123,67 +122,57 @@ export class Hands {
     const held = (s.tick - h.pressTick) * DT;
     const moved = Math.hypot(x - h.pressX, y - h.pressY);
     const isTap = held <= BEHAVIOUR.tapMaxSeconds && moved <= BEHAVIOUR.tapMaxMove;
+    const holders = e.heldBy;
 
     if (e.type === 'yeti') {
-      const wasLifted = e.heldBy.length === 2;
+      const wasLifted = e.st === 'held';
       e.heldBy = [];
       for (const other of s.hands) if (other.holding === e.id) other.holding = -1;
-      if (wasLifted) this.throwEnemy(e, vx, vy, p);
+      if (wasLifted) this.throwEnemy(e, vx, vy, p, holders);
       return;
     }
 
     e.heldBy = [];
-    if (isTap && e.st === 'held') {
-      if (e.frozenHeld) { this.ctx.combat.shatter(e, p); return; }
-      if (e.type === 'bomber' && e.armed) {
-        e.armed = false;
-        e.kegFuse = BEHAVIOUR.kegDropFuse;
-        e.st = 'walk';
-        e.y = this.ctx.groundOf(e);
-        this.ctx.emit({ e: 'kegDrop', x: e.x, y: e.y });
-        return;
-      }
+    if (isTap && e.st === 'held' && e.frozenHeld) {
+      this.ctx.combat.shatter(e, p, this.ctx.weapons.shatterSpread());
+      return;
     }
 
     e.x = clamp(x + e.grabOffX, WORLD.gateX + 10, this.ctx.wall - 10);
     e.y = Math.min(y + e.grabOffY, this.ctx.groundOf(e));
     e.thrownBy = p;
     if (this.ctx.stations.tryPerch(e)) return;
-    if (this.ctx.stations.tryRearPotOnRelease(e, vx, vy)) return;
-    this.throwEnemy(e, vx, vy, p);
-    this.liftFlatThrow(e);
-    this.ctx.stations.applyCauldronAssist(e);
+    if (this.ctx.stations.tryPotOnRelease(e, vx, vy)) return;
+    this.throwEnemy(e, vx, vy, p, holders);
+    const lift = liftFlat(e.y, this.ctx.groundOf(e), e.vx, e.vy);
+    if (lift) { e.y = lift.y; e.vy = lift.vy; }
+    this.ctx.stations.steerAtPot(e);
     this.ctx.stations.steerAtPerch(e);
   }
 
-  clampThrow(vx: number, vy: number) {
-    const m = this.ctx.tuning.throwMult;
-    let ax = vx * m;
-    let ay = vy * m;
-    const sp = Math.hypot(ax, ay);
-    if (sp > this.ctx.tuning.maxThrow) {
-      ax *= this.ctx.tuning.maxThrow / sp;
-      ay *= this.ctx.tuning.maxThrow / sp;
-    }
-    return { vx: ax, vy: ay };
-  }
-
-  throwEnemy(e: Enemy, vx: number, vy: number, p: number) {
-    const v = this.clampThrow(vx, vy);
+  throwEnemy(e: Enemy, vx: number, vy: number, p: number, holders: number[] = [p]) {
+    const factor = throwFactor(this.ctx.massOf(e), this.ctx.strengthOf(holders));
+    const v = launchVelocity(vx, vy, this.ctx.tuning, factor);
     e.vx = v.vx; e.vy = v.vy;
     e.st = 'air';
     e.thrownBy = p;
     e.rotV = clamp(v.vx / 110, -14, 14) + (Math.abs(v.vy) / 240) * (v.vx >= 0 ? 1 : -1);
     if (Math.abs(e.rotV) < 1) e.rotV = this.ctx.rng.range(-3, 3);
+    this.ctx.stats.thrown();
     this.ctx.emit({ e: 'release', id: e.id, p, speed: Math.hypot(v.vx, v.vy), x: e.x, y: e.y });
   }
 
-  /** A sideways fling from road height would land in its first tick; give it a low arc instead. */
-  liftFlatThrow(e: Enemy) {
-    const speed = Math.abs(e.vx);
-    if (this.ctx.groundOf(e) - e.y >= 20 || speed <= 250 || e.vy > speed * 0.5 || e.vy < -speed * 0.25) return;
-    e.y = this.ctx.groundOf(e) - 22;
-    e.vy = -speed * 0.25;
+  /**
+   * The hand shook what it holds (the device counted the direction changes). A Keg Hauler loses
+   * its keg: it drops straight down and bursts on the road below.
+   */
+  shake(p: number) {
+    const s = this.ctx.s;
+    const h = s.hands[p];
+    if (!h || s.phase !== 'battle' || s.paused) return;
+    const e = s.enemies.find((o) => o.id === h.holding);
+    if (!e || e.dead || e.type !== 'bomber' || !e.armed || e.st !== 'held') return;
+    this.ctx.stations.dropKeg(e, p);
   }
 
   dropHeld(p: number) {
@@ -205,27 +194,6 @@ export class Hands {
       q.heldBy = -1;
     }
     h.holdingProj = -1;
-    h.mode = 'none';
-  }
-
-  cancelMode(p: number) {
-    const h = this.ctx.s.hands[p];
-    if (!h || h.mode === 'none') return;
-    h.mode = 'none';
-  }
-
-  /** The hand came down on a weapon at the keep. Never grabs anything. */
-  pressSlot(p: number, slot: WeaponSlot, x: number, y: number) {
-    const s = this.ctx.s;
-    const h = s.hands[p];
-    if (!h) return;
-    h.x = x; h.y = y; h.down = true;
-    h.pressX = x; h.pressY = y; h.pressTick = s.tick;
-    if (s.phase !== 'battle' || s.paused) return;
-    if (h.mode === slot) { this.cancelMode(p); h.modePress = false; return; }
-    this.ctx.weapons.activate(p, slot);
-    // Aiming starts with this very press; armed weapons wait for the next one.
-    h.modePress = h.mode === slot && isAimSlot(slot);
   }
 
   updateHeld(e: Enemy) {
@@ -237,19 +205,15 @@ export class Hands {
     for (const h of hands) { tx += h.x; ty += h.y; }
     tx = tx / hands.length + e.grabOffX;
     ty = ty / hands.length + e.grabOffY;
-    const k = this.ctx.tuning.holdSpring;
-    const c = 2 * Math.sqrt(k) * 0.72;
-    e.vx += (k * (tx - e.x) - c * e.vx) * DT;
-    e.vy += (k * (ty - e.y) - c * e.vy) * DT;
-    e.x += e.vx * DT;
-    e.y += e.vy * DT;
+    const k = this.ctx.tuning.holdSpring * followFactor(this.ctx.massOf(e), this.ctx.strengthOf(e.heldBy));
+    springStep(e, tx, ty, k, DT);
     e.x = clamp(e.x, WORLD.gateX + 10, this.ctx.wall - 10);
     const ground = this.ctx.groundOf(e);
     if (e.y > ground) { e.y = ground; e.vy = Math.min(0, e.vy); }
     e.rot += (clamp(e.vx / 900, -0.8, 0.8) - e.rot) * 0.2;
   }
 
-  /** A single hand on a yeti can only drag it a little. */
+  /** Hands too weak to lift a yeti can only drag it a little. */
   updateTug(e: Enemy) {
     const s = this.ctx.s;
     const h = s.hands[e.heldBy[0]];

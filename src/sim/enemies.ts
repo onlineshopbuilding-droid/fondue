@@ -1,5 +1,5 @@
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
-import { DT, FIELD, WORLD, fieldEntry } from '../config/world';
+import { DT, FIELD, WORLD, fieldEntry } from '../config/field';
 import type { Enemy, Projectile, ProjectileKind } from './types';
 import type { SimContext } from './context';
 
@@ -14,7 +14,6 @@ export class EnemyBehaviour {
     if (e.dead) return;
     e.shieldOn = false;
     e.hidden = false;
-    e.kegFuse = 0;
     if (e.st === 'air' || e.st === 'hooked' || e.st === 'held') return;
     e.st = 'flee';
     if (!e.crow && e.type !== 'balloonist') e.y = this.ctx.groundOf(e);
@@ -35,16 +34,6 @@ export class EnemyBehaviour {
   }
 
   updateEnemy(e: Enemy) {
-    if (e.kegFuse > 0) {
-      e.kegFuse -= DT;
-      if (e.kegFuse <= 0) {
-        e.kegFuse = 0;
-        const b = BEHAVIOUR.bomb;
-        this.ctx.combat.kill(e, 'blast', e.thrownBy);
-        this.ctx.combat.blast(e.x, e.y - 30, b.blastRadius, b.blastDamage, e.thrownBy);
-        return;
-      }
-    }
     // Out of sight beyond the field's edge, raiders hurry to their starting line.
     const entry = fieldEntry(this.ctx.s.meta.fieldW);
     if (e.x > entry && (e.st === 'walk' || e.st === 'hop' || e.st === 'float')) {
@@ -71,18 +60,13 @@ export class EnemyBehaviour {
         this.ctx.stations.updateHooked(e);
         break;
       case 'cooking':
-        e.t -= DT;
-        if (e.t <= 0) {
-          this.ctx.s.potBusy = 0;
-          this.ctx.emit({ e: 'cheese', x: e.x, y: e.y, etype: e.type });
-          this.ctx.combat.kill(e, 'cauldron', e.thrownBy);
-        }
+        this.ctx.stations.updateCooking(e);
         break;
       case 'flee':
-        e.x += this.ctx.speedOf(e) * 1.9 * DT;
+        e.x += this.ctx.speedOf(e) * BEHAVIOUR.fleeSpeed * DT;
         break;
     }
-    if (e.type === 'yeti' && e.heldBy.length === 1 && e.st !== 'held') this.ctx.hands.updateTug(e);
+    if (e.type === 'yeti' && e.heldBy.length > 0 && e.st !== 'held') this.ctx.hands.updateTug(e);
   }
 
   afterStun(e: Enemy) {
@@ -132,7 +116,7 @@ export class EnemyBehaviour {
       }
     }
     this.ctx.emit({ e: 'strike', x: e.x, y: e.y, etype: e.type });
-    this.ctx.combat.damageGate(e.crow ? 6 : def.strike, gx, gy, e.type);
+    this.ctx.combat.damageGate(e.crow ? BEHAVIOUR.crow.strike : def.strike * (e.big ? BEHAVIOUR.big.strike : 1), gx, gy, e.type, e);
   }
 
   lobBomb(e: Enemy) {
@@ -175,7 +159,7 @@ export class EnemyBehaviour {
     e.y = ground;
     if (e.x <= WORLD.gateX + def.range + 34) {
       this.ctx.emit({ e: 'strike', x: e.x, y: e.y, etype: e.type });
-      this.ctx.combat.damageGate(def.strike, WORLD.gateX + 6, e.y - 50, e.type);
+      this.ctx.combat.damageGate(def.strike, WORLD.gateX + 6, e.y - 50, e.type, e);
       e.t = BEHAVIOUR.pogo.restAtGate;
       e.vy = 0;
       return;
@@ -185,12 +169,14 @@ export class EnemyBehaviour {
 
   updateFloat(e: Enemy) {
     const s = this.ctx.s;
+    // The Cuckoo Clock has stopped time for fliers.
+    if (s.airStopT > 0) return;
     if (e.crow) {
       const targetY = this.ctx.groundOf(e) - BEHAVIOUR.crow.altitude + Math.sin(s.tick * 0.14 + e.id) * 16;
       e.y += (targetY - e.y) * 0.08;
       const tx = WORLD.gateX + 26;
       if (e.x > tx) e.x -= BEHAVIOUR.crow.speed * DT;
-      else this.strikeFloating(e, 1.0, 6);
+      else this.strikeFloating(e, 1.0, BEHAVIOUR.crow.strike);
       return;
     }
     const def = ENEMIES.balloonist;
