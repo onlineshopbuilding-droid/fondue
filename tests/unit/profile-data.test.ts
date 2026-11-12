@@ -120,7 +120,7 @@ describe('migrate', () => {
       muted: false,
       relayAddress: '',
       tuning: { ...TUNING_DEFAULT, throwMult: 2 },
-      flags: { ...defaultFlags(), cauldron: 'back' },
+      flags: defaultFlags(),
     });
   });
 

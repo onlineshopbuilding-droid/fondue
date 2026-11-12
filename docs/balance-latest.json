@@ -1,5 +1,5 @@
 {
- "date": "2026-11-11 19:29",
+ "date": "2026-11-12 00:02",
  "endless": {
   "runs": 30,
   "maxDay": 70,
@@ -35,7 +35,7 @@
      7,
      7,
      7,
-     7,
+     8,
      8,
      8,
      8,
@@ -49,8 +49,8 @@
     ],
     "goldPerDay": {
      "1": 397,
-     "3": 652,
-     "5": 905,
+     "3": 653,
+     "5": 904,
      "10": 1665
     },
     "gatePct": {
@@ -62,14 +62,14 @@
     "purchases": 4.9,
     "actionsPerSecond": 1,
     "grabRate": 0.91,
-    "offeringsPerDay": 4.6,
-    "kegsShaken": 9.2,
+    "offeringsPerDay": 4.7,
+    "kegsShaken": 9.4,
     "weaponShots": {
      "cheese": 3.6,
      "alphorn": 1.7,
      "forks": 1.7,
      "mortar": 1.4,
-     "beacon": 0.8,
+     "beacon": 0.9,
      "midas": 0.6,
      "wheel": 2,
      "sentry": 0.5,
@@ -77,13 +77,13 @@
      "thorns": 0.1,
      "bell": 0.2,
      "comet": 0.9,
-     "stomper": 0.3,
+     "stomper": 0.5,
      "bolter": 0.4,
      "frost": 0.2,
      "bellows": 0.2
     },
     "stuck": [],
-    "seconds": 0.721
+    "seconds": 0.773
    },
    {
     "label": "Mid solo",
@@ -95,7 +95,7 @@
     "p10": 14,
     "p90": 18,
     "min": 14,
-    "max": 22,
+    "max": 20,
     "days": [
      14,
      14,
@@ -124,16 +124,16 @@
      18,
      18,
      18,
-     18,
      19,
-     22
+     19,
+     20
     ],
     "goldPerDay": {
      "1": 397,
      "3": 642,
-     "5": 910,
-     "10": 1638,
-     "20": 3900
+     "5": 909,
+     "10": 1639,
+     "20": 3435
     },
     "gatePct": {
      "1": 100,
@@ -145,16 +145,16 @@
     "actionsPerSecond": 0.97,
     "grabRate": 0.91,
     "offeringsPerDay": 5.9,
-    "kegsShaken": 32.4,
+    "kegsShaken": 32.3,
     "weaponShots": {
      "wheel": 36.8,
      "stomper": 35.8,
-     "comet": 23.1,
+     "comet": 22.8,
      "mortar": 34.5,
-     "bolter": 19.8
+     "bolter": 20
     },
     "stuck": [],
-    "seconds": 1.754
+    "seconds": 1.924
    },
    {
     "label": "Great solo",
@@ -216,16 +216,16 @@
     "actionsPerSecond": 1.11,
     "grabRate": 0.97,
     "offeringsPerDay": 5.4,
-    "kegsShaken": 73.6,
+    "kegsShaken": 73.7,
     "weaponShots": {
-     "wheel": 32.4,
-     "stomper": 30.7,
+     "wheel": 32.3,
+     "stomper": 30.8,
      "comet": 21.2,
      "bellows": 11,
-     "beacon": 6.4
+     "beacon": 6.3
     },
     "stuck": [],
-    "seconds": 1.394
+    "seconds": 1.674
    },
    {
     "label": "Poor zu zweit",
@@ -233,7 +233,7 @@
     "players": 2,
     "difficulty": "medium",
     "runs": 30,
-    "median": 8.5,
+    "median": 7.5,
     "p10": 5,
     "p90": 11,
     "min": 2,
@@ -253,17 +253,17 @@
      7,
      7,
      7,
+     7,
      8,
      9,
      9,
      9,
+     9,
      10,
      10,
      10,
      10,
      10,
-     11,
-     11,
      11,
      11,
      11,
@@ -273,40 +273,40 @@
     "goldPerDay": {
      "1": 584,
      "3": 1011,
-     "5": 1475,
-     "10": 2275
+     "5": 1474,
+     "10": 2271
     },
     "gatePct": {
      "1": 96,
      "2": 85,
      "3": 94,
-     "5": 68
+     "5": 67
     },
-    "purchases": 8.3,
+    "purchases": 8,
     "actionsPerSecond": 1.06,
-    "grabRate": 0.86,
-    "offeringsPerDay": 5.7,
-    "kegsShaken": 15.2,
+    "grabRate": 0.85,
+    "offeringsPerDay": 5.6,
+    "kegsShaken": 15.1,
     "weaponShots": {
      "cheese": 3.3,
      "frost": 1.9,
-     "stomper": 4.2,
+     "stomper": 3,
      "midas": 1.7,
-     "alphorn": 4.2,
-     "sentry": 2,
+     "alphorn": 3.9,
+     "sentry": 1.8,
      "bellows": 0.7,
-     "wheel": 6.8,
-     "comet": 1.5,
+     "wheel": 6.1,
+     "comet": 1.4,
      "forks": 3.3,
-     "thorns": 1.6,
-     "bell": 1.6,
-     "mortar": 5.1,
-     "beacon": 2.1,
-     "bolter": 1.2,
-     "cuckoo": 0.2
+     "thorns": 1.5,
+     "bell": 1.3,
+     "mortar": 4.5,
+     "beacon": 2.2,
+     "bolter": 1.3,
+     "cuckoo": 0.5
     },
     "stuck": [],
-    "seconds": 1.107
+    "seconds": 1.47
    },
    {
     "label": "Mid zu zweit",
@@ -314,12 +314,14 @@
     "players": 2,
     "difficulty": "medium",
     "runs": 30,
-    "median": 15,
+    "median": 15.5,
     "p10": 14,
     "p90": 26,
-    "min": 14,
-    "max": 46,
+    "min": 13,
+    "max": 34,
     "days": [
+     13,
+     13,
      14,
      14,
      14,
@@ -327,9 +329,6 @@
      14,
      14,
      14,
-     14,
-     15,
-     15,
      15,
      15,
      15,
@@ -338,25 +337,26 @@
      15,
      16,
      16,
+     16,
+     17,
      17,
      17,
      17,
      17,
      18,
-     18,
-     18,
-     19,
+     24,
+     24,
      26,
-     29,
+     28,
      31,
-     46
+     34
     ],
     "goldPerDay": {
      "1": 584,
      "3": 1008,
-     "5": 1451,
-     "10": 2657,
-     "20": 6205,
+     "5": 1453,
+     "10": 2654,
+     "20": 6200,
      "30": 6833
     },
     "gatePct": {
@@ -365,20 +365,20 @@
      "3": 100,
      "5": 100
     },
-    "purchases": 17.3,
+    "purchases": 17.5,
     "actionsPerSecond": 1.04,
     "grabRate": 0.83,
     "offeringsPerDay": 9.2,
-    "kegsShaken": 52.9,
+    "kegsShaken": 53.1,
     "weaponShots": {
-     "wheel": 46.6,
-     "stomper": 56.2,
-     "mortar": 69.8,
-     "comet": 40.6,
-     "bolter": 48
+     "wheel": 45.3,
+     "stomper": 55.8,
+     "mortar": 69.6,
+     "bolter": 45.9,
+     "comet": 40.2
     },
     "stuck": [],
-    "seconds": 3.657
+    "seconds": 7.22
    },
    {
     "label": "Great zu zweit",
@@ -388,48 +388,48 @@
     "runs": 30,
     "median": 61,
     "p10": 18,
-    "p90": 66,
-    "min": 15,
-    "max": 68,
+    "p90": 64,
+    "min": 16,
+    "max": 65,
     "days": [
-     15,
+     16,
      17,
      18,
      18,
      20,
-     51,
      57,
+     58,
+     58,
      58,
      59,
      59,
-     59,
-     59,
      60,
-     60,
+     61,
      61,
      61,
      61,
      61,
      62,
      62,
+     62,
+     62,
+     63,
+     63,
      63,
      63,
      64,
      64,
      64,
      65,
-     66,
-     66,
-     67,
-     68
+     65
     ],
     "goldPerDay": {
      "1": 584,
      "3": 1000,
-     "5": 1436,
-     "10": 2631,
-     "20": 6133,
-     "30": 7483
+     "5": 1437,
+     "10": 2632,
+     "20": 6206,
+     "30": 7533
     },
     "gatePct": {
      "1": 100,
@@ -437,20 +437,20 @@
      "3": 100,
      "5": 100
     },
-    "purchases": 30.2,
+    "purchases": 30.3,
     "actionsPerSecond": 1.41,
-    "grabRate": 0.88,
-    "offeringsPerDay": 23.1,
-    "kegsShaken": 234.5,
+    "grabRate": 0.87,
+    "offeringsPerDay": 23.2,
+    "kegsShaken": 239.7,
     "weaponShots": {
-     "wheel": 181.4,
-     "comet": 177.3,
-     "stomper": 224.5,
-     "beacon": 107.8,
-     "bellows": 179.7
+     "wheel": 180.8,
+     "comet": 176.8,
+     "stomper": 225.1,
+     "beacon": 108.4,
+     "bellows": 178.9
     },
     "stuck": [],
-    "seconds": 16.425
+    "seconds": 29.118
    },
    {
     "label": "Mid solo Easy",
@@ -460,9 +460,9 @@
     "runs": 30,
     "median": 21,
     "p10": 17,
-    "p90": 26,
+    "p90": 31,
     "min": 15,
-    "max": 36,
+    "max": 35,
     "days": [
      15,
      16,
@@ -474,7 +474,6 @@
      17,
      18,
      18,
-     19,
      19,
      19,
      19,
@@ -492,16 +491,17 @@
      24,
      26,
      31,
+     32,
      34,
-     36
+     35
     ],
     "goldPerDay": {
      "1": 358,
      "3": 576,
      "5": 781,
-     "10": 1393,
-     "20": 3209,
-     "30": 4690
+     "10": 1394,
+     "20": 3210,
+     "30": 4811
     },
     "gatePct": {
      "1": 100,
@@ -509,20 +509,20 @@
      "3": 100,
      "5": 100
     },
-    "purchases": 15.1,
+    "purchases": 15.3,
     "actionsPerSecond": 0.9,
     "grabRate": 0.91,
     "offeringsPerDay": 5.4,
-    "kegsShaken": 37.2,
+    "kegsShaken": 38.3,
     "weaponShots": {
-     "wheel": 46.6,
-     "mortar": 55.7,
-     "stomper": 51.2,
-     "comet": 30.1,
-     "bolter": 32.6
+     "wheel": 47.5,
+     "mortar": 57.1,
+     "stomper": 52.6,
+     "comet": 31.6,
+     "bolter": 33.7
     },
     "stuck": [],
-    "seconds": 2.109
+    "seconds": 2.545
    },
    {
     "label": "Mid solo Hard",
@@ -537,6 +537,7 @@
     "max": 26,
     "days": [
      10,
+     11,
      12,
      12,
      13,
@@ -544,7 +545,6 @@
      13,
      13,
      13,
-     14,
      14,
      14,
      14,
@@ -569,8 +569,8 @@
     ],
     "goldPerDay": {
      "1": 464,
-     "3": 770,
-     "5": 1087,
+     "3": 771,
+     "5": 1088,
      "10": 1951,
      "20": 4354
     },
@@ -580,20 +580,20 @@
      "3": 100,
      "5": 96
     },
-    "purchases": 14.3,
+    "purchases": 14.2,
     "actionsPerSecond": 1.05,
     "grabRate": 0.92,
     "offeringsPerDay": 7.6,
-    "kegsShaken": 31.5,
+    "kegsShaken": 31.2,
     "weaponShots": {
-     "wheel": 33,
-     "stomper": 33.6,
-     "comet": 21.3,
-     "mortar": 29,
-     "bolter": 16.2
+     "wheel": 32.6,
+     "stomper": 33.4,
+     "comet": 21,
+     "mortar": 28.7,
+     "bolter": 15.8
     },
     "stuck": [],
-    "seconds": 1.752
+    "seconds": 1.72
    }
   ]
  },
@@ -607,11 +607,11 @@
     "skills": [
      "poor"
     ],
-    "seconds": 1.381,
+    "seconds": 1.425,
     "stoppedAt": null,
     "firstTry": 30,
-    "secondTry": 4,
-    "later": 5,
+    "secondTry": 5,
+    "later": 4,
     "never": 61,
     "levels": [
      {
@@ -665,7 +665,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.004
      },
      {
       "level": 2,
@@ -712,7 +712,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.004
      },
      {
       "level": 3,
@@ -812,7 +812,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.003
+      "seconds": 0.009
      },
      {
       "level": 5,
@@ -874,7 +874,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.008
      },
      {
       "level": 6,
@@ -925,7 +925,7 @@
        "weapon:0:cheese"
       ],
       "stuck": null,
-      "seconds": 0.005
+      "seconds": 0.008
      },
      {
       "level": 7,
@@ -976,7 +976,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.005
+      "seconds": 0.006
      },
      {
       "level": 8,
@@ -1031,7 +1031,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.006
      },
      {
       "level": 9,
@@ -1091,7 +1091,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.006
      },
      {
       "level": 10,
@@ -1151,7 +1151,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.016
      },
      {
       "level": 11,
@@ -1205,7 +1205,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.012
      },
      {
       "level": 12,
@@ -1273,7 +1273,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.012
      },
      {
       "level": 13,
@@ -1330,7 +1330,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.016
      },
      {
       "level": 14,
@@ -1393,7 +1393,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.013
      },
      {
       "level": 15,
@@ -1450,7 +1450,7 @@
        "weapon:0:cheese"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.015
      },
      {
       "level": 16,
@@ -1508,7 +1508,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.015
      },
      {
       "level": 17,
@@ -1566,7 +1566,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.018
      },
      {
       "level": 18,
@@ -1629,7 +1629,7 @@
        "weapon:1:alphorn"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.017
      },
      {
       "level": 19,
@@ -1693,7 +1693,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.012
      },
      {
       "level": 20,
@@ -1826,7 +1826,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.014
      },
      {
       "level": 22,
@@ -1946,7 +1946,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.014
      },
      {
       "level": 24,
@@ -2134,7 +2134,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.02
      },
      {
       "level": 27,
@@ -2194,7 +2194,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.015
      },
      {
       "level": 28,
@@ -2256,7 +2256,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.018
      },
      {
       "level": 29,
@@ -2269,9 +2269,9 @@
        2,
        7
       ],
-      "gatePct": 80,
-      "gold": 7117,
-      "offerings": 8,
+      "gatePct": 85,
+      "gold": 7077,
+      "offerings": 4,
       "starsEarned": 4,
       "starsLeft": 4,
       "armoury": [
@@ -2331,23 +2331,22 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.023
      },
      {
       "level": 30,
       "boss": true,
       "days": 8,
-      "tries": 3,
+      "tries": 2,
       "won": true,
       "forced": false,
       "dayPerTry": [
        2,
-       8,
        8
       ],
-      "gatePct": 43,
-      "gold": 8070,
-      "offerings": 9,
+      "gatePct": 27,
+      "gold": 8570,
+      "offerings": 10,
       "starsEarned": 8,
       "starsLeft": 2,
       "armoury": [
@@ -2375,17 +2374,16 @@
       "keep": {
        "gateTier": 2,
        "slotWeapon": [
-        "cheese",
-        "alphorn",
-        "frost",
-        "comet",
+        "wheel",
+        "cuckoo",
+        "mortar",
+        null,
         null
        ],
        "weaponTier": {
-        "alphorn": 4,
-        "cheese": 5,
-        "comet": 3,
-        "frost": 1
+        "wheel": 3,
+        "mortar": 4,
+        "cuckoo": 1
        },
        "stations": {
         "cauldron": true,
@@ -2398,14 +2396,13 @@
       "bought": [
        "station:cauldron",
        "gate",
-       "weapon:1:alphorn",
-       "weapon:0:cheese",
-       "weapon:3:comet",
-       "gate",
-       "weapon:2:frost"
+       "weapon:0:wheel",
+       "weapon:2:mortar",
+       "weapon:1:cuckoo",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.049
+      "seconds": 0.028
      },
      {
       "level": 31,
@@ -2470,7 +2467,7 @@
        "weapon:1:alphorn"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.033
      },
      {
       "level": 32,
@@ -2536,7 +2533,7 @@
        "weapon:0:forks"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.024
      },
      {
       "level": 33,
@@ -2600,7 +2597,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.019
      },
      {
       "level": 34,
@@ -2728,7 +2725,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.031
      },
      {
       "level": 36,
@@ -2795,7 +2792,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.027
      },
      {
       "level": 37,
@@ -2853,7 +2850,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.029
      },
      {
       "level": 38,
@@ -2923,7 +2920,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.017
      },
      {
       "level": 39,
@@ -2989,7 +2986,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.016
      },
      {
       "level": 40,
@@ -3066,7 +3063,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.035
      },
      {
       "level": 41,
@@ -3196,7 +3193,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.02
      },
      {
       "level": 43,
@@ -3256,7 +3253,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.016
      },
      {
       "level": 44,
@@ -3329,7 +3326,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.042
+      "seconds": 0.047
      },
      {
       "level": 45,
@@ -3389,7 +3386,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.017
      },
      {
       "level": 46,
@@ -3449,7 +3446,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.012
      },
      {
       "level": 47,
@@ -3515,7 +3512,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.022
      },
      {
       "level": 48,
@@ -3575,7 +3572,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.015
      },
      {
       "level": 49,
@@ -3647,7 +3644,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.018
      },
      {
       "level": 50,
@@ -3708,7 +3705,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.017
      },
      {
       "level": 51,
@@ -3775,7 +3772,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.016
      },
      {
       "level": 52,
@@ -3836,7 +3833,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.021
      },
      {
       "level": 53,
@@ -3958,7 +3955,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.012
      },
      {
       "level": 55,
@@ -4025,7 +4022,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.013
      },
      {
       "level": 56,
@@ -4086,7 +4083,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.015
      },
      {
       "level": 57,
@@ -4147,7 +4144,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.015
      },
      {
       "level": 58,
@@ -4208,7 +4205,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.019
      },
      {
       "level": 59,
@@ -4281,7 +4278,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.011
      },
      {
       "level": 60,
@@ -4349,7 +4346,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.012
      },
      {
       "level": 61,
@@ -4411,7 +4408,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.01
      },
      {
       "level": 62,
@@ -4473,7 +4470,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.017
      },
      {
       "level": 63,
@@ -4535,7 +4532,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.011
      },
      {
       "level": 64,
@@ -4603,7 +4600,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.011
      },
      {
       "level": 65,
@@ -4665,7 +4662,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.011
      },
      {
       "level": 66,
@@ -4727,7 +4724,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.009
      },
      {
       "level": 67,
@@ -4789,7 +4786,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.013
      },
      {
       "level": 68,
@@ -4851,7 +4848,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.014
      },
      {
       "level": 69,
@@ -4913,7 +4910,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.016
      },
      {
       "level": 70,
@@ -5037,7 +5034,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.01
      },
      {
       "level": 72,
@@ -5105,7 +5102,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.013
      },
      {
       "level": 73,
@@ -5167,7 +5164,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.005
+      "seconds": 0.006
      },
      {
       "level": 74,
@@ -5229,7 +5226,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.012
      },
      {
       "level": 75,
@@ -5291,7 +5288,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.008
      },
      {
       "level": 76,
@@ -5353,7 +5350,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.016
      },
      {
       "level": 77,
@@ -5415,7 +5412,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.008
      },
      {
       "level": 78,
@@ -5539,7 +5536,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.007
+      "seconds": 0.008
      },
      {
       "level": 80,
@@ -5601,7 +5598,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.014
      },
      {
       "level": 81,
@@ -5663,7 +5660,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.009
      },
      {
       "level": 82,
@@ -5725,7 +5722,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.009
      },
      {
       "level": 83,
@@ -5787,7 +5784,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.01
      },
      {
       "level": 84,
@@ -5849,7 +5846,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.013
      },
      {
       "level": 85,
@@ -5911,7 +5908,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.008
      },
      {
       "level": 86,
@@ -5973,7 +5970,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.012
      },
      {
       "level": 87,
@@ -6035,7 +6032,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.009
      },
      {
       "level": 88,
@@ -6097,7 +6094,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.01
      },
      {
       "level": 89,
@@ -6159,7 +6156,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.014
      },
      {
       "level": 90,
@@ -6221,7 +6218,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.007
      },
      {
       "level": 91,
@@ -6283,7 +6280,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.007
+      "seconds": 0.011
      },
      {
       "level": 92,
@@ -6345,7 +6342,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.017
      },
      {
       "level": 93,
@@ -6469,7 +6466,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.016
      },
      {
       "level": 95,
@@ -6531,7 +6528,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.008
      },
      {
       "level": 96,
@@ -6593,7 +6590,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.01
      },
      {
       "level": 97,
@@ -6655,7 +6652,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.013
      },
      {
       "level": 98,
@@ -6717,7 +6714,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.015
      },
      {
       "level": 99,
@@ -6779,7 +6776,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.014
      },
      {
       "level": 100,
@@ -6841,7 +6838,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.009
      }
     ]
    },
@@ -6850,7 +6847,7 @@
     "skills": [
      "mid"
     ],
-    "seconds": 1.6,
+    "seconds": 1.788,
     "stoppedAt": null,
     "firstTry": 55,
     "secondTry": 4,
@@ -7008,7 +7005,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.003
+      "seconds": 0.006
      },
      {
       "level": 4,
@@ -7111,7 +7108,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.005
      },
      {
       "level": 6,
@@ -7161,7 +7158,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.005
      },
      {
       "level": 7,
@@ -7211,7 +7208,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.006
      },
      {
       "level": 8,
@@ -7325,7 +7322,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.004
      },
      {
       "level": 10,
@@ -7386,7 +7383,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.012
      },
      {
       "level": 11,
@@ -7439,7 +7436,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.009
      },
      {
       "level": 12,
@@ -7494,7 +7491,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.009
      },
      {
       "level": 13,
@@ -7549,7 +7546,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.012
      },
      {
       "level": 14,
@@ -7665,7 +7662,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.012
      },
      {
       "level": 16,
@@ -7835,7 +7832,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.011
      },
      {
       "level": 19,
@@ -7903,7 +7900,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.01
      },
      {
       "level": 20,
@@ -7962,7 +7959,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.012
      },
      {
       "level": 21,
@@ -8027,7 +8024,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.016
      },
      {
       "level": 22,
@@ -8084,7 +8081,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.007
      },
      {
       "level": 23,
@@ -8143,7 +8140,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.011
      },
      {
       "level": 24,
@@ -8202,7 +8199,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.01
      },
      {
       "level": 25,
@@ -8267,7 +8264,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.012
      },
      {
       "level": 26,
@@ -8327,7 +8324,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.015
      },
      {
       "level": 27,
@@ -8444,7 +8441,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.019
      },
      {
       "level": 29,
@@ -8516,7 +8513,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.013
      },
      {
       "level": 30,
@@ -8529,8 +8526,8 @@
        8
       ],
       "gatePct": 100,
-      "gold": 10960,
-      "offerings": 7,
+      "gold": 10930,
+      "offerings": 4,
       "starsEarned": 8,
       "starsLeft": 5,
       "armoury": [
@@ -8583,7 +8580,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.017
      },
      {
       "level": 31,
@@ -8644,7 +8641,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.01
      },
      {
       "level": 32,
@@ -8705,7 +8702,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.013
      },
      {
       "level": 33,
@@ -8773,7 +8770,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.019
      },
      {
       "level": 34,
@@ -8834,7 +8831,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.015
      },
      {
       "level": 35,
@@ -8895,7 +8892,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.012
      },
      {
       "level": 36,
@@ -8956,7 +8953,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.011
      },
      {
       "level": 37,
@@ -9017,7 +9014,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.013
      },
      {
       "level": 38,
@@ -9087,7 +9084,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.016
      },
      {
       "level": 39,
@@ -9157,7 +9154,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.014
      },
      {
       "level": 40,
@@ -9231,7 +9228,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.036
      },
      {
       "level": 41,
@@ -9296,7 +9293,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.021
      },
      {
       "level": 42,
@@ -9367,7 +9364,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.036
      },
      {
       "level": 43,
@@ -9432,7 +9429,7 @@
        "weapon:4:bolter"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.024
      },
      {
       "level": 44,
@@ -9499,7 +9496,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.024
      },
      {
       "level": 45,
@@ -9565,7 +9562,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.019
      },
      {
       "level": 46,
@@ -9636,7 +9633,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.018
      },
      {
       "level": 47,
@@ -9702,7 +9699,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.021
      },
      {
       "level": 48,
@@ -9769,7 +9766,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.021
      },
      {
       "level": 49,
@@ -9835,7 +9832,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.024
      },
      {
       "level": 50,
@@ -9906,7 +9903,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.045
      },
      {
       "level": 51,
@@ -9972,7 +9969,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.03
      },
      {
       "level": 52,
@@ -10041,7 +10038,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.033
+      "seconds": 0.034
      },
      {
       "level": 53,
@@ -10172,7 +10169,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.03
      },
      {
       "level": 55,
@@ -10230,7 +10227,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.04
      },
      {
       "level": 56,
@@ -10298,7 +10295,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.02
      },
      {
       "level": 57,
@@ -10356,7 +10353,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.019
      },
      {
       "level": 58,
@@ -10414,7 +10411,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.025
      },
      {
       "level": 59,
@@ -10480,7 +10477,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.028
+      "seconds": 0.02
      },
      {
       "level": 60,
@@ -10550,7 +10547,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.033
+      "seconds": 0.032
      },
      {
       "level": 61,
@@ -10619,7 +10616,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.039
+      "seconds": 0.022
      },
      {
       "level": 62,
@@ -10688,7 +10685,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.024
      },
      {
       "level": 63,
@@ -10755,7 +10752,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.023
      },
      {
       "level": 64,
@@ -10769,9 +10766,9 @@
        1,
        7
       ],
-      "gatePct": 100,
-      "gold": 10372,
-      "offerings": 12,
+      "gatePct": 99,
+      "gold": 10532,
+      "offerings": 28,
       "starsEarned": 3,
       "starsLeft": 42,
       "armoury": [],
@@ -10821,12 +10818,12 @@
        "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:4:bolter",
-       "weapon:3:comet",
        "gate",
-       "station:perch"
+       "station:perch",
+       "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.037
      },
      {
       "level": 65,
@@ -10884,7 +10881,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.021
      },
      {
       "level": 66,
@@ -10942,7 +10939,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.022
      },
      {
       "level": 67,
@@ -11000,7 +10997,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.021
      },
      {
       "level": 68,
@@ -11068,7 +11065,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.024
      },
      {
       "level": 69,
@@ -11126,7 +11123,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.02
      },
      {
       "level": 70,
@@ -11196,7 +11193,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.028
+      "seconds": 0.03
      },
      {
       "level": 71,
@@ -11254,7 +11251,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.018
      },
      {
       "level": 72,
@@ -11312,7 +11309,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.02
      },
      {
       "level": 73,
@@ -11370,7 +11367,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.017
      },
      {
       "level": 74,
@@ -11428,7 +11425,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.024
      },
      {
       "level": 75,
@@ -11486,7 +11483,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.021
      },
      {
       "level": 76,
@@ -11544,7 +11541,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.016
      },
      {
       "level": 77,
@@ -11602,7 +11599,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.017
      },
      {
       "level": 78,
@@ -11660,7 +11657,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.028
      },
      {
       "level": 79,
@@ -11718,7 +11715,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.021
      },
      {
       "level": 80,
@@ -11834,7 +11831,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.019
      },
      {
       "level": 82,
@@ -11950,7 +11947,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.012
      },
      {
       "level": 84,
@@ -12008,7 +12005,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.018
      },
      {
       "level": 85,
@@ -12066,7 +12063,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.026
      },
      {
       "level": 86,
@@ -12124,7 +12121,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.018
      },
      {
       "level": 87,
@@ -12182,7 +12179,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.016
      },
      {
       "level": 88,
@@ -12240,7 +12237,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.016
      },
      {
       "level": 89,
@@ -12298,7 +12295,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.018
      },
      {
       "level": 90,
@@ -12356,7 +12353,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.019
      },
      {
       "level": 91,
@@ -12414,7 +12411,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.015
      },
      {
       "level": 92,
@@ -12530,7 +12527,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.021
      },
      {
       "level": 94,
@@ -12588,7 +12585,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.028
      },
      {
       "level": 95,
@@ -12646,7 +12643,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.017
      },
      {
       "level": 96,
@@ -12704,7 +12701,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.014
      },
      {
       "level": 97,
@@ -12762,7 +12759,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.021
      },
      {
       "level": 98,
@@ -12820,7 +12817,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.021
      },
      {
       "level": 99,
@@ -12878,7 +12875,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.012
      },
      {
       "level": 100,
@@ -12936,7 +12933,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.021
      }
     ]
    },
@@ -12945,7 +12942,7 @@
     "skills": [
      "great"
     ],
-    "seconds": 1.783,
+    "seconds": 1.872,
     "stoppedAt": null,
     "firstTry": 90,
     "secondTry": 3,
@@ -13003,7 +13000,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.001
+      "seconds": 0.002
      },
      {
       "level": 2,
@@ -13103,7 +13100,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.007
+      "seconds": 0.002
      },
      {
       "level": 4,
@@ -13150,7 +13147,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.003
      },
      {
       "level": 5,
@@ -13306,7 +13303,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.003
      },
      {
       "level": 8,
@@ -13420,7 +13417,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.007
      },
      {
       "level": 10,
@@ -13479,7 +13476,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.011
      },
      {
       "level": 11,
@@ -13532,7 +13529,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.007
      },
      {
       "level": 12,
@@ -13585,7 +13582,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.007
      },
      {
       "level": 13,
@@ -13638,7 +13635,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.009
      },
      {
       "level": 14,
@@ -13651,8 +13648,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 1880,
-      "offerings": 7,
+      "gold": 1860,
+      "offerings": 5,
       "starsEarned": 4,
       "starsLeft": 6,
       "armoury": [
@@ -13699,7 +13696,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.008
      },
      {
       "level": 15,
@@ -13809,7 +13806,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.015
      },
      {
       "level": 17,
@@ -13871,7 +13868,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.011
      },
      {
       "level": 18,
@@ -13926,7 +13923,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.01
      },
      {
       "level": 19,
@@ -14053,7 +14050,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.011
      },
      {
       "level": 21,
@@ -14118,7 +14115,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.013
      },
      {
       "level": 22,
@@ -14175,7 +14172,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.008
      },
      {
       "level": 23,
@@ -14234,7 +14231,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.011
      },
      {
       "level": 24,
@@ -14358,7 +14355,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.01
      },
      {
       "level": 26,
@@ -14417,7 +14414,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.015
      },
      {
       "level": 27,
@@ -14476,7 +14473,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.012
      },
      {
       "level": 28,
@@ -14535,7 +14532,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.014
      },
      {
       "level": 29,
@@ -14608,7 +14605,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.015
      },
      {
       "level": 30,
@@ -14737,7 +14734,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.009
      },
      {
       "level": 32,
@@ -14864,7 +14861,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.016
      },
      {
       "level": 34,
@@ -14925,7 +14922,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.015
      },
      {
       "level": 35,
@@ -14986,7 +14983,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.011
      },
      {
       "level": 36,
@@ -15112,7 +15109,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.015
      },
      {
       "level": 38,
@@ -15251,7 +15248,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.01
      },
      {
       "level": 40,
@@ -15325,7 +15322,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.023
      },
      {
       "level": 41,
@@ -15390,7 +15387,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.013
      },
      {
       "level": 42,
@@ -15463,7 +15460,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.019
      },
      {
       "level": 43,
@@ -15529,7 +15526,7 @@
        "weapon:4:bolter"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.015
      },
      {
       "level": 44,
@@ -15595,7 +15592,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.017
      },
      {
       "level": 45,
@@ -15608,8 +15605,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 12092,
-      "offerings": 7,
+      "gold": 9932,
+      "offerings": 5,
       "starsEarned": 3,
       "starsLeft": 13,
       "armoury": [],
@@ -15629,7 +15626,7 @@
        4
       ],
       "keep": {
-       "gateTier": 1,
+       "gateTier": 2,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -15659,10 +15656,11 @@
        "weapon:2:mortar",
        "weapon:3:comet",
        "weapon:4:bolter",
-       "weapon:1:stomper"
+       "weapon:1:stomper",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.019
      },
      {
       "level": 46,
@@ -15735,7 +15733,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.022
      },
      {
       "level": 47,
@@ -15802,7 +15800,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.014
      },
      {
       "level": 48,
@@ -15869,7 +15867,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.014
      },
      {
       "level": 49,
@@ -15937,7 +15935,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.017
      },
      {
       "level": 50,
@@ -16006,7 +16004,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.029
      },
      {
       "level": 51,
@@ -16073,7 +16071,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.013
      },
      {
       "level": 52,
@@ -16142,7 +16140,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.023
      },
      {
       "level": 53,
@@ -16214,7 +16212,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.019
      },
      {
       "level": 54,
@@ -16281,7 +16279,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.016
      },
      {
       "level": 55,
@@ -16347,7 +16345,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.017
      },
      {
       "level": 56,
@@ -16416,7 +16414,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.025
      },
      {
       "level": 57,
@@ -16429,8 +16427,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 6181,
-      "offerings": 27,
+      "gold": 6151,
+      "offerings": 24,
       "starsEarned": 3,
       "starsLeft": 14,
       "armoury": [],
@@ -16483,7 +16481,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.022
      },
      {
       "level": 58,
@@ -16552,7 +16550,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.028
      },
      {
       "level": 59,
@@ -16619,7 +16617,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.018
      },
      {
       "level": 60,
@@ -16688,7 +16686,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.029
      },
      {
       "level": 61,
@@ -16701,8 +16699,8 @@
        8
       ],
       "gatePct": 100,
-      "gold": 14676,
-      "offerings": 42,
+      "gold": 14696,
+      "offerings": 44,
       "starsEarned": 4,
       "starsLeft": 33,
       "armoury": [],
@@ -16757,7 +16755,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.034
      },
      {
       "level": 62,
@@ -16770,8 +16768,8 @@
        8
       ],
       "gatePct": 100,
-      "gold": 14795,
-      "offerings": 44,
+      "gold": 14655,
+      "offerings": 30,
       "starsEarned": 3,
       "starsLeft": 36,
       "armoury": [],
@@ -16821,12 +16819,12 @@
        "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:4:bolter",
-       "weapon:3:comet",
+       "gate",
        "station:perch",
-       "gate"
+       "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.03
      },
      {
       "level": 63,
@@ -16894,7 +16892,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.018
      },
      {
       "level": 64,
@@ -16963,7 +16961,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.02
      },
      {
       "level": 65,
@@ -17029,7 +17027,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.017
      },
      {
       "level": 66,
@@ -17099,7 +17097,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.021
      },
      {
       "level": 67,
@@ -17168,7 +17166,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.028
      },
      {
       "level": 68,
@@ -17235,7 +17233,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.019
      },
      {
       "level": 69,
@@ -17303,7 +17301,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.018
      },
      {
       "level": 70,
@@ -17373,7 +17371,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.033
      },
      {
       "level": 71,
@@ -17386,8 +17384,8 @@
        8
       ],
       "gatePct": 100,
-      "gold": 12765,
-      "offerings": 29,
+      "gold": 12835,
+      "offerings": 36,
       "starsEarned": 3,
       "starsLeft": 70,
       "armoury": [],
@@ -17443,7 +17441,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.023
      },
      {
       "level": 72,
@@ -17456,8 +17454,8 @@
        8
       ],
       "gatePct": 100,
-      "gold": 13738,
-      "offerings": 39,
+      "gold": 13698,
+      "offerings": 35,
       "starsEarned": 3,
       "starsLeft": 73,
       "armoury": [],
@@ -17489,8 +17487,8 @@
         "wheel": 5,
         "mortar": 5,
         "bolter": 5,
-        "stomper": 5,
-        "comet": 5
+        "comet": 5,
+        "stomper": 5
        },
        "stations": {
         "cauldron": true,
@@ -17506,14 +17504,14 @@
        "gate",
        "weapon:2:mortar",
        "weapon:4:bolter",
-       "weapon:1:stomper",
-       "station:perch",
        "weapon:3:comet",
+       "station:perch",
+       "weapon:1:stomper",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.025
      },
      {
       "level": 73,
@@ -17583,7 +17581,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.027
      },
      {
       "level": 74,
@@ -17652,7 +17650,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.019
      },
      {
       "level": 75,
@@ -17722,7 +17720,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.025
      },
      {
       "level": 76,
@@ -17735,8 +17733,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 10072,
-      "offerings": 26,
+      "gold": 10092,
+      "offerings": 28,
       "starsEarned": 3,
       "starsLeft": 86,
       "armoury": [],
@@ -17805,8 +17803,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 10463,
-      "offerings": 21,
+      "gold": 10473,
+      "offerings": 22,
       "starsEarned": 3,
       "starsLeft": 89,
       "armoury": [],
@@ -17838,8 +17836,8 @@
         "wheel": 5,
         "mortar": 5,
         "bolter": 5,
-        "comet": 5,
-        "stomper": 5
+        "stomper": 5,
+        "comet": 5
        },
        "stations": {
         "cauldron": true,
@@ -17855,14 +17853,14 @@
        "gate",
        "weapon:2:mortar",
        "weapon:4:bolter",
-       "weapon:3:comet",
-       "station:perch",
        "weapon:1:stomper",
        "gate",
+       "station:perch",
+       "weapon:3:comet",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.023
      },
      {
       "level": 78,
@@ -17876,8 +17874,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 12524,
-      "offerings": 21,
+      "gold": 12534,
+      "offerings": 22,
       "starsEarned": 3,
       "starsLeft": 92,
       "armoury": [],
@@ -17932,7 +17930,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.029
      },
      {
       "level": 79,
@@ -18002,7 +18000,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.028
      },
      {
       "level": 80,
@@ -18072,7 +18070,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.022
      },
      {
       "level": 81,
@@ -18085,8 +18083,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 13362,
-      "offerings": 24,
+      "gold": 13402,
+      "offerings": 28,
       "starsEarned": 3,
       "starsLeft": 106,
       "armoury": [],
@@ -18142,7 +18140,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.028
      },
      {
       "level": 82,
@@ -18212,7 +18210,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.024
      },
      {
       "level": 83,
@@ -18225,8 +18223,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 14399,
-      "offerings": 26,
+      "gold": 14499,
+      "offerings": 36,
       "starsEarned": 3,
       "starsLeft": 112,
       "armoury": [],
@@ -18352,7 +18350,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.028
      },
      {
       "level": 85,
@@ -18421,7 +18419,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.024
      },
      {
       "level": 86,
@@ -18490,7 +18488,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.022
      },
      {
       "level": 87,
@@ -18559,7 +18557,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.021
      },
      {
       "level": 88,
@@ -18628,7 +18626,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.02
      },
      {
       "level": 89,
@@ -18686,7 +18684,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.02
      },
      {
       "level": 90,
@@ -18756,7 +18754,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.037
      },
      {
       "level": 91,
@@ -18827,7 +18825,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.047
+      "seconds": 0.033
      },
      {
       "level": 92,
@@ -18885,7 +18883,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.022
      },
      {
       "level": 93,
@@ -18956,7 +18954,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.059
+      "seconds": 0.041
      },
      {
       "level": 94,
@@ -18971,8 +18969,8 @@
        9
       ],
       "gatePct": 100,
-      "gold": 13225,
-      "offerings": 45,
+      "gold": 13175,
+      "offerings": 40,
       "starsEarned": 3,
       "starsLeft": 151,
       "armoury": [],
@@ -19029,7 +19027,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.047
+      "seconds": 0.055
      },
      {
       "level": 95,
@@ -19103,7 +19101,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.065
+      "seconds": 0.049
      },
      {
       "level": 96,
@@ -19161,7 +19159,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.025
      },
      {
       "level": 97,
@@ -19219,7 +19217,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.019
      },
      {
       "level": 98,
@@ -19277,7 +19275,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.017
      },
      {
       "level": 99,
@@ -19289,9 +19287,9 @@
       "dayPerTry": [
        9
       ],
-      "gatePct": 100,
-      "gold": 18596,
-      "offerings": 48,
+      "gatePct": 99,
+      "gold": 18546,
+      "offerings": 43,
       "starsEarned": 3,
       "starsLeft": 167,
       "armoury": [],
@@ -19348,7 +19346,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.041
+      "seconds": 0.047
      },
      {
       "level": 100,
@@ -19419,7 +19417,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.054
+      "seconds": 0.05
      }
     ]
    },
@@ -19429,7 +19427,7 @@
      "mid",
      "mid"
     ],
-    "seconds": 2.362,
+    "seconds": 2.85,
     "stoppedAt": null,
     "firstTry": 54,
     "secondTry": 0,
@@ -19488,7 +19486,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.007
+      "seconds": 0.003
      },
      {
       "level": 2,
@@ -19536,7 +19534,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.005
      },
      {
       "level": 3,
@@ -19590,7 +19588,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.007
      },
      {
       "level": 4,
@@ -19641,7 +19639,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.007
+      "seconds": 0.009
      },
      {
       "level": 5,
@@ -19698,7 +19696,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.011
      },
      {
       "level": 6,
@@ -19749,7 +19747,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.01
      },
      {
       "level": 7,
@@ -19800,7 +19798,7 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.013
      },
      {
       "level": 8,
@@ -19852,7 +19850,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.008
      },
      {
       "level": 9,
@@ -19977,7 +19975,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.02
      },
      {
       "level": 11,
@@ -20031,7 +20029,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.02
      },
      {
       "level": 12,
@@ -20044,8 +20042,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 2838,
-      "offerings": 1,
+      "gold": 2828,
+      "offerings": 0,
       "starsEarned": 4,
       "starsLeft": 11,
       "armoury": [],
@@ -20087,7 +20085,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.014
      },
      {
       "level": 13,
@@ -20143,7 +20141,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.019
      },
      {
       "level": 14,
@@ -20205,7 +20203,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.012
      },
      {
       "level": 15,
@@ -20218,8 +20216,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 2711,
-      "offerings": 4,
+      "gold": 2691,
+      "offerings": 2,
       "starsEarned": 4,
       "starsLeft": 10,
       "armoury": [],
@@ -20262,7 +20260,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.015
      },
      {
       "level": 16,
@@ -20319,7 +20317,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.026
      },
      {
       "level": 17,
@@ -20382,7 +20380,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.018
      },
      {
       "level": 18,
@@ -20505,7 +20503,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.014
      },
      {
       "level": 20,
@@ -20565,7 +20563,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.021
      },
      {
       "level": 21,
@@ -20631,7 +20629,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.021
      },
      {
       "level": 22,
@@ -20689,7 +20687,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.019
      },
      {
       "level": 23,
@@ -20702,8 +20700,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 5578,
-      "offerings": 2,
+      "gold": 5588,
+      "offerings": 3,
       "starsEarned": 4,
       "starsLeft": 11,
       "armoury": [],
@@ -20749,7 +20747,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.028
      },
      {
       "level": 24,
@@ -20807,7 +20805,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.011
      },
      {
       "level": 25,
@@ -20873,7 +20871,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.013
      },
      {
       "level": 26,
@@ -20886,8 +20884,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 8662,
-      "offerings": 8,
+      "gold": 8622,
+      "offerings": 4,
       "starsEarned": 3,
       "starsLeft": 5,
       "armoury": [],
@@ -20946,8 +20944,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 5349,
-      "offerings": 7,
+      "gold": 5339,
+      "offerings": 6,
       "starsEarned": 4,
       "starsLeft": 9,
       "armoury": [],
@@ -20991,7 +20989,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.014
      },
      {
       "level": 28,
@@ -21051,7 +21049,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.018
      },
      {
       "level": 29,
@@ -21125,7 +21123,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.02
      },
      {
       "level": 30,
@@ -21194,7 +21192,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.037
      },
      {
       "level": 31,
@@ -21207,8 +21205,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 5932,
-      "offerings": 3,
+      "gold": 5922,
+      "offerings": 2,
       "starsEarned": 3,
       "starsLeft": 8,
       "armoury": [],
@@ -21256,7 +21254,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.014
      },
      {
       "level": 32,
@@ -21386,7 +21384,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.026
      },
      {
       "level": 34,
@@ -21399,8 +21397,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 13425,
-      "offerings": 7,
+      "gold": 13395,
+      "offerings": 4,
       "starsEarned": 4,
       "starsLeft": 4,
       "armoury": [],
@@ -21448,7 +21446,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.026
      },
      {
       "level": 35,
@@ -21461,8 +21459,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 10273,
-      "offerings": 6,
+      "gold": 10263,
+      "offerings": 5,
       "starsEarned": 3,
       "starsLeft": 7,
       "armoury": [],
@@ -21510,7 +21508,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.017
      },
      {
       "level": 36,
@@ -21523,8 +21521,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 6171,
-      "offerings": 6,
+      "gold": 6161,
+      "offerings": 5,
       "starsEarned": 4,
       "starsLeft": 11,
       "armoury": [],
@@ -21573,7 +21571,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.018
      },
      {
       "level": 37,
@@ -21586,8 +21584,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 9197,
-      "offerings": 6,
+      "gold": 9257,
+      "offerings": 12,
       "starsEarned": 3,
       "starsLeft": 14,
       "armoury": [],
@@ -21636,7 +21634,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.028
      },
      {
       "level": 38,
@@ -21707,7 +21705,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.025
      },
      {
       "level": 39,
@@ -21720,7 +21718,7 @@
        5
       ],
       "gatePct": 100,
-      "gold": 9178,
+      "gold": 7038,
       "offerings": 12,
       "starsEarned": 4,
       "starsLeft": 4,
@@ -21747,7 +21745,7 @@
        4
       ],
       "keep": {
-       "gateTier": 1,
+       "gateTier": 2,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -21774,10 +21772,11 @@
        "weapon:0:wheel",
        "gate",
        "weapon:1:stomper",
-       "weapon:2:mortar"
+       "weapon:2:mortar",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.027
      },
      {
       "level": 40,
@@ -21853,7 +21852,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.033
      },
      {
       "level": 41,
@@ -21919,7 +21918,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.017
      },
      {
       "level": 42,
@@ -21932,8 +21931,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 14101,
-      "offerings": 7,
+      "gold": 13531,
+      "offerings": 12,
       "starsEarned": 4,
       "starsLeft": 3,
       "armoury": [
@@ -21964,14 +21963,15 @@
         "wheel",
         "stomper",
         "mortar",
-        null,
+        "comet",
         "bolter"
        ],
        "weaponTier": {
         "wheel": 5,
         "stomper": 5,
         "mortar": 5,
-        "bolter": 3
+        "bolter": 3,
+        "comet": 5
        },
        "stations": {
         "cauldron": true,
@@ -21989,10 +21989,11 @@
        "weapon:1:stomper",
        "weapon:2:mortar",
        "weapon:4:bolter",
+       "weapon:3:comet",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.029
      },
      {
       "level": 43,
@@ -22059,7 +22060,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.021
      },
      {
       "level": 44,
@@ -22072,8 +22073,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 16146,
-      "offerings": 11,
+      "gold": 16106,
+      "offerings": 7,
       "starsEarned": 4,
       "starsLeft": 10,
       "armoury": [],
@@ -22128,7 +22129,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.033
      },
      {
       "level": 45,
@@ -22196,7 +22197,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.029
      },
      {
       "level": 46,
@@ -22272,7 +22273,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.03
      },
      {
       "level": 47,
@@ -22339,7 +22340,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.023
      },
      {
       "level": 48,
@@ -22352,8 +22353,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 14341,
-      "offerings": 8,
+      "gold": 15831,
+      "offerings": 5,
       "starsEarned": 3,
       "starsLeft": 8,
       "armoury": [],
@@ -22373,19 +22374,20 @@
        4
       ],
       "keep": {
-       "gateTier": 2,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         "stomper",
         "mortar",
-        null,
+        "comet",
         "bolter"
        ],
        "weaponTier": {
         "wheel": 5,
         "mortar": 5,
         "bolter": 5,
-        "stomper": 5
+        "stomper": 5,
+        "comet": 5
        },
        "stations": {
         "cauldron": true,
@@ -22403,7 +22405,7 @@
        "weapon:2:mortar",
        "weapon:4:bolter",
        "weapon:1:stomper",
-       "gate"
+       "weapon:3:comet"
       ],
       "stuck": null,
       "seconds": 0.024
@@ -22545,7 +22547,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.039
+      "seconds": 0.051
      },
      {
       "level": 51,
@@ -22612,7 +22614,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.027
      },
      {
       "level": 52,
@@ -22625,8 +22627,8 @@
        8
       ],
       "gatePct": 100,
-      "gold": 8161,
-      "offerings": 23,
+      "gold": 8111,
+      "offerings": 18,
       "starsEarned": 4,
       "starsLeft": 27,
       "armoury": [],
@@ -22677,13 +22679,13 @@
        "weapon:2:mortar",
        "weapon:4:bolter",
        "weapon:1:stomper",
+       "gate",
        "station:perch",
        "weapon:3:comet",
-       "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.037
      },
      {
       "level": 53,
@@ -22699,8 +22701,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 5200,
-      "offerings": 21,
+      "gold": 6710,
+      "offerings": 20,
       "starsEarned": 3,
       "starsLeft": 0,
       "armoury": [
@@ -22726,19 +22728,20 @@
        4
       ],
       "keep": {
-       "gateTier": 2,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         "stomper",
         "mortar",
-        null,
+        "comet",
         "bolter"
        ],
        "weaponTier": {
         "wheel": 5,
         "mortar": 5,
         "stomper": 5,
-        "bolter": 5
+        "bolter": 5,
+        "comet": 5
        },
        "stations": {
         "cauldron": true,
@@ -22756,11 +22759,11 @@
        "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:4:bolter",
-       "gate",
+       "weapon:3:comet",
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.041
+      "seconds": 0.045
      },
      {
       "level": 54,
@@ -22831,7 +22834,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.045
      },
      {
       "level": 55,
@@ -22846,8 +22849,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 6258,
-      "offerings": 15,
+      "gold": 6308,
+      "offerings": 20,
       "starsEarned": 3,
       "starsLeft": 7,
       "armoury": [],
@@ -22903,7 +22906,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.039
+      "seconds": 0.043
      },
      {
       "level": 56,
@@ -22962,7 +22965,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.041
      },
      {
       "level": 57,
@@ -23021,7 +23024,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.038
      },
      {
       "level": 58,
@@ -23095,7 +23098,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.061
+      "seconds": 0.068
      },
      {
       "level": 59,
@@ -23154,7 +23157,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.04
      },
      {
       "level": 60,
@@ -23213,7 +23216,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.043
      },
      {
       "level": 61,
@@ -23227,9 +23230,9 @@
        1,
        8
       ],
-      "gatePct": 99,
-      "gold": 17388,
-      "offerings": 58,
+      "gatePct": 100,
+      "gold": 17218,
+      "offerings": 41,
       "starsEarned": 4,
       "starsLeft": 33,
       "armoury": [],
@@ -23286,7 +23289,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.049
+      "seconds": 0.064
      },
      {
       "level": 62,
@@ -23345,7 +23348,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.033
      },
      {
       "level": 63,
@@ -23420,7 +23423,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.054
+      "seconds": 0.06
      },
      {
       "level": 64,
@@ -23433,8 +23436,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 12573,
-      "offerings": 30,
+      "gold": 12453,
+      "offerings": 18,
       "starsEarned": 3,
       "starsLeft": 42,
       "armoury": [],
@@ -23491,7 +23494,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.044
      },
      {
       "level": 65,
@@ -23504,8 +23507,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 13034,
-      "offerings": 24,
+      "gold": 13014,
+      "offerings": 22,
       "starsEarned": 3,
       "starsLeft": 45,
       "armoury": [],
@@ -23561,7 +23564,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.033
      },
      {
       "level": 66,
@@ -23620,7 +23623,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.041
      },
      {
       "level": 67,
@@ -23679,7 +23682,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.044
      },
      {
       "level": 68,
@@ -23751,7 +23754,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.045
      },
      {
       "level": 69,
@@ -23810,7 +23813,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.031
      },
      {
       "level": 70,
@@ -23869,7 +23872,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.033
+      "seconds": 0.044
      },
      {
       "level": 71,
@@ -23928,7 +23931,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.044
      },
      {
       "level": 72,
@@ -23987,7 +23990,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.03
      },
      {
       "level": 73,
@@ -24046,7 +24049,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.02
      },
      {
       "level": 74,
@@ -24164,7 +24167,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.036
      },
      {
       "level": 76,
@@ -24223,7 +24226,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.028
      },
      {
       "level": 77,
@@ -24282,7 +24285,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.039
      },
      {
       "level": 78,
@@ -24341,7 +24344,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.024
      },
      {
       "level": 79,
@@ -24400,7 +24403,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.038
      },
      {
       "level": 80,
@@ -24459,7 +24462,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.033
+      "seconds": 0.039
      },
      {
       "level": 81,
@@ -24518,7 +24521,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.03
      },
      {
       "level": 82,
@@ -24577,7 +24580,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.04
      },
      {
       "level": 83,
@@ -24636,7 +24639,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.028
+      "seconds": 0.032
      },
      {
       "level": 84,
@@ -24695,7 +24698,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.034
      },
      {
       "level": 85,
@@ -24754,7 +24757,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.033
      },
      {
       "level": 86,
@@ -24813,7 +24816,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.033
      },
      {
       "level": 87,
@@ -24872,7 +24875,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.044
      },
      {
       "level": 88,
@@ -24931,7 +24934,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.033
      },
      {
       "level": 89,
@@ -24990,7 +24993,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.038
      },
      {
       "level": 90,
@@ -25049,7 +25052,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.038
      },
      {
       "level": 91,
@@ -25108,7 +25111,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.032
      },
      {
       "level": 92,
@@ -25167,7 +25170,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.027
      },
      {
       "level": 93,
@@ -25226,7 +25229,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.025
      },
      {
       "level": 94,
@@ -25285,7 +25288,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.042
      },
      {
       "level": 95,
@@ -25344,7 +25347,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.03
      },
      {
       "level": 96,
@@ -25403,7 +25406,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.039
      },
      {
       "level": 97,
@@ -25462,7 +25465,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.037
      },
      {
       "level": 98,
@@ -25521,7 +25524,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.03
      },
      {
       "level": 99,
@@ -25580,7 +25583,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.029
      },
      {
       "level": 100,
@@ -25639,7 +25642,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.029
      }
     ]
    }

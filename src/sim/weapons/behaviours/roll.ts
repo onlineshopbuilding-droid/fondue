@@ -4,11 +4,14 @@ import type { RollTier } from '../../../config/weapons';
 import type { SimContext } from '../../context';
 import type { DelayedShot } from '../../types';
 import type { Shot, WeaponBehaviour } from '../behaviour';
+import { groundTargets } from '../targeting';
 
 const SECOND_WHEEL_AFTER = 0.55;
 
 export class RollBehaviour implements WeaponBehaviour<RollTier> {
   fire(ctx: SimContext, tier: RollTier, shot: Shot): boolean {
+    // Like every attacking weapon: an empty road costs nothing.
+    if (groundTargets(ctx).length === 0) return false;
     this.roll(ctx, tier, shot.p);
     for (let i = 1; i < tier.wheels; i++) ctx.weapons.later(shot, i, SECOND_WHEEL_AFTER * i, 0);
     return true;

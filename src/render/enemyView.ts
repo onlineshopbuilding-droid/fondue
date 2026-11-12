@@ -9,6 +9,10 @@ import { partKey, propKey, TEX_SCALE } from './textures';
 
 /** A raider melting in the pot behind the road is drawn this much smaller, like the pot itself. */
 const POT_FIGURE_SCALE = 0.72;
+/** Largest swing, in radians, of a raider hanging on the eagle hook. */
+const HOOK_SWING = 0.12;
+/** How much higher a hooked balloonist hangs than the simulation's collar point. */
+const HOOK_BALLOON_LIFT = 34;
 /** Health bar of a boss day's big raider: wider, and red so that it reads as a boss. */
 const BIG_BAR_WIDTH = 96;
 const BIG_BAR_COLOR = 0xd1495b;
@@ -37,6 +41,10 @@ class Puppet {
 
   setPartVisible(name: string, visible: boolean) {
     for (const p of this.parts) if (p.name === name) p.img.setVisible(visible);
+  }
+
+  setPartScale(name: string, sx: number, sy: number) {
+    for (const p of this.parts) if (p.name === name) p.img.setScale(sx / TEX_SCALE, sy / TEX_SCALE);
   }
 
   pose(fn: (anim: Anim, part: RigPart) => { rot: number; dy: number }) {
@@ -166,6 +174,13 @@ export class EnemyView {
     const rattle = e.st === 'held' && e.armed ? this.kegShake : 0;
     root.setPosition(ox + (rattle > 0 ? Math.sin(time * 0.09) * rattle * 4 : 0), oy);
     root.setRotation(rot + (rattle > 0 ? Math.sin(time * 0.07) * rattle * 0.12 : 0));
+    if (e.st === 'hooked') {
+      // It swings from the hook: the pivot is the top of the figure, where the hook holds it.
+      const a = Math.sin(time * 0.006 + this.seed * 6) * HOOK_SWING;
+      // A balloonist is caught by its balloon, so it hangs higher, the balloon in the hook's bend.
+      const top = drawY - 2 * h - (e.type === 'balloonist' && !e.crow ? HOOK_BALLOON_LIFT : 0);
+      root.setPosition(drawX - Math.sin(a) * 2 * h, top + Math.cos(a) * 2 * h).setRotation(a);
+    }
     // A raider melting in the cauldron sits between the pot's back and its front, behind the road.
     root.setDepth(cooking ? 8.6 : 20 + e.lane / 100 + (e.st === 'held' ? 5 : 0) + (e.st === 'air' ? 3 : 0));
 
@@ -182,7 +197,10 @@ export class EnemyView {
     }
 
     pup.setPartVisible('keg', e.armed);
-    pup.setPartVisible('balloon', e.st === 'float');
+    // On the hook the balloon stays: it is snagged and sags, wobbling as the air goes out of it.
+    pup.setPartVisible('balloon', e.st === 'float' || e.st === 'hooked');
+    if (e.st === 'hooked') pup.setPartScale('balloon', 0.9 + Math.sin(time * 0.02) * 0.04, 0.82 + Math.sin(time * 0.017) * 0.05);
+    else pup.setPartScale('balloon', 1, 1);
     root.setAlpha(e.hidden ? 0.1 + Math.abs(Math.sin(time * 0.01 + this.seed * 10)) * 0.1 : cooking ? Math.max(0, 1 - potProgress * 1.4) : 1);
 
     this.applyPose(pup, e, time, rattle);
@@ -299,6 +317,11 @@ export class EnemyView {
           }
         case 'cooking':
         case 'hooked':
+          // A crow on the hook beats its wings; a raider kicks with arms raised.
+          if (e.crow && (anim === 'armFront' || anim === 'armBack')) {
+            const flap = Math.sin(t * 22);
+            return { rot: anim === 'armFront' ? flap * 0.9 : -flap * 0.9, dy: 0 };
+          }
           switch (anim) {
             case 'legFront': return { rot: Math.sin(t * 18) * 0.7, dy: 0 };
             case 'legBack': return { rot: -Math.sin(t * 21) * 0.7, dy: 0 };

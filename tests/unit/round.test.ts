@@ -173,9 +173,7 @@ describe('cauldron', () => {
     expect(sim.s.potBusy).toBe(0);
   });
 
-  // BUG in src/config/flags.ts: the front/back switch 'cauldron' still exists although the pot on
-  // the road was removed (order 14.1). Remove this `.fails` once the switch is gone.
-  it.fails('the cauldron switch is gone from the experiment switches', () => {
+  it('the cauldron switch is gone from the experiment switches', () => {
     expect(FLAG_DEFS.map((f) => f.id)).not.toContain('cauldron');
   });
 });

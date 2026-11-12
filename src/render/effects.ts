@@ -247,7 +247,8 @@ export class Effects {
     const dy = -Math.min(k, 8) * FLOAT_STACK_Y * 0.5;
     const delay = Math.min(k, 12) * FLOAT_STAGGER;
     t.setText(text).setColor(color).setPosition(x + dx, y + dy).setVisible(delay <= 0).setAlpha(1);
-    t.setDepth(33 + k * 0.001);
+    // Above fireballs and lightning, so a blast never hides its own gold.
+    t.setDepth(35 + k * 0.001);
     this.texts.push({ t, life: FLOAT_LIFE, vy: -80, delay });
   }
 

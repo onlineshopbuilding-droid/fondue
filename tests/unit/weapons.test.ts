@@ -134,9 +134,7 @@ describe('a tap on a weapon', () => {
     }
   });
 
-  // BUG (or an open decision) in src/sim/weapons/behaviours/roll.ts: the wheel fires on an empty
-  // road and its reload starts, unlike every other attacking weapon. Expected: denied, no reload.
-  it.fails('the wheel on an empty road costs nothing either', () => {
+  it('the wheel on an empty road costs nothing either', () => {
     const { sim, slot } = rig('wheel', 1);
     const ev = fire(sim, slot);
     expect(denied(ev)).toBe(true);
@@ -424,9 +422,7 @@ describe('Cuckoo Clock', () => {
     expect(hexer.st).toBe('held');
   });
 
-  // BUG in src/sim/weapons/behaviours/stop.ts with targeting.ts: the clock only reaches `allTargets`,
-  // and a hidden Shade is never a target, so "shades show themselves" (tier 4 and 5) never happens.
-  it.fails('tier 5: a hidden shade shows itself', () => {
+  it('tier 5: a hidden shade shows itself', () => {
     const { sim, slot } = rig('cuckoo', 5, false);
     place(sim, 'grunt', 600);
     const shade = place(sim, 'shade', 800);

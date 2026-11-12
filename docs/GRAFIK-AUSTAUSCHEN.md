@@ -104,24 +104,26 @@ node scripts/list-assets.ts
 Die Größe und der Ankerpunkt gelten in Weltpixeln. „Bilddatei in Pixeln“ ist die Größe, in der man eine Ersatzdatei anlegt.
 
 <!-- ASSETS:START (erzeugt von scripts/list-assets.ts, nicht von Hand ändern) -->
-Stand: 195 Assets.
+Stand: 286 Assets.
 
-### Figurenteile (76)
+### Figurenteile (86)
 
 | Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gelenk (x, y) | Bewegung | Gruppe |
 |---|---|---|---|---|---|---|
+| `rig:grunt:tail` | 42 × 32 | 6, 20 | 84 × 64 | 13, -22 | legBack | Start |
 | `rig:grunt:armBack` | 26 × 42 | 13, 11 | 52 × 84 | 10, -41 | armBack | Start |
 | `rig:grunt:legBack` | 36 × 35 | 21, 12 | 72 × 70 | 7, -20 | legBack | Start |
 | `rig:grunt:legFront` | 36 × 35 | 21, 12 | 72 × 70 | -6, -20 | legFront | Start |
 | `rig:grunt:body` | 50 × 50 | 25, 35 | 100 × 100 | 0, -20 | body | Start |
-| `rig:grunt:head` | 66 × 47 | 26, 36 | 132 × 94 | 0, -45 | head | Start |
+| `rig:grunt:head` | 72 × 58 | 32, 43 | 144 × 116 | 0, -45 | head | Start |
 | `rig:grunt:armFront` | 56 × 76 | 42, 38 | 112 × 152 | -7, -41 | armFront | Start |
 | `rig:bomber:armBack` | 28 × 42 | 14, 11 | 56 × 84 | 12, -44 | armBack | Start |
 | `rig:bomber:keg` | 56 × 84 | 28, 54 | 112 × 168 | 23, -37 | static | Start |
+| `rig:bomber:tail` | 48 × 29 | 6, 14 | 96 × 58 | 12, -19 | legBack | Start |
 | `rig:bomber:legBack` | 41 × 36 | 24, 13 | 82 × 72 | 8, -20 | legBack | Start |
 | `rig:bomber:legFront` | 41 × 36 | 24, 13 | 82 × 72 | -7, -20 | legFront | Start |
 | `rig:bomber:body` | 52 × 48 | 26, 35 | 104 × 96 | 0, -22 | body | Start |
-| `rig:bomber:head` | 49 × 52 | 25, 38 | 98 × 104 | 0, -47 | head | Start |
+| `rig:bomber:head` | 60 × 60 | 36, 42 | 120 × 120 | 0, -47 | head | Start |
 | `rig:bomber:armFront` | 54 × 50 | 40, 36 | 108 × 100 | -11, -43 | armFront | Start |
 | `rig:goatRider:goatLegFarFront` | 28 × 45 | 14, 12 | 56 × 90 | -19, -32 | legBack | Start |
 | `rig:goatRider:goatLegFarRear` | 28 × 45 | 14, 12 | 56 × 90 | 40, -32 | legFront | Start |
@@ -129,53 +131,61 @@ Stand: 195 Assets.
 | `rig:goatRider:goatLegNearRear` | 28 × 45 | 14, 12 | 56 × 90 | 31, -32 | legBack | Start |
 | `rig:goatRider:goatBody` | 116 × 66 | 52, 34 | 232 × 132 | 4, -44 | static | Start |
 | `rig:goatRider:goatHead` | 76 × 84 | 40, 44 | 152 × 168 | -38, -54 | static | Start |
+| `rig:goatRider:riderTail` | 34 × 29 | 6, 18 | 68 × 58 | 18, -55 | legBack | Start |
 | `rig:goatRider:riderArmBack` | 20 × 34 | 10, 9 | 40 × 68 | 13, -67 | armBack | Start |
 | `rig:goatRider:riderBody` | 35 × 52 | 19, 20 | 70 × 104 | 10, -58 | body | Start |
-| `rig:goatRider:riderHead` | 45 × 41 | 23, 31 | 90 × 82 | 10, -70 | head | Start |
+| `rig:goatRider:riderHead` | 50 × 45 | 28, 31 | 100 × 90 | 10, -70 | head | Start |
 | `rig:goatRider:riderArmFront` | 54 × 30 | 41, 13 | 108 × 60 | 5, -67 | armFront | Start |
+| `rig:pogo:tail` | 44 × 25 | 6, 6 | 88 × 50 | 16, -42 | legBack | Start |
 | `rig:pogo:armBack` | 41 × 26 | 31, 10 | 82 × 52 | 11, -56 | armBack | Start |
 | `rig:pogo:legBack` | 38 × 29 | 28, 12 | 76 × 58 | 11, -44 | legBack | Start |
 | `rig:pogo:stick` | 45 × 67 | 24, 34 | 90 × 134 | -5, -30 | static | Start |
 | `rig:pogo:legFront` | 38 × 29 | 28, 12 | 76 × 58 | 3, -44 | legFront | Start |
 | `rig:pogo:body` | 36 × 36 | 18, 24 | 72 × 72 | 7, -44 | body | Start |
-| `rig:pogo:head` | 56 × 36 | 21, 27 | 112 × 72 | 7, -62 | head | Start |
+| `rig:pogo:head` | 67 × 51 | 32, 34 | 134 × 102 | 7, -62 | head | Start |
 | `rig:pogo:armFront` | 38 × 26 | 28, 10 | 76 × 52 | 4, -56 | armFront | Start |
+| `rig:hexer:tail` | 42 × 29 | 6, 19 | 84 × 58 | 17, -11 | legBack | Start |
 | `rig:hexer:armBack` | 31 × 46 | 14, 11 | 62 × 92 | 8, -47 | armBack | Start |
 | `rig:hexer:legBack` | 35 × 25 | 22, 10 | 70 × 50 | 8, -12 | legBack | Start |
 | `rig:hexer:legFront` | 35 × 25 | 22, 10 | 70 × 50 | -8, -12 | legFront | Start |
 | `rig:hexer:body` | 58 × 63 | 29, 32 | 116 × 126 | 0, -30 | body | Start |
-| `rig:hexer:head` | 53 × 49 | 24, 34 | 106 × 98 | 0, -53 | head | Start |
+| `rig:hexer:head` | 60 × 56 | 31, 37 | 120 × 112 | 0, -53 | head | Start |
 | `rig:hexer:armFront` | 66 × 114 | 50, 58 | 132 × 228 | -8, -47 | armFront | Start |
+| `rig:slinger:tail` | 41 × 30 | 6, 15 | 82 × 60 | 6, -31 | legBack | Start |
 | `rig:slinger:armBack` | 34 × 31 | 10, 15 | 68 × 62 | 4, -46 | armBack | Start |
 | `rig:slinger:legBack` | 29 × 45 | 17, 10 | 58 × 90 | 5, -32 | legBack | Start |
 | `rig:slinger:legFront` | 29 × 45 | 17, 10 | 58 × 90 | -4, -32 | legFront | Start |
 | `rig:slinger:body` | 33 × 37 | 14, 25 | 66 × 74 | 0, -32 | body | Start |
-| `rig:slinger:head` | 44 × 39 | 25, 26 | 88 × 78 | 0, -50 | head | Start |
+| `rig:slinger:head` | 51 × 51 | 32, 33 | 102 × 102 | 0, -50 | head | Start |
 | `rig:slinger:armFront` | 56 × 51 | 46, 34 | 112 × 102 | -3, -44 | armFront | Start |
 | `rig:siegeCart:wagon` | 136 × 42 | 68, 18 | 272 × 84 | 0, -40 | static | Start |
 | `rig:siegeCart:wheelBack` | 44 × 44 | 22, 22 | 88 × 88 | 40, -19 | spin | Start |
 | `rig:siegeCart:wheelFront` | 44 × 44 | 22, 22 | 88 × 88 | -40, -19 | spin | Start |
 | `rig:siegeCart:crossbow` | 124 × 60 | 80, 40 | 248 × 120 | 10, -62 | static | Start |
+| `rig:siegeCart:operatorTail` | 30 × 24 | 5, 15 | 60 × 48 | 56, -55 | legBack | Start |
 | `rig:siegeCart:operatorBody` | 30 × 28 | 14, 18 | 60 × 56 | 50, -58 | body | Start |
-| `rig:siegeCart:operatorHead` | 34 × 33 | 16, 26 | 68 × 66 | 50, -69 | head | Start |
+| `rig:siegeCart:operatorHead` | 42 × 38 | 24, 26 | 84 × 76 | 50, -69 | head | Start |
 | `rig:siegeCart:operatorArm` | 31 × 27 | 21, 12 | 62 × 54 | 46, -65 | armFront | Start |
 | `rig:balloonist:balloon` | 80 × 114 | 40, 70 | 160 × 228 | 0, -56 | static | Start |
 | `rig:balloonist:armBack` | 30 × 34 | 12, 10 | 60 × 68 | 7, -26 | armBack | Start |
+| `rig:balloonist:tail` | 35 × 33 | 6, 27 | 70 × 66 | 15, -19 | armFront | Start |
 | `rig:balloonist:body` | 50 × 37 | 17, 21 | 100 × 74 | 0, -16 | body | Start |
-| `rig:balloonist:head` | 41 × 34 | 22, 25 | 82 × 68 | 0, -30 | head | Start |
+| `rig:balloonist:head` | 47 × 44 | 28, 30 | 94 × 88 | 0, -30 | head | Start |
 | `rig:balloonist:basket` | 64 × 31 | 28, 18 | 128 × 62 | 0, -9 | static | Start |
 | `rig:balloonist:armFront` | 32 × 32 | 22, 10 | 64 × 64 | -7, -27 | armFront | Start |
+| `rig:shade:tail` | 49 × 28 | 6, 10 | 98 × 56 | 6, -29 | legBack | Start |
 | `rig:shade:armBack` | 34 × 38 | 12, 10 | 68 × 76 | 5, -44 | armBack | Start |
 | `rig:shade:legBack` | 34 × 43 | 21, 10 | 68 × 86 | 4, -30 | legBack | Start |
 | `rig:shade:legFront` | 34 × 43 | 21, 10 | 68 × 86 | -4, -30 | legFront | Start |
 | `rig:shade:body` | 65 × 53 | 15, 34 | 130 × 106 | 0, -30 | body | Start |
-| `rig:shade:head` | 38 × 39 | 20, 30 | 76 × 78 | 0, -48 | head | Start |
+| `rig:shade:head` | 49 × 49 | 31, 35 | 98 × 98 | 0, -48 | head | Start |
 | `rig:shade:armFront` | 54 × 48 | 44, 26 | 108 × 96 | -5, -44 | armFront | Start |
+| `rig:crowcaller:tail` | 47 × 28 | 6, 10 | 94 × 56 | 9, -29 | legBack | Start |
 | `rig:crowcaller:armBack` | 37 × 52 | 11, 10 | 74 × 104 | 8, -50 | armBack | Start |
 | `rig:crowcaller:legBack` | 31 × 46 | 18, 8 | 62 × 92 | 4, -34 | legBack | Start |
 | `rig:crowcaller:legFront` | 31 × 46 | 18, 8 | 62 × 92 | -4, -34 | legFront | Start |
 | `rig:crowcaller:body` | 52 × 46 | 26, 30 | 104 × 92 | 0, -34 | body | Start |
-| `rig:crowcaller:head` | 63 × 41 | 35, 30 | 126 × 82 | 0, -55 | head | Start |
+| `rig:crowcaller:head` | 63 × 47 | 35, 34 | 126 × 94 | 0, -55 | head | Start |
 | `rig:crowcaller:armFront` | 46 × 48 | 36, 24 | 92 × 96 | -6, -49 | armFront | Start |
 | `rig:yeti:armBack` | 82 × 158 | 40, 30 | 164 × 316 | 33, -140 | armBack | Start |
 | `rig:yeti:legBack` | 76 × 74 | 42, 24 | 152 × 148 | 20, -44 | legBack | Start |
@@ -187,7 +197,7 @@ Stand: 195 Assets.
 | `rig:crow:body` | 50 × 34 | 25, 16 | 100 × 68 | 0, -12 | static | Start |
 | `rig:crow:wingFront` | 37 × 41 | 13, 31 | 74 × 82 | 3, -16 | armFront | Start |
 
-### Requisiten, Burg und Effekte (99)
+### Requisiten, Burg und Effekte (100)
 
 | Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gruppe |
 |---|---|---|---|---|
@@ -282,6 +292,7 @@ Stand: 195 Assets.
 | `prop:mountWheelReady` | 140 × 140 | 70, 70 | 280 × 280 | Start |
 | `prop:mountWheelEmpty` | 140 × 140 | 70, 70 | 280 × 280 | Start |
 | `prop:potLedge` | 240 × 200 | 0, 200 | 480 × 400 | Start |
+| `prop:potMound` | 220 × 90 | 110, 22 | 440 × 180 | Start |
 | `prop:potRearBack` | 150 × 100 | 75, 100 | 300 × 200 | Start |
 | `prop:potRearFront` | 150 × 100 | 75, 100 | 300 × 200 | Start |
 | `prop:cheese` | 70 × 60 | 35, 30 | 140 × 120 | Start |
@@ -290,6 +301,91 @@ Stand: 195 Assets.
 | `prop:perchHook` | 110 × 130 | 55, 0 | 220 × 260 | Start |
 | `prop:eagleHeadOpen` | 520 × 240 | 20, 120 | 1040 × 480 | Start |
 | `prop:eagleHeadShut` | 520 × 240 | 20, 120 | 1040 × 480 | Start |
+
+### Waffen (je Stufe ein Bild) (80)
+
+| Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gruppe |
+|---|---|---|---|---|
+| `weapon:wheel:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:wheel:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:wheel:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:wheel:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:wheel:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:cheese:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:cheese:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:cheese:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:cheese:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:cheese:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:forks:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:forks:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:forks:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:forks:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:forks:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:stomper:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:stomper:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:stomper:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:stomper:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:stomper:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:alphorn:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:alphorn:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:alphorn:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:alphorn:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:alphorn:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:cuckoo:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:cuckoo:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:cuckoo:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:cuckoo:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:cuckoo:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:comet:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:comet:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:comet:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:comet:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:comet:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bell:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:bell:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bell:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bell:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bell:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:midas:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:midas:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:midas:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:midas:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:midas:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:mortar:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:mortar:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:mortar:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:mortar:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:mortar:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:frost:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:frost:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:frost:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:frost:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:frost:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bellows:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:bellows:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bellows:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bellows:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bellows:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:thorns:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:thorns:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:thorns:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:thorns:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:thorns:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bolter:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:bolter:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bolter:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bolter:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bolter:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:sentry:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:sentry:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:sentry:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:sentry:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:sentry:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:beacon:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:beacon:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:beacon:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:beacon:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:beacon:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
 
 ### Landschaftsebenen (16)
 

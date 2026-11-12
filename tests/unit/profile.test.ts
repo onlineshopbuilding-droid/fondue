@@ -14,7 +14,7 @@ const LEGACY_SETTINGS = JSON.stringify({
   muted: true,
   relayAddress: 'wss://relay.example',
   tuning: { gravity: 2000, knockOthers: true },
-  flags: { cauldron: 'back', dayEnd: 'no-such-option', unknown: 'x' },
+  flags: { dayEnd: 'retreat', cauldron: 'back', unknown: 'x' },
 });
 
 function score(points: number, extra: Partial<ScoreEntry> = {}): ScoreEntry {
@@ -135,7 +135,7 @@ describe('Profile: data of the old game version', () => {
     expect(settings.muted).toBe(true);
     expect(settings.relayAddress).toBe('wss://relay.example');
     expect(settings.tuning).toEqual({ ...TUNING_DEFAULT, gravity: 2000, knockOthers: true });
-    expect(settings.flags).toEqual({ ...defaultFlags(), cauldron: 'back' });
+    expect(settings.flags).toEqual({ ...defaultFlags(), dayEnd: 'retreat' });
     expect(profile.scores('fondue').map((entry) => entry.score)).toEqual([900, 500]);
     expect(profile.scores('fondue')[0].names).toBe('Tim & Lenny');
   });
@@ -304,14 +304,15 @@ describe('Profile: stars, unlocks and tiers', () => {
 
   it('merges settings and cleans wrong values', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
-    profile.updateSettings({ musicVolume: 3, difficulty: 'easy', tuning: { gravity: 1234 }, flags: { cauldron: 'back' } });
-    profile.updateSettings({ muted: true, flags: { dayEnd: 'nonsense' } });
+    profile.updateSettings({ musicVolume: 3, difficulty: 'easy', tuning: { gravity: 1234 }, flags: { dayEnd: 'retreat' } });
+    expect(profile.data.settings.flags).toEqual({ ...defaultFlags(), dayEnd: 'retreat' });
+    profile.updateSettings({ muted: true, flags: { dayEnd: 'nonsense', cauldron: 'back' } });
     const settings = profile.data.settings;
     expect(settings.musicVolume).toBe(1);
     expect(settings.difficulty).toBe('easy');
     expect(settings.muted).toBe(true);
     expect(settings.tuning).toEqual({ ...TUNING_DEFAULT, gravity: 1234 });
-    expect(settings.flags).toEqual({ ...defaultFlags(), cauldron: 'back' });
+    expect(settings.flags).toEqual(defaultFlags());
   });
 });
 

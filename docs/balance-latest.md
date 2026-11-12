@@ -1,6 +1,6 @@
 # Letzter Balance-Lauf
 
-Automatisch erzeugt von `npm run balance` am 2026-11-11 19:29. Maschinenlesbar: `docs/balance-latest.json`.
+Automatisch erzeugt von `npm run balance` am 2026-11-12 00:02. Maschinenlesbar: `docs/balance-latest.json`.
 
 ## Endlos
 
@@ -8,27 +8,27 @@ Automatisch erzeugt von `npm run balance` am 2026-11-11 19:29. Maschinenlesbar: 
 
 | Zeile | Median | P10–P90 | Min–Max | Käufe | Gold pro Tag (T1/3/5/10/20/30) | Tor % Tag 1/2/3/5 | Aktionen/s je Hand | Trefferquote Griff | Opfer je Tag | Fässer geschüttelt | Laufzeit |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Poor solo | 7 | 5–9 | 4–11 | 4.9 | 397 / 652 / 905 / 1665 / – / – | 99 / 98 / 89 / 44 | 1 | 91 % | 4.6 | 9.2 | 1 s |
-| Mid solo | 17 | 14–18 | 14–22 | 14.1 | 397 / 642 / 910 / 1638 / 3900 / – | 100 / 100 / 100 / 98 | 0.97 | 91 % | 5.9 | 32.4 | 2 s |
-| Great solo | 17 | 14–18 | 14–22 | 11.8 | 397 / 635 / 887 / 1632 / 3805 / – | 100 / 100 / 100 / 100 | 1.11 | 97 % | 5.4 | 73.6 | 1 s |
-| Poor zu zweit | 8.5 | 5–11 | 2–11 | 8.3 | 584 / 1011 / 1475 / 2275 / – / – | 96 / 85 / 94 / 68 | 1.06 | 86 % | 5.7 | 15.2 | 1 s |
-| Mid zu zweit | 15 | 14–26 | 14–46 | 17.3 | 584 / 1008 / 1451 / 2657 / 6205 / 6833 | 100 / 100 / 100 / 100 | 1.04 | 83 % | 9.2 | 52.9 | 4 s |
-| Great zu zweit | 61 | 18–66 | 15–68 | 30.2 | 584 / 1000 / 1436 / 2631 / 6133 / 7483 | 100 / 100 / 100 / 100 | 1.41 | 88 % | 23.1 | 234.5 | 16 s |
-| Mid solo Easy | 21 | 17–26 | 15–36 | 15.1 | 358 / 576 / 781 / 1393 / 3209 / 4690 | 100 / 100 / 100 / 100 | 0.9 | 91 % | 5.4 | 37.2 | 2 s |
-| Mid solo Hard | 14 | 12–17 | 10–26 | 14.3 | 464 / 770 / 1087 / 1951 / 4354 / – | 100 / 98 / 100 / 96 | 1.05 | 92 % | 7.6 | 31.5 | 2 s |
+| Poor solo | 7 | 5–9 | 4–11 | 4.9 | 397 / 653 / 904 / 1665 / – / – | 99 / 98 / 89 / 44 | 1 | 91 % | 4.7 | 9.4 | 1 s |
+| Mid solo | 17 | 14–18 | 14–20 | 14.1 | 397 / 642 / 909 / 1639 / 3435 / – | 100 / 100 / 100 / 98 | 0.97 | 91 % | 5.9 | 32.3 | 2 s |
+| Great solo | 17 | 14–18 | 14–22 | 11.8 | 397 / 635 / 887 / 1632 / 3805 / – | 100 / 100 / 100 / 100 | 1.11 | 97 % | 5.4 | 73.7 | 2 s |
+| Poor zu zweit | 7.5 | 5–11 | 2–11 | 8 | 584 / 1011 / 1474 / 2271 / – / – | 96 / 85 / 94 / 67 | 1.06 | 85 % | 5.6 | 15.1 | 1 s |
+| Mid zu zweit | 15.5 | 14–26 | 13–34 | 17.5 | 584 / 1008 / 1453 / 2654 / 6200 / 6833 | 100 / 100 / 100 / 100 | 1.04 | 83 % | 9.2 | 53.1 | 7 s |
+| Great zu zweit | 61 | 18–64 | 16–65 | 30.3 | 584 / 1000 / 1437 / 2632 / 6206 / 7533 | 100 / 100 / 100 / 100 | 1.41 | 87 % | 23.2 | 239.7 | 29 s |
+| Mid solo Easy | 21 | 17–31 | 15–35 | 15.3 | 358 / 576 / 781 / 1394 / 3210 / 4811 | 100 / 100 / 100 / 100 | 0.9 | 91 % | 5.4 | 38.3 | 3 s |
+| Mid solo Hard | 14 | 12–17 | 10–26 | 14.2 | 464 / 771 / 1088 / 1951 / 4354 / – | 100 / 98 / 100 / 96 | 1.05 | 92 % | 7.6 | 31.2 | 2 s |
 
 ### Waffenschüsse je Lauf
 
 | Zeile | Schüsse |
 |---|---|
-| Poor solo | cheese 3.6, alphorn 1.7, forks 1.7, mortar 1.4, beacon 0.8, midas 0.6, wheel 2, sentry 0.5, cuckoo 0.3, thorns 0.1, bell 0.2, comet 0.9, stomper 0.3, bolter 0.4, frost 0.2, bellows 0.2 |
-| Mid solo | wheel 36.8, stomper 35.8, comet 23.1, mortar 34.5, bolter 19.8 |
-| Great solo | wheel 32.4, stomper 30.7, comet 21.2, bellows 11, beacon 6.4 |
-| Poor zu zweit | cheese 3.3, frost 1.9, stomper 4.2, midas 1.7, alphorn 4.2, sentry 2, bellows 0.7, wheel 6.8, comet 1.5, forks 3.3, thorns 1.6, bell 1.6, mortar 5.1, beacon 2.1, bolter 1.2, cuckoo 0.2 |
-| Mid zu zweit | wheel 46.6, stomper 56.2, mortar 69.8, comet 40.6, bolter 48 |
-| Great zu zweit | wheel 181.4, comet 177.3, stomper 224.5, beacon 107.8, bellows 179.7 |
-| Mid solo Easy | wheel 46.6, mortar 55.7, stomper 51.2, comet 30.1, bolter 32.6 |
-| Mid solo Hard | wheel 33, stomper 33.6, comet 21.3, mortar 29, bolter 16.2 |
+| Poor solo | cheese 3.6, alphorn 1.7, forks 1.7, mortar 1.4, beacon 0.9, midas 0.6, wheel 2, sentry 0.5, cuckoo 0.3, thorns 0.1, bell 0.2, comet 0.9, stomper 0.5, bolter 0.4, frost 0.2, bellows 0.2 |
+| Mid solo | wheel 36.8, stomper 35.8, comet 22.8, mortar 34.5, bolter 20 |
+| Great solo | wheel 32.3, stomper 30.8, comet 21.2, bellows 11, beacon 6.3 |
+| Poor zu zweit | cheese 3.3, frost 1.9, stomper 3, midas 1.7, alphorn 3.9, sentry 1.8, bellows 0.7, wheel 6.1, comet 1.4, forks 3.3, thorns 1.5, bell 1.3, mortar 4.5, beacon 2.2, bolter 1.3, cuckoo 0.5 |
+| Mid zu zweit | wheel 45.3, stomper 55.8, mortar 69.6, bolter 45.9, comet 40.2 |
+| Great zu zweit | wheel 180.8, comet 176.8, stomper 225.1, beacon 108.4, bellows 178.9 |
+| Mid solo Easy | wheel 47.5, mortar 57.1, stomper 52.6, comet 31.6, bolter 33.7 |
+| Mid solo Hard | wheel 32.6, stomper 33.4, comet 21, mortar 28.7, bolter 15.8 |
 
 ## Kampagne
 
@@ -38,10 +38,10 @@ Level 1 bis 100 in Reihenfolge mit einem Profil je Zeile, höchstens 6 Versuche 
 
 | Zeile | 1. Versuch | 2. Versuch | später | nie | Laufzeit |
 |---|---|---|---|---|---|
-| Poor solo | 30 | 4 | 5 | 61 | 1 s |
+| Poor solo | 30 | 5 | 4 | 61 | 1 s |
 | Mid solo | 55 | 4 | 3 | 38 | 2 s |
 | Great solo | 90 | 3 | 2 | 5 | 2 s |
-| Mid zu zweit | 54 | 0 | 7 | 39 | 2 s |
+| Mid zu zweit | 54 | 0 | 7 | 39 | 3 s |
 
 ### Je Level
 
@@ -77,8 +77,8 @@ Versuche (✗ = nie geschafft) und Torleben am Ende des letzten Versuchs in Proz
 | 26 |  | 7 | 1 | 67 | 1 | 100 | 1 | 100 | 1 | 100 |
 | 27 |  | 5 | 2 | 85 | 1 | 100 | 1 | 100 | 1 | 100 |
 | 28 |  | 7 | 1 | 90 | 1 | 100 | 1 | 100 | 1 | 100 |
-| 29 |  | 7 | 2 | 80 | 1 | 100 | 1 | 100 | 1 | 100 |
-| 30 | ja | 8 | 3 | 43 | 1 | 100 | 1 | 100 | 1 | 100 |
+| 29 |  | 7 | 2 | 85 | 1 | 100 | 1 | 100 | 1 | 100 |
+| 30 | ja | 8 | 2 | 27 | 1 | 100 | 1 | 100 | 1 | 100 |
 | 31 |  | 5 | 3 | 86 | 1 | 100 | 1 | 100 | 1 | 100 |
 | 32 |  | 5 | 2 | 78 | 1 | 100 | 1 | 100 | 1 | 100 |
 | 33 |  | 7 | 1 | 99 | 1 | 100 | 1 | 100 | 1 | 100 |
@@ -109,10 +109,10 @@ Versuche (✗ = nie geschafft) und Torleben am Ende des letzten Versuchs in Proz
 | 58 |  | 8 | ✗ | 0 | ✗ | 0 | 1 | 100 | 4 | 100 |
 | 59 |  | 6 | ✗ | 0 | 1 | 100 | 1 | 100 | ✗ | 0 |
 | 60 | ja | 8 | ✗ | 0 | 2 | 100 | 1 | 100 | ✗ | 0 |
-| 61 |  | 8 | ✗ | 0 | 1 | 100 | 1 | 100 | 3 | 99 |
+| 61 |  | 8 | ✗ | 0 | 1 | 100 | 1 | 100 | 3 | 100 |
 | 62 |  | 8 | ✗ | 0 | 1 | 100 | 1 | 100 | ✗ | 0 |
 | 63 |  | 6 | ✗ | 0 | 2 | 100 | 1 | 100 | 6 | 100 |
-| 64 |  | 7 | ✗ | 0 | 3 | 100 | 1 | 100 | 1 | 100 |
+| 64 |  | 7 | ✗ | 0 | 3 | 99 | 1 | 100 | 1 | 100 |
 | 65 |  | 6 | ✗ | 0 | ✗ | 0 | 1 | 100 | 1 | 100 |
 | 66 |  | 8 | ✗ | 0 | ✗ | 0 | 1 | 100 | ✗ | 0 |
 | 67 |  | 7 | ✗ | 0 | ✗ | 0 | 1 | 100 | ✗ | 0 |
@@ -147,7 +147,7 @@ Versuche (✗ = nie geschafft) und Torleben am Ende des letzten Versuchs in Proz
 | 96 |  | 7 | ✗ | 0 | ✗ | 0 | ✗ | 0 | ✗ | 0 |
 | 97 |  | 7 | ✗ | 0 | ✗ | 0 | ✗ | 0 | ✗ | 0 |
 | 98 |  | 9 | ✗ | 0 | ✗ | 0 | ✗ | 0 | ✗ | 0 |
-| 99 |  | 9 | ✗ | 0 | ✗ | 0 | 1 | 100 | ✗ | 0 |
+| 99 |  | 9 | ✗ | 0 | ✗ | 0 | 1 | 99 | ✗ | 0 |
 | 100 | ja | 8 | ✗ | 0 | ✗ | 0 | 2 | 100 | ✗ | 0 |
 
 ### Besitz am Ende

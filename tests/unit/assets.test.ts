@@ -4,8 +4,9 @@ import { RIGS } from '../../src/art/characters';
 import { CLOUDS, LANDSCAPE_ART } from '../../src/art/landscapes';
 import { PROPS } from '../../src/art/props';
 import {
-  ASSETS, applyOverrides, assetsOfGroup, buildAssets, cloudKey, landscapeKey, listAssets, parseAssetParams, partKey, propKey,
+  ASSETS, applyOverrides, assetsOfGroup, buildAssets, cloudKey, landscapeKey, listAssets, parseAssetParams, partKey, propKey, weaponKey,
 } from '../../src/art/registry';
+import { MAX_TIER, WEAPONS } from '../../src/config/weapons';
 import { ASSET_OVERRIDES } from '../../src/config/assets';
 import { assetTables, DOC, withTables } from '../../scripts/list-assets';
 
@@ -14,13 +15,14 @@ function expectedNames(): string[] {
   const names: string[] = [];
   for (const [rig, { parts }] of Object.entries(RIGS)) for (const part of parts) names.push(partKey(rig, part.name));
   for (const name of Object.keys(PROPS)) names.push(propKey(name));
+  for (const w of WEAPONS) for (let tier = 1; tier <= MAX_TIER; tier++) names.push(weaponKey(w.id, tier));
   for (const land of Object.keys(LANDSCAPE_ART)) for (const layer of ['far', 'mid', 'near', 'ground']) names.push(landscapeKey(land, layer));
   CLOUDS.forEach((_, i) => names.push(cloudKey(i)));
   return names;
 }
 
 describe('asset directory', () => {
-  it('holds every figure part, prop, landscape layer and cloud under its texture name', () => {
+  it('holds every figure part, prop, weapon tier, landscape layer and cloud under its texture name', () => {
     const expected = expectedNames();
     expect(expected.length).toBeGreaterThan(150);
     expect(Object.keys(ASSETS).sort()).toEqual([...expected].sort());
@@ -63,9 +65,12 @@ describe('asset directory', () => {
     expect(ASSETS['prop:keepWeather_snowpine_2'].group).toBe('snowpine');
     expect(ASSETS['land:canyon:far'].group).toBe('canyon');
     expect(ASSETS['cloud:0'].group).toBe('boot');
+    // Weapons: tier 1 is there before the first market, the higher tiers load in the background.
+    expect(ASSETS['weapon:wheel:1'].group).toBe('boot');
+    expect(ASSETS['weapon:wheel:5'].group).toBe('weaponTiers');
     // A landscape's strips are made first, then its props; every asset is in exactly one group.
     expect(assetsOfGroup('meadow').slice(0, 4).map((a) => a.name)).toEqual(['land:meadow:far', 'land:meadow:mid', 'land:meadow:near', 'land:meadow:ground']);
-    const grouped = (['boot', 'keepStages', 'meadow', 'canyon', 'marsh', 'snowpine'] as const).flatMap((g) => assetsOfGroup(g));
+    const grouped = (['boot', 'keepStages', 'weaponTiers', 'meadow', 'canyon', 'marsh', 'snowpine'] as const).flatMap((g) => assetsOfGroup(g));
     expect(grouped.length).toBe(listAssets().length);
   });
 
