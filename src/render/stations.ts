@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { WORLD, perchX } from '../config/field';
+import { WORLD } from '../config/field';
 import { PERCH } from '../config/keep';
 import type { ViewState } from '../net/snapshot';
 import type { Meta } from '../sim/types';
@@ -66,16 +66,21 @@ export class Stations {
   /** Something landed in the pot: it jolts for a moment. */
   potSplash() { this.splashT = 0.3; }
 
-  update(view: ViewState, meta: Meta, tint: number, dt: number, time: number) {
+  /**
+   * `hook` is where the eagle hook hangs (see marketCamera.hookAt); `market` how far the market
+   * view has come in (0 to 1): there, a site not built yet shows as a faint outline at its place.
+   */
+  update(view: ViewState, meta: Meta, tint: number, dt: number, time: number, hook: { x: number; top: number }, market = 0) {
     const owned = !!meta.loadout.stations.cauldron;
-    for (const img of [this.mound, this.potBack, this.potFront]) img.setVisible(owned);
+    const ghost = owned ? 1 : market * 0.38;
+    for (const img of [this.mound, this.potBack, this.potFront]) img.setVisible(owned || market > 0.02).setAlpha(ghost);
     this.mound.setTint(tint);
     this.potFront.setTint(tint);
     // The molten cheese is the glow of the scene, so the inside of the pot stays lit at night.
     const lit = Phaser.Display.Color.Interpolate.ColorWithColor(Phaser.Display.Color.ValueToColor(tint), Phaser.Display.Color.ValueToColor(0xffffff), 100, 70);
     this.potBack.setTint(Phaser.Display.Color.GetColor(lit.r, lit.g, lit.b));
     this.updatePot(view, owned, dt, time);
-    this.updatePerch(view, meta, tint, dt, time);
+    this.updatePerch(view, meta, tint, dt, time, hook, market);
   }
 
   private updatePot(view: ViewState, owned: boolean, dt: number, time: number) {
@@ -124,13 +129,14 @@ export class Stations {
     }
   }
 
-  private updatePerch(view: ViewState, meta: Meta, tint: number, dt: number, time: number) {
+  private updatePerch(view: ViewState, meta: Meta, tint: number, dt: number, time: number, at: { x: number; top: number }, market: number) {
     const owned = !!meta.loadout.stations.perch;
-    this.chain.setVisible(owned);
-    this.hook.setVisible(owned);
-    const x = perchX(meta.fieldW);
+    const ghost = owned ? 1 : market * 0.42;
+    this.chain.setVisible(owned || market > 0.02).setAlpha(ghost);
+    this.hook.setVisible(owned || market > 0.02).setAlpha(ghost);
+    const x = at.x;
     const busy = view.perchBusy > 0;
-    const hookTop = WORLD.perch.hookY - 112;
+    const hookTop = at.top;
     const sway = busy ? Math.sin(time * 0.014) * 0.09 : Math.sin(time * 0.002) * 0.02;
     this.chain.setPosition(x, hookTop + 6).setTint(tint);
     this.chain.setRotation(sway * 0.25);

@@ -258,7 +258,8 @@ Neue Bildschirme: Kampagnen-Karte, Waffenkammer, Storybuch, Entwickler-Menü, Ko
 |---|---|
 | `scene.ts` | `BattleScene`: das Schlachtfeld. |
 | `lobbyScene.ts` | `LobbyScene`: der Innenraum der Burg mit den Stationen. |
-| `camera.ts` | `CameraDirector`: Kampfansicht, Marktansicht (näher an der Burg, mehr nach links), Flug in die Burg hinein und heraus. |
+| `camera.ts` | `CameraDirector`: Kampfansicht, Marktansicht (näher an der Burg, mehr nach links), Flug in die Burg hinein und heraus. Gebaut ist bisher `marketCamera.ts` (reine Rechnung: Kampf- und Marktausschnitt, weiche Fahrt in 0,7 s, Haken oben rechts im Markt). |
+| `marketView.ts` | `MarketView`: die antippbaren Stellen des Markts an der Burg (fünf Slots, Tor-Knopf, Kessel, Haken) mit Abzeichen für leer, gesperrt (ab Level N) und kaufbar. Ein Tipp meldet `onKeepTap(spot)`; das Fenster dazu zeichnet `ui/screens/shop.ts` als HTML. |
 | `tutorialView.ts` | König, Sprechblase, Geste zum Nachmachen. |
 
 Die Lobby ist eine echte Szene. Die Kampagnen-Karte ist ein HTML-Bildschirm mit gezeichnetem Pfad, weil sich HTML mit dem Finger am besten scrollen lässt.

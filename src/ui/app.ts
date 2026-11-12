@@ -28,6 +28,7 @@ import { EnemyPopup } from './enemyPopup';
 import { SCREENS } from './screens';
 import type { PendingRun, ScreenContext } from './screens/context';
 import { ScreenManager, type ScreenId } from './screens/screen';
+import { shopScreen } from './screens/shop';
 import { TuningPanel } from './tuningPanel';
 
 /** Upright touch devices are asked to rotate; the game is built for landscape. */
@@ -236,6 +237,8 @@ export class App implements ScreenContext, CoopRoomHost {
       togglePause: () => this.togglePause(),
       isInputBlocked: () => this.screens.isOpen,
       onBuyNotice: (t) => { if (this.session?.role !== 'solo') this.toast(t); },
+      // The market at the keep: a tapped place opens its window.
+      onKeepTap: (spot) => { if (this.screen === 'shop') shopScreen.openSpot(this, spot); },
     };
     const view = computeView(innerWidth, innerHeight, readSafeArea());
     this.scene.view = view;

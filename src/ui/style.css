@@ -398,20 +398,6 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
 .item .foot { gap: 6px; flex-wrap: wrap; }
 .day-line { text-align: center; font-weight: 800; font-size: 16px; margin: 0 0 8px; color: var(--wood-dark); }
 
-/* Campaign list: one finger-sized line per level. */
-.items.levels { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
-button.level {
-  --b: #f3e6c4; display: flex; align-items: center; gap: 10px; text-align: left; color: var(--ink); text-shadow: none;
-  font-size: 18px; padding: 8px 12px; min-height: 48px;
-}
-button.level.done { --b: #cfe6c6; }
-button.level.current { --b: var(--mustard); }
-button.level:disabled { opacity: 0.45; }
-.level .lv-num { font-size: 24px; min-width: 40px; text-align: center; color: var(--plum); }
-.level .lv-name { flex: 1; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; }
-.level .lv-tag { font-size: 14px; color: var(--wood-dark); }
-.boss-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 6px; background: var(--rust); color: var(--cream); font-family: 'Lilita One', sans-serif; font-size: 13px; }
-
 /* Win screen. */
 .won-name { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 28px; color: var(--plum); }
 .won-stars { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 72px; line-height: 1.1; color: var(--ink); }
@@ -469,7 +455,6 @@ textarea { width: 100%; resize: vertical; font-size: 14px; }
   #tuning .dev-num input, #tuning input[type='checkbox'] { min-height: 44px; min-width: 44px; }
   #tuning input[type='range'] { height: 44px; }
   textarea { min-height: 44px; }
-  button.level { min-height: 48px; }
 }
 
 @media (max-height: 520px) {
@@ -481,11 +466,6 @@ textarea { width: 100%; resize: vertical; font-size: 14px; }
   .item .why { font-size: 11px; }
   .item .tier { font-size: 12px; }
   .day-line { font-size: 12px; margin: 0 0 4px; flex: none; text-align: left; }
-  .items.levels { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
-  button.level { font-size: 14px; padding: 3px 8px; gap: 6px; }
-  .level .lv-num { font-size: 18px; min-width: 28px; }
-  .level .lv-name { font-size: 13px; }
-  .level .lv-tag { font-size: 12px; }
   .won-name { font-size: 18px; }
   .won-stars { font-size: 40px; }
   ul.unlocks { font-size: 16px; margin: 2px 0; }
@@ -502,4 +482,289 @@ textarea { width: 100%; resize: vertical; font-size: 14px; }
   .ep-title { font-size: 20px; }
   .ep-kicker { font-size: 12px; }
   .enemy-popup p { font-size: 12px; }
+}
+
+/* ------------------------------------------------------------------------------------------- */
+/* Campaign map: a wooden board on top, below it the landscape that scrolls sideways.          */
+/* ------------------------------------------------------------------------------------------- */
+.campaign-map { position: absolute; inset: 0; display: flex; flex-direction: column; background: #1c2a33; overflow: hidden; }
+.cm-head {
+  flex: none; display: flex; align-items: center; gap: 14px; z-index: 3;
+  padding: 8px max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left));
+  background:
+    repeating-linear-gradient(178deg, rgba(60, 30, 12, 0) 0 6px, rgba(60, 30, 12, 0.13) 6px 7px, rgba(60, 30, 12, 0) 7px 13px),
+    linear-gradient(180deg, #9a6a40 0%, var(--wood) 55%, var(--wood-dark) 100%);
+  border-bottom: 4px solid var(--ink); box-shadow: 0 4px 0 rgba(20, 12, 8, 0.35);
+}
+.cm-head h2 { margin: 0; flex: 1; text-align: left; font-size: 32px; }
+.cm-head h2::before, .cm-head h2::after { display: none; }
+.cm-progress { display: flex; flex-direction: column; gap: 3px; min-width: 150px; }
+.cm-progress-text, .cm-stars { font-family: 'Lilita One', sans-serif; color: var(--cream); text-shadow: 0 2px 0 var(--ink); }
+.cm-progress-text { font-size: 18px; text-align: right; }
+.cm-bar { height: 12px; border: 2px solid var(--ink); border-radius: 7px; background: rgba(30, 16, 8, 0.45); overflow: hidden; }
+.cm-bar-fill { height: 100%; background: linear-gradient(180deg, #ffe9a8 0%, var(--mustard) 55%, #c98a2a 100%); }
+.cm-stars { font-size: 28px; white-space: nowrap; }
+
+.cm-scroll {
+  flex: 1 1 0; min-height: 0; position: relative; overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x; scrollbar-width: thin;
+}
+.cm-world { position: relative; height: 100%; min-height: 230px; }
+/* The bands stack among themselves only, always below the path and the stations. */
+.cm-lands { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+/* One landscape: far land above, near ground below; its right end fades into the next one. */
+.cm-band {
+  position: absolute; top: 0; bottom: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0) 70%, rgba(20, 30, 20, 0.12) 100%),
+    linear-gradient(180deg, var(--far) 0%, var(--far) 30%, var(--ground) 44%, var(--ground) 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 90px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 90px), transparent);
+}
+.cm-band.last { -webkit-mask-image: none; mask-image: none; }
+.cm-hills { position: absolute; left: 0; top: 6%; width: 100%; height: 36%; opacity: 0.85; }
+.cm-deco { position: absolute; transform: translate(-50%, -100%); overflow: visible; pointer-events: none; }
+.cm-sign {
+  position: absolute; top: 8px; padding: 2px 10px; white-space: nowrap; pointer-events: none;
+  font-family: 'Lilita One', sans-serif; font-size: 16px; color: var(--cream); text-shadow: 0 1.5px 0 var(--ink);
+  background: linear-gradient(180deg, #9a6a40 0%, var(--wood-dark) 100%); border: 2.5px solid var(--ink); border-radius: 6px;
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+.cm-path { position: absolute; left: 0; top: 0; height: 100%; pointer-events: none; overflow: visible; }
+.cm-path path { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+.cm-road-edge { stroke: rgba(43, 33, 24, 0.38); stroke-width: 22px; }
+.cm-road { stroke: #ecd9a8; stroke-width: 16px; }
+.cm-dots { stroke: #a07a4f; stroke-width: 4px; stroke-dasharray: 1 13; }
+.cm-trail { stroke: #f2b93f; stroke-width: 8px; }
+.cm-keep { position: absolute; width: 150px; height: 144px; transform: translateY(-100%); pointer-events: none; }
+.cm-camp { position: absolute; width: 140px; height: 100px; transform: translateY(-100%); pointer-events: none; }
+
+/* Stations: grey stone when locked, a cream token when open, a cheese wheel when won. */
+button.cm-st {
+  --b: #f6ecd2;
+  position: absolute; z-index: 2; width: 46px; height: 46px; min-width: 46px; min-height: 46px; padding: 0; margin: 0;
+  transform: translate(-50%, -50%); border-radius: 50%; border: 3px solid var(--ink);
+  display: flex; align-items: center; justify-content: center; color: var(--ink); text-shadow: none; font-size: 20px;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 45%), var(--b);
+  box-shadow: inset 0 -4px 0 rgba(43, 22, 40, 0.18), 0 3px 0 var(--ink);
+}
+button.cm-st:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.93); box-shadow: inset 0 -2px 0 rgba(43, 22, 40, 0.18), 0 1px 0 var(--ink); }
+.cm-st .cm-num { position: relative; z-index: 1; line-height: 1; }
+button.cm-st.locked { --b: #a8a093; color: #4a443c; }
+button.cm-st.done {
+  --b: #f0b43c;
+  background:
+    radial-gradient(circle at 30% 66%, #c98a2a 0 3px, rgba(0, 0, 0, 0) 4px),
+    radial-gradient(circle at 74% 34%, #c98a2a 0 2.5px, rgba(0, 0, 0, 0) 3.5px),
+    radial-gradient(circle at 66% 76%, #c98a2a 0 2px, rgba(0, 0, 0, 0) 3px),
+    linear-gradient(180deg, #ffe28a 0%, #f0b43c 100%);
+}
+button.cm-st.current { width: 56px; height: 56px; border-width: 4px; font-size: 24px; --b: #fffaf0; }
+/* The current station breathes: a teal ring grows and fades (transform and opacity only). */
+button.cm-st.current::before {
+  content: ''; position: absolute; inset: -8px; border-radius: 50%; border: 4px solid var(--teal);
+  animation: cm-ring 1.6s ease-out infinite; pointer-events: none;
+}
+button.cm-st.boss { width: 58px; height: 58px; font-size: 24px; border-width: 4px; }
+button.cm-st.boss.locked, button.cm-st.boss.open { --b: #c8553d; color: var(--cream); text-shadow: 0 2px 0 var(--ink); }
+button.cm-st.boss.locked { --b: #8a4a3c; }
+button.cm-st.boss.done { box-shadow: inset 0 -4px 0 rgba(43, 22, 40, 0.18), 0 0 0 4px var(--rust), 0 3px 0 4px var(--ink); }
+button.cm-st.sel { outline: 4px solid #fff; outline-offset: 3px; z-index: 3; }
+.cm-helm { position: absolute; width: 40px; height: 27px; left: 50%; top: -24px; transform: translateX(-50%); pointer-events: none; }
+.cm-q {
+  position: absolute; top: -10px; right: -12px; z-index: 2; width: 24px; height: 24px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Lilita One', sans-serif; font-size: 16px; color: var(--ink); text-shadow: none;
+  background: radial-gradient(circle at 35% 30%, #fffbe0 0%, #ffd95e 40%, #d1972f 100%); border: 2.5px solid var(--ink);
+  box-shadow: 0 0 8px 2px rgba(255, 236, 140, 0.85);
+  animation: cm-shine 2.2s ease-in-out infinite;
+}
+.cm-check {
+  position: absolute; bottom: -7px; right: -9px; width: 20px; height: 20px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-family: 'Nunito', sans-serif; font-weight: 900;
+  color: var(--cream); text-shadow: none; background: var(--teal); border: 2px solid var(--ink);
+}
+.cm-mouse { position: absolute; width: 42px; height: 38px; left: 50%; bottom: calc(100% + 4px); animation: cm-bob 1.3s ease-in-out infinite; pointer-events: none; }
+.boss .cm-mouse { bottom: calc(100% + 22px); }
+.cm-boss-name {
+  position: absolute; z-index: 1; transform: translate(-50%, 36px); white-space: nowrap; pointer-events: none;
+  font-family: 'Lilita One', sans-serif; font-size: 14px; color: var(--cream); text-shadow: 0 1.5px 0 var(--ink);
+  background: var(--rust); border: 2px solid var(--ink); border-radius: 8px; padding: 0 7px;
+}
+.cm-boss-name.up { transform: translate(-50%, calc(-100% - 56px)); }
+
+@keyframes cm-ring { from { transform: scale(0.85); opacity: 0.9; } to { transform: scale(1.35); opacity: 0; } }
+@keyframes cm-shine { 0%, 100% { transform: scale(1) rotate(-8deg); } 50% { transform: scale(1.16) rotate(8deg); } }
+@keyframes cm-bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -5px); } }
+
+/* The card of a tapped station, docked on the right so the station stays visible on the left. */
+.cm-card {
+  position: absolute; z-index: 4; right: max(12px, env(safe-area-inset-right)); bottom: 12px;
+  width: min(360px, 44vw); max-height: calc(100% - 90px); overflow-y: auto; padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+  background: linear-gradient(180deg, #fffdf6 0%, var(--parchment) 100%); border: 4px solid var(--ink); border-radius: 16px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.8), 0 6px 0 var(--wood-dark), 0 9px 0 var(--ink), 0 16px 30px rgba(10, 8, 22, 0.45);
+  animation: pop 0.15s ease-out;
+}
+.cm-card[hidden] { display: none; }
+.cm-card-title { font-family: 'Lilita One', sans-serif; line-height: 1.1; }
+.cm-card-num { font-size: 18px; color: var(--plum); display: block; }
+.cm-card-name { font-size: 26px; }
+.cm-card-facts { font-weight: 800; font-size: 15px; color: var(--wood-dark); }
+.cm-card-boss { font-family: 'Lilita One', sans-serif; font-size: 18px; color: var(--rust); }
+.cm-card-stars { font-weight: 800; font-size: 16px; }
+.cm-card-secret { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--teal); margin: 4px 0; }
+.cm-card-secret .cm-q { position: static; flex: none; }
+ul.cm-card-unlocks { list-style: none; margin: 2px 0; padding: 0; font-family: 'Lilita One', sans-serif; font-size: 17px; color: var(--teal); }
+.cm-card-lock { font-weight: 800; font-size: 15px; color: var(--rust); }
+.cm-card .row.navrow { margin-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  button.cm-st.current::before, .cm-q, .cm-mouse, .cm-card { animation: none; }
+  .cm-mouse { transform: translateX(-50%); }
+}
+
+/* Phones in landscape: a slimmer board, so the landscape keeps most of the height. */
+@media (max-height: 520px) {
+  .cm-head { gap: 10px; padding-top: max(4px, env(safe-area-inset-top)); padding-bottom: 4px; border-bottom-width: 3px; }
+  .cm-head h2 { font-size: 22px; }
+  .cm-progress { min-width: 110px; gap: 2px; }
+  .cm-progress-text { font-size: 13px; }
+  .cm-bar { height: 9px; }
+  .cm-stars { font-size: 20px; }
+  .cm-sign { font-size: 12px; top: 4px; padding: 1px 7px; border-width: 2px; }
+  .cm-keep { width: 110px; height: 106px; }
+  .cm-camp { width: 110px; height: 79px; }
+  button.cm-st { width: 44px; height: 44px; min-width: 44px; min-height: 44px; font-size: 18px; border-width: 3px; padding: 0; }
+  button.cm-st.current { width: 50px; height: 50px; font-size: 21px; border-width: 3.5px; }
+  button.cm-st.boss { width: 52px; height: 52px; font-size: 21px; border-width: 3.5px; }
+  .cm-helm { width: 34px; height: 23px; top: -20px; }
+  .cm-mouse { width: 34px; height: 31px; }
+  .boss .cm-mouse { bottom: calc(100% + 17px); }
+  .cm-boss-name { font-size: 11px; transform: translate(-50%, 30px); }
+  .cm-boss-name.up { transform: translate(-50%, calc(-100% - 48px)); }
+  .cm-card { width: min(330px, 42vw); bottom: max(6px, env(safe-area-inset-bottom)); right: max(8px, env(safe-area-inset-right)); max-height: calc(100% - 58px); padding: 6px 12px; gap: 2px; border-width: 3px; border-radius: 12px; }
+  .cm-card-num { font-size: 13px; }
+  .cm-card-name { font-size: 19px; }
+  .cm-card-facts, .cm-card-stars, .cm-card-secret, .cm-card-lock { font-size: 12px; }
+  .cm-card-boss { font-size: 14px; }
+  ul.cm-card-unlocks { font-size: 13px; }
+  .cm-card .row.navrow { margin-top: 4px !important; }
+}
+
+/* ------------------------------------------------------------------------------------------- */
+/* Market at the keep: the scene is the shop. Only the bars, the hint and the window take taps; */
+/* everything else falls through to the keep's places on the canvas.                          */
+/* ------------------------------------------------------------------------------------------- */
+#ui .overlay:has(> .market) { background: none; pointer-events: none; padding: 0; overflow: hidden; }
+body:has(.market) #app canvas { cursor: pointer; }
+.market { position: absolute; inset: 0; pointer-events: none; }
+.market .m-top, .market .m-bottom > *, .market .m-win { pointer-events: auto; }
+
+.market .m-top {
+  position: absolute; top: max(6px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right));
+  display: flex; gap: 10px; align-items: center;
+}
+/* Gold and offerings: big, on a dark wooden plate so they read over sky and night alike. */
+.market .m-purse {
+  position: static; display: flex; margin: 0; gap: 18px; padding: 2px 16px; min-height: 48px; align-items: center;
+  font-size: 30px; color: var(--cream); text-shadow: 0 2px 0 var(--ink);
+  background: linear-gradient(180deg, #8a5a33 0%, var(--wood-dark) 100%); border: 3px solid var(--ink); border-radius: 14px;
+  box-shadow: inset 0 2px 0 rgba(255, 236, 200, 0.25), 0 3px 0 var(--ink);
+}
+.market .m-purse img { width: 32px; height: 32px; vertical-align: -7px; margin: 0 4px 0 0; }
+.market .m-chip {
+  --b: var(--parchment); color: var(--ink); text-shadow: none; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 20px; padding: 4px 14px 4px 8px; min-height: 48px; border-width: 3px;
+}
+.market .m-chip.on { --b: var(--mustard); }
+.market .m-chip img { width: 34px; height: 34px; }
+
+.market .m-bottom {
+  position: absolute; left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(6px, env(safe-area-inset-bottom));
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; pointer-events: none;
+}
+.market .m-bottom .nav-forward { display: flex; align-items: center; gap: 10px; justify-content: flex-end; flex-wrap: nowrap; margin-left: auto; }
+.market .m-go { display: flex; gap: 8px; }
+.market #ready { min-width: 132px; }
+.market .m-day, .market .status {
+  font-weight: 800; font-size: 14px; color: var(--cream); text-shadow: 0 1px 0 var(--ink), 0 0 6px rgba(20, 12, 8, 0.8);
+  background: rgba(30, 20, 14, 0.55); border-radius: 10px; padding: 4px 10px; min-height: 0; max-width: 46vw;
+}
+.market .status:empty { display: none; }
+.market .m-hint {
+  position: absolute; right: max(8px, env(safe-area-inset-right)); bottom: calc(68px + env(safe-area-inset-bottom)); max-width: min(420px, 44vw);
+  font-weight: 800; font-size: 16px; padding: 6px 12px; border: 3px solid var(--ink); border-radius: 12px;
+  background: rgba(255, 246, 223, 0.92); box-shadow: 0 3px 0 rgba(20, 12, 8, 0.45); pointer-events: none;
+}
+.market .m-hint.level { background: var(--parchment); border-color: var(--plum); color: var(--plum); }
+
+/* The window of one place: on the right, below the purse and above the Ready button. */
+.market .m-win {
+  position: absolute; right: max(8px, env(safe-area-inset-right)); top: calc(64px + env(safe-area-inset-top)); bottom: calc(66px + env(safe-area-inset-bottom));
+  width: min(470px, 54vw); display: flex; flex-direction: column;
+  background: var(--parchment); border: 4px solid var(--ink); border-radius: 16px; padding: 8px 10px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.8), 0 5px 0 var(--wood-dark), 0 12px 28px rgba(10, 8, 22, 0.45);
+}
+.market .m-win-head { display: flex; align-items: center; gap: 10px; flex: none; margin-bottom: 6px; }
+.market .m-win-title { font-family: 'Lilita One', sans-serif; font-size: 24px; line-height: 1.05; color: var(--rust); }
+.market .m-win-title span { display: block; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; color: var(--wood-dark); }
+.market .m-close { min-height: 44px; min-width: 64px; }
+.market .m-list.items { display: flex; flex-direction: column; gap: 6px; flex: 1 1 0; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.market .m-row {
+  display: grid; grid-template-columns: auto 1fr; grid-template-areas: "pic info" "pic act"; gap: 2px 10px; align-items: center;
+  background: linear-gradient(180deg, #fffdf6 0%, #fbf3df 100%); border: 3px solid var(--ink); border-radius: 12px; padding: 6px 8px;
+}
+.market .m-row.owned { background: linear-gradient(180deg, #ecf6e6 0%, #d6ebcf 100%); }
+.market .m-row.dim .m-pic img { filter: saturate(0.6); }
+.market .m-row.locked { opacity: 0.85; }
+.market .m-info { grid-area: info; min-width: 0; }
+.market .m-row .name { font-family: 'Lilita One', sans-serif; font-size: 20px; line-height: 1.1; }
+.market .m-row .tier { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; color: var(--teal); margin-left: 4px; }
+.market .m-row .desc { font-size: 14px; font-weight: 600; line-height: 1.25; }
+.market .m-row .next { display: block; color: var(--teal); font-weight: 800; }
+.market .m-act { grid-area: act; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; font-weight: 800; }
+.market .m-act button { min-height: 44px; min-width: 88px; }
+.market .m-act .why { font-size: 13px; font-weight: 800; color: var(--rust); }
+.market .price img { width: 20px; height: 20px; vertical-align: -4px; margin: 0 2px 0 6px; }
+.market .m-note { text-align: center; font-weight: 800; color: var(--wood-dark); padding: 6px; }
+
+/* The picture frame grows mightier with the tier: wood, iron, brass, gold, glowing gold. */
+.market .m-pic {
+  grid-area: pic; width: 72px; height: 72px; border: 3px solid var(--ink); border-radius: 12px; display: grid; place-items: center;
+  background: radial-gradient(circle at 40% 35%, #fff8e6 0%, #e9d6ae 100%); box-shadow: inset 0 0 0 3px #9a6a3c;
+}
+.market .m-pic img { width: 92%; height: 92%; object-fit: contain; }
+.market .m-pic.t2 { box-shadow: inset 0 0 0 3px #777d83; }
+.market .m-pic.t3 { box-shadow: inset 0 0 0 3px #c9a23e; }
+.market .m-pic.t4 { box-shadow: inset 0 0 0 4px #e9b44c; background: radial-gradient(circle at 40% 35%, #fffbe8 0%, #f3dc9a 100%); }
+.market .m-pic.t5 { box-shadow: inset 0 0 0 4px #ffe08a, 0 0 12px 2px rgba(255, 210, 90, 0.85); background: radial-gradient(circle at 40% 35%, #fffef4 0%, #ffe29a 100%); }
+.market .m-pips { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: 2px; }
+.market .m-pips i { width: 8px; height: 8px; border-radius: 50%; background: #f3cb5e; border: 2px solid var(--ink); }
+.market .m-pips.t4 i, .market .m-pips.t5 i { background: #ffe08a; box-shadow: 0 0 4px rgba(255, 210, 90, 0.9); }
+
+/* Phones in landscape: the same market, packed tighter; every tap area stays at least 44 px. */
+@media (max-height: 520px) {
+  .market .m-top { gap: 6px; }
+  .market .m-purse { font-size: 22px; min-height: 44px; padding: 0 10px; gap: 12px; border-width: 2px; }
+  .market .m-purse img { width: 24px; height: 24px; vertical-align: -5px; }
+  .market .m-chip { font-size: 16px; min-height: 44px; padding: 2px 10px 2px 6px; }
+  .market .m-chip img { width: 28px; height: 28px; }
+  .market .m-day, .market .status { font-size: 11px; padding: 3px 8px; max-width: 40vw; }
+  .market #ready { min-width: 104px; }
+  .market .m-hint { font-size: 12px; padding: 4px 8px; bottom: calc(56px + env(safe-area-inset-bottom)); border-width: 2px; }
+  .market .m-win { top: calc(54px + env(safe-area-inset-top)); bottom: calc(56px + env(safe-area-inset-bottom)); padding: 5px 8px; border-width: 3px; border-radius: 12px; width: min(440px, 54vw); }
+  .market .m-win-title { font-size: 18px; }
+  .market .m-win-title span { font-size: 11px; }
+  .market .m-win-head { margin-bottom: 4px; }
+  .market .m-row { padding: 3px 6px; gap: 0 8px; border-width: 2px; border-radius: 10px; }
+  .market .m-pic { width: 52px; height: 52px; border-width: 2px; border-radius: 9px; }
+  .market .m-row .name { font-size: 15px; }
+  .market .m-row .desc { font-size: 11px; line-height: 1.2; }
+  .market .m-act { gap: 6px; }
+  .market .m-act .why { font-size: 11px; }
+  .market .price img { width: 15px; height: 15px; vertical-align: -3px; margin-left: 4px; }
+  .market .m-pips i { width: 6px; height: 6px; border-width: 1.5px; }
 }

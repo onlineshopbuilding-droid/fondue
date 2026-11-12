@@ -13,6 +13,8 @@ import { CastleView } from './castleView';
 import { Effects } from './effects';
 import { EnemyView } from './enemyView';
 import { Hud } from './hud';
+import { camAt, hookAt, stepMarket, type CamRect } from './marketCamera';
+import { MarketView } from './marketView';
 import { Stations } from './stations';
 import { computeView, renderScale, type GameView } from './viewport';
 import { propKey, TEX_SCALE } from './textures';
@@ -33,6 +35,8 @@ export interface SceneHooks {
   togglePause(): void;
   isInputBlocked(): boolean;
   onBuyNotice(text: string): void;
+  /** A place on the keep was tapped in the market: 'slot:<i>', 'gate', 'station:<id>'. */
+  onKeepTap(spot: string): void;
 }
 
 interface HandView { img: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; }
@@ -48,6 +52,11 @@ export class GameScene extends Phaser.Scene {
   private hud!: Hud;
   private castle!: CastleView;
   private stations!: Stations;
+  private market!: MarketView;
+  /** 0 in the fight, 1 in the market at the keep; in between while the camera moves. */
+  private marketK = 0;
+  /** The part of the world on screen right now (the fight view, the market view or between). */
+  private cam: CamRect = { x: 0, y: 0, w: WORLD.width, h: WORLD.height };
   private banner!: Phaser.GameObjects.Container;
   private bannerText!: Phaser.GameObjects.Text;
   private bannerT = -1;
@@ -85,6 +94,7 @@ export class GameScene extends Phaser.Scene {
     this.bg = new Background(this);
     this.castle = new CastleView(this);
     this.stations = new Stations(this);
+    this.market = new MarketView(this);
     this.cheeseGfx = this.add.graphics().setDepth(17);
 
     this.fx = new Effects(this);
@@ -118,7 +128,8 @@ export class GameScene extends Phaser.Scene {
     const w = Math.round(v.width * rs);
     const h = Math.round(v.height * rs);
     if (this.scale.gameSize.width !== w || this.scale.gameSize.height !== h) this.scale.setGameSize(w, h);
-    this.cameras.main.setSize(w, h).setOrigin(0, 0).setZoom(rs).setScroll(v.offsetX, v.offsetY);
+    this.cam = camAt(v, this.marketK);
+    this.cameras.main.setSize(w, h).setOrigin(0, 0).setZoom(rs * (v.width / this.cam.w)).setScroll(this.cam.x, this.cam.y);
     this.sharpenText(rs);
     this.bg.layout(v);
     this.hud.layout(v);
@@ -139,8 +150,12 @@ export class GameScene extends Phaser.Scene {
     walk(this.children.list);
   }
 
-  /** CSS position of a world point. */
-  worldToCss(x: number, y: number) { return this.screenToCss(x - this.view.offsetX, y - this.view.offsetY); }
+  /** CSS position of a world point, wherever the camera looks. */
+  worldToCss(x: number, y: number) {
+    const r = this.game.canvas.getBoundingClientRect();
+    const c = this.cam;
+    return { x: r.left + ((x - c.x) / c.w) * r.width, y: r.top + ((y - c.y) / c.h) * r.height };
+  }
 
   /** CSS position of a point in screen coordinates. */
   screenToCss(x: number, y: number) {
@@ -153,10 +168,16 @@ export class GameScene extends Phaser.Scene {
     const { tracker } = bindPointer(canvas, {
       onMove: (t) => this.feedShake(t),
       windowMs: () => this.session?.meta()?.tuning.velWindowMs ?? 80,
-      view: () => this.view,
+      view: () => ({ width: this.cam.w, height: this.cam.h, offsetX: this.cam.x, offsetY: this.cam.y }),
       onDown: (x, y) => {
         this.audio.resume();
         const s = this.session;
+        // The market at the keep: a tap on one of its places opens that place's window, nothing else.
+        if (s && s.view()?.phase === 'intermission') {
+          const spot = this.market.hit(x, y);
+          if (spot) { this.audio.play('uiClick'); this.hooks.onKeepTap(spot); }
+          return true;
+        }
         if (!s || this.hooks.isInputBlocked()) return true;
         const sx = x - this.view.offsetX;
         const sy = y - this.view.offsetY;
@@ -221,6 +242,7 @@ export class GameScene extends Phaser.Scene {
     this.bannerT = -1;
     this.banner.y = -170;
     this.stations.reset();
+    this.marketK = 0;
     this.veilT = 0;
     this.flashT = 0;
     this.veil.setVisible(false);
@@ -235,13 +257,20 @@ export class GameScene extends Phaser.Scene {
     const realDt = Math.min(0.05, deltaMs / 1000);
     const s = this.session;
     if (!s) {
+      this.marketK = 0;
+      this.cam = camAt(this.view, 0);
       this.hud.setVisible(false);
       this.bg.setLandscape('meadow');
       this.bg.update(8, 50, false, 640, realDt);
       this.hooks?.onFrame(null);
       return;
     }
-    this.hud.setVisible(true);
+    // The camera glides to the market at the keep between days and back for the fight.
+    this.marketK = stepMarket(this.marketK, s.view()?.phase === 'intermission', realDt);
+    this.cam = camAt(this.view, this.marketK);
+    // The bars are screen furniture of the fight; the market shows gold and offerings itself.
+    this.hud.setVisible(this.marketK === 0);
+    this.banner.setVisible(this.marketK === 0);
 
     s.setHand(this.tracker.x, this.tracker.y);
     // Alone, a hitstop can stop the world for real; a shared game must keep running for the other player.
@@ -282,7 +311,8 @@ export class GameScene extends Phaser.Scene {
   private applyShake(dt: number) {
     const cam = this.cameras.main;
     this.shakeAmp *= Math.exp(-dt * 14);
-    const { offsetX, offsetY } = this.view;
+    const { x: offsetX, y: offsetY, w } = this.cam;
+    cam.setZoom(this.renderScale * (this.view.width / w));
     if (this.shakeAmp < 0.3) { this.shakeAmp = 0; cam.setScroll(offsetX, offsetY); return; }
     cam.setScroll(offsetX + (Math.random() - 0.5) * 2 * this.shakeAmp, offsetY + (Math.random() - 0.5) * 2 * this.shakeAmp);
   }
@@ -317,8 +347,11 @@ export class GameScene extends Phaser.Scene {
 
   private renderKeep(view: ViewState, meta: Meta | null, dt: number, time: number) {
     if (!meta) return;
-    this.castle.update(view, meta, this.bg.shown, this.bg.tint, this.bg.night, dt, time);
-    this.stations.update(view, meta, this.bg.tint, dt, time);
+    const k = this.marketK;
+    const hook = hookAt(this.view, meta.fieldW, k);
+    this.castle.update(view, meta, this.bg.shown, this.bg.tint, this.bg.night, dt, time, k);
+    this.stations.update(view, meta, this.bg.tint, dt, time, hook, k);
+    this.market.update(meta, view.gold, view.offerings, k, hook, this.castle.hitRadius(), time);
   }
 
   private renderProjectiles(list: ViewProjectile[]) {
@@ -743,6 +776,18 @@ export class GameScene extends Phaser.Scene {
   /** Test hook: CSS position of a slot, for tapping it in browser tests. */
   slotCss(slot: number) { const p = this.castle.slotWorld(slot); return this.worldToCss(p.x, p.y); }
   pauseCss() { const p = this.hud.pausePos(); return this.screenToCss(p.x, p.y); }
+  /** Test hook: how far the camera has moved into the market, 0 (fight) to 1 (market). */
+  marketProgress() { return this.marketK; }
+  /** Test hook: the market's tappable places with their CSS centre and CSS tap radius. */
+  marketSpots() {
+    const r = this.game.canvas.getBoundingClientRect();
+    const perUnit = r.width / this.cam.w;
+    return this.market.list().map((s) => ({ id: s.id, ...this.worldToCss(s.x, s.y), r: s.r * perUnit }));
+  }
+  /** Test hook: CSS centre of one market place ('slot:2', 'gate', 'station:perch'), or null. */
+  marketSpotCss(id: string) { return this.marketSpots().find((s) => s.id === id) ?? null; }
+  /** Test hook: acts as if a market place was tapped, without hunting for its pixels. */
+  tapMarketSpot(id: string) { this.hooks.onKeepTap(id); }
   slotDiameterCss() { return this.castle.diameterCss(); }
   pauseDiameterCss() { return this.hud.pauseDiameterCss(); }
   hudBottomCss() { return this.hud.bottomCss(); }

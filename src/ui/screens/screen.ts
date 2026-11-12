@@ -81,7 +81,15 @@ export class ScreenManager {
     const tabsLeft = tabs?.scrollLeft ?? 0;
     const panelTop = panel?.scrollTop ?? 0;
     const tabBefore = tabs?.querySelector('.tab.on')?.getAttribute('data-tab');
+    // Any element marked data-keep-scroll (with an id) keeps both scroll positions on a redraw.
+    const kept = samePage
+      ? [...overlay.querySelectorAll<HTMLElement>('[data-keep-scroll][id]')].map((el) => ({ id: el.id, left: el.scrollLeft, top: el.scrollTop }))
+      : [];
     overlay.innerHTML = html;
+    for (const k of kept) {
+      const el = overlay.querySelector<HTMLElement>(`#${k.id}`);
+      if (el) { el.scrollLeft = k.left; el.scrollTop = k.top; }
+    }
     // Only a new screen pops in; a redraw of the same one must not flicker.
     if (!samePage) overlay.querySelector('.panel')?.classList.add('enter');
     if (samePage) {

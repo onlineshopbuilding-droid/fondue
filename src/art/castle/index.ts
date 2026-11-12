@@ -1,5 +1,5 @@
 /**
- * Collects all castle art as `CASTLE_ART`: keep stages, night windows, ground, foreground, weather,
+ * Collects all castle art as `CASTLE_ART`: keep stages, the west wing, night windows, ground, foreground, weather,
  * mounted weapons, the rear cauldron and the eagle perch. Keep art coordinates = world + (40, 20);
  * everything left of art x=40 is off-screen, and the light comes from the upper left.
  */
@@ -7,7 +7,8 @@ import type { Art } from '../types';
 import { ink, art, centred } from '../draw';
 import { type Win, windowsGlow } from './kit';
 import { WINS0, tier0, WINS1, tier1, WINS2, tier2, WINS3, tier3, WINS4, tier4, keepShadow } from './keepStages';
-import { groundMeadow, groundCanyon, groundMarsh, groundSnow } from './ground';
+import { groundMeadow, groundCanyon, groundMarsh, groundSnow, groundMeadowWest, groundCanyonWest, groundMarshWest, groundSnowWest } from './ground';
+import { WEST_ART } from './westWing';
 import { footMeadow, footCanyon, footMarsh, footSnow } from './foreground';
 import { bolter, mortar, frost, bellows, stomper, shrine, wheelRamp } from './mounts';
 import { potLedge, potRearBack, potRearFront, cheese, steam } from './cauldron';
@@ -54,6 +55,12 @@ export const CASTLE_ART: Record<string, Art> = {
   keepGround_canyon: groundCanyon,
   keepGround_marsh: groundMarsh,
   keepGround_snowpine: groundSnow,
+  // The west wing left of the keep, seen only in the market.
+  ...WEST_ART,
+  keepWestGround_meadow: groundMeadowWest,
+  keepWestGround_canyon: groundCanyonWest,
+  keepWestGround_marsh: groundMarshWest,
+  keepWestGround_snowpine: groundSnowWest,
   foot_meadow: footMeadow,
   foot_canyon: footCanyon,
   foot_marsh: footMarsh,

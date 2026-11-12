@@ -83,7 +83,7 @@ export function tier0(): string {
 // Tier 1: timber on a stone footing, bound with iron.
 // ---------------------------------------------------------------------------------------------
 
-const ROUGH: Omit<Stonework, 'seed'> = { h: 24, base: '#6a6458', fills: [STONE, STONED, '#8a8476', '#a59f8f'], line: '#4e4a41', hi: STONEL };
+export const ROUGH: Omit<Stonework, 'seed'> = { h: 24, base: '#6a6458', fills: [STONE, STONED, '#8a8476', '#a59f8f'], line: '#4e4a41', hi: STONEL };
 
 export const WINS1: Win[] = [{ x: 58, y: 174, w: 20, h: 28 }, { x: 96, y: 174, w: 20, h: 28 }];
 
@@ -183,7 +183,7 @@ export function tier1(): string {
 // Tier 2: proper stone walls, shingled roofs, a banner.
 // ---------------------------------------------------------------------------------------------
 
-const ASHLAR: Omit<Stonework, 'seed'> = { h: 22, base: '#857f71', fills: [STONEL, '#aca696', STONE, '#b6b09f'], line: '#6a6559', hi: '#d6d0bd' };
+export const ASHLAR: Omit<Stonework, 'seed'> = { h: 22, base: '#857f71', fills: [STONEL, '#aca696', STONE, '#b6b09f'], line: '#6a6559', hi: '#d6d0bd' };
 export const WINS2: Win[] = [
   { x: 52, y: 198, w: 22, h: 40, arch: true },
   { x: 120, y: 198, w: 22, h: 40, arch: true },
@@ -275,7 +275,7 @@ function archGate(light: string, mid: string, dark: string, stoneKey: string): s
 // Tier 3: a taller slate keep, an extra tower, runes and more banners.
 // ---------------------------------------------------------------------------------------------
 
-const SLATE: Omit<Stonework, 'seed'> = { h: 22, base: '#5b6271', fills: ['#8d95a3', '#7c8493', '#9aa2af', '#868e9c'], line: '#4a5160', hi: '#bcc3cd' };
+export const SLATE: Omit<Stonework, 'seed'> = { h: 22, base: '#5b6271', fills: ['#8d95a3', '#7c8493', '#9aa2af', '#868e9c'], line: '#4a5160', hi: '#bcc3cd' };
 export const WINS3: Win[] = [
   { x: 66, y: 120, w: 16, h: 22, arch: true },
   { x: 90, y: 120, w: 16, h: 22, arch: true },
@@ -354,7 +354,7 @@ export function tier3(): string {
 // Tier 4: a magnificent white-and-gold fortress.
 // ---------------------------------------------------------------------------------------------
 
-const MARBLE: Omit<Stonework, 'seed'> = { h: 24, base: '#d1c9b6', fills: ['#f6f1e6', '#ece6d6', '#f2ecdd', '#e4ddcb'], line: '#bdb29a', hi: WHITE };
+export const MARBLE: Omit<Stonework, 'seed'> = { h: 24, base: '#d1c9b6', fills: ['#f6f1e6', '#ece6d6', '#f2ecdd', '#e4ddcb'], line: '#bdb29a', hi: WHITE };
 export const WINS4: Win[] = [
   { x: 72, y: 156, w: 28, h: 54, arch: true },
   { x: 140, y: 160, w: 18, h: 40, arch: true },

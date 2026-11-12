@@ -8,6 +8,7 @@ import { slotAt } from '../sim/slots';
 import type { Meta } from '../sim/types';
 import { keepStagesReady, propKey, TEX_SCALE, wantKeepStages, wantWeaponTiers, weaponKey, weaponTiersReady } from './textures';
 import type { GameView } from './viewport';
+import { WEST_X } from '../art/castle/westWing';
 
 const FINGER_CSS = 27;
 const RING_RADIUS = 40;
@@ -49,6 +50,11 @@ export class CastleView {
   private ring: Phaser.GameObjects.Graphics;
   private thornGfx: Phaser.GameObjects.Graphics;
   private beaconGlow: Phaser.GameObjects.Image;
+  /** The west wing left of the keep, which only the market shows. */
+  private west: Phaser.GameObjects.Image;
+  private westGlow: Phaser.GameObjects.Image;
+  private westSnow: Phaser.GameObjects.Image;
+  private westGround: Phaser.GameObjects.Image;
   private mounts: Mount[] = [];
   private gateFlash = 0;
   private thornT = 0;
@@ -64,6 +70,11 @@ export class CastleView {
     this.weather = scene.add.image(-40, 640, propKey('keep0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.05).setVisible(false);
     // Grass, earth and paving of the landscape at the wall foot: behind the gate and the raiders.
     this.ground = scene.add.image(-40, 670, propKey('keepGround_meadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.06);
+    // Above the keep's own left edge (art x < 40), which it hides; under the keep's ground strip.
+    this.west = scene.add.image(WEST_X, 640, propKey('keepWest0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.055).setVisible(false);
+    this.westSnow = scene.add.image(WEST_X, 640, propKey('keepWest0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.056).setVisible(false);
+    this.westGlow = scene.add.image(WEST_X, 640, propKey('keepWestGlow0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.057).setVisible(false);
+    this.westGround = scene.add.image(-460, 670, propKey('keepWestGround_meadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(10.06).setVisible(false);
     this.thornGfx = scene.add.graphics().setDepth(10.9);
     this.gate = scene.add.image(WORLD.gateX - 74, 620, propKey('gate0')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(11);
     this.cracks = scene.add.image(WORLD.gateX - 74, 620, propKey('crack1')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(12).setVisible(false);
@@ -117,8 +128,11 @@ export class CastleView {
     return meta.loadout.slotWeapon[slot] ?? null;
   }
 
-  /** `land` is the landscape on screen (Background.shown), which lags behind the day while it loads. */
-  update(view: ViewState, meta: Meta, land: Landscape, tint: number, night: number, dt: number, time: number) {
+  /**
+   * `land` is the landscape on screen (Background.shown), which lags behind the day while it loads;
+   * `market` how far the market view has come in (0 to 1), which brings the west wing into sight.
+   */
+  update(view: ViewState, meta: Meta, land: Landscape, tint: number, night: number, dt: number, time: number, market = 0) {
     // Stages beyond the first are prepared in the background after boot; until then stage 0 stands in.
     const built = meta.loadout.gateTier;
     if (built > 0 && !keepStagesReady()) wantKeepStages();
@@ -133,7 +147,16 @@ export class CastleView {
       const weather = land === 'snowpine' ? `keepWeather_snowpine_${tier}` : land === 'meadow' ? null : `keepWeather_${land}`;
       this.weather.setVisible(weather !== null);
       if (weather) this.weather.setTexture(propKey(weather));
+      this.west.setTexture(propKey(`keepWest${tier}`));
+      this.westGlow.setTexture(propKey(`keepWestGlow${tier}`));
+      this.westGround.setTexture(propKey(`keepWestGround_${land}`));
+      if (land === 'snowpine') this.westSnow.setTexture(propKey(`keepWestSnow_snowpine_${tier}`));
     }
+    const westOn = market > 0;
+    this.west.setVisible(westOn).setTint(tint);
+    this.westGround.setVisible(westOn).setTint(tint);
+    this.westSnow.setVisible(westOn && land === 'snowpine').setTint(tint);
+    this.westGlow.setVisible(westOn).setAlpha(Math.min(1, night * 1.6));
     this.keep.setTint(tint);
     this.weather.setTint(tint);
     this.ground.setTint(tint);

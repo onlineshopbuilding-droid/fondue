@@ -59,11 +59,11 @@ export interface AssetEntry {
 
 /**
  * Which group a prop belongs to: a landscape for its dressing (`foot_marsh`,
- * `keepWeather_snowpine_2`), the keep stages 1 to 4 with their window glow, or boot.
+ * `keepWeather_snowpine_2`), the keep stages 1 to 4 with their west wing and window glow, or boot.
  */
 export function groupOfProp(name: string): AssetGroup {
   for (const land of LAND_NAMES) if (name.endsWith(`_${land}`) || name.includes(`_${land}_`)) return land;
-  if (/^keep(Glow)?[1-9]$/.test(name)) return KEEP_STAGES;
+  if (/^keep(West)?(Glow)?[1-9]$/.test(name)) return KEEP_STAGES;
   return BOOT;
 }
 

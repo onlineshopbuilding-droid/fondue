@@ -94,24 +94,41 @@ function keepGround(s: GroundStyle, seed: number): string {
 
 const ground = (s: GroundStyle, seed: number): Art => art(340, 130, 0, 130, SHADE_DEFS + ink(`<g transform="translate(0 -560)">${keepGround(s, seed)}</g>`));
 
+/**
+ * The same bank along the west wing, which only the market shows: 420 wide, placed bottom-left at
+ * world (-460, 670), so it runs under the keep's own bank. No paving: the road ends at the gate.
+ */
+function westBank(s: GroundStyle, seed: number): string {
+  const R = rand(seed);
+  const bank = 'M0 648Q40 638 84 644T170 640T260 646T340 640T420 646L420 690H0Z';
+  const edge = (x: number) => 643 + Math.sin(x * 0.09) * 3;
+  return (
+    shade('sD', 0, 618, 420, 30, 0.6) +
+    `<g stroke="${s.line}" stroke-width="2.5" stroke-linejoin="round">${p(bank, s.earth)}</g>` +
+    n(fringe(0, 420, 645, 46, R, (s.blade ?? 13) * 0.55), s.grass) +
+    n('M0 654Q60 648 120 652T240 654T420 656L420 664Q300 660 200 664T0 662Z', s.grassL, 0.45) +
+    shade('sD', 0, 656, 420, 34, 0.35) +
+    blades(4, 416, edge, R, s.blade ?? 13, s.grass, s.grassD, s.line)
+  );
+}
+const westGround = (s: GroundStyle, seed: number): Art => art(420, 130, 0, 130, SHADE_DEFS + ink(`<g transform="translate(0 -560)">${westBank(s, seed)}</g>`));
+
 /** Little meadow flowers: cream, mustard and rust heads on short stems. */
 function flowers(list: [number, number, string][]): string {
   const stems = list.map(([x, y]) => `M${x} ${y + 7}V${y + 1}`).join('');
   return hl(stems, '#3f6b45', 1.4) + `<g stroke-width="1.6">${list.map(([x, y, f]) => c(x, y, 2.8, f)).join('')}</g>` + hl(list.map(([x, y]) => `M${x - 0.8} ${y - 0.8}h.01`).join(''), '#fffaf0', 1.2, 0.8);
 }
 
-export const groundMeadow = ground(
-  {
+const MEADOW: GroundStyle = {
     grass: '#6f9a4a', grassD: '#3f6b45', grassL: '#a9c86e', earth: '#6b5038', road: '#b08a5a', line: INK, cobble: '#c9b08a',
     extra:
       moss(12, 628, 14, 6, 801) + moss(104, 632, 12, 5, 802) + moss(250, 640, 9, 4, 803) +
       flowers([[8, 640, CREAM], [42, 636, MUSTL], [70, 642, CREAM], [126, 646, RUST]]),
-  },
-  811,
-);
+};
+export const groundMeadow = ground(MEADOW, 811);
+export const groundMeadowWest = westGround(MEADOW, 911);
 
-export const groundCanyon = ground(
-  {
+const CANYON: GroundStyle = {
     grass: '#a39a4a', grassD: '#6b6424', grassL: '#d9c27a', earth: '#9a5136', road: '#dcae78', line: INK, cobble: '#e8c79a',
     extra:
       // Sand blown against the plinth, with ripples.
@@ -119,12 +136,11 @@ export const groundCanyon = ground(
       hl('M-14 636Q16 626 40 634M58 634Q84 628 108 638', '#b98857', 1.4, 0.8) +
       hl('M-10 632Q14 622 36 628', '#f0d2a3', 1.4, 0.8) +
       hl('M20 668l6 6l-3 6M100 672l-5 5l4 6', '#6e2f1f', 1.4, 0.7),
-  },
-  812,
-);
+};
+export const groundCanyon = ground(CANYON, 812);
+export const groundCanyonWest = westGround(CANYON, 912);
 
-export const groundMarsh = ground(
-  {
+const MARSH: GroundStyle = {
     grass: '#55703f', grassD: '#2a3f28', grassL: '#86a35e', earth: '#3f3a2a', road: '#7b6a4c', line: INK, cobble: '#9b8c6c',
     extra:
       // Damp stain creeping up the plinth and a dark puddle with sky in it.
@@ -132,12 +148,11 @@ export const groundMarsh = ground(
       `<g stroke="${INK}" stroke-width="2.2">${p('M262 664Q280 656 306 660Q322 666 300 672Q276 674 262 664Z', '#3f6660')}</g>` +
       n('M270 663Q284 659 300 662Q286 664 272 665Z', '#9fc0bc', 0.7) +
       moss(30, 632, 22, 7, 821) + moss(110, 636, 16, 6, 822) + moss(248, 642, 10, 5, 823),
-  },
-  813,
-);
+};
+export const groundMarsh = ground(MARSH, 813);
+export const groundMarshWest = westGround(MARSH, 913);
 
-export const groundSnow = ground(
-  {
+const SNOW: GroundStyle = {
     grass: '#eef3fa', grassD: '#9fb1c9', grassL: WHITE, earth: '#c9d6e8', road: '#9fb1c9', line: '#1a2740', cobble: '#c5d2e4', blade: 4,
     extra:
       // Snow heaped against the plinth, blue in its shadow, and dry stalks poking through.
@@ -145,6 +160,6 @@ export const groundSnow = ground(
       n('M60 640Q90 628 124 636Q138 642 148 650Q110 644 60 646Z', '#c9d6e8', 0.85) +
       n('M-10 632Q14 620 40 628Q20 626 -4 636Z', WHITE) +
       hl('M30 636l-2 -12M34 636l3 -10M96 638l-3 -11M100 638l2 -9', '#5a4630', 1.4, 0.9),
-  },
-  814,
-);
+};
+export const groundSnow = ground(SNOW, 814);
+export const groundSnowWest = westGround(SNOW, 914);

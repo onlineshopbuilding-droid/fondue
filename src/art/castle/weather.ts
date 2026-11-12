@@ -14,7 +14,7 @@ const SNOWD = '#c9d6e8';
 const SNOWLINE = '#1a2740';
 
 /** A lumpy strip lying on top of a ledge. */
-function drift(x0: number, x1: number, y: number, seed: number, f = SNOW, line = SNOWLINE, rise = 8): string {
+export function drift(x0: number, x1: number, y: number, seed: number, f = SNOW, line = SNOWLINE, rise = 8): string {
   const R = rand(seed);
   let d = `M${x0} ${y + 3}`;
   for (let x = x0; x < x1; ) {
@@ -25,7 +25,7 @@ function drift(x0: number, x1: number, y: number, seed: number, f = SNOW, line =
   return `<path d="${d}V${y + 3}Z" fill="${f}" stroke="${line}" stroke-width="2.5" stroke-linejoin="round"/>`;
 }
 
-function icicles(x0: number, x1: number, y: number, seed: number): string {
+export function icicles(x0: number, x1: number, y: number, seed: number): string {
   const R = rand(seed);
   let d = '';
   for (let x = x0; x < x1; x += 18 + R() * 26) d += `M${fx(x)} ${y}l3.5 ${fx(7 + R() * 9)}l3.5 ${fx(-7 - R() * 2)}Z`;
@@ -33,7 +33,7 @@ function icicles(x0: number, x1: number, y: number, seed: number): string {
 }
 
 /** Snow over the upper part of a roof, with a scalloped lower edge. */
-function snowCap(d: string, x0: number, x1: number, y0: number, y1: number, seed: number): string {
+export function snowCap(d: string, x0: number, x1: number, y0: number, y1: number, seed: number): string {
   const R = rand(seed);
   let wave = `M${x0} ${y0}H${x1}V${y1}`;
   for (let x = x1; x > x0; ) {
@@ -45,7 +45,7 @@ function snowCap(d: string, x0: number, x1: number, y0: number, y1: number, seed
   return clip(d, n(wave, SNOW) + hl(wave, SNOWD, 2.5)) + `<path d="${d}" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>`;
 }
 
-function snowMerlons(x0: number, x1: number, y: number, w: number, gap: number, seed: number): string {
+export function snowMerlons(x0: number, x1: number, y: number, w: number, gap: number, seed: number): string {
   let b = '';
   for (let x = x0, i = 0; x < x1; x += w + gap, i++) b += drift(x - 1, x + w + 1, y, seed + i, SNOW, SNOWLINE, 6);
   return b;

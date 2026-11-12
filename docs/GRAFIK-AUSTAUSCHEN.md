@@ -104,7 +104,7 @@ node scripts/list-assets.ts
 Die Größe und der Ankerpunkt gelten in Weltpixeln. „Bilddatei in Pixeln“ ist die Größe, in der man eine Ersatzdatei anlegt.
 
 <!-- ASSETS:START (erzeugt von scripts/list-assets.ts, nicht von Hand ändern) -->
-Stand: 286 Assets.
+Stand: 305 Assets.
 
 ### Figurenteile (86)
 
@@ -197,7 +197,7 @@ Stand: 286 Assets.
 | `rig:crow:body` | 50 × 34 | 25, 16 | 100 × 68 | 0, -12 | static | Start |
 | `rig:crow:wingFront` | 37 × 41 | 13, 31 | 74 × 82 | 3, -16 | armFront | Start |
 
-### Requisiten, Burg und Effekte (100)
+### Requisiten, Burg und Effekte (119)
 
 | Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gruppe |
 |---|---|---|---|---|
@@ -273,6 +273,25 @@ Stand: 286 Assets.
 | `prop:keepGround_canyon` | 340 × 130 | 0, 130 | 680 × 260 | canyon |
 | `prop:keepGround_marsh` | 340 × 130 | 0, 130 | 680 × 260 | marsh |
 | `prop:keepGround_snowpine` | 340 × 130 | 0, 130 | 680 × 260 | snowpine |
+| `prop:keepWest0` | 400 × 660 | 0, 660 | 800 × 1320 | Start |
+| `prop:keepWestGlow0` | 400 × 660 | 0, 660 | 800 × 1320 | Start |
+| `prop:keepWestSnow_snowpine_0` | 400 × 660 | 0, 660 | 800 × 1320 | snowpine |
+| `prop:keepWest1` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestGlow1` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestSnow_snowpine_1` | 400 × 660 | 0, 660 | 800 × 1320 | snowpine |
+| `prop:keepWest2` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestGlow2` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestSnow_snowpine_2` | 400 × 660 | 0, 660 | 800 × 1320 | snowpine |
+| `prop:keepWest3` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestGlow3` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestSnow_snowpine_3` | 400 × 660 | 0, 660 | 800 × 1320 | snowpine |
+| `prop:keepWest4` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestGlow4` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestSnow_snowpine_4` | 400 × 660 | 0, 660 | 800 × 1320 | snowpine |
+| `prop:keepWestGround_meadow` | 420 × 130 | 0, 130 | 840 × 260 | meadow (Start) |
+| `prop:keepWestGround_canyon` | 420 × 130 | 0, 130 | 840 × 260 | canyon |
+| `prop:keepWestGround_marsh` | 420 × 130 | 0, 130 | 840 × 260 | marsh |
+| `prop:keepWestGround_snowpine` | 420 × 130 | 0, 130 | 840 × 260 | snowpine |
 | `prop:foot_meadow` | 460 × 130 | 0, 130 | 920 × 260 | meadow (Start) |
 | `prop:foot_canyon` | 460 × 130 | 0, 130 | 920 × 260 | canyon |
 | `prop:foot_marsh` | 460 × 130 | 0, 130 | 920 × 260 | marsh |

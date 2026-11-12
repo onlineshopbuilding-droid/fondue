@@ -1,38 +1,188 @@
-// The campaign list (until the path map exists): every level of the world with its number, name and state.
-// Won levels and the next one can be tapped and start at once; the rest are locked.
-import { worldById } from '../../config/worlds';
-import { CAMPAIGN } from '../../modes';
+// The campaign map: a path through the landscapes with every level as a station. It opens centred on
+// the current level and scrolls sideways with the finger (wheel or drag with a mouse). Tapping a
+// station opens a small card with the level's facts and a Play button; locked stations say what to win first.
+import { STARS } from '../../config/stars';
+import { levelOf, worldById } from '../../config/worlds';
+import type { LevelDef } from '../../config/worlds/types';
+import { CAMPAIGN, unlocksOfLevel } from '../../modes';
+import { MAP_SYMBOLS, STEP, bandsOf, endsHtml, landName, landscapeHtml, mapWidth, pathSvg, stationX, stationY } from '../campaignArt';
 import { BACK_BUTTON, esc, navRow } from '../html';
 import type { ScreenContext } from './context';
 import type { Screen } from './screen';
+import { unlockName } from './won';
+
+/** The station whose card is open, kept so a redraw of the screen keeps the card. */
+let selected: number | null = null;
+/** The context while the map is shown, for the wheel and drag listeners. */
+let active: ScreenContext | null = null;
+/** Mouse drag on the map: where it started, and whether it moved far enough to not count as a tap. */
+let drag: { x: number; left: number } | null = null;
+let dragged = false;
+
+const scroller = (ctx: ScreenContext) => ctx.query<HTMLElement>('#mapScroll');
+
+function stationHtml(ctx: ScreenContext, l: LevelDef, current: number): string {
+  const p = ctx.profile;
+  const done = p.isLevelDone(ctx.world, l.id);
+  const open = CAMPAIGN.canPlay(p, ctx.world, l.id);
+  const hasUnlock = unlocksOfLevel(ctx.world, l.id).length > 0;
+  const cls = ['cm-st', done ? 'done' : open ? 'open' : 'locked', l.boss ? 'boss' : '', l.id === current ? 'current' : '', hasUnlock ? 'unlock' : '', l.id === selected ? 'sel' : ''].filter(Boolean).join(' ');
+  const y = stationY(l.id);
+  const badges = [
+    l.boss ? '<svg class="cm-helm" viewBox="0 0 44 30" aria-hidden="true"><use href="#cm-pothelm"/></svg>' : '',
+    hasUnlock && !done ? '<span class="cm-q" aria-hidden="true">?</span>' : '',
+    done ? '<span class="cm-check" aria-hidden="true">✓</span>' : '',
+    l.id === current && !done ? '<svg class="cm-mouse" viewBox="0 0 44 40" aria-hidden="true"><use href="#cm-mouse"/></svg>' : '',
+  ].join('');
+  const state = done ? 'won' : open ? 'open' : 'locked';
+  const label = `Level ${l.id}: ${l.name}${l.boss ? ', boss level' : ''}, ${state}`;
+  const bossName = l.boss ? `<span class="cm-boss-name ${y > 56 ? 'up' : ''}" style="left:${stationX(l.id)}px;top:${y.toFixed(1)}%">${esc(l.boss.name)}</span>` : '';
+  return `<button class="${cls}" data-a="${open ? 'level' : 'lockedLevel'}" data-level="${l.id}" style="left:${stationX(l.id)}px;top:${y.toFixed(1)}%" aria-label="${esc(label)}"><span class="cm-num">${l.id}</span>${badges}</button>${bossName}`;
+}
+
+/** The card of one level: facts on top, Close on the left and Play on the right. */
+function cardHtml(ctx: ScreenContext, id: number): string {
+  const l = levelOf(ctx.world, id);
+  if (!l) return '';
+  const p = ctx.profile;
+  const done = p.isLevelDone(ctx.world, id);
+  const open = CAMPAIGN.canPlay(p, ctx.world, id);
+  const days = l.days.length;
+  const facts = [`${days} ${days === 1 ? 'day' : 'days'}`, landName(l.landscape), l.twist?.label ?? ''].filter(Boolean).map(esc).join(' · ');
+  const replay = Math.floor(l.stars * STARS.replayShare);
+  const stars = done
+    ? `<span class="star">★</span> ${l.stars} won${replay > 0 ? ` · replay pays <span class="star">★</span> ${replay}` : ' · replays pay no stars'}`
+    : `<span class="star">★</span> ${l.stars} for the first win`;
+  const unlocks = unlocksOfLevel(ctx.world, id);
+  let unlockLine = '';
+  if (unlocks.length > 0) {
+    unlockLine = done
+      ? `<ul class="cm-card-unlocks">${unlocks.map((u) => `<li>${esc(unlockName(u))}</li>`).join('')}</ul>`
+      : '<div class="cm-card-secret"><span class="cm-q" aria-hidden="true">?</span> Win to unlock something new</div>';
+  }
+  const lock = open ? '' : `<div class="cm-card-lock" id="lockNote">Locked. Win level ${id - 1} first.${id - 1 > CAMPAIGN.nextLevel(p, ctx.world) ? ` You are at level ${CAMPAIGN.nextLevel(p, ctx.world)}.` : ''}</div>`;
+  const play = open ? `<button data-a="playLevel" id="playLevel" data-level="${id}">${done ? 'Play again' : 'Play'}</button>` : '';
+  return `<div class="cm-card-title"><span class="cm-card-num">Level ${id}</span> <span class="cm-card-name" id="cardName">${esc(l.name)}</span></div>
+    <div class="cm-card-facts">${facts}</div>
+    ${l.boss ? `<div class="cm-card-boss" id="cardBoss">Boss: ${esc(l.boss.name)}</div>` : ''}
+    <div class="cm-card-stars" id="cardStars">${stars}</div>
+    ${unlockLine}${lock}
+    ${navRow('<button class="secondary" data-a="closeCard" id="closeCard">Close</button>', play)}`;
+}
+
+/** Opens (or with null closes) the card without redrawing the 100 stations. */
+function selectStation(ctx: ScreenContext, id: number | null) {
+  selected = id;
+  const card = ctx.query<HTMLElement>('#levelCard');
+  if (!card) return;
+  ctx.query('.cm-st.sel')?.classList.remove('sel');
+  if (id === null) { card.hidden = true; card.innerHTML = ''; return; }
+  ctx.query(`.cm-st[data-level="${id}"]`)?.classList.add('sel');
+  card.innerHTML = cardHtml(ctx, id);
+  card.hidden = false;
+  // Bring the station into the free part of the map, left of the card.
+  const sc = scroller(ctx);
+  if (sc) {
+    const free = sc.clientWidth - card.offsetWidth - 16;
+    const x = stationX(id);
+    if (x - sc.scrollLeft < 40 || x - sc.scrollLeft > free - 30) sc.scrollTo({ left: x - free / 2, behavior: 'smooth' });
+  }
+}
+
+function onWheel(e: WheelEvent) {
+  const sc = active && scroller(active);
+  if (!sc || !(e.target instanceof Node) || !sc.contains(e.target)) return;
+  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+  sc.scrollLeft += e.deltaY;
+  e.preventDefault();
+}
+
+function onPointerDown(e: PointerEvent) {
+  const sc = active && scroller(active);
+  dragged = false;
+  if (!sc || e.pointerType !== 'mouse' || e.button !== 0 || !(e.target instanceof Node) || !sc.contains(e.target)) return;
+  drag = { x: e.clientX, left: sc.scrollLeft };
+}
+
+function onPointerMove(e: PointerEvent) {
+  const sc = active && scroller(active);
+  if (!drag || !sc) return;
+  const dx = e.clientX - drag.x;
+  if (Math.abs(dx) > 6) dragged = true;
+  if (dragged) sc.scrollLeft = drag.left - dx;
+}
+
+function onPointerUp() { drag = null; }
 
 export const campaignScreen: Screen = {
   id: 'campaign',
   render(ctx) {
     const p = ctx.profile;
     const levels = worldById(ctx.world).campaign;
-    const next = CAMPAIGN.nextLevel(p, ctx.world);
-    const rows = levels.map((l) => {
-      const done = p.isLevelDone(ctx.world, l.id);
-      const open = CAMPAIGN.canPlay(p, ctx.world, l.id);
-      const state = done ? 'done' : open ? 'next' : 'locked';
-      const tag = done ? 'Done' : open ? 'Next' : 'Locked';
-      const boss = l.boss ? `<span class="boss-tag">Boss</span>` : '';
-      return `<button class="level ${state} ${l.id === next ? 'current' : ''}" data-a="level" data-level="${l.id}" ${open ? '' : 'disabled'}>
-          <span class="lv-num">${l.id}</span><span class="lv-name">${esc(l.name)}${boss}</span><span class="lv-tag">${tag}</span></button>`;
-    }).join('');
-    return `<div class="panel wide"><h2>Campaign</h2>
-      <div class="purse"><span class="star">★</span><span id="stars">${p.data.stars}</span></div>
-      <div class="items levels" id="levelList">${rows}</div>
-      ${navRow(BACK_BUTTON)}</div>`;
+    const current = CAMPAIGN.nextLevel(p, ctx.world);
+    const won = levels.filter((l) => p.isLevelDone(ctx.world, l.id)).length;
+    const w = mapWidth(levels.length);
+    const stations = levels.map((l) => stationHtml(ctx, l, current)).join('');
+    const card = selected !== null && levelOf(ctx.world, selected) ? cardHtml(ctx, selected) : '';
+    return `<div class="campaign-map" id="campaignMap">${MAP_SYMBOLS}
+      <div class="cm-head">
+        <div class="cm-head-back">${BACK_BUTTON}</div>
+        <h2>Campaign</h2>
+        <div class="cm-progress" id="campaignProgress">
+          <div class="cm-progress-text"><span id="levelsWon">${won}</span>/${levels.length} won</div>
+          <div class="cm-bar"><div class="cm-bar-fill" style="width:${((won / levels.length) * 100).toFixed(1)}%"></div></div>
+        </div>
+        <div class="cm-stars"><span class="star">★</span><span id="stars">${p.data.stars}</span></div>
+      </div>
+      <div class="cm-scroll" id="mapScroll" data-keep-scroll>
+        <div class="cm-world" id="levelList" style="width:${w}px">
+          <div class="cm-lands">${landscapeHtml(bandsOf(levels.map((l) => l.landscape)), levels.length, levels.filter((l) => l.boss).map((l) => l.id))}</div>
+          ${pathSvg(levels.length, Math.min(current, levels.length))}
+          ${endsHtml(levels.length)}
+          ${stations}
+        </div>
+      </div>
+      <div class="cm-card" id="levelCard" ${card ? '' : 'hidden'}>${card}</div>
+    </div>`;
   },
   onShow(ctx: ScreenContext) {
-    const next = CAMPAIGN.nextLevel(ctx.profile, ctx.world);
-    ctx.query<HTMLElement>(`[data-level="${next}"]`)?.scrollIntoView({ block: 'center' });
+    selected = null;
+    active = ctx;
+    ctx.query<HTMLElement>('#levelCard')?.setAttribute('hidden', '');
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    const sc = scroller(ctx);
+    if (sc) sc.scrollLeft = stationX(CAMPAIGN.nextLevel(ctx.profile, ctx.world)) - sc.clientWidth / 2 + STEP / 4;
+  },
+  onHide() {
+    active = null;
+    drag = null;
+    window.removeEventListener('wheel', onWheel);
+    window.removeEventListener('pointerdown', onPointerDown);
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+  },
+  onClick(target, ctx) {
+    // The end of a mouse drag is no tap.
+    if (dragged) { dragged = false; return true; }
+    // A tap on the open landscape closes the card.
+    if (selected !== null && target.closest('#mapScroll') && !target.closest('button')) { selectStation(ctx, null); return true; }
+    return false;
   },
   onAction(action, el, ctx) {
     switch (action) {
-      case 'level': ctx.startCampaign(Number(el.dataset.level)); break;
+      case 'level':
+      case 'lockedLevel': selectStation(ctx, Number(el.dataset.level)); break;
+      case 'closeCard': selectStation(ctx, null); break;
+      case 'playLevel': {
+        const id = Number(el.dataset.level);
+        if (!CAMPAIGN.canPlay(ctx.profile, ctx.world, id)) return;
+        selected = null;
+        ctx.startCampaign(id);
+        break;
+      }
       case 'main': ctx.show('main'); break;
     }
   },
