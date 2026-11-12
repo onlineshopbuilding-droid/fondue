@@ -93,3 +93,48 @@ Browser-Tests (`tests/e2e`), umgestellt auf das neue Spiel. Alle übrigen alten 
 | Test | Warum ersetzt | Neuer Test |
 |---|---|---|
 | flow.spec.ts Entwickler-Menue: Sprung zu Level 3, Tag 3, gewinnt das Level | Level 2 bis 9 haben jetzt fuenf Tage (E-062), Tag 3 ist nicht mehr der letzte | derselbe Test springt zum letzten Tag von Level 3 (aus `levelOf` gelesen) und prueft denselben Sieg |
+
+## Ersetzte Unit-Tests (sim.test.ts, round.test.ts)
+Alle `it(…)`-Titel, die seit dem Stand auf `main` (`a9e519c`) aus `tests/unit/sim.test.ts` und `tests/unit/round.test.ts` verschwunden sind (`git diff a9e519c -- tests/unit`). Für die Regeln des Markts gab es danach keinen Unit-Test mehr, obwohl Kommentare in beiden Dateien auf eine `shop.test.ts` verwiesen; sie ist jetzt geschrieben (`tests/unit/shop.test.ts`, 11 Tests).
+
+| Test | Warum ersetzt | Neuer Test |
+|---|---|---|
+| sim.test.ts: „has 22 upgrades“ | Die Liste aus 22 Shop-Artikeln gibt es nicht mehr; Waffen haben fünf Stufen (Auftrag 10.1) | weapons.test.ts: „has 16 weapons, each with exactly five tiers“ |
+| sim.test.ts: „every item can be bought in tier order“ | Artikel heißen jetzt `gate`, `weapon:…`, `upgrade:…` (`quote` in `src/sim/shop.ts`) | **neu** shop.test.ts: „a better gate raises the maximum and stands at full strength“, „upgrades go one tier at a time, at the price of the next tier“ |
+| sim.test.ts: „charges gold and offerings and refuses repeat or locked or unaffordable items“ | dto. | **neu** shop.test.ts: „charges gold and offerings and puts the weapon into its slot“, „refuses what is owned, locked or too dear, and then takes nothing“, „refuses when the offerings are short, even with gold enough“ |
+| sim.test.ts: „a better gate raises the maximum“ | dto. | **neu** shop.test.ts: „a better gate raises the maximum and stands at full strength“, „gates come one tier after the other, up to what the run allows“ |
+| sim.test.ts: „buying a gate arm equips it, equip swaps between owned“ | Kein Ausrüsten mehr: eine Waffe je Slot, Tausch im Markt (E-033) | **neu** shop.test.ts: „swapping weapons in a slot: a weapon bought before goes back in for free and keeps its tier“ |
+| sim.test.ts: „introduces each type on its day and guarantees it appears“ | Gegner kommen je Level (Kampagne) oder je Endlos-Fenster | levels.test.ts: „every raider has one first level: it is announced there, shows up there, and never earlier“; endlessRandom.test.ts: „a raider never comes before its first day and always comes on it“ |
+| sim.test.ts: „announces a tip once for a new type“ | Umbenannt | sim.test.ts: „announces a new type once, on the day it first comes“ |
+| sim.test.ts: „keg hauler: tap drops the keg, which explodes“ | Schütteln statt Antippen (Auftrag 14.2, E-044) | shake.test.ts: „a quick tap on a Keg Hauler no longer drops the keg“, „a held, armed Keg Hauler loses its keg: it falls straight down“, „the keg bursts where it lands, kills raiders below, and the hand cannot catch it“ |
+| sim.test.ts: „snap assist steers a near miss into the cauldron“ | Kessel nur noch hinter der Burg (Auftrag 14.1) | sim.test.ts: „letting go of a raider close beside the rim puts it into the pot“; round.test.ts: „rear: pulls in a throw headed near it, even a sloppy one“ |
+| sim.test.ts: „stomper: activate, then release slams at the hand“ | Nur noch antippen, Ziel automatisch (Auftrag 10.1, E-033) | weapons.test.ts: „tier 1: one block on the thickest group, no tremor“ (Stomper) |
+| sim.test.ts: „activating a mode weapon twice cancels it without cooldown“ | Kein Scharfschalten mehr, also nichts abzubrechen (Auftrag 10.1) | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1; verwandt: weapons.test.ts „without a target costs nothing: denied, and no reload starts“ |
+| sim.test.ts: „comet: a tap on the shrine, a tap on the road, and it falls right there with flames“ | Ein Tipp, Ziel ist die dichteste Gruppe (Auftrag 10.1, D-08) | weapons.test.ts: „tier 1: one comet on the thickest group, a blast and a patch of fire“ (Comet) |
+| sim.test.ts: „gate arm aims with the press and fires on release; shared cooldown“ | Kein Zielen mehr (Auftrag 10.1) | weapons.test.ts: „the reload is shared: the second player cannot fire it again“, „tier 1: one shell at the raider closest to the gate, not at the crowd“ (Gate Mortar) |
+| sim.test.ts: „leaves the mortar on release and does no damage on the way“ | Feuert beim Tipp statt beim Loslassen | sim.test.ts: „leaves the mortar on the tap and does no damage on the way“ |
+| sim.test.ts: „flies in a high arc and explodes where the aim said it would“ | Kein Zielpunkt mehr (Auftrag 10.1) | weapons.test.ts: „aims where a walking raider will be when the shell comes down“ (Gate Mortar); sim.test.ts: „still lands on target with other gravity from the tuning panel“ |
+| sim.test.ts: „every shop weapon can be fired without crashing“ | Alle 16 Waffen auf allen Stufen | sim.test.ts: „every weapon can be fired on every tier without crashing“ |
+| sim.test.ts: „picking a weapon mid-press does not fire on release“ | Kein Zielen beim Loslassen mehr | sim.test.ts: „tapping a weapon while holding a raider keeps the raider, and letting go only throws“ |
+| round.test.ts: „${variant}: melts one raider at a time, pays after the melt, frees up at once“ (vorne und hinten) | Nur noch der Kessel hinten (Auftrag 14.1) | round.test.ts: „melts one raider at a time, pays after the melt, frees up at once“ |
+| round.test.ts: „${variant}: a raider in the pot cannot be grabbed or blown up“ | dto. | round.test.ts: „a raider in the pot cannot be grabbed or blown up“ |
+| round.test.ts: „${variant}: the melt time comes from the tuning panel“ | dto. | round.test.ts: „the melt time comes from the tuning panel“ |
+| round.test.ts: „rear pot is not there in the front variant, and the other way round“ | Schalter vorne/hinten entfällt (Auftrag 14.1) | round.test.ts: „there is no pot on the road any more: a raider set down where the front pot stood just lands“, „the cauldron switch is gone from the experiment switches“ |
+| round.test.ts: „a pull inside the dead zone is not a shot and costs nothing“ | Zielgeste entfällt (Auftrag 10.1) | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1; verwandt: weapons.test.ts „without a target costs nothing: denied, and no reload starts“ |
+| round.test.ts: „pulling further reaches further, from near the gate to the end of the field“ | dto. | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1; das Ziel wählt die Waffe selbst (targeting.test.ts) |
+| round.test.ts: „a full pull ends at the field, never beyond it, and the preview says the same“ | dto. | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1; verwandt: targeting.test.ts „ignores raiders still beyond the right edge of the field“ |
+| round.test.ts: „pulling steeper flies higher and longer but lands in the same place“ | dto. | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1 |
+| round.test.ts: „can land on any spot of the road“ | dto. | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1 |
+| round.test.ts: „the mortar always goes high, the crossbow stays flat and quick“ | dto. | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1 |
+| round.test.ts: „crossbow bolts fly where the pull points and hit harder at full pull“ | dto. | weapons.test.ts: „tier 1: the fan hits a balloonist above and a runner below with one tap“, „tier 1 bolts stop at the first raider, tier 3 and up fly through“ (Roof Bolter) |
+| round.test.ts: „a weak pull falls short and is weaker“ | dto. | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1 |
+| round.test.ts: „the snapshot tells the other player what is being aimed“ | Es wird nichts mehr gezielt (Auftrag 10.1) | kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1 |
+| round.test.ts: „the build stage follows the best gate owned“ | Torstufe steht jetzt im Loadout (`gateTier`) | **neu** shop.test.ts: „a better gate raises the maximum and stands at full strength“ |
+| round.test.ts: „a weapon stands on the keep once owned“ | Waffe steht jetzt im Slot des Loadouts (`slotWeapon`) | **neu** shop.test.ts: „charges gold and offerings and puts the weapon into its slot“ |
+| round.test.ts: „day ${q.day}: every item is real, and its requirements are owned too“ | Schnellstart besteht aus Waffen in Slots statt aus Artikeln | round.test.ts: „day ${q.day}: every weapon is real, fits its slot and has a tier“ |
+
+## Stand 12.11., 09:00
+- Pruefung `test` auf PR 9 gruen (Lauf 43164479076). Leistungstest: 57,7 Bilder pro Sekunde mit 200 Raeubern. Sichtpruefung auf den drei Geraeten erledigt, Tipp verdeckt das Banner am Handy nicht mehr.
+- Abnahmeliste: 368 von 455 belegt, jeder offene Punkt hat einen Grund ("Offen: ...").
+- Kleine Luecken geschlossen: Seitentitel kommt aus game.ts, Begriffe in AGENTS.md, D-19 bis D-21, ungenutztes Zielkreuz-Bild entfernt (dazu aus der Liste FREE_PROPS in tests/e2e/art.spec.ts gestrichen), neue Unit-Tests fuer den Markt (tests/unit/shop.test.ts), 401 Unit-Tests.
+- Abschlussbericht: docs/ABSCHLUSS-GROSSES-UPDATE.md.

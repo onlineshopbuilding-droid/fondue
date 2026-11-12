@@ -1,6 +1,6 @@
 # Balance
 
-Stand: großes Update (Kampagne mit 100 Leveln, 16 Waffen mit 5 Stufen, Gewicht und Hand-Stufen, Schütteln, Endlos mit Zufall). Gemessen mit den Bots, Lauf vom 12.11.2026 (`docs/balance-latest.md`, Commit `a935f43`). Die Zahlen sagen, ob eine Änderung in die richtige Richtung geht; wie sich Menschen schlagen, zeigt nur echtes Spielen.
+Stand: großes Update (Kampagne mit 100 Leveln, 16 Waffen mit 5 Stufen, Gewicht und Hand-Stufen, Schütteln, Endlos mit Zufall). Gemessen mit den Bots, Lauf vom 12.11.2026, 03:06 (`docs/balance-latest.md`, Commit `3ef9df2`: Level 2 bis 9 mit fünf Tagen, `COOP.campaignFactor` 1,7). Die Zahlen sagen, ob eine Änderung in die richtige Richtung geht; wie sich Menschen schlagen, zeigt nur echtes Spielen.
 
 ## Ziele (Auftrag, Abschnitt 15)
 
@@ -74,12 +74,12 @@ Gold pro Tag (Mid solo): etwa 400 an Tag 1, 900 an Tag 5, 1650 an Tag 10, 3400 a
 | Poor solo | 12 | 1 | 3 | 84 |
 | Mid solo | 84 | 11 | 1 | 4 |
 | Great solo | 100 | 0 | 0 | 0 |
-| Mid zu zweit | 89 | 5 | 1 | 5 |
+| Mid zu zweit | 92 | 4 | 2 | 2 |
 
 - **Mid solo:** schafft 95 von 100 Level im ersten oder zweiten Versuch. Nie geschafft: Level 92, 96, 97 und 99; Level 100 erst im sechsten Versuch. Boss-Level enden oft knapp (Tor am Ende: Level 50 bei 25 %, 60 bei 37 %, 80 bei 4 %), brauchen aber selten einen zweiten Versuch.
 - **Great solo:** gewinnt alle 100 im ersten Versuch; nur in einzelnen späten Leveln sinkt das Tor spürbar (Level 73: 87 %, 80: 71 %, 98: 86 %, 100: 69 %).
-- **Poor solo:** gewinnt bis Level 13 (Level 9 im fünften Versuch), ab Level 14 fast nichts mehr; Ausreißer Level 15, 22 und 25.
-- **Mid zu zweit:** etwas leichter als allein (89 statt 84 im ersten Versuch). Nie geschafft: 43, 92, 96, 97, 100.
+- **Poor solo:** gewinnt bis Level 13 (Level 9 im sechsten Versuch), ab Level 14 fast nichts mehr; Ausreißer Level 15, 22 und 25.
+- **Mid zu zweit:** etwas leichter als allein (92 statt 84 im ersten Versuch). Nie geschafft: 92 und 100. Level 9 gewinnt es nur knapp (Tor am Ende 5 %).
 - Am Ende hat jeder Bot Hand-Stufe 3; Mid und Great haben ihre fünf Hauptwaffen auf Stufe 4 bis 5 und 28 Sterne übrig.
 
 Die Tabelle je Level steht in `docs/balance-latest.md`.
@@ -96,7 +96,7 @@ Die Tabelle je Level steht in `docs/balance-latest.md`.
 
 ## Geänderte Werte
 
-Geändert im Balance-Schritt (Commit `a935f43`). „Alt“ ist der Stand davor, also der erste Entwurf des Updates.
+Geändert im Balance-Schritt (Commit `a935f43`), die letzten beiden Zeilen danach in Commit `3ef9df2`. „Alt“ ist der Stand davor, also der erste Entwurf des Updates.
 
 | Wert | Datei | Alt | Neu | Warum |
 |---|---|---|---|---|
@@ -123,6 +123,8 @@ Geändert im Balance-Schritt (Commit `a935f43`). „Alt“ ist der Stand davor, 
 | Easy (`DIFFICULTIES.easy`) | waves.ts | Anzahl 0,75, Tempo 0,9, Schaden 0,7, Gold 1,15 | 0,8 / 0,92 / 0,8 / 1 | Easy war zu leicht |
 | Koop spät (`COOP.lateFactor`) | waves.ts | 1,4 | 2,1 | Koop war spät zu leicht |
 | Koop Gold je Kill, Endlos und Kampagne (`COOP.goldFactor`) | waves.ts | 0,7 | 0,5 | dto. |
+| Koop-Faktor der Kampagne (`COOP.campaignFactor`, Commit `3ef9df2`) | waves.ts | 1,9 | 1,7 | Zu zweit gewannen die Bots Level 9 mit fünf Tagen nie (E-050, E-062) |
+| Tage in Level 2 bis 9 (`dayCountOf`, Commit `3ef9df2`) | campaign.ts (Welt) | 3 (Level 2–4), 4 (Level 5–9) | 5 | Auftrag: 5 bis 15 Tage je Level (E-062) |
 
 Gegenüber der Classic-Version (vor dem Update) kamen außerdem dazu: Adlerhaken 12.000 statt 1.000 Gold (Auftrag 14.6), Gewicht je Gegner (`mass`), Hand-Stufen (`HANDS`), Schütteln statt Antippen beim Keg Hauler mit schwächerer Explosion des geworfenen Trägers (`carrierBlast`), Endlos-Zufall (`ENDLESS` in `src/config/worlds/fondue/endless.ts`). Unverändert geblieben sind Tagesdauer (50 s), Räuber an Tag 1 (`DAY.base` 40) und je Tag (`DAY.perDay` 7) sowie Torschaden- und Tempowachstum im Endlos.
 

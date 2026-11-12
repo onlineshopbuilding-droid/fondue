@@ -1,3 +1,5 @@
+// Pointer input of the field: records every pointer event with its time stamp and works out the release
+// velocity of a throw from those raw samples. Free of Phaser; src/render/scene.ts binds it to the canvas (`bindPointer`).
 import { WORLD } from '../config/field';
 
 interface Sample { t: number; x: number; y: number; }

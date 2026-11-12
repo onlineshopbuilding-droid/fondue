@@ -104,7 +104,7 @@ node scripts/list-assets.ts
 Die Größe und der Ankerpunkt gelten in Weltpixeln. „Bilddatei in Pixeln“ ist die Größe, in der man eine Ersatzdatei anlegt.
 
 <!-- ASSETS:START (erzeugt von scripts/list-assets.ts, nicht von Hand ändern) -->
-Stand: 329 Assets.
+Stand: 328 Assets.
 
 ### Figurenteile (86)
 
@@ -197,7 +197,7 @@ Stand: 329 Assets.
 | `rig:crow:body` | 50 × 34 | 25, 16 | 100 × 68 | 0, -12 | static | Start |
 | `rig:crow:wingFront` | 37 × 41 | 13, 31 | 74 × 82 | 3, -16 | armFront | Start |
 
-### Requisiten, Burg und Effekte (143)
+### Requisiten, Burg und Effekte (142)
 
 | Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gruppe |
 |---|---|---|---|---|
@@ -219,7 +219,6 @@ Stand: 329 Assets.
 | `prop:shell` | 30 × 30 | 15, 15 | 60 × 60 | Start |
 | `prop:bolt` | 64 × 18 | 32, 9 | 128 × 36 | Start |
 | `prop:roofBolt` | 44 × 14 | 22, 7 | 88 × 28 | Start |
-| `prop:reticle` | 90 × 90 | 45, 45 | 180 × 180 | Start |
 | `prop:handOpen` | 72 × 72 | 39, 49 | 144 × 144 | Start |
 | `prop:handClosed` | 72 × 72 | 39, 43 | 144 × 144 | Start |
 | `prop:gibHelmet` | 32 × 32 | 16, 16 | 64 × 64 | Start |

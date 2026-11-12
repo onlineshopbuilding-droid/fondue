@@ -33,6 +33,9 @@ export const DECISIONS: ReviewItem[] = [
   { id: 'D-16', title: 'Co-op factor of the campaign' },
   { id: 'D-17', title: 'The new Stomper' },
   { id: 'D-18', title: 'Eagle hook late and costly' },
+  { id: 'D-19', title: 'Win window covers the victory banner' },
+  { id: 'D-20', title: '"New enemy" window on phones' },
+  { id: 'D-21', title: 'Unlock for a boss win' },
 ];
 
 /** Every weapon of the weapon table, numbered W-01 ... in its order. */

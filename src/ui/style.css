@@ -1,3 +1,5 @@
+/* Look of every HTML screen above the game canvas: colour tokens, parchment panels, painted buttons, the menus
+   of the big update and the campaign map, with the rules for phones and touch screens. Loaded once by src/main.ts. */
 :root {
   --ink: #2b2118;
   --cream: #fff6df;

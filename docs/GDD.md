@@ -49,7 +49,7 @@ Fondue ist ein Handyspiel im Querformat. Geprüft wird auf iPhone 16, OnePlus 8T
 
 ## Kampagne
 - **100 Level** in Welt 1, erzeugt aus Regeln und einzeln überschreibbar (`src/config/worlds/fondue/campaign.ts`, `LEVEL_OVERRIDES`). Festgelegt, nicht zufällig: Jedes Level hat einen festen Startwert, jeder Versuch läuft gleich an.
-- **Länge:** Level 1 zwei Tage, Level 2 bis 4 drei, Level 5 bis 9 vier, ab Level 10 fünf bis zehn Tage, Boss-Level einen Tag mehr. Ein Tag dauert 50 Sekunden Kampf.
+- **Länge:** Level 1 zwei Tage, Level 2 bis 9 fünf, ab Level 10 fünf bis zehn Tage, Boss-Level einen Tag mehr (höchstens zehn). Ein Tag dauert 50 Sekunden Kampf.
 - **Feste Schwierigkeit**, keine Auswahl. Räuber je Tag: 24 an Tag 1 von Level 1, je weiterem Tag 14 % mehr, dazu ein Anteil, der mit (Level − 1) hoch 0,75 wächst. Die Stärke (Lebenspunkte, Torschaden, etwas Tempo, Gold) wächst um 5 % je Level. Weil jedes Level frisch beginnt, haben die Räuber an Tag 1 bis 3 nur 20 %, 55 % und 85 % der zusätzlichen Levelstärke (`CAMPAIGN_SCALING` in `src/modes/campaign.ts`).
 - **Jedes Level beginnt frisch:** Gold 0 (Level 1: 60), Offerings 0, Holztor, leere Slots. Im Level verdient man Gold und Offerings, baut Tor und Burg aus und kauft Waffen in die Slots.
 - **Gegner kommen Stück für Stück** (`FIRST_LEVEL`): Pothelm 1, Keg Hauler 3, Goat Rider 7, Pogo Bandit 12, Hexer 17, Slinger 23, Siege Cart 29, Balloonist 36, Shade 44, Crowcaller 52, Yeti 61. Ein neuer Gegner kommt in seinem ersten Level ab Tag 2 sicher und mit wachsendem Anteil in den folgenden Leveln. Beim ersten Auftreten erscheint das Popup „New enemy“ mit Bild, Name und ein bis zwei Sätzen (`ENEMY_POPUPS`).
@@ -156,12 +156,12 @@ Jedes Tor ist zugleich eine Ausbaustufe der ganzen Burg (`GATES` in `src/config/
 | Runic Gate | 6000 | 14 | 3400 | Level 21 |
 | Adamant Gate | 24000 | 30 | 5200 | Level 42 |
 
-## Opferstätten
+## Offering-Stationen
 - **Great Cauldron** (250 Gold): steht auf einem kleinen Hügel hinter der Burg. Hinein kommt ein Gegner nur durch einen Wurf (ein Wurf in seine Richtung wird sanft hingelenkt). Er schmilzt in 1,4 s zu Käse (`cauldronSeconds`), währenddessen ist der Kessel belegt. +1 Offering und 10 Gold extra.
 - **Eagle Perch** (12.000 Gold, Kampagne ab Level 32): Haken oben rechts. Ein dorthin geworfener Gegner hängt 1,1 s, der Adler frisst ihn. +1 Offering und 10 Gold extra. Ein Keg Hauler am Haken verliert sein Fass, das unten explodiert.
 
 ## Wirtschaft
-- Gold je Gegner 10 (Pothelm) bis 120 (Yeti), in der Kampagne mit der Levelstärke etwas mehr. Opfergabe: +1 Offering und +10 Gold.
+- Gold je Gegner 10 (Pothelm) bis 120 (Yeti), in der Kampagne mit der Levelstärke etwas mehr. Ein Gegner im Kessel oder am Haken: +1 Offering und +10 Gold (`ECONOMY.offeringGold`).
 - Gold pro Tag laut Bots (Endlos Medium, Mid allein): etwa 400 an Tag 1, 900 an Tag 5, 1650 an Tag 10, 3400 an Tag 20.
 
 ## Koop
@@ -172,6 +172,6 @@ Jedes Tor ist zugleich eine Ausbaustufe der ganzen Burg (`GATES` in `src/config/
 - Host und Gast brauchen denselben Build und dieselbe Adresse (zum Beispiel beide `/fondue/` oder beide `/fondue/classic/`).
 
 ## Profil
-- Dauerhafter Spielstand im Browser unter `fondue.profile`: Name, Sterne, geschaffte Level je Welt, freigeschaltete Waffen, Slots und Opferstätten, Waffen- und Hand-Stufen, Tutorial gesehen, gesehene Gegner und Tipps, gelesene Story-Seiten, Endlos-Meilensteine, Bestenliste, Einstellungen, Entwickler-Bewertungen, unterbrochenes Level, Platz für eine Koop-Kampagne.
+- Dauerhafter Spielstand im Browser unter `fondue.profile`: Name, Sterne, geschaffte Level je Welt, freigeschaltete Waffen, Slots und Offering-Stationen, Waffen- und Hand-Stufen, Tutorial gesehen, gesehene Gegner und Tipps, gelesene Story-Seiten, Endlos-Meilensteine, Bestenliste, Einstellungen, Entwickler-Bewertungen, unterbrochenes Level, Platz für eine Koop-Kampagne.
 - Export und Import als Textcode in den Options. Homescreen-App und Browser-Tab haben getrennte Speicher: immer über dasselbe Symbol öffnen.
 - Zurücksetzen im Entwickler-Menü mit Sicherheitsabfrage.

@@ -12,7 +12,7 @@ Eigen sind die Alpenwelt, die Figuren, alle Namen und Texte, Grafik, Musik und B
 - Endlosmodus allein und im Koop zu zweit.
 - Tagesablauf mit Banner, Himmel von Tag zu Nacht, Sieg, Ergebnis, Markt, nächster Tag, Niederlage und Highscore.
 - 11 Gegnertypen, jeder mit eigenem Verhalten, eigener Figur und Einführungstipp.
-- 22 Upgrades: 5 Tore, 2 Opferstätten, 9 Turmwaffen, 3 Torwaffen, 3 Dachgeschütze.
+- 22 Upgrades: 5 Tore, 2 Offering-Stationen, 9 Turmwaffen, 3 Torwaffen, 3 Dachgeschütze.
 - Griff mit Feder, Zappeln, Schreien; Wurf aus Roh-Zeigerdaten; Hitstop, Wackeln, Blut, Trümmer, flachgedrückter Körper, Staub, Münze.
 - Tuning-Panel (F1), Debug-Overlay (F3), vier Landschaften, Parallax, Musik und Soundeffekte aus Code, Touch.
 - Koop: Raumcode, Einladungslink, zwei Hände, gemeinsame Kasse, Tor und Shop, Ready, Pause, Wiedereinstieg, Versionsprüfung, Vorhersage beim Gast, Plan-B-Relay.

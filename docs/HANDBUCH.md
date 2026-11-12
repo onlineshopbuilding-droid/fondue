@@ -57,14 +57,14 @@ Im Koop rechnet nur der Host. Der Gast schickt Eingaben, der Host schickt 30-mal
 
 | Datei | Inhalt |
 |---|---|
-| `game.ts` | Name des Spiels (`GAME_NAME`) |
+| `game.ts` | Name des Spiels (`GAME_NAME`); auch der Seitentitel kommt von hier (Platzhalter `%GAME_NAME%` in `index.html`, ersetzt in `vite.config.ts`) |
 | `enemies.ts` | Alle 11 Gegner (`ENEMIES`: Werte, Gewicht `mass`, Gold), Zielgewichte für Gruppen-Waffen (`TARGETING`), Sonderwerte (`BEHAVIOUR`: Fass, Schütteln, Blase, Schatten, Krähe, Yeti, übergroße Boss-Räuber) |
 | `weapons.ts` | Alle 16 Waffen (`WEAPONS`) mit Slot-Typ, Verhalten (`kind`), Zielwahl (`target`), `enabled`, Kaufpreis, fünf Stufen; Preise der Stufen im Endlos (`UPGRADE_COST`) |
 | `slots.ts` | Die fünf Waffenplätze (`SLOTS`) mit Typ und Lage |
-| `keep.ts` | Tore und Ausbaustufen (`GATES`), Opferstätten (`STATIONS`: Kessel, Adlerhaken), Haken-Zeiten (`PERCH`) |
+| `keep.ts` | Tore und Ausbaustufen (`GATES`), Offering-Stationen (`STATIONS`: Kessel, Adlerhaken), Haken-Zeiten (`PERCH`) |
 | `hand.ts` | Hand-Stufen (`HANDS`), Wurf- und Yeti-Regeln (`HAND_RULES`) |
 | `stars.ts` | Sterne je Level, Wiederholung, Gast-Anteil, Sternpreise der Stufen (`STARS`) |
-| `economy.ts` | Gold je Opfergabe, Tor-Heilung (`ECONOMY`) |
+| `economy.ts` | Gold extra je Offering, Tor-Heilung (`ECONOMY`) |
 | `waves.ts` | Endlos-Tage (`DAY`), Schwierigkeit (`DIFFICULTIES`), Koop (`COOP`), Landschaften (`LANDSCAPES`) |
 | `field.ts` | Geometrie: Bodenlinie, Tor, Kessel, Haken (`WORLD`), Feldbreite (`FIELD`) |
 | `tuning.ts` | Wurfgefühl (`TUNING_DEFAULT`, Voreinstellungen, Regler) |
@@ -330,7 +330,7 @@ Nach einer Änderung am Branch `classic` den Deploy von Hand starten (Actions, �
 
 ## 8. Hilfen beim Ausprobieren
 
-**Entwickler-Menü:** Options → „Developer menu“ (auch am Handy), am Laptop F1, im einfachen HTML-Menü auch langes Drücken aufs Logo. Dort: zu einem Level und Tag springen, Endlos ab Tag 10, 20, 30, Sterne dazu, alles freischalten, Tutorial wiederholen, Profil löschen (mit Sicherheitsabfrage), Experiment-Schalter, Tuning-Regler. Der Knopf in den Options lässt sich vor einer Veröffentlichung mit `DEV_MENU_BUTTON` (`src/ui/screens/options.ts`) verstecken. Noch nicht im Menü: die Entscheidungs- und Bewertungsliste, ein Link zur Entwickler-Übersicht, einzelne Stufen setzen, einzelne Popups wiederholen.
+**Entwickler-Menü:** Options → „Developer menu“ (auch am Handy), am Laptop F1, im einfachen HTML-Menü auch langes Drücken aufs Logo. Dort: zu einem Level und Tag springen, Endlos ab Tag 10, 20, 30, Sterne dazu, alles freischalten, Tutorial wiederholen, Profil löschen (mit Sicherheitsabfrage), Experiment-Schalter, Tuning-Regler. Der Knopf in den Options lässt sich vor einer Veröffentlichung mit `DEV_MENU_BUTTON` (`src/ui/screens/options.ts`) verstecken. Dazu die Entscheidungs- und Bewertungsliste zum Abhaken, Bewerten und Kopieren als Text (`src/config/devReview.ts`). Noch nicht im Menü: ein Link zur Entwickler-Übersicht, einzelne Stufen setzen, einzelne Popups wiederholen.
 
 **F3:** Debug-Anzeige mit Bildern pro Sekunde, Rolle, Ping, Build.
 

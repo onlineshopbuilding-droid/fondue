@@ -131,7 +131,7 @@ function render(rep: Report): string {
   if (rep.endless) {
     const e = rep.endless;
     out.push('## Endlos', '', `${e.runs} Läufe je Zeile, Abbruch nach Tag ${e.maxDay}. Medium, soweit nicht anders angegeben. Feldbreite ${FIELD_W}.`, '');
-    out.push('| Zeile | Median | P10–P90 | Min–Max | Käufe | Gold pro Tag (T1/3/5/10/20/30) | Tor % Tag 1/2/3/5 | Aktionen/s je Hand | Trefferquote Griff | Opfer je Tag | Fässer geschüttelt | Laufzeit |');
+    out.push('| Zeile | Median | P10–P90 | Min–Max | Käufe | Gold pro Tag (T1/3/5/10/20/30) | Tor % Tag 1/2/3/5 | Aktionen/s je Hand | Trefferquote Griff | Offerings je Tag | Fässer geschüttelt | Laufzeit |');
     out.push('|---|---|---|---|---|---|---|---|---|---|---|---|');
     for (const r of e.rows) {
       out.push(`| ${r.label} | ${r.median} | ${r.p10}–${r.p90} | ${r.min}–${r.max} | ${r.purchases} | ${line(r.goldPerDay, [1, 3, 5, 10, 20, 30])} | ${line(r.gatePct, [1, 2, 3, 5])} | ${r.actionsPerSecond} | ${pct(r.grabRate)} | ${r.offeringsPerDay} | ${r.kegsShaken} | ${r.seconds.toFixed(0)} s |`);

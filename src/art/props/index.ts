@@ -6,7 +6,7 @@
 import type { Art } from '../types';
 import { CASTLE_ART, KEEP_PROPS } from '../castle';
 import { art } from '../draw';
-import { wheel, slab, comet, bomb, stone, shell, bolt, roofBolt, reticle } from './projectiles';
+import { wheel, slab, comet, bomb, stone, shell, bolt, roofBolt } from './projectiles';
 import { handOpen, handClosed } from './hand';
 import { gibHelmet, gibPlate, gibBoot, gibStick, coin, offering, splat1, splat2, splat3, drop1, dust, spark, star, flame1, flame2, flame3, iceBlock, shieldBubble } from './effects';
 import { banner } from './signboard';
@@ -40,7 +40,6 @@ export const PROPS: Record<string, Art> = {
   shell,
   bolt,
   roofBolt,
-  reticle,
   handOpen,
   handClosed,
   gibHelmet,

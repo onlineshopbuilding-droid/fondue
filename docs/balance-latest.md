@@ -6,7 +6,7 @@ Automatisch erzeugt von `npm run balance` am 2026-11-12 03:06. Maschinenlesbar: 
 
 30 Läufe je Zeile, Abbruch nach Tag 70. Medium, soweit nicht anders angegeben. Feldbreite 1280.
 
-| Zeile | Median | P10–P90 | Min–Max | Käufe | Gold pro Tag (T1/3/5/10/20/30) | Tor % Tag 1/2/3/5 | Aktionen/s je Hand | Trefferquote Griff | Opfer je Tag | Fässer geschüttelt | Laufzeit |
+| Zeile | Median | P10–P90 | Min–Max | Käufe | Gold pro Tag (T1/3/5/10/20/30) | Tor % Tag 1/2/3/5 | Aktionen/s je Hand | Trefferquote Griff | Offerings je Tag | Fässer geschüttelt | Laufzeit |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | Poor solo | 6 | 4–9 | 4–10 | 4.9 | 397 / 655 / 902 / 1433 / – / – | 99 / 98 / 89 / 51 | 0.98 | 90 % | 4.1 | 8.5 | 1 s |
 | Mid solo | 28.5 | 24–44 | 15–46 | 26 | 397 / 642 / 907 / 1644 / 3429 / 6131 | 100 / 100 / 100 / 98 | 1.02 | 91 % | 8.2 | 45.5 | 5 s |

@@ -21,7 +21,7 @@ Beide sollten vorher die Seite neu laden (Strg+F5), damit dieselbe Version läuf
 | Keg Hauler entwaffnen | Kurz anklicken |
 | Siege Cart zerstören | Mehrfach anklicken |
 | Gefrorene Gegner zerbrechen | Einmal anklicken |
-| Opfern | In den Kessel fallen lassen oder an den Haken hängen (beides im Shop kaufen) |
+| Offerings sammeln | In den Kessel fallen lassen oder an den Haken hängen (beides im Shop kaufen) |
 | Waffen | Icon unten oder Tasten 1 bis 5 |
 | Waffe abbrechen | Rechtsklick oder Esc |
 | Pause | P oder Knopf oben rechts |

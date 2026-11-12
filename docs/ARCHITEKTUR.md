@@ -76,9 +76,9 @@ Jede Tabelle hat oben einen Kommentar, der die Spalten erklärt.
 | `enemies.ts` | `ENEMIES`: das Verzeichnis aller Gegner mit Werten, `mass` (Gewicht) und Popup-Text; `BEHAVIOUR`. Eine Welt wählt daraus aus. |
 | `weapons.ts` | `WEAPONS`: eine Definition je Waffe (Slot-Typ, Art des Verhaltens, Zielwahl, 5 Stufen mit Werten, Preise, Texte, Grafikname, `enabled`). |
 | `slots.ts` | `SLOTS`: die fünf Waffenplätze der Burg mit Typ (`foot`, `wall`, `shrine`, `gate`, `tower`) und Lage. |
-| `keep.ts` | Tore und Ausbaustufen (`GATES`), Opferstätten (`STATIONS`: Kessel, Adlerhaken) mit Preisen. |
+| `keep.ts` | Tore und Ausbaustufen (`GATES`), Offering-Stationen (`STATIONS`: Kessel, Adlerhaken) mit Preisen. |
 | `hand.ts` | `HANDS`: Stärke der Hand je Stufe, Preise in Gold (Endlos) und Sternen (Kampagne). |
-| `economy.ts` | Gold je Opfergabe, Tor-Heilung. |
+| `economy.ts` | Gold extra je Offering, Tor-Heilung. |
 | `waves.ts` | Tageslänge, Wachstum pro Tag, Schwierigkeitsgrade (`DIFFICULTIES`), Koop (`COOP`). |
 | `stars.ts` | Stern-Belohnungen und -Preise, Regeln gegen Farmen, Meilensteine im Endlos-Modus. |
 | `field.ts` | Geometrie des Schlachtfelds (bisher `world.ts`; umbenannt, weil „Welt“ jetzt etwas anderes heißt). |
@@ -86,7 +86,7 @@ Jede Tabelle hat oben einen Kommentar, der die Spalten erklärt.
 | `assets.ts` | Überschreibungen im Asset-Verzeichnis: Name → Bilddatei (nur Pfad-Texte). |
 | `worlds/index.ts` | `WORLDS`: Liste aller Welten. |
 | `worlds/types.ts` | `WorldDef`, `LevelDef`, `DayDef`, `BossDef`, `TwistDef`, `HintDef`, `UnlockDef`, `EndlessDef`. |
-| `worlds/fondue/world.ts` | Welt 1 als Paket: König, Landschaften, Gegnerauswahl, Opferstätten, Verweise auf Kampagne, Story und Endlos-Tabelle. |
+| `worlds/fondue/world.ts` | Welt 1 als Paket: König, Landschaften, Gegnerauswahl, Offering-Stationen, Verweise auf Kampagne, Story und Endlos-Tabelle. |
 | `worlds/fondue/campaign.ts` | Die 100 Level: Regeln der Kurve plus `LEVEL_OVERRIDES` für einzelne Level. `buildCampaign()` liefert `LevelDef[]`. |
 | `worlds/fondue/unlocks.ts` | Freischalt-Tabelle: welches Level schaltet welche Waffe, welchen Slot, was sonst frei. |
 | `worlds/fondue/endless.ts` | Endlos-Zufall dieser Welt: Spanne der Gegnerzahl, Fenster der Erstauftritte, Wahrscheinlichkeiten; Schalter „nur freigeschaltete Waffen“ und „Endlos ab Level“. |
@@ -137,7 +137,7 @@ Neue Gegner eines Levels werden aus den Tagen berechnet, nicht von Hand gepflegt
 | `weapons/targeting.ts` | Funktionen | Automatische Zielwahl: nächster am Tor, dichteste Gruppe, stärkster Gegner. |
 | `shop.ts` | `Shop` | Kaufen, Preise, was laut Regeln kaufbar ist. |
 | `combat.ts` | `Combat` | Schaden, Tod mit Gold-Auszahlung, Flächenschaden, Schaden am Tor. |
-| `stats.ts` | `RunStats` | Zählt mit (Daten `RunStatsData` in `rules.ts`, im `SimState`): Kills nach Ursache und Typ, Opfer, Fass-Explosionen, Waffen-Einsätze, verlorenes Torleben. |
+| `stats.ts` | `RunStats` | Zählt mit (Daten `RunStatsData` in `rules.ts`, im `SimState`): Kills nach Ursache und Typ, Offerings, Fass-Explosionen, Waffen-Einsätze, verlorenes Torleben. |
 | `physics.ts` | Funktionen | Wurf-Begrenzung, Gewicht, Haltefeder. Host und Gast benutzen dieselben Funktionen. |
 | `plan.ts` | `DayPlanner`, `DayPlan` | Schnittstelle: „Was kommt an Tag n?“ |
 | `spawn.ts` | Funktionen | Verteilt Gegner über den Tag (Rudel, Dichte). |

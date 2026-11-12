@@ -1,8 +1,8 @@
 /**
- * Weapons and projectiles that fly or roll across the field: wheel, slab, comet, bomb, stone, shell, bolts, plus the aiming reticle.
+ * Weapons and projectiles that fly or roll across the field: wheel, slab, comet, bomb, stone, shell and bolts.
  * All are centred on their box, so they can spin around their middle.
  */
-import { INK, TEAL, TEALD, RUST, RUSTD, MUST, MUSTL, CREAM, FOREST, PLUM, WOOD, WOODD, WOODL, STONE, STONED, STONEL, IRON, IRONL, WHITE, hl, art, centred, starPoints } from '../draw';
+import { INK, TEAL, TEALD, RUST, RUSTD, MUST, MUSTL, CREAM, FOREST, PLUM, WOOD, WOODD, WOODL, STONE, STONED, STONEL, IRON, IRONL, WHITE, art, centred, starPoints } from '../draw';
 import * as sh from '../shade';
 import { fxPad, fxCirc, fxRect, fxAt, fxArc, fxRivet } from './kit';
 
@@ -255,21 +255,4 @@ export const roofBolt = fxPad(
     sh.paint('M38 4L30 1V7Z', IRON) +
     sh.paint('M38 4L30 1V4Z', '#9aa1a8') +
     `<path d="M38 4L30 1V7Z" fill="none" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>`,
-);
-
-/** Comet aiming reticle: a cream ring with rust pointers and a target pip. */
-const RET = 'M45 7V24M45 66V83M7 45H24M66 45H83';
-export const reticle = centred(
-  90,
-  90,
-  `<circle cx="45" cy="45" r="29" fill="${CREAM}" stroke="none" opacity=".14"/>` +
-    `<circle cx="45" cy="45" r="31" fill="none" stroke="${INK}" stroke-width="10"/>` +
-    hl(RET, INK, 10) +
-    `<circle cx="45" cy="45" r="31" fill="none" stroke="${CREAM}" stroke-width="4.5"/>` +
-    hl(RET, CREAM, 4.5) +
-    sh.stroke(fxArc(45, 45, 31, 3.55, 4.35), WHITE, 1.5, 0.95) +
-    sh.stroke(fxArc(45, 45, 31, 0.4, 1.2), '#c9b48c', 1.5, 0.9) +
-    `<g fill="${RUST}" stroke="${INK}" stroke-width="2"><circle cx="45" cy="24" r="2.8"/><circle cx="45" cy="66" r="2.8"/><circle cx="24" cy="45" r="2.8"/><circle cx="66" cy="45" r="2.8"/></g>` +
-    `<circle cx="45" cy="45" r="4.4" fill="${RUST}" stroke="${INK}" stroke-width="2.5"/>` +
-    sh.glint(43.8, 43.8, 1.1, WHITE, 0.9),
 );

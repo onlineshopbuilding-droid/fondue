@@ -49,6 +49,16 @@ Fondue ist das eigene Spiel von Tim und Lenny: eigene Welt, eigene Figuren, eige
 Nichts aus anderen Spielen übernehmen: keine Namen, Figuren, Grafik, Musik, Level, Bildschirmaufbau, Texte oder Itemnamen.
 Neue Inhalte entstehen aus Fondues eigener Welt (Alpenfestung, Räuberarmee, Käse). Siehe docs/ENTSCHEIDUNGEN.md, Eintrag E-001.
 
+## Begriffe
+Diese Begriffe gelten überall genau so: im Code, in Spieltexten und in Dokumenten (Auftrag `docs/AUFTRAG-GROSSES-UPDATE.md`, „Feste Begriffe“; dieselbe Liste in `docs/GDD.md`, Abschnitt „Begriffe“).
+- **Welt:** ein Paket aus König, Story, Gegnern, Landschaften und Kampagne (`src/config/worlds/`). Fondue ist Welt 1.
+- **Level:** ein Kampagnen-Level. Die Kampagne hat 100 Level.
+- **Tag:** ein Tag innerhalb eines Levels oder eines Endlos-Laufs.
+- **Stufe / Upgrade:** Ausbaustand einer Waffe (1 bis 5) oder der Hand (1 bis 3). Für Waffen nie „Level“.
+- **Slot:** ein Waffenplatz an der Burg.
+- **Sterne:** vorläufiger Name der dauerhaften Währung zwischen den Leveln.
+- **Gold / Offerings:** die Währungen innerhalb eines Levels oder Laufs. Auch in deutschen Dokumenten „Offerings“, nicht „Opfer“ oder „Opfergaben“.
+
 ## Regeln
 - Skill „Unlazy“ nie verwenden.
 - Im Downloads-Ordner nichts ablegen. Referenzmaterial nur in reference/, Asset-Pakete nur in asset-inbox/.

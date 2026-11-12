@@ -209,7 +209,7 @@ function weaponSection(unlocks: CampaignData, art: Record<string, string>): stri
     const rows = (w.tiers as unknown as Record<string, unknown>[]).map((tier, i) => {
       const stats = Object.entries(tier).filter(([k]) => k !== 'cooldown' && k !== 'note')
         .map(([k, v]) => `${k} ${typeof v === 'number' ? num(v) : typeof v === 'boolean' ? (v ? 'ja' : 'nein') : esc(String(v))}`).join(' · ');
-      const price = i === 0 ? `${w.buyGold} Gold${w.buyOfferings ? ` + ${w.buyOfferings} Opfer` : ''}` : (() => { const p = upgradePrice(w, i + 1); return `${p.gold} Gold${p.offerings ? ` + ${p.offerings} Opfer` : ''}`; })();
+      const price = i === 0 ? `${w.buyGold} Gold${w.buyOfferings ? ` + ${w.buyOfferings} Offerings` : ''}` : (() => { const p = upgradePrice(w, i + 1); return `${p.gold} Gold${p.offerings ? ` + ${p.offerings} Offerings` : ''}`; })();
       return [String(i + 1), `${num(Number(tier.cooldown))} s`, `<span class="small">${stats}</span>`, esc(String(tier.note)), price, i === 0 ? (STARS.weaponUnlock ? `${STARS.weaponUnlock} ★` : 'frei') : `${weaponTierPrice(i + 1)} ★`];
     });
     const lvl = unlockLevel(w.id);
@@ -221,7 +221,7 @@ function weaponSection(unlocks: CampaignData, art: Record<string, string>): stri
 ${table(['Stufe', 'Abklingen', 'Werte', 'Was die Stufe bringt', 'Preis im Endlos-Lauf', 'Sterne im Arsenal'], rows, 'compact wtiers')}</article>`;
   }).join('\n');
   return `<section id="waffen"><h2>Waffen</h2>
-<p>Alle ${WEAPONS.length} Waffen aus <code>src/config/weapons.ts</code> mit allen ${MAX_TIER} Stufen. In der Kampagne kauft man eine Waffe im Level einmal für Gold (Preis bei Stufe 1) und sie hat ihre dauerhafte Stufe; Stufen kosten dort Sterne. Im Endlos-Lauf kosten Stufen Gold und Opfer.</p>
+<p>Alle ${WEAPONS.length} Waffen aus <code>src/config/weapons.ts</code> mit allen ${MAX_TIER} Stufen. In der Kampagne kauft man eine Waffe im Level einmal für Gold (Preis bei Stufe 1) und sie hat ihre dauerhafte Stufe; Stufen kosten dort Sterne. Im Endlos-Lauf kosten Stufen Gold und Offerings.</p>
 ${cards}</section>`;
 }
 
@@ -245,8 +245,8 @@ function unlockSection(d: CampaignData): string {
   const handSum = HANDS.reduce((a, h) => a + h.stars, 0);
   const cost = enabled * (tierSum + STARS.weaponUnlock) + handSum;
   const pace = d.levels.filter((l) => l.id % 10 === 0).map((l) => [String(l.id), String(starsBy[l.id])]);
-  const hands = HANDS.map((h, i) => [String(i + 1), num(h.strength), `${h.stars} ★`, `${h.gold} Gold + ${h.offerings} Opfer`, esc(h.note)]);
-  const gates = keep.GATES.map((g, i) => [String(i), esc(g.name), String(g.hp), `${g.gold} Gold${g.offerings ? ` + ${g.offerings} Opfer` : ''}`]);
+  const hands = HANDS.map((h, i) => [String(i + 1), num(h.strength), `${h.stars} ★`, `${h.gold} Gold + ${h.offerings} Offerings`, esc(h.note)]);
+  const gates = keep.GATES.map((g, i) => [String(i), esc(g.name), String(g.hp), `${g.gold} Gold${g.offerings ? ` + ${g.offerings} Offerings` : ''}`]);
   return `<section id="freischalten"><h2>Freischaltungen und Sterne</h2>
 <p>Die Freischalt-Tabelle steht in <code>src/config/worlds/fondue/unlocks.ts</code>: Der Sieg im genannten Level schaltet frei. Die Spalte rechts zeigt, wie viele Sterne man bis dahin höchstens gesammelt hat.</p>
 ${table(['Level', 'Freischaltung', 'Sterne bis dahin'], rows)}
