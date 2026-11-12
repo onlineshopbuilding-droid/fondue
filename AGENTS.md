@@ -3,16 +3,16 @@
 Diese Datei gilt für alle: Claude, ChatGPT/Codex, Gemini und jedes weitere Werkzeug. Sie ist die einzige Stelle für die Arbeitsregeln. `CLAUDE.md` und `GEMINI.md` verweisen nur hierher.
 
 ## Worum es geht
-Fondue ist ein Koop-Wurfspiel: Mit der Hand packt man Räuber und schleudert sie, um das Burgtor zu halten. Zwischen den Tagen kauft man Upgrades. Man spielt allein oder zu zweit online. Tim und Lenny entwickeln es gemeinsam mit KI.
+Fondue ist ein Koop-Wurfspiel für das Handy im Querformat: Mit dem Finger packt man Räuber (Mäuse und Ratten in Ritterkostümen) und schleudert sie, um das Burgtor zu halten. Zwischen den Tagen kauft man im Markt an der Burg Waffen für fünf Slots. Es gibt eine Kampagne mit 100 Leveln, dauerhaften Fortschritt mit Sternen und einen Endlos-Modus; man spielt allein oder zu zweit online. Tim und Lenny entwickeln es gemeinsam mit KI.
 
 **Das Ziel ist eine fertige App im App Store und bei Google Play**, zunächst privat nur für Tim, Lenny und später Freunde. Jede Entscheidung wird daran gemessen.
 
-Aktuelle Phase: Alpha, Tim und Lenny testen zu zweit. Jede Version muss auf Laptop und Handy funktionieren.
+Aktuelle Phase: Alpha nach dem großen Update, Tim und Lenny testen zu zweit. Geprüft wird auf drei Geräten: Tims iPhone 16, Lennys OnePlus 8T und Laptop. Der Stand vor dem Update bleibt unter `/fondue/classic/` spielbar (Tag `v0-alpha`).
 
 ## Zu Beginn jeder Sitzung
 1. `git pull` ausführen, damit du den neuesten Stand hast.
 2. `docs/HANDBUCH.md` lesen: Aufbau, wo was liegt, Rezepte, Fallen, Stimmigkeits-Check, Weg zum Store.
-3. Bei Bedarf: `docs/ENTSCHEIDUNGEN.md` (Begründungen), `docs/GDD.md` (Spielregeln, Messwerte), `docs/features.json` (Abnahmeliste).
+3. Bei Bedarf: `docs/ARCHITEKTUR.md` (Aufbau, Klassen), `docs/GDD.md` (Spielregeln, Zahlen), `docs/ENTSCHEIDUNGEN.md` (Begründungen), `docs/OFFENE-ENTSCHEIDUNGEN.md` (was Tim und Lenny noch entscheiden), `docs/balance.md` (Balance), `docs/GRAFIK-AUSTAUSCHEN.md` (Grafik ersetzen), `docs/features.json` und `docs/abnahme-grosses-update.json` (Abnahmelisten).
 
 ## Zusammenarbeit
 - Tim und Lenny überlegen sich, was das Spiel werden soll. Die KI setzt es vollständig um und erklärt verständlich, was wo geändert wurde.
@@ -65,5 +65,7 @@ Neue Inhalte entstehen aus Fondues eigener Welt (Alpenfestung, Räuberarmee, Kä
 - Entwicklung: `npm run dev`
 - Build: `npm run build`
 - Veröffentlichen: Pull Request nach `main` mergen (GitHub Actions, .github/workflows/deploy.yml)
-- Live: https://onlineshopbuilding-droid.github.io/fondue/
-- Tests: `npm test` (Unit), `npm run test:e2e` (Browser und Handy), `npx playwright test --config playwright.live.config.ts` (Live), `npx playwright test --config playwright.perf.config.ts` (FPS), `npm run balance`
+- Live: https://onlineshopbuilding-droid.github.io/fondue/, alter Stand: https://onlineshopbuilding-droid.github.io/fondue/classic/, Entwickler-Übersicht: https://onlineshopbuilding-droid.github.io/fondue/dev/
+- Tests: `npm test` (Unit), `npm run test:e2e` (Browser auf Laptop, iPhone 16, OnePlus 8T; weitere Größen mit `ALL_SCREENS=1`), `npx playwright test --config playwright.live.config.ts` (Live), `npx playwright test --config playwright.perf.config.ts` (FPS), `npm run balance` (Bots, Endlos und alle 100 Level)
+- Erzeugte Dokumente: `node scripts/campaign-table.ts` (Level-Tabelle), `node scripts/list-assets.ts` (Asset-Liste), `npm run dev-page` (Entwickler-Übersicht)
+- Schalter in der Adresse (`?menu=1`, `?menu=html`, `?fresh=1`, `?tutorial=1`, `?profile=`, `?asset=` …): `docs/HANDBUCH.md`, Abschnitt 8

@@ -1,6 +1,8 @@
 # Offene Entscheidungen und Bewertungen
 
-Hier steht alles, was Tim und Lenny noch entscheiden oder bewerten sollen (Auftrag, Abschnitt 11.2). Dieselbe Liste gibt es im Entwickler-Menü des Spiels; dort lässt sich jeder Eintrag abhaken, bewerten und mit einer Notiz versehen. Diese Datei ist der Stand im Repo und erscheint auch auf der Entwickler-Übersicht unter `/fondue/dev/`.
+Hier steht alles, was Tim und Lenny noch entscheiden oder bewerten sollen (Auftrag, Abschnitt 11.2). Diese Datei ist der Stand im Repo und erscheint auch auf der Entwickler-Übersicht unter `/fondue/dev/`.
+
+Ehrlicher Stand: Laut Auftrag soll dieselbe Liste auch im Entwickler-Menü des Spiels stehen, zum Abhaken, Bewerten und mit Notiz. Das Profil kann Bewertungen schon speichern und als Text ausgeben (`setRating`, `ratingsAsText` in `src/profile/profile.ts`), im Entwickler-Menü (`src/ui/tuningPanel.ts`) gibt es die Liste aber noch nicht. Bis dahin tragt ihr Bewertung und Notiz hier in die Tabelle ein.
 
 So wird ein Eintrag ausgefüllt:
 
@@ -16,13 +18,23 @@ Die Begründungen der Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`.
 | Nr | Eintrag | Worum es geht | Stand | Status | Bewertung | Notiz |
 |---|---|---|---|---|---|---|
 | D-01 | Endlos bietet alle Waffen | Im Endlos-Modus sind alle Waffen und alle fünf Slots verfügbar, egal wie weit man in der Kampagne ist, damit man alles testen kann. | Schalter `onlyUnlockedWeapons` in `src/config/worlds/fondue/endless.ts` steht auf `false`: alle Waffen verfügbar. | offen | – | |
-| D-02 | Aussehen des Burg-Innenraums | Wie die Lobby in der Burg aussieht, damit die eigene Burg nicht abgewertet wirkt, obwohl die Burg in jedem Level neu ausgebaut wird. | wird nachgetragen | offen | – | |
+| D-02 | Aussehen des Burg-Innenraums | Wie die Lobby in der Burg aussieht, damit die eigene Burg nicht abgewertet wirkt, obwohl die Burg in jedem Level neu ausgebaut wird. | Die Lobby ist eine Halle mit Thron, König und antippbaren Stationen. Sie wird mit dem Kampagnen-Fortschritt prächtiger: Teppich ab Level 3, Banner ab 8, Trophäenschilde ab 15 und 35, Kronleuchter ab 25, Käsestapel ab 45 und 55, goldener Thron ab 70, goldene Gabeln ab 85, Siegesgirlande nach Level 100 (`DECOR` in `src/render/lobby/layout.ts`). Freigeschaltete Waffen hängen an der Wand. Siehe E-054. | offen | – | |
 | D-03 | Koop-Einladungslink und Tutorial | Was passiert, wenn jemand über einen Einladungslink kommt und das Tutorial noch nicht kennt. | Laut Code tritt der Gast direkt bei; das Tutorial kommt beim nächsten Solo-Start. | offen | – | |
 | D-04 | Sterne beim Wiederholen | Wie viele Sterne ein schon geschafftes Level beim nächsten Sieg bringt, damit man nicht farmen kann. | `replayShare` in `src/config/stars.ts` ist 0: kein Stern für Wiederholungen. | offen | – | |
 | D-05 | Sterne für Koop-Gäste | Wie viele Sterne der Gast für ein Level der Host-Kampagne bekommt. | `guestShare` in `src/config/stars.ts` ist 0,5: die Hälfte, aufgerundet, einmal je Level. | offen | – | |
-| D-06 | Unterbrochenes Level fortsetzen | Ob ein Level nach dem Schließen der App am Beginn des aktuellen Tages weitergeht oder sauber abgebrochen wird. | wird nachgetragen | offen | – | |
+| D-06 | Unterbrochenes Level fortsetzen | Ob ein Level nach dem Schließen der App am Beginn des aktuellen Tages weitergeht oder sauber abgebrochen wird. | Allein in der Kampagne geht es am Beginn des Tages weiter: Die App speichert zu Beginn jedes Tages und beim Markt (`pendingRun`, `src/ui/app.ts`), in der Lobby erscheint „Continue“. Koop, Endlos und Entwickler-Läufe werden nicht fortgesetzt. Siehe E-058. | offen | – | |
 | D-07 | Yeti und Hand-Stufen | Wie schwer der Yeti allein und zu zweit zu werfen ist und welche Hand-Stufe dafür reicht. | In `src/config/hand.ts`: Hand-Stufe 3 hebt ihn allein; zwei Hände heben ihn gemeinsam ab einer Stärke von zusammen 2. | offen | – | |
 | D-08 | Zielen von Stomper und Comet | Ob man erst die Waffe und dann die Stelle antippt oder ob ein Tipp genügt und die Waffe selbst zielt. | Beide zielen mit einem Tipp selbst auf die dichteste Gruppe (`target: 'crowd'` in `src/config/weapons.ts`). | offen | – | |
+| D-09 | Sterne, Stufen und Hand für alle Welten | Ob Sterne, Waffenstufen und Hand-Stufe später in jeder Welt gelten oder je Welt getrennt sind. | Heute gelten sie für alle Welten gemeinsam (`stars`, `weaponTiers`, `handTier` stehen im Profil außerhalb von `worlds`). Geschaffte Level, Bestenliste und Meilensteine sind je Welt getrennt. | offen | – | |
+| D-10 | Endlos erst ab einem Level | Ob Endlos später erst nach einigen Kampagnen-Leveln freigeschaltet wird. | `availableFromLevel` in `src/config/worlds/fondue/endless.ts` ist 0: von Anfang an offen. | offen | – | |
+| D-11 | Sterne für das erste Freischalten einer Waffe | Ob eine durch die Kampagne verfügbar gewordene Waffe zusätzlich Sterne kostet. | `STARS.weaponUnlock` ist 0 (kostenlos). Der Wert wird im Code derzeit nicht gelesen; ein anderer Preis müsste erst eingebaut werden. | offen | – | |
+| D-12 | Länge der frühen Level | Der Auftrag nennt 5 bis 15 Tage je Level. | Level 1 hat 2 Tage, Level 2 bis 4 je 3, Level 5 bis 9 je 4, ab Level 10 5 bis 10 Tage, Boss-Level einen mehr (`dayCountOf` in `src/config/worlds/fondue/campaign.ts`). Kürzer, damit der Einstieg schnell geht. | offen | – | |
+| D-13 | Startgold in Level 1 | Der Auftrag sagt „Gold 0“ zu Beginn jedes Levels. | Level 1 beginnt mit 60 Gold (`LEVEL_OVERRIDES[1].startGold`), damit der Kessel (250 Gold) nach Tag 1 sicher bezahlbar ist. Alle anderen Level beginnen mit 0. | offen | – | |
+| D-14 | Boss-Level | Was ein Boss-Level ausmacht. | Jedes zehnte Level: ein Tag mehr, am letzten Tag 1,8-mal so viele Räuber, alle 12 % stärker, dazu ein oder mehrere übergroße Räuber und je nach Level ein Massenansturm (`BOSS_BIG`, `BOSS_EXTRA`, `CURVE.bossPower`). Freischaltungen liegen jeweils auf dem Level davor (9, 19, 29, 39), nicht auf dem Boss-Level. | offen | – | |
+| D-15 | Name „Sterne“ | „Sterne“ ist ein vorläufiger Name für die dauerhafte Währung. | Im Spiel heißen sie „stars“ mit dem Zeichen ★. Eine Bewertung mit 1 bis 3 Sternen je Level ist nicht gebaut. | offen | – | |
+| D-16 | Koop-Faktor der Kampagne | Wie viel mehr Räuber zu zweit in einem Kampagnen-Level kommen. | `COOP.campaignFactor` = 1,9 in `src/config/waves.ts`. Mid zu zweit schafft 89 Level im ersten Versuch, allein 84: zu zweit eher etwas leichter (`docs/balance.md`). | offen | – | |
+| D-17 | Neuer Stomper | Wie der Stomper über die Stufen aussieht und wirkt. | Er wird nicht mehr größer, sondern trifft härter, lässt ab Stufe 2 den Boden beben (betäubt Nachbarn) und schlägt ab Stufe 3 zweimal, ab Stufe 5 dreimal auf die nächste Gruppe (`stomper` in `src/config/weapons.ts`). | offen | – | |
+| D-18 | Adlerhaken spät und teuer | Der Haken kostet 12.000 Gold und kommt in der Kampagne mit Level 32. | `STATIONS.perch` in `src/config/keep.ts`, `UNLOCKS` in `src/config/worlds/fondue/unlocks.ts`. Eine besondere Belohnung am Haken ist nur vorgehalten. | offen | – | |
 
 ## Waffen
 
