@@ -11,6 +11,8 @@ export default defineConfig({
   fullyParallel: true,
   workers: 1,
   reporter: [['list']],
+  // An expectation waits for the page to show something; on GitHub's machines a single frame can take seconds.
+  expect: { timeout: process.env.CI ? 30_000 : 5_000 },
   use: {
     baseURL: `http://localhost:${port}`,
     viewport: { width: 1280, height: 720 },
