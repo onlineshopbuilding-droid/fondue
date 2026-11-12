@@ -108,8 +108,11 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     // The guest sees its grab at once, without waiting for the host.
     const gp = await pointer(guest, false);
     await gp.down(target.x - 10, target.y - 44);
-    await guest.waitForTimeout(20);
-    const instant = await guest.evaluate((id) => (window as any).__fondue.session.view().enemies.find((e: any) => e.id === id)?.heldBy, target.id);
+    // "At once" means within two pictures of the guest's own screen, however long a picture takes on this machine.
+    const instant = await guest.evaluate(async (id) => {
+      for (let i = 0; i < 2; i++) await new Promise((r) => requestAnimationFrame(r));
+      return (window as any).__fondue.session.view().enemies.find((e: any) => e.id === id)?.heldBy;
+    }, target.id);
     expect(instant).toEqual([1]);
     // Up and a little to the left in ten quick steps, stamped like a real hand (see the host's throw).
     const pg = await toCss(guest, target.x - 10, target.y - 44);
