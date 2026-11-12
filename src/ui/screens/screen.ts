@@ -28,6 +28,10 @@ export class ScreenManager {
   private overlay: HTMLDivElement | null = null;
   private currentId: ScreenId = 'none';
   private readonly byId = new Map<ScreenId, Screen>();
+  /** A finger or the mouse button is down on the overlay. */
+  private pressed = false;
+  /** A redraw asked for during a press; it happens once the press is over. */
+  private pending: { arg?: string } | null = null;
 
   /** The overlay is inserted before `anchor`, so toasts stay on top of it. */
   constructor(private root: HTMLElement, private anchor: HTMLElement, screens: readonly Screen[], private ctx: ScreenContext) {
@@ -44,6 +48,10 @@ export class ScreenManager {
 
   show(id: ScreenId, arg?: string) {
     const samePage = this.currentId === id;
+    // A redraw swaps every element. Between press and release it would take the button away from
+    // under the finger and the tap would be lost, so it waits until the tap is through.
+    if (samePage && this.pressed && this.overlay) { this.pending = { arg }; return; }
+    this.pending = null;
     if (!samePage) this.byId.get(this.currentId)?.onHide?.(this.ctx);
     this.currentId = id;
     const screen = this.byId.get(id);
@@ -63,6 +71,18 @@ export class ScreenManager {
     overlay.className = 'overlay';
     overlay.addEventListener('click', (e) => this.onClick(e));
     overlay.addEventListener('input', (e) => this.onInput(e));
+    overlay.addEventListener('pointerdown', () => { this.pressed = true; });
+    const released = () => {
+      if (!this.pressed) return;
+      this.pressed = false;
+      // The click of this tap comes right after the release; the held-back redraw follows it.
+      setTimeout(() => {
+        const p = this.pending;
+        if (p && !this.pressed && this.overlay === overlay) this.show(this.currentId, p.arg);
+      }, 0);
+    };
+    window.addEventListener('pointerup', released);
+    window.addEventListener('pointercancel', released);
     this.root.insertBefore(overlay, this.anchor);
     this.overlay = overlay;
     return overlay;

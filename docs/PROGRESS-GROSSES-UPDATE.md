@@ -138,3 +138,4 @@ Alle `it(…)`-Titel, die seit dem Stand auf `main` (`a9e519c`) aus `tests/unit/
 - Abnahmeliste: 368 von 455 belegt, jeder offene Punkt hat einen Grund ("Offen: ...").
 - Kleine Luecken geschlossen: Seitentitel kommt aus game.ts, Begriffe in AGENTS.md, D-19 bis D-21, ungenutztes Zielkreuz-Bild entfernt (dazu aus der Liste FREE_PROPS in tests/e2e/art.spec.ts gestrichen), neue Unit-Tests fuer den Markt (tests/unit/shop.test.ts), 401 Unit-Tests.
 - Abschlussbericht: docs/ABSCHLUSS-GROSSES-UPDATE.md.
+- 09:55: Echter Fehler gefunden und behoben: Zeichnete sich ein Bildschirm (Markt) zwischen Druecken und Loslassen neu, ging der Tipp verloren (z. B. wenn der Mitspieler gerade kauft). Der ScreenManager haelt ein Neuzeichnen jetzt zurueck, bis der Tipp durch ist (src/ui/screens/screen.ts); neuer Test in tests/e2e/market.spec.ts, ohne die Korrektur rot. Das war die Ursache des roten Koop-Tests auf GitHub.

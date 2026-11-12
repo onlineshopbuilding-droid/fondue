@@ -77,3 +77,27 @@ for (const d of [LAPTOP, IPHONE]) {
     await context.close();
   });
 }
+
+test('a redraw of the market between press and release does not swallow the tap', async ({ browser }) => {
+  const { context, page, errors } = await openGame(browser, LAPTOP, '?menu=1&seed=22');
+  await startEndless(page);
+  await page.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.gold = 20000; s.offerings = 60; });
+  await toMarket(page);
+  await waitFor(() => page.evaluate(() => (window as any).__fondue.scene.marketProgress() as number), (k) => k >= 1, 15000);
+  await tapMarket(page, 'slot:0', false);
+  const button = page.locator('button[data-buy="weapon:0:wheel"]');
+  await expect(button).toBeVisible();
+  const box = (await button.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  // While the button is held the purse changes (as when the other player buys): the market wants to redraw.
+  await page.evaluate(() => { (window as any).__fondue.session.sim.s.gold = 19999; });
+  await waitFor(() => page.evaluate(() => (window as any).__fondue.session.view().gold as number), (g) => g === 19999, 5000);
+  await page.waitForTimeout(300);
+  await page.mouse.up();
+  await waitFor(() => meta(page), (m) => m.loadout.slotWeapon[0] === 'wheel', 5000);
+  // The held-back redraw came after the tap: the window shows the new purse and the wheel as built.
+  await expect(page.locator('#marketWindow .m-row.owned')).toContainText(weaponById('wheel')!.name);
+  expect(errors).toEqual([]);
+  await context.close();
+});
