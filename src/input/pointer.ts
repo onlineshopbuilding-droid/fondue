@@ -89,11 +89,13 @@ export function bindPointer(canvas: HTMLCanvasElement, h: PointerHandlers): { tr
     if (activeId !== null && ev.pointerId !== activeId) return;
     tracker.touch = ev.pointerType === 'touch';
     const list = ev.getCoalescedEvents?.() ?? [];
+    // Every sample is handed on, not only the newest: when frames are slow the browser bundles
+    // several moves into one event, and a shake read from the newest alone loses its turning points.
     for (const c of list.length > 0 ? list : [ev]) {
       const p = toWorld(c);
       tracker.add(c.timeStamp, p.x, p.y);
+      h.onMove(tracker);
     }
-    h.onMove(tracker);
   };
 
   const onDown = (ev: PointerEvent) => {

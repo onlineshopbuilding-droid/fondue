@@ -18,8 +18,25 @@ Nach jeder Kontext-Zusammenfassung zuerst lesen: `docs/AUFTRAG-GROSSES-UPDATE.md
 | 18:43 | Architektur | `docs/ARCHITEKTUR.md` Entwurf | Prüfung durch Subagent, dann Etappe 1 (Zerlegen) |
 
 ## Ersetzte Tests
+Browser-Tests (`tests/e2e`), umgestellt auf das neue Spiel. Alle übrigen alten Tests prüfen ihre Regel weiter, nur der Weg dorthin ist neu (Lobby statt Menü-Knöpfe, `?menu=1` überspringt das Tutorial, Tag-Ende über den Spielzustand statt fester Wartezeiten).
+
 | Test | Warum ersetzt | Neuer Test |
 |---|---|---|
+| keep.spec: „pull a weapon on the keep to aim it, without grabbing the raider at the gate“ (3 Geräte) | Zielgeste entfällt, Waffen feuern per Antippen (Auftrag 10) | keep.spec: „every weapon fires with one tap and never grabs“ (alle 5 Slots, 3 Geräte, Finger und Maus) |
+| keep.spec: „mortar pulled from the keep lands where the aim showed“ (3 Geräte) | Zielgeste entfällt (Auftrag 10) | derselbe neue Test: Gate-Arm-Slot mit Mörser feuert per Tipp und trifft |
+| keep.spec: „moving back to the weapon cancels the shot“ (3 Geräte) | Ohne Zielen gibt es keinen Schuss, der abgebrochen werden kann (Auftrag 10) | derselbe neue Test: ein Tipp feuert sofort, ein Griff am Tor feuert nichts |
+| keep.spec: „comet and wheel work with taps on the keep“ (scharf schalten, dann Ziel antippen) | Kein Scharfschalten mehr, ein Tipp feuert (Auftrag 10) | derselbe neue Test (Rad Slot 0, Komet Slot 3) |
+| keep.spec: „cauldron front / back: a raider melts …“ (4 Tests) | Kessel steht nur noch hinter der Burg, Schalter vorne/hinten entfällt (Auftrag 14.1) | keep.spec: „… a raider melts in the pot behind the keep …“ (3 Geräte) |
+| keep.spec: „developer menu: switches and quick start by mouse“ (Schalter `cauldron`, `#developer`) | Schalter `cauldron` entfällt; Entwickler-Menü neu (Auftrag 11) | flow.spec: „developer menu: jump to a level and day …“ und „… quick endless start stays off the scores; profile tools …“ |
+| keep.spec: „developer menu on a phone: a long press on the logo“ und „a quick tap on the logo“ | Hauptmenü ist die Lobby ohne Logo; das Logo gibt es nur noch im HTML-Menü (`?menu=html`) | mobile.spec: „developer menu on a phone: from Options by finger“ und „plain menu on a phone: a long press on the logo …, a quick tap does not“ |
+| keep.spec: „co-op in one browser: different window shapes …, the guest aims from the keep“ | Zielgeste entfällt (Auftrag 10) | coop.spec: „co-op on different window shapes: … the guest fires the host keep's weapon by tapping it“ |
+| flow.spec: „day, results, market, next day“ (Markt mit 7 Reitern, `.tab`) | Reiter-Markt entfällt, Markt an der Burg (Auftrag 9) | flow.spec: „endless: a day, its results, the market at the keep …“ und market.spec (Laptop und iPhone) |
+| flow.spec: „right click cancels a weapon and never grabs“ | Keine scharf geschaltete Waffe mehr, die abgebrochen werden könnte (Auftrag 10) | flow.spec: „a right click never grabs a raider“ (der Teil „never grabs“ bleibt geprüft) |
+| flow.spec: „menu screens all open and return“ | Hauptmenü ist jetzt die Lobby in der Burg (Auftrag 7) | flow.spec: „lobby: every station opens its page …“ und „the plain menu (?menu=html) …“ |
+| mobile.spec: „every screen fits and is usable by touch“ (Menü-Knöpfe, Reiter-Markt) | Lobby statt Menü, Markt an der Burg (Auftrag 7, 9) | mobile.spec: „the hall and every menu page fit …“ und „a day by finger: … the market, game over“ (iPhone 16, OnePlus 8T) |
+| mobile.spec / keep.spec: Geräteliste (640x360, 960x400 u. a. bei jeder Änderung) | Geprüft werden nur noch Laptop, iPhone 16 und OnePlus 8T (Auftrag 16); andere Größen mit `ALL_SCREENS=1` | `DEVICES` in tests/e2e/helpers.ts |
+| coop.spec: Markt-Kauf über Reiter „Offerings“ | Reiter-Markt entfällt (Auftrag 9) | coop.spec: Gast tippt den Kesselplatz an der Burg an und baut ihn |
+| look.spec (nur mit `LOOK=1`): Kessel vorne und hinten | Kessel nur hinten (Auftrag 14.1) | look.spec: „the pot behind the keep, melting“ |
 
 ## Offene Probleme
 - keine
