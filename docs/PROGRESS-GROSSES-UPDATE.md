@@ -72,3 +72,16 @@ Browser-Tests (`tests/e2e`), umgestellt auf das neue Spiel. Alle übrigen alten 
 | Test | Warum ersetzt | Neuer Test |
 |---|---|---|
 | profile.test.ts / profile-data.test.ts: Beispielschalter `cauldron: 'back'` | Der Schalter vorne/hinten entfaellt (Auftrag 14.1) | dieselben Tests mit `dayEnd: 'retreat'`; `cauldron` dient jetzt als Beispiel fuer einen nicht mehr vorhandenen Schalter |
+
+## Stand 12.11., 04:45 (Pause bis zum neuen 5-Stunden-Fenster um 05:50)
+- Fertig und committet: Markt an der Burg, Kampagnen-Karte, Tutorial-Vorrunde mit Koenig, Lobby in der Burg, Entwickler-Menue mit Bewertungsliste, Entwickler-Seite /dev/, Level-Tabelle, Dokumente (Handbuch, GDD, Entscheidungen E-032 bis E-061, Balance, Ideen), Abnahmeliste 271 von 455 mit Beleg, Browser-Tests neu (lokal zweimal gruen: 47 bestanden, 4 uebersprungen, je 15,6 min), CI mit 4 Teilen, 390 Unit-Tests gruen.
+- PR 9 offen (feature/grosses-update nach main), main ist eingemischt. Erster Lauf auf GitHub: unit gruen, browser 2 gruen, browser 1, 3, 4 rot. Alle sechs Fehler sind Wartezeiten auf den langsamen GitHub-Maschinen (waitFor timed out bzw. Klick-Timeout), lokal bestehen die Tests:
+  - flow.spec.ts:193 Entwickler-Menue Sprung zu Level und Tag (wartet, letzter Wert "results")
+  - flow.spec.ts:221 Fenster "New enemy" (Klick 45 s Timeout, Zeile 241)
+  - keep.spec.ts:25 oneplus-8t Waffen feuern (Zeile 81)
+  - coop.spec.ts:65 Koop endlos, beide Varianten (Zeile 96)
+  - smoke.spec.ts:4 Wurf toetet (Zeile 15)
+- Naechster Schritt: diese sechs Tests auf Spielzustand statt Zeit umstellen (Wuerfe ueber die Simulationszeit, nicht ueber die Uhr), Lauf wiederholen, bis `test` gruen ist. Tests nicht abschwaechen.
+- Danach offen: Sichtpruefung auf den drei Geraeten (Screenshots ansehen), Leistungstest, Issue 1 pruefen, Android-App pruefen, OFFENE-ENTSCHEIDUNGEN nachziehen (Bewertungsliste ist jetzt im Spiel, weaponUnlock wird gelesen), Freischaltungen auf Boss-Level pruefen, Abschlussbericht docs/ABSCHLUSS-GROSSES-UPDATE.md, Merge und Veroeffentlichung, Live-Pruefung, Worktrees aufraeumen (gu-profile, gu-mice, pages-multi-build), tests/balance/diag.test.ts loeschen.
+- Balance zuletzt: Endlos Medium Poor 6, Mid 28.5, Great 48.5; Kampagne Mid 84/11/1/4, Great 100, Mid zu zweit 92/4/2/2 (Koop-Faktor Kampagne 1.7), Level 2 bis 9 haben fuenf Tage.
+- Tim spielt lokal ueber einen Entwicklungsserver auf Port 5180 (laeuft nur, solange die Sitzung offen ist).
