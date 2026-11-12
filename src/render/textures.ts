@@ -1,3 +1,4 @@
+// Turns the drawn art into Phaser textures at boot (the rest in the background), plus a few generated ones.
 import Phaser from 'phaser';
 import type { Art } from '../art/types';
 import { assetsOfGroup, BOOT, KEEP_STAGES, LAND_NAMES, WEAPON_TIERS, type AssetEntry, type AssetGroup, type LandName } from '../art/registry';

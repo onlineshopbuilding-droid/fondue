@@ -1,3 +1,4 @@
+// The directory of all raider rigs, one per enemy type, for the textures and the menus.
 import type { EnemyType } from '../../config/enemies';
 import type { CharacterRig } from '../types';
 import { balloonistRig } from './balloonist';

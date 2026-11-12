@@ -1,3 +1,4 @@
+// Part of the simulation: brings the day's raiders onto the field at their times.
 import { BEHAVIOUR, ENEMIES, type EnemyType } from '../config/enemies';
 import { DAY } from '../config/waves';
 import { FIELD, WORLD, fieldEntry } from '../config/field';

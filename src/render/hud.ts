@@ -1,3 +1,4 @@
+// The bar at the top of the screen during a fight: gold, offerings and the gate's health.
 import Phaser from 'phaser';
 import { WORLD } from '../config/field';
 import type { ViewState } from '../net/snapshot';

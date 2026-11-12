@@ -4,7 +4,7 @@ import { HANDS } from '../../config/hand';
 import { SLOTS } from '../../config/slots';
 import { weaponTierPrice } from '../../config/stars';
 import { MAX_TIER, activeWeapons, weaponById, type WeaponDef } from '../../config/weapons';
-import { maxHandTier, unlockLevelOf } from '../../modes';
+import { buyWeaponUnlock, maxHandTier, unlockLevelOf, weaponAvailable, weaponUnlockPrice } from '../../modes';
 import { BACK_BUTTON, esc, navRow } from '../html';
 import type { ScreenContext } from './context';
 import type { Screen } from './screen';
@@ -18,7 +18,12 @@ function weaponCard(ctx: ScreenContext, w: WeaponDef): string {
   const now = w.tiers[tier - 1]?.note ?? '';
   const nextNote = tier < MAX_TIER ? w.tiers[tier]?.note ?? '' : '';
   let foot: string;
-  if (!owned) {
+  if (!owned && weaponAvailable(p, ctx.world, w.id)) {
+    // Only reached when the unlock table asks for stars (STARS.weaponUnlock above 0).
+    const price = weaponUnlockPrice();
+    const can = p.data.stars >= price;
+    foot = `${can ? '' : '<span class="why">Not enough stars</span>'}<button class="small" data-a="unlockWeapon" data-weapon="${w.id}" ${can ? '' : 'disabled'}>Unlock ★${price}</button>`;
+  } else if (!owned) {
     foot = `<span class="why">${esc(unlockText(unlockLevelOf(ctx.world, 'weapon', w.id)))}</span>`;
   } else if (tier >= MAX_TIER) {
     foot = '<span class="tag">Maximum tier</span>';
@@ -83,6 +88,12 @@ export const armouryScreen: Screen = {
           p.setWeaponTier(w.id, tier + 1);
           ctx.toast(`${w.name} is now tier ${tier + 1}`);
         }
+        ctx.show('armoury');
+        break;
+      }
+      case 'unlockWeapon': {
+        const w = weaponById(el.dataset.weapon ?? '');
+        if (w && buyWeaponUnlock(p, ctx.world, w.id)) ctx.toast(`${w.name} is unlocked`);
         ctx.show('armoury');
         break;
       }

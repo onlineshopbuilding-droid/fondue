@@ -1,3 +1,4 @@
+// Short visual effects: particles, decals, floating gold numbers and line effects such as lightning.
 import Phaser from 'phaser';
 import { partKey, propKey, TEX_SCALE } from './textures';
 import { WORLD } from '../config/field';

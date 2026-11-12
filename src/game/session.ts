@@ -1,3 +1,5 @@
+// The game as one player's machine sees it: solo, the co-op host that runs the simulation, or the guest that follows it.
+// Rendering and UI only talk to a Session; the network messages stay in here.
 import { ENEMIES } from '../config/enemies';
 import { DT, WORLD, fieldWall } from '../config/field';
 import type { ClientCommand, NetMessage } from '../net/protocol';

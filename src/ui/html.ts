@@ -2,6 +2,7 @@
 // standard back button. Screens build their markup as strings, so everything dynamic goes through `esc`.
 import { RIGS } from '../art/characters';
 import { PROPS } from '../art/props';
+import { weaponArt } from '../art/weapons';
 import type { EnemyType } from '../config/enemies';
 
 /** Makes any text safe to place inside HTML or an attribute. */
@@ -11,6 +12,9 @@ const svgUri = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURICom
 
 /** A prop drawing as an address an <img> can show. */
 export const artUri = (name: string) => svgUri(PROPS[name].svg);
+
+/** A weapon's picture at tier 1 as an address an <img> can show. */
+export const weaponUri = (id: string) => svgUri(weaponArt(id, 1).svg);
 
 const rigCache = new Map<string, string>();
 

@@ -1,3 +1,4 @@
+// The messages host and guest send each other, and the protocol version both must share.
 import type { Command, Meta, SimEvent } from '../sim/types';
 import type { WireSnapshot } from './snapshot';
 import type { Difficulty } from '../config/waves';

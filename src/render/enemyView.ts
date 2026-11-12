@@ -1,3 +1,4 @@
+// Draws one raider from its rig and animates it from the simulation's state; views are pooled and reused.
 import Phaser from 'phaser';
 import { RIGS } from '../art/characters';
 import type { Anim, CharacterRig, RigPart } from '../art/types';

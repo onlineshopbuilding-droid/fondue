@@ -449,6 +449,15 @@ textarea { width: 100%; resize: vertical; font-size: 14px; }
 #tuning .dev-check { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
 #tuning .dev-confirm { border: 2px solid var(--rust); border-radius: 10px; padding: 6px 8px; width: 100%; }
 #tuning .dev-confirm .navrow { margin-top: 6px; }
+/* Developer menu: link, choice lists and the decision and rating list. Every control is at least 44 px. */
+#tuning .dev-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid var(--ink); border-radius: 10px; color: var(--ink); background: rgba(255, 255, 255, 0.6); text-decoration: none; }
+#tuning .dev-select { min-height: 44px; max-width: 100%; font: 800 15px 'Nunito', sans-serif; border: 2px solid var(--ink); border-radius: 8px; padding: 0 6px; }
+#tuning .dev-review { border-top: 1px solid rgba(43, 33, 24, 0.3); padding: 8px 0; }
+#tuning .dev-review-head { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 4px; }
+#tuning .dev-review-head img { width: 48px; height: 48px; flex: none; }
+#tuning .dev-note { width: 100%; min-height: 44px; margin-top: 6px; font: 700 15px 'Nunito', sans-serif; border: 2px solid var(--ink); border-radius: 8px; padding: 0 8px; box-sizing: border-box; }
+#tuning .dev-check input { min-width: 24px; min-height: 24px; }
+#tuning #devRatingsText { height: 120px; margin-bottom: 6px; }
 
 @media (pointer: coarse) {
   #tuning { width: min(380px, 70vw); -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }

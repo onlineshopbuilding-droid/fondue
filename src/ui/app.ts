@@ -3,6 +3,8 @@ import '../render/glFix';
 import Phaser from 'phaser';
 import { PROPS } from '../art/props';
 import { AudioEngine } from '../audio/audio';
+import { reviewLabels } from '../config/devReview';
+import { quickStartFor } from '../config/quickstart';
 import { FLAG_DEFS } from '../config/flags';
 import { fieldForAspect } from '../config/field';
 import { STATION_IDS } from '../config/keep';
@@ -152,6 +154,15 @@ export class App implements ScreenContext, CoopRoomHost {
         this.startSoloRun(CAMPAIGN, { world: this.world, level: Math.max(1, Math.min(max, level)), day });
       },
       levelCount: () => worldById(this.world).campaign.length,
+      levelDays: (level) => levelOf(this.world, level)?.days.length ?? 1,
+      weaponTier: (id) => this.profile.weaponTier(id),
+      setWeaponTier: (id, tier) => { this.profile.setWeaponTier(id, tier); this.redrawMenus(); },
+      handTier: () => this.profile.data.handTier,
+      setHandTier: (tier) => { this.profile.setHandTier(tier); this.redrawMenus(); },
+      showEnemyPopup: (type) => this.popup.show([type]),
+      ratings: () => this.profile.data.devRatings,
+      setRating: (id, patch) => this.profile.setRating(id, patch),
+      ratingsText: () => this.profile.ratingsAsText(reviewLabels()),
     });
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
@@ -542,7 +553,7 @@ export class App implements ScreenContext, CoopRoomHost {
    */
   private runEnv(choice: RunChoice, names: string[], handTiers: number[]): RunEnv {
     const env: RunEnv = { names, fieldW: fieldForAspect(innerWidth / innerHeight), handTiers, seed: this.seedParam() };
-    const quick = (choice.quickStart ?? 0) > 0 || (choice.day ?? 1) > 1;
+    const quick = (choice.quickStart ?? 0) > 0 || (choice.devDay ?? 0) > 0 || (choice.day ?? 1) > 1;
     if (quick || this.devValuesActive()) {
       env.tuning = { ...this.settings.tuning };
       env.flags = { ...this.settings.flags };
@@ -562,7 +573,13 @@ export class App implements ScreenContext, CoopRoomHost {
 
   private planChoice(plan: RoomPlan): RunChoice {
     if (plan.mode === CAMPAIGN.id) return { world: plan.world, level: plan.level ?? 1 };
-    return { world: plan.world, difficulty: plan.difficulty ?? this.settings.difficulty, quickStart: this.startDay > 1 ? this.startDay : undefined };
+    return { world: plan.world, difficulty: plan.difficulty ?? this.settings.difficulty, ...this.endlessStart() };
+  }
+
+  /** The developer menu's endless start day: a quick start on its own days, any other day as a free developer day. */
+  private endlessStart(): Pick<RunChoice, 'quickStart' | 'devDay'> {
+    if (this.startDay <= 1) return {};
+    return quickStartFor(this.startDay) ? { quickStart: this.startDay } : { devDay: this.startDay };
   }
 
   startPlanSolo(plan: RoomPlan) {
@@ -574,7 +591,7 @@ export class App implements ScreenContext, CoopRoomHost {
    * a continued level, or the tutorial itself is what follows (`skipTutorial`).
    */
   private startSoloRun(mode: GameMode, choice: RunChoice, skipTutorial = false) {
-    const dev = (choice.quickStart ?? 0) > 0 || (choice.day ?? 1) > 1 || !!choice.resume;
+    const dev = (choice.quickStart ?? 0) > 0 || (choice.devDay ?? 0) > 0 || (choice.day ?? 1) > 1 || !!choice.resume;
     if (!skipTutorial && !dev && this.tutorialDue()) { this.startTutorial(); return; }
     this.coop.closeRoom();
     // "Try again" starts a continued level from its first day.
@@ -600,7 +617,7 @@ export class App implements ScreenContext, CoopRoomHost {
 
   startEndless() {
     this.startSoloRun(ENDLESS, {
-      world: this.world, difficulty: this.settings.difficulty, quickStart: this.startDay > 1 ? this.startDay : undefined,
+      world: this.world, difficulty: this.settings.difficulty, ...this.endlessStart(),
     });
   }
 

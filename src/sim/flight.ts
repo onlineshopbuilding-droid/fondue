@@ -1,3 +1,4 @@
+// Part of the simulation: a thrown raider in the air, its landing and whether the landing kills.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD } from '../config/field';
 import type { Enemy } from './types';

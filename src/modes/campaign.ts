@@ -3,6 +3,7 @@
  * Winning pays stars once, unlocks what the table says, and moves the campaign on.
  * Co-op is "the host's campaign with a helper": the guest brings only a hand.
  */
+import { CAMPAIGN_SCALING } from '../config/campaignScaling';
 import { SLOT_COUNT } from '../config/slots';
 import { STARS } from '../config/stars';
 import { TUNING_DEFAULT } from '../config/tuning';
@@ -16,19 +17,8 @@ import { freshStart, type RunResult, type RunRules, type RunSetup, type Scaling,
 import { newRunId, noReward, type GameMode, type NextStep, type Reward, type Role, type RunChoice, type RunEnv } from './mode';
 import { maxGateTier, syncUnlocks, unlocksOfLevel } from './unlocks';
 
-/** How a level's `power` turns into the raiders' numbers, and how they grow from day to day inside a level. */
-export const CAMPAIGN_SCALING = {
-  /** Share of the power above 1 that reaches gate damage and walk speed; hit points get all of it. */
-  damageShare: 0.8,
-  speedShare: 0.12,
-  /** Later levels pay more gold per kill, so a fresh start can still afford the bigger keep. */
-  goldPerPower: 0.7,
-  damageGrowth: 0.14,
-  speedGrowth: 0.015,
-  hpGrowth: 0.05,
-  /** Share of a level's extra strength on its first days: every level starts with bare hands. */
-  easeIn: [0.2, 0.55, 0.85],
-};
+/** The numbers live in src/config/campaignScaling.ts; re-exported here for older imports. */
+export { CAMPAIGN_SCALING };
 
 export function campaignScaling(level: LevelDef): Scaling {
   const extra = level.power - 1;

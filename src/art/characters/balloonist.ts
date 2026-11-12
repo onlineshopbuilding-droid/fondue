@@ -1,3 +1,5 @@
+// The Balloonist as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { crescent, glint, lit, litTube, paint, r1, radial, stroke, tone, within } from '../shade';
 import { INK, MOUSE, PAL, blush, brassPin, felt, fold, metal, mouseEar, oval, part, rim, rope, rrect, seam, snout, tail } from './kit';

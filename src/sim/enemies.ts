@@ -1,3 +1,4 @@
+// Part of the simulation: how raiders act on their own (walking, attacking, hopping, floating, recovering).
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, FIELD, WORLD, fieldEntry } from '../config/field';
 import type { Enemy, Projectile, ProjectileKind } from './types';

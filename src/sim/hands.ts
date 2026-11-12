@@ -1,3 +1,4 @@
+// Part of the simulation: what a player's hand does (grabbing, holding, shaking, throwing).
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD } from '../config/field';
 import { HAND_RULES } from '../config/hand';

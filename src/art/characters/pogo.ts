@@ -1,3 +1,5 @@
+// The Pogo Bandit as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { lit, litTube, paint, stroke, tone } from '../shade';
 import { MOUSE, PAL, blush, brassPin, felt, fold, hand, metal, mouseEar, oval, part, rim, rivet, rrect, seam, snout, tail } from './kit';

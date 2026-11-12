@@ -1,3 +1,5 @@
+// The Shade as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { glint, lit, litTube, paint, r1, stroke, tone, within } from '../shade';
 import { INK, PAL, RAT, brassPin, felt, fold, litLeg, metal, mouseEar, oval, part, rrect, snout, tail } from './kit';

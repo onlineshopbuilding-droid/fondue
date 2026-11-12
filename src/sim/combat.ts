@@ -1,3 +1,4 @@
+// Part of the simulation: damage and death of raiders, blasts, freezing, and damage to the gate.
 import { BEHAVIOUR, ENEMIES, type EnemyType } from '../config/enemies';
 import { ECONOMY } from '../config/economy';
 import { COOP } from '../config/waves';

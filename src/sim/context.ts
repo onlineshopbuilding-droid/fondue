@@ -1,3 +1,4 @@
+// What every part of the simulation shares: state, seeded random numbers, events and the links between the parts.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { HANDS } from '../config/hand';
 import { WORLD, fieldSpeedFactor, fieldWall } from '../config/field';

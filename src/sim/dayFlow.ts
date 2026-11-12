@@ -1,3 +1,4 @@
+// Part of the simulation: the course of a run from banner to fight, nightfall, market, and its end.
 import type { EnemyType } from '../config/enemies';
 import { ECONOMY } from '../config/economy';
 import { DT, fieldEntry } from '../config/field';

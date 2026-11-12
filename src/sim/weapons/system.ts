@@ -1,3 +1,4 @@
+// Part of the simulation: the weapons in the keep's slots, fired by a tap and reloading afterwards.
 import { DT } from '../../config/field';
 import { SLOTS, SLOT_COUNT } from '../../config/slots';
 import { weaponById, type WeaponDef } from '../../config/weapons';

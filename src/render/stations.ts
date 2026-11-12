@@ -1,3 +1,4 @@
+// Draws the two offering sites: the Great Cauldron on its mound and the eagle's hook with its eagle.
 import Phaser from 'phaser';
 import { WORLD } from '../config/field';
 import { PERCH } from '../config/keep';

@@ -1,3 +1,4 @@
+// Part of the simulation: the Great Cauldron and the Eagle Perch, and the steering that lands a throw there.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD, perchX } from '../config/field';
 import { PERCH } from '../config/keep';

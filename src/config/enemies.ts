@@ -1,3 +1,5 @@
+// Every raider of the game with its numbers (speed, strength, weight, gold), plus the numbers of their special behaviours.
+// Which raiders appear when is decided by the worlds' campaign and endless tables, not here.
 export type EnemyType =
   | 'grunt'
   | 'bomber'
@@ -12,6 +14,7 @@ export type EnemyType =
   | 'yeti';
 
 export interface EnemyDef {
+  /** Name shown in the game. */
   name: string;
   /** Walk speed in px/s at walkSpeed tuning 1. */
   speed: number;
@@ -27,7 +30,9 @@ export interface EnemyDef {
   radius: number;
   /** Body height in px; the grab box extends from the feet to this height. */
   height: number;
+  /** Gold paid for a kill, before difficulty and level factors. */
   gold: number;
+  /** Points for the score list per kill. */
   score: number;
   /** False means it cannot be picked up at all. */
   grabbable: boolean;
@@ -107,7 +112,7 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
     name: 'Yeti',
     speed: 40, strike: 30, strikeEvery: 2.4, range: 46, hp: 600, radius: 78, height: 224,
     gold: 120, score: 1500, grabbable: true, mass: 5,
-    tip: 'One hand cannot lift a Yeti. With two players, grab it together. Alone, weapons will have to do.',
+    tip: 'A Yeti is very heavy. A hand of tier 3 lifts it alone; with two players, grab it together and lift it.',
   },
 };
 
@@ -124,29 +129,41 @@ export const TARGETING: { crowdWeight: Partial<Record<EnemyType, number>>; bigWe
 
 /** Numbers for special behaviours. */
 export const BEHAVIOUR = {
+  /** Seconds a raider lies stunned after a landing it survives. */
   stunSeconds: 1,
+  /** A keg bomb: seconds until it bursts, damage to the gate, blast radius in px, and blast damage to raiders when a player sent it. */
   bomb: { fuse: 2.6, gateDamage: 16, blastRadius: 90, blastDamage: 190 },
   /** A keg shaken loose: direction changes needed, the least hand travel between two of them, and the time they must fit into. */
   kegShake: { reversals: 4, minTravel: 36, windowSeconds: 1.6 },
   /** A thrown Keg Hauler bursts weaker than a keg: share of the keg blast. */
   carrierBlast: { radius: 0.75, damage: 0.6 },
+  /** Seconds the Hexer's bubble is up, and down. */
   hexerShield: { on: 3.2, off: 3.4 },
+  /** Seconds a Shade stays out of sight, and in sight. */
   shade: { hidden: 2.2, visible: 1.5 },
+  /** Upward speed of a Pogo Bandit's hop (px/s), and seconds it rests at the gate between hops. */
   pogo: { hopSpeed: 1150, restAtGate: 0.5 },
+  /** Height of a Balloonist above the road (px, picked between min and max), and seconds between its bombs. */
   balloon: { altitudeMin: 200, altitudeMax: 300, dropEvery: 2.2 },
-  /** lethalShare: a crow dies at this share of the usual landing speed. strike: its damage to the gate. */
+  /**
+   * The crow a Crowcaller turns into: flight speed (px/s), flying height above the road (px), extra grab
+   * margin (px), lethalShare: it dies at this share of the usual landing speed, strike: its damage to the gate.
+   */
   crow: { speed: 260, altitude: 110, grabPad: 18, lethalShare: 0.4, strike: 6 },
   /** Speed factor of the old "retreat" rule at the end of a day. */
   fleeSpeed: 1.9,
-  /** Clicks needed to break a siege cart, on any day. */
+  /** Taps needed to break a siege cart, on any day. */
   siegeCartTaps: 7,
+  /** A Yeti held by a hand too weak to lift it: how fast it can be dragged (px/s), its walk speed factor while held, how far back one hand can drag it (px). */
   yeti: { tugSpeed: 90, slowWhileHeld: 0.35, tugReach: 70 },
   /** Oversized raiders of boss days: factors on hit points, strike, mass, drawn size, gold and speed. */
   /** landingDamage: share of its hit points a hard landing takes off. */
   big: { hp: 14, strike: 2.5, mass: 2.4, scale: 1.75, gold: 10, speed: 0.7, landingDamage: 0.34 },
   /** Weight of a crow, which is not in the table above. */
   crowMass: 0.4,
+  /** Seconds a frozen raider stays frozen, unless a weapon says otherwise. */
   frozen: { seconds: 6 },
+  /** A press counts as a tap (not a grab) if it is let go within this many seconds and moved at most this many px. */
   tapMaxSeconds: 0.2,
   tapMaxMove: 14,
 };

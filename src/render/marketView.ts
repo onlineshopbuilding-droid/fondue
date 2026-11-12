@@ -1,3 +1,4 @@
+// The market at the keep between days: the places to tap on the keep and what they show.
 import Phaser from 'phaser';
 import { WORLD } from '../config/field';
 import { STATION_IDS } from '../config/keep';

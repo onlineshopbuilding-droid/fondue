@@ -7,6 +7,7 @@
 import Phaser from 'phaser';
 import { LOBBY_ART, lobbyKey } from '../../art/lobby';
 import { GAME_NAME } from '../../config/game';
+import { LOBBY_HALL } from '../../config/lobby';
 import { TEX_SCALE, weaponKey } from '../textures';
 import {
   DECOR, KING_SPOT, NAME_BANNER, ROOM, STATIONS, TORCHES, WEAPON_PEGS, WEAPON_SIZE, decorFor, fitRoom, type StationDef, type StationId,
@@ -42,10 +43,9 @@ const FONT = 'Lilita One';
 const INK = '#2b2118';
 const CREAM = '#fff6df';
 const MUSTL_HEX = '#f3cb5e';
-/** How much closer the hall starts when it fades in (and ends when it fades out). */
-const ARRIVE_ZOOM = 0.22;
-/** Seconds a remark of the King stays up. */
-const LINE_SECONDS = 5.5;
+/** How much closer the hall starts when it fades in, and how long a remark of the King stays up (src/config/lobby.ts). */
+const ARRIVE_ZOOM = LOBBY_HALL.arriveZoom;
+const LINE_SECONDS = LOBBY_HALL.lineSeconds;
 
 /** Puts an art texture at its pivot and in world size. */
 function placeArt(scene: Phaser.Scene, name: string, x: number, y: number): Phaser.GameObjects.Image {
@@ -142,7 +142,7 @@ export class LobbyScene extends Phaser.Scene {
     g.fillTriangle(-14, h / 2 - 2, 14, h / 2 - 2, 0, h / 2 + 22);
     // The tail points at the King's head, so the bubble sits right above it.
     this.bubble.setPosition(KING_SPOT.x, KING_SPOT.y - 112 - h / 2 - 30).setVisible(true).setScale(0.6);
-    this.tweens.add({ targets: this.bubble, scale: 1, duration: 180, ease: 'Back.Out' });
+    this.tweens.add({ targets: this.bubble, scale: 1, duration: LOBBY_HALL.bubblePopMs, ease: 'Back.Out' });
     this.bubbleT = LINE_SECONDS;
   }
 
@@ -165,7 +165,7 @@ export class LobbyScene extends Phaser.Scene {
     const hit = this.hit(w.x, w.y);
     if (hit) { this.pop(hit); this.hooks.tap(hit); return; }
     if (Math.hypot(w.x - KING_SPOT.x, w.y - KING_SPOT.y) <= KING_SPOT.r) {
-      this.tweens.add({ targets: this.king, scaleX: this.king.scaleX * 1.05, duration: 90, yoyo: true });
+      this.tweens.add({ targets: this.king, scaleX: this.king.scaleX * 1.05, duration: LOBBY_HALL.kingNodMs, yoyo: true });
       this.hooks.tapKing();
     }
   }
@@ -189,7 +189,7 @@ export class LobbyScene extends Phaser.Scene {
     for (const t of targets) {
       const sx = t.scaleX;
       const sy = t.scaleY;
-      this.tweens.add({ targets: t, scaleX: sx * 1.08, scaleY: sy * 0.94, duration: 80, yoyo: true, onComplete: () => t.setScale(sx, sy) });
+      this.tweens.add({ targets: t, scaleX: sx * 1.08, scaleY: sy * 0.94, duration: LOBBY_HALL.stationBounceMs, yoyo: true, onComplete: () => t.setScale(sx, sy) });
     }
   }
 

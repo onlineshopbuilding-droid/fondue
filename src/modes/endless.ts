@@ -3,7 +3,7 @@
  * Good runs pay stars once per milestone day and enter the score list.
  */
 import { ENEMY_TYPES } from '../config/enemies';
-import { quickStartFor } from '../config/quickstart';
+import { QUICK_START_MAX_DAY, quickStartAt, quickStartFor } from '../config/quickstart';
 import { SLOT_COUNT } from '../config/slots';
 import { TUNING_DEFAULT } from '../config/tuning';
 import { DAY, DIFFICULTIES, type Difficulty } from '../config/waves';
@@ -46,24 +46,35 @@ export class EndlessMode implements GameMode {
       handBuyable: true, tierUpgrades: true, hasMarket: true, gateCannotFall: false, marketOnly: null,
     };
     const seed = env.seed ?? Math.floor(Math.random() * 0x7fffffff);
-    const quick = choice.quickStart ? quickStartFor(choice.quickStart) : null;
+    // A quick start begins on one of the quick-start days (an unknown day is a normal run); the
+    // developer menu's free day may be any day up to QUICK_START_MAX_DAY. Both take the belongings
+    // of the latest quick start on or before that day.
+    const known = choice.quickStart ? quickStartFor(choice.quickStart) : null;
+    const free = (choice.devDay ?? 0) > 1 ? Math.min(QUICK_START_MAX_DAY, Math.round(choice.devDay!)) : 0;
+    const quickDay = free || known?.day || 0;
+    const quick = quickDay ? quickStartAt(quickDay) : null;
     let start: RunStart = freshStart(rules);
-    if (quick) {
+    if (quickDay) {
       const rolls = endlessRolls(table, seed);
       start = {
-        ...start, day: quick.day, gold: quick.gold, offerings: quick.offerings,
+        ...start, day: quickDay,
+        // Nobody needs the "New enemy" windows for everything that appeared on the skipped days.
+        seenTypes: ENEMY_TYPES.filter((t) => rolls.firstDay[t] < quickDay),
+      };
+    }
+    if (quick) {
+      start = {
+        ...start, gold: quick.gold, offerings: quick.offerings,
         loadout: {
           gateTier: quick.gateTier, slotWeapon: [...quick.slots], weaponTier: { ...quick.tiers },
           stations: { cauldron: quick.cauldron, perch: quick.perch }, handTier: env.names.map(() => quick.hand),
         },
-        // Nobody needs the "New enemy" windows for everything that appeared on the skipped days.
-        seenTypes: ENEMY_TYPES.filter((t) => rolls.firstDay[t] < quick.day),
       };
     }
     return {
       seed, names: env.names, tuning, flags: env.flags, fieldW: env.fieldW, rules, start,
       planner: new EndlessPlanner(table, diff.count * tuning.spawnRate),
-      devRun: !!env.devRun || !!quick,
+      devRun: !!env.devRun || quickDay > 0,
     };
   }
 

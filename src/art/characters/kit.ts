@@ -1,3 +1,4 @@
+// Shared colours, outlines and drawing helpers for the felt-puppet raiders.
 import { svg } from '../types';
 import type { Anim, RigPart } from '../types';
 import { crescent, glint, linear, lit, litTube, paint, stroke, tone, within } from '../shade';

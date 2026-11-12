@@ -1,3 +1,4 @@
+// The Phaser scene of the battlefield: draws what the session reports each frame and turns the pointer into commands.
 import Phaser from 'phaser';
 import type { AudioEngine, SfxName } from '../audio/audio';
 import { ENEMIES } from '../config/enemies';

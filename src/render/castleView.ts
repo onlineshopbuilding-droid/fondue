@@ -1,3 +1,4 @@
+// Draws the keep: its build stage, the gate, the foot dressing and the weapons in their five slots.
 import Phaser from 'phaser';
 import { WORLD } from '../config/field';
 import { SLOTS, SLOT_COUNT } from '../config/slots';

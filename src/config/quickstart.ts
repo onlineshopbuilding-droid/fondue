@@ -40,3 +40,16 @@ export const QUICK_STARTS: QuickStart[] = [
 ];
 
 export const quickStartFor = (day: number): QuickStart | null => QUICK_STARTS.find((q) => q.day === day) ?? null;
+
+/** The latest endless day the developer menu can start on. */
+export const QUICK_START_MAX_DAY = 99;
+
+/**
+ * Belongings for an endless start on any later day: those of the latest quick start on or before
+ * it, moved to that day. Null before the first quick start: the run then starts empty-handed.
+ */
+export function quickStartAt(day: number): QuickStart | null {
+  let base: QuickStart | null = null;
+  for (const q of QUICK_STARTS) if (q.day <= day && (!base || q.day > base.day)) base = q;
+  return base ? { ...base, day } : null;
+}

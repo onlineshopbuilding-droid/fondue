@@ -7,21 +7,22 @@
  * way out the same curves run backwards, so the lobby fades first and the camera pulls back out.
  */
 import { WORLD } from '../../config/field';
+import { LOBBY_MOVE } from '../../config/lobby';
 import { ease, type CamRect } from '../marketCamera';
 
-/** Seconds of the whole move, in or out. */
-export const LOBBY_SECONDS = 0.9;
+/** Seconds of the whole move, in or out (from src/config/lobby.ts). */
+export const LOBBY_SECONDS = LOBBY_MOVE.seconds;
 /** The world point the camera dives into: the middle of the keep's gate. */
 export const KEEP_GATE = { x: WORLD.gateX - 38, y: WORLD.groundY - 62 };
-/** At the end of the dive the view is this fraction of its normal width (the gate fills the screen). */
-export const DIVE_END = 0.09;
+/** At the end of the dive the view is this fraction of its normal width (from src/config/lobby.ts). */
+export const DIVE_END = LOBBY_MOVE.diveEnd;
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /** How far the battle camera has dived into the gate (0 to 1) at move position `k`. */
-export const diveOf = (k: number) => ease(clamp01(k / 0.8));
+export const diveOf = (k: number) => ease(clamp01(k / LOBBY_MOVE.diveShare));
 /** How visible the lobby is (0 to 1) at move position `k`. */
-export const fadeOf = (k: number) => ease(clamp01((k - 0.45) / 0.4));
+export const fadeOf = (k: number) => ease(clamp01((k - LOBBY_MOVE.fadeFrom) / LOBBY_MOVE.fadeShare));
 
 /** Moves `k` one frame towards the lobby (`inLobby`) or towards the battlefield. */
 export function stepLobby(k: number, inLobby: boolean, dt: number): number {

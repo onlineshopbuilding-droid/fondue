@@ -1,3 +1,5 @@
+// The Hexer as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { glint, lit, litTube, paint, radial, stroke, tone } from '../shade';
 import { PAL, RAT, brassPin, felt, fold, hand, litLeg, metal, mouseEar, oval, part, rim, rivet, rrect, seam, snout, tail } from './kit';

@@ -1,3 +1,4 @@
+// The landscape behind the field: its layers, the light from day to night, and the parallax as the camera moves.
 import Phaser from 'phaser';
 import { CLOUDS, LANDSCAPE_ART, type SkyStops } from '../art/landscapes';
 import { rng } from '../art/shade';

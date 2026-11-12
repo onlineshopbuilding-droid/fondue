@@ -4,32 +4,11 @@
  * throwing into the pot on day 2 of level 1. `tutorialView.ts` draws what these classes decide.
  */
 import { WORLD } from '../config/field';
+import { GUIDE, POT_HINT } from '../config/tutorial';
 import type { SimEvent } from '../sim/types';
 
-export const GUIDE = {
-  /** Seconds the King takes to walk in or out. */
-  walk: 0.9,
-  /** Seconds each prelude line stays in the bubble. */
-  lineSeconds: 2.1,
-  /** A release at least this fast counts as a throw (world units per second). */
-  flingSpeed: 550,
-  /** A raider let go at least this far above the road counts as well: the fall does the rest. */
-  liftHeight: 150,
-  /** Seconds the King praises the first throw before he walks off. */
-  praiseSeconds: 2.4,
-  /** The raider for the gesture walks between these x: past the gate, and on screen. */
-  targetMinX: WORLD.gateX + 240,
-  targetInsetRight: 320,
-  /** Without any raider in reach the freeze waits this long before giving up on it. */
-  maxWaitSeconds: 14,
-} as const;
-
-export const POT_HINT = {
-  /** The King's sentence stays this long. */
-  lineSeconds: 4.6,
-  /** The arrow to the pot stays at most this long, or until a raider lands in the pot. */
-  arrowSeconds: 14,
-} as const;
+/** The timing numbers live in src/config/tutorial.ts; re-exported here for the tests and older imports. */
+export { GUIDE, POT_HINT };
 
 export type GuideStage = 'intro' | 'show' | 'try' | 'praise' | 'done';
 

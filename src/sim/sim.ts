@@ -1,3 +1,4 @@
+// The simulation's front door: commands go in, state and events come out, the same every time for the same input.
 import { cleanFlags } from '../config/flags';
 import type { EnemyType } from '../config/enemies';
 import { FIELD, fieldWall, perchX } from '../config/field';

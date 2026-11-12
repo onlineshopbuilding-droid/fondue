@@ -1,3 +1,4 @@
+// Part of the simulation: everything that flies besides raiders, such as bombs, bolts, wheels and shells.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD } from '../config/field';
 import type { Projectile, ProjectileKind } from './types';

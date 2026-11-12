@@ -2,6 +2,7 @@
  * Turns the unlock table of a world into what a profile may use: which unlocks a level brings,
  * and writing them into the profile. Everything here reads the table; nothing is hard-coded.
  */
+import { STARS } from '../config/stars';
 import { worldById } from '../config/worlds';
 import type { UnlockDef } from '../config/worlds/types';
 import type { Profile } from '../profile';
@@ -11,10 +12,16 @@ export function unlocksOfLevel(world: string, level: number): UnlockDef[] {
   return worldById(world).unlocks.filter((u) => u.level === level);
 }
 
-/** Writes one unlock into the profile. Gates and hand tiers need no entry: they follow from progress. */
+/** Stars the armoury asks for the first unlock of a weapon the campaign has made available; 0 = free. */
+export const weaponUnlockPrice = (): number => STARS.weaponUnlock;
+
+/**
+ * Writes one unlock into the profile. Gates and hand tiers need no entry: they follow from progress.
+ * A weapon with an unlock price only becomes available; the armoury sells it (`buyWeaponUnlock`).
+ */
 function grant(profile: Profile, u: UnlockDef): boolean {
   if (u.kind === 'slot') return profile.unlockSlot(u.slot);
-  if (u.kind === 'weapon') return profile.unlockWeapon(u.weapon);
+  if (u.kind === 'weapon') return weaponUnlockPrice() > 0 ? false : profile.unlockWeapon(u.weapon);
   if (u.kind === 'station') return profile.unlockStation(u.station);
   return false;
 }
@@ -26,6 +33,24 @@ function grant(profile: Profile, u: UnlockDef): boolean {
 export function syncUnlocks(profile: Profile, world: string): void {
   const done = profile.highestLevelDone(world);
   for (const u of worldById(world).unlocks) if (u.level <= done) grant(profile, u);
+}
+
+/** The campaign has made this weapon available: the level that unlocks it is won. */
+export function weaponAvailable(profile: Profile, world: string, id: string): boolean {
+  const level = unlockLevelOf(world, 'weapon', id);
+  return level !== null && level <= profile.highestLevelDone(world);
+}
+
+/**
+ * The armoury sells the first unlock of an available weapon for `weaponUnlockPrice()` stars.
+ * True if the weapon is now unlocked; false, and nothing changes, if it is not available or the stars are short.
+ */
+export function buyWeaponUnlock(profile: Profile, world: string, id: string): boolean {
+  if (profile.hasWeapon(id)) return true;
+  if (!weaponAvailable(profile, world, id)) return false;
+  const price = weaponUnlockPrice();
+  if (price > 0 && !profile.spendStars(price)) return false;
+  return profile.unlockWeapon(id);
 }
 
 /** Highest gate tier that can be built in a level, from campaign progress. */

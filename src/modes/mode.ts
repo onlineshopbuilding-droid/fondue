@@ -16,6 +16,11 @@ export interface RunChoice {
   difficulty?: Difficulty;
   /** Developer quick start: begin an endless run on this later day. */
   quickStart?: number;
+  /**
+   * Developer menu: begin an endless run on any day up to QUICK_START_MAX_DAY, with the belongings of
+   * the latest quick start before it. Unlike `quickStart`, any day is taken.
+   */
+  devDay?: number;
   /** Developer jump: begin a level on this day with fitting belongings. */
   day?: number;
   /** A stored day start of an interrupted level. */

@@ -1,5 +1,6 @@
 // Packs a profile into one line of text and back, as a backup and for moving to another device.
 // Format: FONDUE1.<base64url of the JSON in UTF-8>.<FNV-1a checksum of those bytes, 8 hex digits>
+import { GAME_NAME } from '../config/game';
 import { migrate } from './migrations';
 import { isRecord } from './sanitize';
 import type { ProfileData } from './schema';
@@ -60,7 +61,7 @@ function decodeJson(bytes: Uint8Array): unknown {
 /** The profile inside a code, brought to the current version. Throws an Error if the code is broken. */
 export function importCode(code: string): ProfileData {
   const parts = String(code).replace(/\s+/g, '').split('.');
-  if (parts[0] !== PREFIX) throw new Error('This is not a Fondue profile code.');
+  if (parts[0] !== PREFIX) throw new Error(`This is not a ${GAME_NAME} profile code.`);
   if (parts.length !== 3 || !parts[1] || !parts[2]) throw new Error('Profile code is incomplete.');
   const bytes = fromBase64Url(parts[1]);
   if (checksum(bytes) !== parts[2].toLowerCase()) {
