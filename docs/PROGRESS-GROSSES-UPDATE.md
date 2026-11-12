@@ -40,3 +40,18 @@ Nach jeder Kontext-Zusammenfassung zuerst lesen: `docs/AUFTRAG-GROSSES-UPDATE.md
 - Erste Balance-Rohzahlen: Endlos solo endet fuer alle Bots um Tag 14 bis 18 am ersten Yeti; Kampagne Mid 55 Level im ersten Versuch, 38 nie. Balancing steht aus.
 - Tim will einfache Aufgaben auf Opus-Subagents (model opus) und Stopp bei 90 Prozent des 5-Stunden-Limits.
 - Git Bash: Heredocs verlieren Backslashes; Skripte mit dem Write-Werkzeug schreiben. python3 ist nur ein Store-Platzhalter, python geht.
+
+## Stand 12.11., 01:40 (Fortsetzung ab 01:00)
+- Live geprueft: `/fondue/` und `/fondue/classic/` laden, Koop-Verbindung klappt auf beiden (playwright.live.config.ts, auch mit LIVE_URL fuer Classic). Classic-Link: https://onlineshopbuilding-droid.github.io/fondue/classic/
+- Branch baut wieder: tsc fuer src sauber, 312 Unit-Tests gruen (Commit b0998a0). Render-Schicht und Oberflaeche laufen auf dem neuen Modell, aber noch ohne Sichtpruefung der ganzen Ablaeufe; die e2e-Tests nutzen noch den alten Ablauf und sind rot.
+- Balance (Commit a935f43), Zahlen in docs/balance-latest.md: Endlos Medium Poor Tag 6, Mid 28.5, Great 48.5; Mid zu zweit 41, Easy 34, Hard 23. Kampagne: Mid 84 Level im 1. und 11 im 2. Versuch, Great alle im ersten, Poor bis etwa Level 12. Offen: Great wird spaet kaum gefordert, Poor kommt nicht weit, Mid-Koop im Endlos zu leicht.
+- Geaendert dabei: Level starten sanft (Scaling.easeIn), Gegnerkurve der Kampagne (CURVE.countPower), Boss-Level staerker (bossPower), Sternpreise der Stufen [0,5,12,21,32], Opfergaben fuer Waffen und Stufen halbiert, Yeti 600 Leben und 30 Schaden, "Air raid" von Level 38 auf 43 (erst nach Turm-Slot).
+- Fertig, noch nicht committet (liegt im Arbeitsverzeichnis): Kampagnen-Karte als Pfad (src/ui/screens/campaign.ts, src/ui/campaignArt.ts; Level startet jetzt ueber #playLevel in der Karte).
+- Laufende Opus-Subagents: Markt an der Burg (src/render, src/art/castle, Markt-Bildschirm), Entwickler-Seite /dev/ mit Level-Tabelle und Entscheidungsliste (scripts/, docs/).
+- Danach offen: Tutorial-Vorrunde und gefuehrtes Level 1 mit Koenig, Lobby als Szene in der Burg mit Kamerafahrt, e2e-Tests auf drei Geraeten neu, CI verschlanken, Leistungstest, alle Dokumente (AGENTS, HANDBUCH, GDD, ENTSCHEIDUNGEN ab E-032, balance.md, IDEEN), Abnahmeliste mit Belegen, Abschlussbericht, PR und Veroeffentlichung.
+- Verbrauch: 5-Stunden-Fenster endet 05:50 Uhr; bei 90 Prozent anhalten.
+
+## Ersetzte Tests (Nachtrag)
+| Test | Warum ersetzt | Neuer Test |
+|---|---|---|
+| profile.test.ts / profile-data.test.ts: Beispielschalter `cauldron: 'back'` | Der Schalter vorne/hinten entfaellt (Auftrag 14.1) | dieselben Tests mit `dayEnd: 'retreat'`; `cauldron` dient jetzt als Beispiel fuer einen nicht mehr vorhandenen Schalter |
