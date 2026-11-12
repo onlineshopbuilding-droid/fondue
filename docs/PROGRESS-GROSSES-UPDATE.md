@@ -139,3 +139,14 @@ Alle `it(…)`-Titel, die seit dem Stand auf `main` (`a9e519c`) aus `tests/unit/
 - Kleine Luecken geschlossen: Seitentitel kommt aus game.ts, Begriffe in AGENTS.md, D-19 bis D-21, ungenutztes Zielkreuz-Bild entfernt (dazu aus der Liste FREE_PROPS in tests/e2e/art.spec.ts gestrichen), neue Unit-Tests fuer den Markt (tests/unit/shop.test.ts), 401 Unit-Tests.
 - Abschlussbericht: docs/ABSCHLUSS-GROSSES-UPDATE.md.
 - 09:55: Echter Fehler gefunden und behoben: Zeichnete sich ein Bildschirm (Markt) zwischen Druecken und Loslassen neu, ging der Tipp verloren (z. B. wenn der Mitspieler gerade kauft). Der ScreenManager haelt ein Neuzeichnen jetzt zurueck, bis der Tipp durch ist (src/ui/screens/screen.ts); neuer Test in tests/e2e/market.spec.ts, ohne die Korrektur rot. Das war die Ursache des roten Koop-Tests auf GitHub.
+
+## Abschluss 12.11., 10:45
+- Koop-Test auf GitHub in mehreren Anlaeufen stabil gemacht (Wartezeiten auf echten Zustand mit GAME_WAIT, Kaufmeldung per MutationObserver mitgeschrieben, "sofort" = zwei Bilder des Gasts, expect-Zeit auf CI 30 s, test-results werden bei Fehlschlag hochgeladen). Lauf 43186701303 gruen auf f03c799.
+- PR 9 gemergt (eaa6174), Deploy gruen. Live geprueft: Spiel, Tutorial beim ersten Start, Endlos, Koop ueber PeerJS, /dev/, /classic/ (tests/live/live.spec.ts, neu geschrieben fuer den neuen Ablauf; Classic-Zweig mit LIVE_URL).
+- Android-Testapp: laedt die Live-Adresse (capacitor.config.ts), kein neuer Bau noetig.
+- Worktrees gu-profile, gu-mice, pages-multi-build entfernt; gemergte Branches geloescht (lokal gu/*, ci/pages-multi-build, feature/grosses-update; auf GitHub ci/pages-multi-build, feature/grosses-update). `classic` und Tag `v0-alpha` bleiben.
+- Abnahmeliste: 391 von 455 belegt.
+
+| Test | Warum ersetzt | Neuer Test |
+|---|---|---|
+| tests/live/live.spec.ts: "published game loads and a day starts", "a real co-op connection ..." (alter Menue-Ablauf) | Das neue Spiel startet ueber Tutorial und Halle; der alte Ablauf gilt nur noch fuer Classic | dieselben Pruefungen fuer das neue Spiel (Tutorial beim ersten Start, Endlos ueber die Halle, Koop, /dev/); die alten laufen unveraendert mit LIVE_URL=.../classic/ |
