@@ -25,8 +25,8 @@ export const TUTORIAL_HINTS: {
   cauldronThrow: string;
   lobbyWelcome: string;
 } = {
-  grab: "Touch a mouse knight to grab it.",
-  fling: "Now swipe up fast and let go!",
+  grab: "Grab a mouse knight and fling it up!",
+  fling: "Swipe up fast and let go!",
   wellDone: "Splendid! The cheese is safe. Keep going!",
   cauldronMarket: "Throw mice in my cauldron: more cheese!",
   cauldronThrow: "Fling mice into the cauldron behind the castle.",

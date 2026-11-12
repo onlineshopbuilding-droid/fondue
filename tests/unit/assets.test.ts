@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { RIGS } from '../../src/art/characters';
 import { CLOUDS, LANDSCAPE_ART } from '../../src/art/landscapes';
 import { PROPS } from '../../src/art/props';
+import { LOBBY_ART, lobbyKey } from '../../src/art/lobby';
 import {
   ASSETS, applyOverrides, assetsOfGroup, buildAssets, cloudKey, landscapeKey, listAssets, parseAssetParams, partKey, propKey, weaponKey,
 } from '../../src/art/registry';
@@ -18,6 +19,7 @@ function expectedNames(): string[] {
   for (const w of WEAPONS) for (let tier = 1; tier <= MAX_TIER; tier++) names.push(weaponKey(w.id, tier));
   for (const land of Object.keys(LANDSCAPE_ART)) for (const layer of ['far', 'mid', 'near', 'ground']) names.push(landscapeKey(land, layer));
   CLOUDS.forEach((_, i) => names.push(cloudKey(i)));
+  for (const name of Object.keys(LOBBY_ART)) names.push(lobbyKey(name));
   return names;
 }
 

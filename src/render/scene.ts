@@ -14,8 +14,10 @@ import { Effects } from './effects';
 import { EnemyView } from './enemyView';
 import { Hud } from './hud';
 import { camAt, hookAt, stepMarket, type CamRect } from './marketCamera';
+import { diveRect } from './lobby/dive';
 import { MarketView } from './marketView';
 import { Stations } from './stations';
+import { TutorialView } from './tutorialView';
 import { computeView, renderScale, type GameView } from './viewport';
 import { propKey, TEX_SCALE } from './textures';
 
@@ -53,8 +55,12 @@ export class GameScene extends Phaser.Scene {
   private castle!: CastleView;
   private stations!: Stations;
   private market!: MarketView;
+  /** The King, the gesture lesson of the prelude and the pot hint of level 1. */
+  tutorial!: TutorialView;
   /** 0 in the fight, 1 in the market at the keep; in between while the camera moves. */
   private marketK = 0;
+  /** 0 normally; towards 1 the camera dives into the keep's gate, on the way to the lobby (src/ui/lobby). */
+  lobbyDive = 0;
   /** The part of the world on screen right now (the fight view, the market view or between). */
   private cam: CamRect = { x: 0, y: 0, w: WORLD.width, h: WORLD.height };
   private banner!: Phaser.GameObjects.Container;
@@ -99,6 +105,7 @@ export class GameScene extends Phaser.Scene {
 
     this.fx = new Effects(this);
     this.hud = new Hud(this);
+    this.tutorial = new TutorialView(this);
 
     this.veil = this.add.rectangle(0, 0, WORLD.width, WORLD.height, CUCKOO_VEIL, 1).setOrigin(0, 0).setScrollFactor(0).setDepth(89).setAlpha(0).setVisible(false);
 
@@ -248,6 +255,7 @@ export class GameScene extends Phaser.Scene {
     this.veil.setVisible(false);
     this.shakeId = -1;
     this.shake.reset();
+    this.tutorial.reset();
   }
 
   update(_time: number, deltaMs: number) {
@@ -258,19 +266,21 @@ export class GameScene extends Phaser.Scene {
     const s = this.session;
     if (!s) {
       this.marketK = 0;
-      this.cam = camAt(this.view, 0);
+      this.cam = diveRect(camAt(this.view, 0), this.lobbyDive);
       this.hud.setVisible(false);
       this.bg.setLandscape('meadow');
       this.bg.update(8, 50, false, 640, realDt);
+      this.applyShake(realDt);
       this.hooks?.onFrame(null);
       return;
     }
     // The camera glides to the market at the keep between days and back for the fight.
     this.marketK = stepMarket(this.marketK, s.view()?.phase === 'intermission', realDt);
-    this.cam = camAt(this.view, this.marketK);
+    this.cam = diveRect(camAt(this.view, this.marketK), this.lobbyDive);
     // The bars are screen furniture of the fight; the market shows gold and offerings itself.
-    this.hud.setVisible(this.marketK === 0);
-    this.banner.setVisible(this.marketK === 0);
+    // While the camera comes out of the keep (lobby) they would be drawn zoomed, so they wait.
+    this.hud.setVisible(this.marketK === 0 && this.lobbyDive === 0);
+    this.banner.setVisible(this.marketK === 0 && this.lobbyDive === 0);
 
     s.setHand(this.tracker.x, this.tracker.y);
     // Alone, a hitstop can stop the world for real; a shared game must keep running for the other player.
@@ -299,6 +309,7 @@ export class GameScene extends Phaser.Scene {
       }
       this.renderKeep(view, meta, realDt, now);
       this.updatePhase(view, meta);
+      this.tutorial.update(s, view, meta, events, realDt, this.view, this.cam, this.marketK);
     }
 
     this.fx.update(dt);
@@ -465,6 +476,8 @@ export class GameScene extends Phaser.Scene {
     if (view.day !== this.lastDay) this.lastDay = view.day;
     if (view.phase === this.lastPhase) return;
     this.lastPhase = view.phase;
+    // The prelude is no official round: no signboard, it just begins.
+    if (this.isPrelude()) return;
     if (view.phase === 'banner') this.showBanner(this.dayBanner(view.day, meta), 2.4);
   }
 
@@ -476,6 +489,8 @@ export class GameScene extends Phaser.Scene {
     if (today?.boss) return `${name} — ${today.boss.toUpperCase()}!`;
     return `${name} — HOLD THE GATE!`;
   }
+
+  private isPrelude(): boolean { return this.session?.meta()?.rules.mode === 'tutorial'; }
 
   private showBanner(text: string, seconds: number) {
     this.bannerText.setText(text);
@@ -703,10 +718,13 @@ export class GameScene extends Phaser.Scene {
         this.sfx('dayStart');
         break;
       case 'victory':
+        // The prelude ends quietly; level 1 follows at once.
+        if (this.isPrelude()) break;
         this.showBanner('THE GATE HOLDS!', 2.2);
         this.sfx('victory');
         break;
       case 'runWon':
+        if (this.isPrelude()) break;
         this.showBanner('VICTORY! THE KEEP STANDS!', 3.2);
         this.sfx('victory');
         this.sfx('cheer', 0.8);
@@ -796,5 +814,7 @@ export class GameScene extends Phaser.Scene {
   ownHandVisible(): boolean { const s = this.session; return !!s && !!this.hands[s.me]?.img.visible; }
   /** Test hook: how far the shake of a held keg has got, 0 to 1. */
   kegShakeProgress(): number { return this.shakeId >= 0 ? this.shake.progress : 0; }
+  /** Test hook: where the tutorial is ('intro', 'show', 'try', 'praise', 'pot' or ''). */
+  tutorialStage(): string { return this.tutorial?.stage() ?? ''; }
   get frameMs() { return this.lastFrameMs; }
 }

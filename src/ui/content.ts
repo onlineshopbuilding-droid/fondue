@@ -6,11 +6,11 @@ export interface HelpSlide {
 }
 
 export const HELP_SLIDES: HelpSlide[] = [
-  { title: 'You are the hand', icon: 'handOpen', text: 'The raiders march down the road toward your gate. Reach in with your finger. No hero, no army, just your hand.' },
-  { title: 'Grab and fling', icon: 'handClosed', text: 'Touch a raider to grab it. Swipe fast and let go to throw it. It dies when it lands hard, so a quick flick skyward is enough.' },
+  { title: 'Hold the gate', icon: 'king', text: 'The mice and rats of the valley want the King\'s cheese back. Their knights march down the road toward his gate. Reach in with your finger and stop them.' },
+  { title: 'Grab and fling', icon: 'handClosed', text: 'Touch a raider to grab it. Swipe up fast and let go to throw it. It is beaten when it lands hard, so a quick flick skyward is enough.' },
   { title: 'Heavy raiders', icon: 'dust', text: 'Heavy raiders fly shorter for the same swipe. A Yeti needs two hands, or a very strong one. Lift a raider high and just let go: the fall does the rest.' },
   { title: 'Keg Haulers', icon: 'bomb', text: 'Grab a Keg Hauler, hold it up and shake it. The keg comes loose and you can throw it into a crowd.' },
-  { title: 'Offerings', icon: 'cauldronBack', text: 'Gold buys things in the market between days. Throw raiders into the Great Cauldron behind the keep and they melt into cheese, or fling them onto the Eagle Perch in the top right. Each one pays an offering.' },
+  { title: 'Offerings', icon: 'cauldronBack', text: 'Between days the market opens at the keep: tap a place on it to buy there with gold. Throw raiders into the Great Cauldron behind the keep and they melt into cheese, or fling them onto the Eagle Perch in the top right. Each one pays an offering.' },
   { title: 'Weapons', icon: 'iconCastle', text: 'Weapons sit in five slots on the keep. Just tap a weapon to fire it; it picks its own target. A ring shows it reloading. When the ring is gone, it is ready.' },
   { title: 'Campaign', icon: 'iconComet', text: 'One hundred levels, each a few days long. Every level starts fresh with an oak gate and empty slots. Win the last day to earn stars and unlock new weapons and slots.' },
   { title: 'Stars and the armoury', icon: 'star', text: 'Spend stars in the armoury. Weapon tiers and a stronger hand stay with you for every later level. In a level you only buy the weapon into its slot.' },
@@ -20,7 +20,7 @@ export const HELP_SLIDES: HelpSlide[] = [
 
 /** Shown once per profile when the cauldron or the hook first stands on the keep. */
 export const STATION_TIPS: Record<string, string> = {
-  cauldron: 'The Great Cauldron hangs behind the keep. Throw raiders into it: each one melts into cheese for an offering.',
+  cauldron: 'The Great Cauldron stands behind the keep. Throw raiders into it: each one melts into cheese for an offering.',
   perch: 'Fling a raider onto the hook in the top right, or carry it there. The eagle pays an offering.',
 };
 

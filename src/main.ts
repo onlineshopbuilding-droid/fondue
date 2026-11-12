@@ -3,6 +3,7 @@ import '@fontsource/nunito/600.css';
 import '@fontsource/nunito/700.css';
 import '@fontsource/nunito/800.css';
 import './ui/style.css';
+import './ui/lobby/lobby.css';
 import { GAME_NAME } from './config/game';
 import { App } from './ui/app';
 

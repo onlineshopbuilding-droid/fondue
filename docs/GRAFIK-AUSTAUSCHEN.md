@@ -104,7 +104,7 @@ node scripts/list-assets.ts
 Die Größe und der Ankerpunkt gelten in Weltpixeln. „Bilddatei in Pixeln“ ist die Größe, in der man eine Ersatzdatei anlegt.
 
 <!-- ASSETS:START (erzeugt von scripts/list-assets.ts, nicht von Hand ändern) -->
-Stand: 305 Assets.
+Stand: 329 Assets.
 
 ### Figurenteile (86)
 
@@ -197,7 +197,7 @@ Stand: 305 Assets.
 | `rig:crow:body` | 50 × 34 | 25, 16 | 100 × 68 | 0, -12 | static | Start |
 | `rig:crow:wingFront` | 37 × 41 | 13, 31 | 74 × 82 | 3, -16 | armFront | Start |
 
-### Requisiten, Burg und Effekte (119)
+### Requisiten, Burg und Effekte (143)
 
 | Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gruppe |
 |---|---|---|---|---|
@@ -251,6 +251,8 @@ Stand: 305 Assets.
 | `prop:iconPause` | 64 × 64 | 32, 32 | 128 × 128 | Start |
 | `prop:iconLocked` | 64 × 64 | 32, 32 | 128 × 128 | Start |
 | `prop:iconCastle` | 40 × 40 | 20, 20 | 80 × 80 | Start |
+| `prop:king` | 124 × 164 | 62, 160 | 248 × 328 | Start |
+| `prop:kingTalk` | 124 × 164 | 62, 160 | 248 × 328 | Start |
 | `prop:keep0` | 300 × 660 | 0, 660 | 600 × 1320 | Start |
 | `prop:keep1` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
 | `prop:keep2` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
@@ -320,6 +322,28 @@ Stand: 305 Assets.
 | `prop:perchHook` | 110 × 130 | 55, 0 | 220 × 260 | Start |
 | `prop:eagleHeadOpen` | 520 × 240 | 20, 120 | 1040 × 480 | Start |
 | `prop:eagleHeadShut` | 520 × 240 | 20, 120 | 1040 × 480 | Start |
+| `lobby:room` | 1600 × 720 | 0, 0 | 1600 × 720 | Start |
+| `lobby:flame` | 40 × 64 | 20, 60 | 80 × 128 | Start |
+| `lobby:cogPlaque` | 140 × 140 | 70, 70 | 280 × 280 | Start |
+| `lobby:storybook` | 200 × 150 | 100, 75 | 400 × 300 | Start |
+| `lobby:helpScroll` | 110 × 160 | 55, 80 | 220 × 320 | Start |
+| `lobby:mapTable` | 280 × 170 | 140, 85 | 560 × 340 | Start |
+| `lobby:pot` | 240 × 160 | 120, 80 | 480 × 320 | Start |
+| `lobby:painting` | 160 × 130 | 80, 65 | 320 × 260 | Start |
+| `lobby:slate` | 140 × 120 | 70, 60 | 280 × 240 | Start |
+| `lobby:feastTable` | 280 × 150 | 140, 75 | 560 × 300 | Start |
+| `lobby:armourStand` | 160 × 270 | 80, 135 | 320 × 540 | Start |
+| `lobby:king` | 180 × 220 | 90, 110 | 360 × 440 | Start |
+| `lobby:throne` | 280 × 340 | 140, 170 | 560 × 680 | Start |
+| `lobby:throneGold` | 280 × 340 | 140, 170 | 560 × 680 | Start |
+| `lobby:rug` | 460 × 80 | 230, 40 | 920 × 160 | Start |
+| `lobby:banner` | 96 × 200 | 48, 100 | 192 × 400 | Start |
+| `lobby:trophyShield` | 120 × 130 | 60, 65 | 240 × 260 | Start |
+| `lobby:chandelier` | 240 × 130 | 120, 0 | 480 × 260 | Start |
+| `lobby:cheeseStack` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `lobby:goldenForks` | 220 × 120 | 110, 60 | 440 × 240 | Start |
+| `lobby:garland` | 1600 × 140 | 800, 0 | 3200 × 280 | Start |
+| `lobby:nameBanner` | 420 × 110 | 210, 55 | 840 × 220 | Start |
 
 ### Waffen (je Stufe ein Bild) (80)
 

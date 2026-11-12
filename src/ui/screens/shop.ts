@@ -89,7 +89,9 @@ class ShopScreen implements Screen {
     const lv = meta.rules.level !== null ? levelOf(meta.rules.world, meta.rules.level) : undefined;
     const said = lv?.hints.filter((h) => h.when === 'market' && h.day === day).map((h) => h.text) ?? [];
     const text = said.length > 0 ? said.join(' ') : 'Tap a place on the keep to build there.';
-    return `<div class="m-hint${said.length > 0 ? ' level' : ''}" id="marketHint">${esc(text)}</div>`;
+    // A level's own words come from the King, so he shows next to them.
+    const king = said.length > 0 ? `<img class="m-king" src="${artUri('kingTalk')}" alt="">` : '';
+    return `<div class="m-hint${said.length > 0 ? ' level' : ''}" id="marketHint">${king}<span>${esc(text)}</span></div>`;
   }
 
   private price(q: Quote): string {

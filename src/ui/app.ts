@@ -28,7 +28,9 @@ import { EnemyPopup } from './enemyPopup';
 import { SCREENS } from './screens';
 import type { PendingRun, ScreenContext } from './screens/context';
 import { ScreenManager, type ScreenId } from './screens/screen';
+import { mainScreen } from './screens/main';
 import { shopScreen } from './screens/shop';
+import { Lobby } from './lobby/lobby';
 import { TuningPanel } from './tuningPanel';
 
 /** Upright touch devices are asked to rotate; the game is built for landscape. */
@@ -79,6 +81,8 @@ export class App implements ScreenContext, CoopRoomHost {
   result: RunResult | null = null;
   resultRules: RunRules | null = null;
   readonly popup: EnemyPopup;
+  /** The main menu as the hall inside the keep; tests use `lobby.spots()` and `lobby.tap(id)`. */
+  readonly lobby: Lobby;
   private ui: HTMLElement;
   private screens: ScreenManager;
   private toasts: HTMLDivElement;
@@ -108,6 +112,7 @@ export class App implements ScreenContext, CoopRoomHost {
     this.ui.appendChild(this.toasts);
     this.screens = new ScreenManager(this.ui, this.toasts, SCREENS, this);
     this.popup = new EnemyPopup(this.ui);
+    this.lobby = new Lobby(this, this.ui);
     this.badge = document.createElement('div');
     this.badge.className = 'net-badge';
     this.badge.style.display = 'none';
@@ -260,6 +265,7 @@ export class App implements ScreenContext, CoopRoomHost {
     await buildTextures(this.game);
     this.textureMs = Math.round(performance.now() - texStart);
     this.game.scene.add('game', this.scene, true);
+    this.lobby.attach(this.game, this.scene);
     window.addEventListener('resize', () => this.applyView());
 
     const invite = this.params.get('join');
@@ -278,7 +284,7 @@ export class App implements ScreenContext, CoopRoomHost {
 
   /** A new player meets the tutorial before anything else, unless the page asks for the menu (tests). */
   private tutorialDue(): boolean {
-    return !this.profile.data.tutorialDone && this.params.get('menu') !== '1';
+    return !this.profile.data.tutorialDone && !['1', 'html'].includes(this.params.get('menu') ?? '');
   }
 
   /** Follows window resizes and phone rotation. */
@@ -369,7 +375,8 @@ export class App implements ScreenContext, CoopRoomHost {
     const key = `${meta.rules.runId}:${view.day}`;
     if (this.bannerKey === key || meta.today === undefined) return;
     this.bannerKey = key;
-    if (meta.rules.mode === 'tutorial') return;
+    // The prelude introduces its Pothelms by hand, so level 1 needs no window for them.
+    if (meta.rules.mode === 'tutorial') { for (const t of meta.today.newTypes) this.profile.markEnemySeen(t); return; }
     const fresh = meta.today.newTypes.filter((t) => this.profile.markEnemySeen(t));
     if (fresh.length > 0) this.popup.show(fresh);
     if (meta.devRun) return;
@@ -378,8 +385,11 @@ export class App implements ScreenContext, CoopRoomHost {
       const def = id ? weaponById(id) : undefined;
       if (def && this.profile.markTipSeen(`weapon:${def.id}`)) this.toast(weaponTip(def.name), 'tip', 5500);
     }
+    // When the level's King explains this day himself (the pot on day 2 of level 1), no tip on top.
+    const level = meta.rules.level !== null ? levelOf(meta.rules.world, meta.rules.level) : undefined;
+    const kingSpeaks = !!level?.hints.some((h) => h.when === 'battle' && h.day === view.day);
     for (const st of STATION_IDS) {
-      if (meta.loadout.stations[st] && STATION_TIPS[st] && this.profile.markTipSeen(`station:${st}`)) this.toast(STATION_TIPS[st], 'tip', 5500);
+      if (meta.loadout.stations[st] && STATION_TIPS[st] && this.profile.markTipSeen(`station:${st}`) && !kingSpeaks) this.toast(STATION_TIPS[st], 'tip', 5500);
     }
   }
 
@@ -666,7 +676,10 @@ export class App implements ScreenContext, CoopRoomHost {
   // Screens: one file each in screens/, shown by the ScreenManager.
   // ---------------------------------------------------------------------------
 
-  show(screen: ScreenId, arg?: string) { this.screens.show(screen, arg); }
+  show(screen: ScreenId, arg?: string) { this.screens.show(screen, arg); this.lobby.sync(); }
+
+  /** A station in the lobby was tapped: the same as the menu button with that `data-a`. */
+  lobbyAction(id: string) { mainScreen.onAction?.(id, this.ui, this); }
 
   query<T extends Element>(selector: string): T | null { return this.screens.query<T>(selector); }
 }

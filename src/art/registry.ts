@@ -8,6 +8,7 @@ import { RIGS } from './characters';
 import { PROPS } from './props';
 import { CLOUDS, LANDSCAPE_ART } from './landscapes';
 import { listWeaponArt, weaponKey } from './weapons';
+import { LOBBY_ART, LOBBY_ROOM, lobbyKey } from './lobby';
 import { ASSET_OVERRIDES } from '../config/assets';
 
 /** Texture pixels per world pixel. Characters stay sharp when the game is scaled up. */
@@ -107,6 +108,8 @@ export function buildAssets(): Record<string, AssetEntry> {
   for (const [name, art] of Object.entries(PROPS)) add({ name: propKey(name), art, scale: TEX_SCALE, group: groupOfProp(name), kind: 'prop' });
   // Weapons on the keep: `weapon:<id>:<tier>`. Only tier 1 is needed before the first market.
   for (const w of listWeaponArt()) add({ name: w.name, art: w.art, scale: TEX_SCALE, group: w.tier === 1 ? BOOT : WEAPON_TIERS, kind: 'weapon' });
+  // The lobby inside the keep is the main menu, so its pictures are made at boot.
+  for (const [name, art] of Object.entries(LOBBY_ART)) add({ name: lobbyKey(name), art, scale: name === LOBBY_ROOM ? 1 : TEX_SCALE, group: BOOT, kind: 'prop' });
   CLOUDS.forEach((art, i) => add({ name: cloudKey(i), art, scale: CLOUD_SCALE, group: BOOT, kind: 'cloud' }));
   for (const land of LAND_NAMES) {
     for (const layer of LAND_LAYERS) add({ name: landscapeKey(land, layer), art: LANDSCAPE_ART[land][layer], scale: LAND_SCALE[layer], group: land, kind: 'landscape' });

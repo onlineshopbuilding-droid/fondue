@@ -1,9 +1,12 @@
-// The main menu (until the lobby inside the keep exists): logo, stars and campaign progress, and the way into everything else.
-// Holding the logo opens the developer menu; that long press is wired up in the App.
+// The main menu. Normally it is the lobby inside the keep (src/render/lobby, src/ui/lobby): the hall
+// takes the taps and this screen only shows stars and campaign progress over it. With `?menu=html`
+// it is the plain menu: logo, stars, progress and a button for everything. Both use the same actions.
+// Holding the logo of the plain menu opens the developer menu; that long press is wired up in the App.
 import { GAME_NAME } from '../../config/game';
 import { worldById } from '../../config/worlds';
 import { CAMPAIGN, ENDLESS } from '../../modes';
 import { esc } from '../html';
+import { htmlMenuWanted } from '../lobby/mode';
 import type { Screen } from './screen';
 
 declare const __GAME_VERSION__: string;
@@ -14,6 +17,10 @@ export const mainScreen: Screen = {
     const p = ctx.profile;
     const total = worldById(ctx.world).campaign.length;
     const next = CAMPAIGN.nextLevel(p, ctx.world);
+    if (!htmlMenuWanted()) {
+      return `<div class="lobby-hud"><div class="lobby-chip progress" id="progress"><span class="star">★</span> <span id="stars">${p.data.stars}</span>`
+        + ` <span class="sep">·</span> Level <span id="levelNow">${next}</span>/${total}</div></div>`;
+    }
     const pending = ctx.pendingRun();
     const cont = pending
       ? `<button id="continueLevel" data-a="continueLevel">Continue level ${pending.rules.level} (day ${pending.start.day})</button>`
