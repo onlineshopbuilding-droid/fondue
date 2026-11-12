@@ -35,6 +35,8 @@ Die Begründungen der Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`.
 | D-16 | Koop-Faktor der Kampagne | Wie viel mehr Räuber zu zweit in einem Kampagnen-Level kommen. | `COOP.campaignFactor` = 1,7 in `src/config/waves.ts` (vorher 1,9; gesenkt, weil die Bots zu zweit Level 9 mit fünf Tagen nie gewannen). Mid zu zweit schafft 92 Level im ersten Versuch, allein 84: zu zweit etwas leichter (`docs/balance.md`). | offen | – | |
 | D-17 | Neuer Stomper | Wie der Stomper über die Stufen aussieht und wirkt. | Er wird nicht mehr größer, sondern trifft härter, lässt ab Stufe 2 den Boden beben (betäubt Nachbarn) und schlägt ab Stufe 3 zweimal, ab Stufe 5 dreimal auf die nächste Gruppe (`stomper` in `src/config/weapons.ts`). | offen | – | |
 | D-18 | Adlerhaken spät und teuer | Der Haken kostet 12.000 Gold und kommt in der Kampagne mit Level 32. | `STATIONS.perch` in `src/config/keep.ts`, `UNLOCKS` in `src/config/worlds/fondue/unlocks.ts`. Eine besondere Belohnung am Haken ist nur vorgehalten. | offen | – | |
+| D-19 | Sieg-Fenster verdeckt das Sieg-Banner | Beim Sieg erscheint das Fenster „Level won!“ im selben Moment wie das Banner „VICTORY! THE KEEP STANDS!“ und verdeckt es zur Hälfte, auf allen drei Geräten. | Möglich: Fenster erst nach dem Banner (3,2 s) zeigen, oder das Banner beim Sieg weglassen. Beides ändert, wie sich der Sieg anfühlt, deshalb nicht selbst entschieden. | offen | – | |
+| D-20 | Fenster „New enemy“ am Handy | Am ersten Tag verdeckt das Fenster am Handy kurz das Ende des Tages-Banners und den Tipp. | Möglich: Fenster erst nach dem Banner zeigen. Am Laptop überdeckt nichts. | offen | – | |
 
 ## Waffen
 

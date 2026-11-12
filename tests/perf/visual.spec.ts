@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { drag, gameState, startSolo, waitFor } from '../e2e/helpers';
+import { closePopups, css, drag, equip, gameState, startSolo, waitFor } from '../e2e/helpers';
 
 test.use({
   headless: false,
@@ -10,8 +10,9 @@ test.use({
 const ALL = ['grunt', 'bomber', 'goatRider', 'pogo', 'hexer', 'slinger', 'siegeCart', 'balloonist', 'shade', 'crowcaller', 'yeti'];
 
 test('gallery of every enemy, then weapons', async ({ page }) => {
-  await startSolo(page, '?seed=41');
+  await startSolo(page, '?menu=1&seed=41');
   await waitFor(() => gameState(page), (s) => s?.phase === 'battle');
+  await closePopups(page);
   await page.evaluate((all) => {
     const sim = (window as any).__fondue.session.sim;
     sim.s.spawnQueue = [];
@@ -21,11 +22,11 @@ test('gallery of every enemy, then weapons', async ({ page }) => {
   }, ALL);
   await page.waitForTimeout(400);
   await page.screenshot({ path: 'docs/screenshots/gallery.png' });
+  // All five slots of the keep filled, one weapon of each kind of slot.
+  await equip(page, { 0: 'wheel', 1: 'stomper', 2: 'frost', 3: 'comet', 4: 'bolter' });
   await page.evaluate(() => {
     const sim = (window as any).__fondue.session.sim;
     sim.s.meta.tuning.walkSpeed = 1;
-    sim.s.meta.owned.push('cauldron', 'perch', 'gate3', 'wheel1', 'stomper1', 'comet1', 'frost', 'bolter1');
-    sim.s.meta.hornEquipped = 'frost';
     sim.s.gateMax = 2800; sim.s.gateHp = 900;
   });
   await page.waitForTimeout(300);
@@ -33,8 +34,9 @@ test('gallery of every enemy, then weapons', async ({ page }) => {
 });
 
 test('flick for frame-by-frame review', async ({ page }) => {
-  await startSolo(page, '?seed=42');
+  await startSolo(page, '?menu=1&seed=42');
   await waitFor(() => gameState(page), (s) => s?.phase === 'battle');
+  await closePopups(page);
   await page.evaluate(() => {
     const sim = (window as any).__fondue.session.sim;
     sim.s.spawnQueue = [];
@@ -45,7 +47,10 @@ test('flick for frame-by-frame review', async ({ page }) => {
   for (let i = 0; i < 3; i++) {
     const s = (await gameState(page))!;
     const e = s.enemies[0];
-    await drag(page, [e.x, e.y - 44], [e.x - 50, 90 + i * 30], 9, 8);
+    // The mouse works in CSS pixels of the page; the raider stands in world units.
+    const from = await css(page, e.x, e.y - 44);
+    const to = await css(page, e.x - 50, 90 + i * 30);
+    await drag(page, [from.x, from.y], [to.x, to.y], 9, 8);
     await waitFor(() => gameState(page), (v) => !v!.enemies.some((q: any) => q.id === e.id), 5000);
     await page.waitForTimeout(350);
   }

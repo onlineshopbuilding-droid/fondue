@@ -362,7 +362,8 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
   .item .foot { font-size: 14px; }
   .panel.wide p { flex: none; font-size: 11px; }
 
-  .toast-area { top: calc(50px + env(safe-area-inset-top)); left: 22%; gap: 4px; }
+  /* Below the day banner (its lower edge sits at about 27% of the height), as on the laptop. */
+  .toast-area { top: calc(29% + env(safe-area-inset-top)); left: 22%; gap: 4px; }
   .toast, .toast.tip { font-size: 13px; padding: 4px 12px; border-radius: 8px; max-width: min(620px, 72vw); opacity: 0.9; box-shadow: inset 0 1px 0 rgba(255, 236, 190, 0.18), inset 0 0 0 1.5px rgba(233, 180, 76, 0.3), 0 2px 0 rgba(20, 12, 8, 0.5); }
   .toast.tip { box-shadow: inset 0 1px 0 rgba(255, 230, 250, 0.22), inset 0 0 0 1.5px rgba(255, 246, 223, 0.18), 0 2px 0 rgba(20, 12, 8, 0.5); }
   .net-badge { top: 46px; right: 8px; font-size: 11px; padding: 1px 6px; }
