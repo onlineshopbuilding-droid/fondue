@@ -116,8 +116,8 @@ function landscapeOf(level: number): Landscape {
 
 function dayCountOf(level: number): number {
   if (level === 1) return 2;
-  if (level <= 4) return 3;
-  if (level <= 9) return 4;
+  // The brief asks for 5 to 15 days per level; only the tutorial level is shorter.
+  if (level <= 9) return 5;
   const base = 5 + Math.floor(chance(level, 7) * 3) + Math.floor(level / 45);
   return Math.min(10, base + (level % 10 === 0 ? 1 : 0));
 }

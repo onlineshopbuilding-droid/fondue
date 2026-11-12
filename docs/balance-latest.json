@@ -1,5 +1,5 @@
 {
- "date": "2026-11-12 00:23",
+ "date": "2026-11-12 03:06",
  "endless": {
   "runs": 30,
   "maxDay": 70,
@@ -82,7 +82,7 @@
      "bolter": 0.1
     },
     "stuck": [],
-    "seconds": 0.687
+    "seconds": 0.729
    },
    {
     "label": "Mid solo",
@@ -154,7 +154,7 @@
      "bolter": 67.4
     },
     "stuck": [],
-    "seconds": 5.334
+    "seconds": 4.827
    },
    {
     "label": "Great solo",
@@ -226,7 +226,7 @@
      "bellows": 122.7
     },
     "stuck": [],
-    "seconds": 8.871
+    "seconds": 9.091
    },
    {
     "label": "Poor zu zweit",
@@ -307,7 +307,7 @@
      "frost": 0.3
     },
     "stuck": [],
-    "seconds": 0.988
+    "seconds": 0.894
    },
    {
     "label": "Mid zu zweit",
@@ -379,7 +379,7 @@
      "bolter": 121.2
     },
     "stuck": [],
-    "seconds": 11.937
+    "seconds": 11.242
    },
    {
     "label": "Great zu zweit",
@@ -451,7 +451,7 @@
      "bellows": 114.1
     },
     "stuck": [],
-    "seconds": 12.197
+    "seconds": 12.088
    },
    {
     "label": "Mid solo Easy",
@@ -523,7 +523,7 @@
      "bolter": 89.2
     },
     "stuck": [],
-    "seconds": 6.59
+    "seconds": 6.48
    },
    {
     "label": "Mid solo Hard",
@@ -595,7 +595,7 @@
      "bolter": 39.2
     },
     "stuck": [],
-    "seconds": 3.049
+    "seconds": 3.121
    }
   ]
  },
@@ -609,7 +609,7 @@
     "skills": [
      "poor"
     ],
-    "seconds": 2.748,
+    "seconds": 2.878,
     "stoppedAt": null,
     "firstTry": 12,
     "secondTry": 1,
@@ -659,21 +659,21 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.02
      },
      {
       "level": 2,
       "boss": false,
-      "days": 3,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       3
+       5
       ],
       "gatePct": 100,
-      "gold": 740,
-      "offerings": 5,
+      "gold": 1110,
+      "offerings": 12,
       "starsEarned": 4,
       "starsLeft": 3,
       "armoury": [
@@ -693,13 +693,15 @@
       "keep": {
        "gateTier": 0,
        "slotWeapon": [
-        null,
+        "wheel",
         null,
         null,
         null,
         null
        ],
-       "weaponTier": {},
+       "weaponTier": {
+        "wheel": 1
+       },
        "stations": {
         "cauldron": true,
         "perch": false
@@ -709,131 +711,31 @@
        ]
       },
       "bought": [
-       "station:cauldron"
+       "station:cauldron",
+       "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.004
+      "seconds": 0.011
      },
      {
       "level": 3,
       "boss": false,
-      "days": 3,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       3
+       5
       ],
       "gatePct": 100,
-      "gold": 927,
-      "offerings": 1,
+      "gold": 1535,
+      "offerings": 2,
       "starsEarned": 4,
       "starsLeft": 7,
       "armoury": [],
       "handTier": 1,
       "weaponTiers": {
        "wheel": 2
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {},
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron"
-      ],
-      "stuck": null,
-      "seconds": 0.004
-     },
-     {
-      "level": 4,
-      "boss": false,
-      "days": 3,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       3
-      ],
-      "gatePct": 95,
-      "gold": 1088,
-      "offerings": 6,
-      "starsEarned": 3,
-      "starsLeft": 10,
-      "armoury": [],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 2
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {},
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron"
-      ],
-      "stuck": null,
-      "seconds": 0.005
-     },
-     {
-      "level": 5,
-      "boss": false,
-      "days": 4,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       4
-      ],
-      "gatePct": 100,
-      "gold": 1294,
-      "offerings": 6,
-      "starsEarned": 4,
-      "starsLeft": 9,
-      "armoury": [
-       {
-        "item": "cheese",
-        "tier": 2,
-        "stars": 5
-       }
-      ],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 2,
-       "cheese": 2
       },
       "slots": [
        0
@@ -863,21 +765,130 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.007
      },
      {
-      "level": 6,
+      "level": 4,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
-      "gatePct": 81,
-      "gold": 1716,
-      "offerings": 5,
+      "gatePct": 100,
+      "gold": 972,
+      "offerings": 10,
+      "starsEarned": 3,
+      "starsLeft": 10,
+      "armoury": [],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 2
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 2
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "gate",
+       "weapon:0:wheel"
+      ],
+      "stuck": null,
+      "seconds": 0.008
+     },
+     {
+      "level": 5,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 1202,
+      "offerings": 7,
+      "starsEarned": 4,
+      "starsLeft": 9,
+      "armoury": [
+       {
+        "item": "cheese",
+        "tier": 2,
+        "stars": 5
+       }
+      ],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 2,
+       "cheese": 2
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 2
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.007
+     },
+     {
+      "level": 6,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 1824,
+      "offerings": 11,
       "starsEarned": 3,
       "starsLeft": 0,
       "armoury": [
@@ -896,7 +907,7 @@
        0
       ],
       "keep": {
-       "gateTier": 0,
+       "gateTier": 1,
        "slotWeapon": [
         "cheese",
         null,
@@ -917,24 +928,25 @@
       },
       "bought": [
        "station:cauldron",
-       "weapon:0:cheese"
+       "weapon:0:cheese",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.007
+      "seconds": 0.01
      },
      {
       "level": 7,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
-      "gatePct": 79,
-      "gold": 1046,
-      "offerings": 7,
+      "gatePct": 96,
+      "gold": 2136,
+      "offerings": 11,
       "starsEarned": 4,
       "starsLeft": 4,
       "armoury": [],
@@ -972,21 +984,21 @@
        "weapon:0:cheese"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.017
      },
      {
       "level": 8,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
-      "gatePct": 100,
-      "gold": 1213,
-      "offerings": 3,
+      "gatePct": 97,
+      "gold": 2386,
+      "offerings": 7,
       "starsEarned": 4,
       "starsLeft": 8,
       "armoury": [],
@@ -1024,13 +1036,13 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.01
      },
      {
       "level": 9,
       "boss": false,
-      "days": 4,
-      "tries": 5,
+      "days": 5,
+      "tries": 6,
       "won": true,
       "forced": false,
       "dayPerTry": [
@@ -1038,11 +1050,12 @@
        3,
        2,
        3,
-       4
+       5,
+       5
       ],
-      "gatePct": 59,
-      "gold": 2319,
-      "offerings": 6,
+      "gatePct": 5,
+      "gold": 1863,
+      "offerings": 11,
       "starsEarned": 4,
       "starsLeft": 7,
       "armoury": [
@@ -1063,7 +1076,7 @@
        1
       ],
       "keep": {
-       "gateTier": 1,
+       "gateTier": 2,
        "slotWeapon": [
         "wheel",
         null,
@@ -1085,10 +1098,11 @@
       "bought": [
        "weapon:0:wheel",
        "gate",
-       "station:cauldron"
+       "station:cauldron",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.041
      },
      {
       "level": 10,
@@ -1151,7 +1165,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.026
      },
      {
       "level": 11,
@@ -1208,7 +1222,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.021
      },
      {
       "level": 12,
@@ -1272,7 +1286,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.016
      },
      {
       "level": 13,
@@ -1331,7 +1345,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.033
      },
      {
       "level": 14,
@@ -1393,7 +1407,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.045
+      "seconds": 0.065
      },
      {
       "level": 15,
@@ -1454,7 +1468,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.056
+      "seconds": 0.059
      },
      {
       "level": 16,
@@ -1517,7 +1531,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.104
+      "seconds": 0.139
      },
      {
       "level": 17,
@@ -1573,7 +1587,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.053
+      "seconds": 0.078
      },
      {
       "level": 18,
@@ -1639,7 +1653,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.067
+      "seconds": 0.073
      },
      {
       "level": 19,
@@ -1703,7 +1717,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.061
+      "seconds": 0.052
      },
      {
       "level": 20,
@@ -1761,7 +1775,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.044
      },
      {
       "level": 21,
@@ -1825,7 +1839,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.046
+      "seconds": 0.043
      },
      {
       "level": 22,
@@ -1885,7 +1899,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.013
      },
      {
       "level": 23,
@@ -1943,7 +1957,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.049
+      "seconds": 0.047
      },
      {
       "level": 24,
@@ -2005,7 +2019,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.054
+      "seconds": 0.052
      },
      {
       "level": 25,
@@ -2072,7 +2086,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.049
+      "seconds": 0.048
      },
      {
       "level": 26,
@@ -2130,7 +2144,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.064
+      "seconds": 0.053
      },
      {
       "level": 27,
@@ -2252,7 +2266,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.05
+      "seconds": 0.046
      },
      {
       "level": 29,
@@ -2320,7 +2334,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.049
      },
      {
       "level": 30,
@@ -2387,7 +2401,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.045
+      "seconds": 0.043
      },
      {
       "level": 31,
@@ -2448,7 +2462,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.04
+      "seconds": 0.045
      },
      {
       "level": 32,
@@ -2509,7 +2523,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.04
      },
      {
       "level": 33,
@@ -2572,7 +2586,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.033
      },
      {
       "level": 34,
@@ -2633,7 +2647,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.042
      },
      {
       "level": 35,
@@ -2694,7 +2708,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.032
      },
      {
       "level": 36,
@@ -2763,7 +2777,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.038
+      "seconds": 0.032
      },
      {
       "level": 37,
@@ -2827,7 +2841,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.028
+      "seconds": 0.034
      },
      {
       "level": 38,
@@ -2888,7 +2902,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.062
      },
      {
       "level": 39,
@@ -2957,7 +2971,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.04
      },
      {
       "level": 40,
@@ -3028,7 +3042,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.031
      },
      {
       "level": 41,
@@ -3151,7 +3165,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.02
      },
      {
       "level": 43,
@@ -3223,7 +3237,7 @@
        "weapon:0:cheese"
       ],
       "stuck": null,
-      "seconds": 0.077
+      "seconds": 0.085
      },
      {
       "level": 44,
@@ -3288,7 +3302,7 @@
        "weapon:4:bolter"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.033
      },
      {
       "level": 45,
@@ -3353,7 +3367,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.038
+      "seconds": 0.047
      },
      {
       "level": 46,
@@ -3424,7 +3438,7 @@
        "weapon:4:bolter"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.051
      },
      {
       "level": 47,
@@ -3489,7 +3503,7 @@
        "weapon:4:bolter"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.038
      },
      {
       "level": 48,
@@ -3555,7 +3569,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.024
      },
      {
       "level": 49,
@@ -3622,7 +3636,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.02
      },
      {
       "level": 50,
@@ -3689,7 +3703,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.018
      },
      {
       "level": 51,
@@ -3756,7 +3770,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.025
      },
      {
       "level": 52,
@@ -3817,7 +3831,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.029
      },
      {
       "level": 53,
@@ -3878,7 +3892,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.021
      },
      {
       "level": 54,
@@ -3939,7 +3953,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.021
      },
      {
       "level": 55,
@@ -4006,7 +4020,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.029
      },
      {
       "level": 56,
@@ -4067,7 +4081,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.018
      },
      {
       "level": 57,
@@ -4128,7 +4142,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.022
      },
      {
       "level": 58,
@@ -4189,7 +4203,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.027
      },
      {
       "level": 59,
@@ -4257,7 +4271,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.027
      },
      {
       "level": 60,
@@ -4325,7 +4339,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.02
      },
      {
       "level": 61,
@@ -4387,7 +4401,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.019
      },
      {
       "level": 62,
@@ -4449,7 +4463,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.02
      },
      {
       "level": 63,
@@ -4511,7 +4525,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.016
      },
      {
       "level": 64,
@@ -4641,7 +4655,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.02
      },
      {
       "level": 66,
@@ -4703,7 +4717,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.016
      },
      {
       "level": 67,
@@ -4765,7 +4779,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.02
      },
      {
       "level": 68,
@@ -4827,7 +4841,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.027
      },
      {
       "level": 69,
@@ -4889,7 +4903,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.012
      },
      {
       "level": 70,
@@ -4951,7 +4965,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.017
      },
      {
       "level": 71,
@@ -5013,7 +5027,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.039
+      "seconds": 0.02
      },
      {
       "level": 72,
@@ -5075,7 +5089,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.029
      },
      {
       "level": 73,
@@ -5143,7 +5157,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.015
      },
      {
       "level": 74,
@@ -5205,7 +5219,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.017
      },
      {
       "level": 75,
@@ -5267,7 +5281,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.022
      },
      {
       "level": 76,
@@ -5329,7 +5343,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.013
      },
      {
       "level": 77,
@@ -5391,7 +5405,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.026
      },
      {
       "level": 78,
@@ -5515,7 +5529,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.02
      },
      {
       "level": 80,
@@ -5585,7 +5599,7 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.017
      },
      {
       "level": 81,
@@ -5715,7 +5729,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.015
      },
      {
       "level": 83,
@@ -5777,7 +5791,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.016
      },
      {
       "level": 84,
@@ -5901,7 +5915,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.014
      },
      {
       "level": 86,
@@ -5963,7 +5977,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.017
      },
      {
       "level": 87,
@@ -6025,7 +6039,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.019
      },
      {
       "level": 88,
@@ -6087,7 +6101,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.015
      },
      {
       "level": 89,
@@ -6217,7 +6231,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.02
      },
      {
       "level": 91,
@@ -6279,7 +6293,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.012
      },
      {
       "level": 92,
@@ -6341,7 +6355,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.014
      },
      {
       "level": 93,
@@ -6403,7 +6417,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.019
      },
      {
       "level": 94,
@@ -6465,7 +6479,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.013
      },
      {
       "level": 95,
@@ -6527,7 +6541,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.019
      },
      {
       "level": 96,
@@ -6589,7 +6603,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.017
      },
      {
       "level": 97,
@@ -6651,7 +6665,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.019
      },
      {
       "level": 98,
@@ -6713,7 +6727,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.022
      },
      {
       "level": 99,
@@ -6775,7 +6789,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.019
      },
      {
       "level": 100,
@@ -6843,7 +6857,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.016
      }
     ]
    },
@@ -6852,7 +6866,7 @@
     "skills": [
      "mid"
     ],
-    "seconds": 3.016,
+    "seconds": 2.991,
     "stoppedAt": null,
     "firstTry": 84,
     "secondTry": 11,
@@ -6907,16 +6921,16 @@
      {
       "level": 2,
       "boss": false,
-      "days": 3,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       3
+       5
       ],
       "gatePct": 100,
-      "gold": 710,
-      "offerings": 2,
+      "gold": 1070,
+      "offerings": 8,
       "starsEarned": 4,
       "starsLeft": 3,
       "armoury": [
@@ -6936,13 +6950,15 @@
       "keep": {
        "gateTier": 0,
        "slotWeapon": [
-        null,
+        "wheel",
         null,
         null,
         null,
         null
        ],
-       "weaponTier": {},
+       "weaponTier": {
+        "wheel": 1
+       },
        "stations": {
         "cauldron": true,
         "perch": false
@@ -6952,24 +6968,25 @@
        ]
       },
       "bought": [
-       "station:cauldron"
+       "station:cauldron",
+       "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.003
+      "seconds": 0.007
      },
      {
       "level": 3,
       "boss": false,
-      "days": 3,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       3
+       5
       ],
       "gatePct": 100,
-      "gold": 957,
-      "offerings": 4,
+      "gold": 675,
+      "offerings": 6,
       "starsEarned": 4,
       "starsLeft": 7,
       "armoury": [],
@@ -6981,107 +6998,7 @@
        0
       ],
       "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {},
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron"
-      ],
-      "stuck": null,
-      "seconds": 0.004
-     },
-     {
-      "level": 4,
-      "boss": false,
-      "days": 3,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       3
-      ],
-      "gatePct": 100,
-      "gold": 1088,
-      "offerings": 6,
-      "starsEarned": 3,
-      "starsLeft": 10,
-      "armoury": [],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 2
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {},
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron"
-      ],
-      "stuck": null,
-      "seconds": 0.004
-     },
-     {
-      "level": 5,
-      "boss": false,
-      "days": 4,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       4
-      ],
-      "gatePct": 100,
-      "gold": 1254,
-      "offerings": 2,
-      "starsEarned": 4,
-      "starsLeft": 2,
-      "armoury": [
-       {
-        "item": "wheel",
-        "tier": 3,
-        "stars": 12
-       }
-      ],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 3
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         null,
@@ -7102,24 +7019,133 @@
       },
       "bought": [
        "station:cauldron",
-       "weapon:0:wheel"
+       "weapon:0:wheel",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.006
+     },
+     {
+      "level": 4,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 942,
+      "offerings": 7,
+      "starsEarned": 3,
+      "starsLeft": 10,
+      "armoury": [],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 2
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 2
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate"
       ],
       "stuck": null,
       "seconds": 0.007
      },
      {
-      "level": 6,
+      "level": 5,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 1576,
-      "offerings": 2,
+      "gold": 1172,
+      "offerings": 4,
+      "starsEarned": 4,
+      "starsLeft": 2,
+      "armoury": [
+       {
+        "item": "wheel",
+        "tier": 3,
+        "stars": 12
+       }
+      ],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 3
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 2
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.013
+     },
+     {
+      "level": 6,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 1634,
+      "offerings": 3,
       "starsEarned": 3,
       "starsLeft": 5,
       "armoury": [],
@@ -7131,7 +7157,7 @@
        0
       ],
       "keep": {
-       "gateTier": 0,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         null,
@@ -7152,24 +7178,25 @@
       },
       "bought": [
        "station:cauldron",
-       "weapon:0:wheel"
+       "weapon:0:wheel",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.007
+      "seconds": 0.005
      },
      {
       "level": 7,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 896,
-      "offerings": 3,
+      "gold": 1976,
+      "offerings": 6,
       "starsEarned": 4,
       "starsLeft": 9,
       "armoury": [],
@@ -7206,21 +7233,21 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.008
      },
      {
       "level": 8,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 1173,
-      "offerings": 10,
+      "gold": 2326,
+      "offerings": 12,
       "starsEarned": 4,
       "starsLeft": 13,
       "armoury": [],
@@ -7257,21 +7284,21 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.008
      },
      {
       "level": 9,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
-      "gatePct": 88,
-      "gold": 2429,
-      "offerings": 17,
+      "gatePct": 98,
+      "gold": 1913,
+      "offerings": 16,
       "starsEarned": 4,
       "starsLeft": 0,
       "armoury": [
@@ -7296,7 +7323,7 @@
        1
       ],
       "keep": {
-       "gateTier": 1,
+       "gateTier": 2,
        "slotWeapon": [
         "wheel",
         null,
@@ -7318,6 +7345,7 @@
       "bought": [
        "station:cauldron",
        "weapon:0:wheel",
+       "gate",
        "gate"
       ],
       "stuck": null,
@@ -7377,7 +7405,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.014
      },
      {
       "level": 11,
@@ -7432,7 +7460,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.008
+      "seconds": 0.009
      },
      {
       "level": 12,
@@ -7488,7 +7516,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.01
      },
      {
       "level": 13,
@@ -7544,7 +7572,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.019
      },
      {
       "level": 14,
@@ -7606,7 +7634,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.018
      },
      {
       "level": 15,
@@ -7662,7 +7690,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.019
      },
      {
       "level": 16,
@@ -7718,7 +7746,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.019
      },
      {
       "level": 17,
@@ -7780,7 +7808,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.017
      },
      {
       "level": 18,
@@ -7836,7 +7864,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.014
      },
      {
       "level": 19,
@@ -7900,7 +7928,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.014
      },
      {
       "level": 20,
@@ -7960,7 +7988,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.018
      },
      {
       "level": 21,
@@ -8026,7 +8054,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.017
      },
      {
       "level": 22,
@@ -8086,7 +8114,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.014
      },
      {
       "level": 23,
@@ -8146,7 +8174,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.013
      },
      {
       "level": 24,
@@ -8206,7 +8234,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.014
      },
      {
       "level": 25,
@@ -8266,7 +8294,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.012
      },
      {
       "level": 26,
@@ -8327,7 +8355,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.024
      },
      {
       "level": 27,
@@ -8393,7 +8421,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.013
      },
      {
       "level": 28,
@@ -8454,7 +8482,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.025
      },
      {
       "level": 29,
@@ -8523,7 +8551,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.021
      },
      {
       "level": 30,
@@ -8594,7 +8622,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.034
      },
      {
       "level": 31,
@@ -8657,7 +8685,7 @@
        "weapon:3:comet"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.013
      },
      {
       "level": 32,
@@ -8786,7 +8814,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.019
      },
      {
       "level": 34,
@@ -8851,7 +8879,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.019
      },
      {
       "level": 35,
@@ -8915,7 +8943,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.031
      },
      {
       "level": 36,
@@ -8985,7 +9013,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.015
      },
      {
       "level": 37,
@@ -9050,7 +9078,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.022
      },
      {
       "level": 38,
@@ -9114,7 +9142,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.016
      },
      {
       "level": 39,
@@ -9186,7 +9214,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.021
      },
      {
       "level": 40,
@@ -9330,7 +9358,7 @@
        "weapon:4:bolter"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.015
      },
      {
       "level": 42,
@@ -9400,7 +9428,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.026
      },
      {
       "level": 43,
@@ -9470,7 +9498,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.035
      },
      {
       "level": 44,
@@ -9540,7 +9568,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.026
      },
      {
       "level": 45,
@@ -9616,7 +9644,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.033
      },
      {
       "level": 46,
@@ -9686,7 +9714,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.03
      },
      {
       "level": 47,
@@ -9755,7 +9783,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.023
      },
      {
       "level": 48,
@@ -9825,7 +9853,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.03
      },
      {
       "level": 49,
@@ -9895,7 +9923,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.028
      },
      {
       "level": 50,
@@ -9966,7 +9994,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.043
+      "seconds": 0.046
      },
      {
       "level": 51,
@@ -10036,7 +10064,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.025
      },
      {
       "level": 52,
@@ -10107,7 +10135,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.038
      },
      {
       "level": 53,
@@ -10182,7 +10210,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.029
      },
      {
       "level": 54,
@@ -10252,7 +10280,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.031
      },
      {
       "level": 55,
@@ -10322,7 +10350,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.023
      },
      {
       "level": 56,
@@ -10392,7 +10420,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.033
      },
      {
       "level": 57,
@@ -10462,7 +10490,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.035
      },
      {
       "level": 58,
@@ -10533,7 +10561,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.047
+      "seconds": 0.043
      },
      {
       "level": 59,
@@ -10609,7 +10637,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.03
      },
      {
       "level": 60,
@@ -10680,7 +10708,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.056
+      "seconds": 0.054
      },
      {
       "level": 61,
@@ -10752,7 +10780,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.04
+      "seconds": 0.054
      },
      {
       "level": 62,
@@ -10823,7 +10851,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.051
+      "seconds": 0.043
      },
      {
       "level": 63,
@@ -10893,7 +10921,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.025
      },
      {
       "level": 64,
@@ -10963,7 +10991,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.038
      },
      {
       "level": 65,
@@ -11033,7 +11061,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.036
      },
      {
       "level": 66,
@@ -11104,7 +11132,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.046
+      "seconds": 0.045
      },
      {
       "level": 67,
@@ -11181,7 +11209,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.04
      },
      {
       "level": 68,
@@ -11321,7 +11349,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.026
      },
      {
       "level": 70,
@@ -11392,7 +11420,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.058
+      "seconds": 0.056
      },
      {
       "level": 71,
@@ -11534,7 +11562,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.042
      },
      {
       "level": 73,
@@ -11606,7 +11634,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.067
+      "seconds": 0.055
      },
      {
       "level": 74,
@@ -11676,7 +11704,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.029
      },
      {
       "level": 75,
@@ -11753,7 +11781,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.049
+      "seconds": 0.044
      },
      {
       "level": 76,
@@ -11823,7 +11851,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.043
+      "seconds": 0.037
      },
      {
       "level": 77,
@@ -11893,7 +11921,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.039
+      "seconds": 0.035
      },
      {
       "level": 78,
@@ -11963,7 +11991,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.031
      },
      {
       "level": 79,
@@ -12035,7 +12063,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.053
+      "seconds": 0.048
      },
      {
       "level": 80,
@@ -12107,7 +12135,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.081
+      "seconds": 0.079
      },
      {
       "level": 81,
@@ -12177,7 +12205,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.043
+      "seconds": 0.042
      },
      {
       "level": 82,
@@ -12248,7 +12276,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.063
      },
      {
       "level": 83,
@@ -12318,7 +12346,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.04
+      "seconds": 0.033
      },
      {
       "level": 84,
@@ -12395,7 +12423,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.05
+      "seconds": 0.055
      },
      {
       "level": 85,
@@ -12465,7 +12493,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.033
+      "seconds": 0.026
      },
      {
       "level": 86,
@@ -12535,7 +12563,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.038
      },
      {
       "level": 87,
@@ -12605,7 +12633,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.029
      },
      {
       "level": 88,
@@ -12675,7 +12703,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.038
+      "seconds": 0.029
      },
      {
       "level": 89,
@@ -12746,7 +12774,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.046
+      "seconds": 0.045
      },
      {
       "level": 90,
@@ -12818,7 +12846,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.104
+      "seconds": 0.081
      },
      {
       "level": 91,
@@ -12890,7 +12918,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.042
+      "seconds": 0.048
      },
      {
       "level": 92,
@@ -12948,7 +12976,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.019
      },
      {
       "level": 93,
@@ -13025,7 +13053,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.052
+      "seconds": 0.064
      },
      {
       "level": 94,
@@ -13097,7 +13125,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.053
+      "seconds": 0.062
      },
      {
       "level": 95,
@@ -13169,7 +13197,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.06
+      "seconds": 0.066
      },
      {
       "level": 96,
@@ -13227,7 +13255,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.026
      },
      {
       "level": 97,
@@ -13285,7 +13313,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.018
      },
      {
       "level": 98,
@@ -13357,7 +13385,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.057
+      "seconds": 0.06
      },
      {
       "level": 99,
@@ -13415,7 +13443,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.021
      },
      {
       "level": 100,
@@ -13491,7 +13519,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.092
+      "seconds": 0.073
      }
     ]
    },
@@ -13500,7 +13528,7 @@
     "skills": [
      "great"
     ],
-    "seconds": 2.801,
+    "seconds": 2.67,
     "stoppedAt": null,
     "firstTry": 100,
     "secondTry": 0,
@@ -13555,16 +13583,16 @@
      {
       "level": 2,
       "boss": false,
-      "days": 3,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       3
+       5
       ],
       "gatePct": 100,
-      "gold": 720,
-      "offerings": 3,
+      "gold": 1040,
+      "offerings": 5,
       "starsEarned": 4,
       "starsLeft": 3,
       "armoury": [
@@ -13584,13 +13612,15 @@
       "keep": {
        "gateTier": 0,
        "slotWeapon": [
-        null,
+        "wheel",
         null,
         null,
         null,
         null
        ],
-       "weaponTier": {},
+       "weaponTier": {
+        "wheel": 1
+       },
        "stations": {
         "cauldron": true,
         "perch": false
@@ -13600,23 +13630,24 @@
        ]
       },
       "bought": [
-       "station:cauldron"
+       "station:cauldron",
+       "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.003
+      "seconds": 0.005
      },
      {
       "level": 3,
       "boss": false,
-      "days": 3,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       3
+       5
       ],
       "gatePct": 100,
-      "gold": 927,
+      "gold": 1525,
       "offerings": 1,
       "starsEarned": 4,
       "starsLeft": 7,
@@ -13624,106 +13655,6 @@
       "handTier": 1,
       "weaponTiers": {
        "wheel": 2
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {},
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron"
-      ],
-      "stuck": null,
-      "seconds": 0.003
-     },
-     {
-      "level": 4,
-      "boss": false,
-      "days": 3,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       3
-      ],
-      "gatePct": 100,
-      "gold": 1058,
-      "offerings": 3,
-      "starsEarned": 3,
-      "starsLeft": 10,
-      "armoury": [],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 2
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {},
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron"
-      ],
-      "stuck": null,
-      "seconds": 0.005
-     },
-     {
-      "level": 5,
-      "boss": false,
-      "days": 4,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       4
-      ],
-      "gatePct": 100,
-      "gold": 1264,
-      "offerings": 3,
-      "starsEarned": 4,
-      "starsLeft": 2,
-      "armoury": [
-       {
-        "item": "wheel",
-        "tier": 3,
-        "stars": 12
-       }
-      ],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 3
       },
       "slots": [
        0
@@ -13753,20 +13684,128 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
+      "seconds": 0.006
+     },
+     {
+      "level": 4,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 902,
+      "offerings": 3,
+      "starsEarned": 3,
+      "starsLeft": 10,
+      "armoury": [],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 2
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 2
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.009
+     },
+     {
+      "level": 5,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 1172,
+      "offerings": 4,
+      "starsEarned": 4,
+      "starsLeft": 2,
+      "armoury": [
+       {
+        "item": "wheel",
+        "tier": 3,
+        "stars": 12
+       }
+      ],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 3
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 2
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate"
+      ],
+      "stuck": null,
       "seconds": 0.007
      },
      {
       "level": 6,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 1566,
+      "gold": 1614,
       "offerings": 1,
       "starsEarned": 3,
       "starsLeft": 5,
@@ -13779,7 +13818,7 @@
        0
       ],
       "keep": {
-       "gateTier": 0,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         null,
@@ -13800,23 +13839,24 @@
       },
       "bought": [
        "station:cauldron",
-       "weapon:0:wheel"
+       "weapon:0:wheel",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.007
      },
      {
       "level": 7,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 1776,
+      "gold": 1926,
       "offerings": 1,
       "starsEarned": 4,
       "starsLeft": 9,
@@ -13829,7 +13869,7 @@
        0
       ],
       "keep": {
-       "gateTier": 0,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         null,
@@ -13850,24 +13890,25 @@
       },
       "bought": [
        "station:cauldron",
-       "weapon:0:wheel"
+       "weapon:0:wheel",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.005
+      "seconds": 0.009
      },
      {
       "level": 8,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 1103,
-      "offerings": 3,
+      "gold": 2246,
+      "offerings": 4,
       "starsEarned": 4,
       "starsLeft": 13,
       "armoury": [],
@@ -13904,20 +13945,20 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.005
+      "seconds": 0.006
      },
      {
       "level": 9,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 2299,
+      "gold": 3933,
       "offerings": 4,
       "starsEarned": 4,
       "starsLeft": 0,
@@ -13968,7 +14009,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.005
+      "seconds": 0.009
      },
      {
       "level": 10,
@@ -14132,7 +14173,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.01
      },
      {
       "level": 13,
@@ -14188,7 +14229,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.018
      },
      {
       "level": 14,
@@ -14250,7 +14291,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.013
      },
      {
       "level": 15,
@@ -14306,7 +14347,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.013
+      "seconds": 0.012
      },
      {
       "level": 16,
@@ -14424,7 +14465,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.019
      },
      {
       "level": 18,
@@ -14480,7 +14521,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.018
      },
      {
       "level": 19,
@@ -14544,7 +14585,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.011
+      "seconds": 0.014
      },
      {
       "level": 20,
@@ -14604,7 +14645,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.017
      },
      {
       "level": 21,
@@ -14670,7 +14711,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.022
      },
      {
       "level": 22,
@@ -14729,7 +14770,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.009
+      "seconds": 0.008
      },
      {
       "level": 23,
@@ -14789,7 +14830,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.013
      },
      {
       "level": 24,
@@ -14970,7 +15011,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.017
      },
      {
       "level": 27,
@@ -15035,7 +15076,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.01
      },
      {
       "level": 28,
@@ -15095,7 +15136,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.024
      },
      {
       "level": 29,
@@ -15163,7 +15204,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.025
      },
      {
       "level": 30,
@@ -15234,7 +15275,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.023
      },
      {
       "level": 31,
@@ -15297,7 +15338,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.011
      },
      {
       "level": 32,
@@ -15361,7 +15402,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.012
+      "seconds": 0.015
      },
      {
       "level": 33,
@@ -15426,7 +15467,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.017
      },
      {
       "level": 34,
@@ -15491,7 +15532,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.017
      },
      {
       "level": 35,
@@ -15555,7 +15596,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.028
      },
      {
       "level": 36,
@@ -15625,7 +15666,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.014
+      "seconds": 0.016
      },
      {
       "level": 37,
@@ -15690,7 +15731,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.016
      },
      {
       "level": 38,
@@ -15754,7 +15795,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.016
+      "seconds": 0.011
      },
      {
       "level": 39,
@@ -15826,7 +15867,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.015
+      "seconds": 0.013
      },
      {
       "level": 40,
@@ -15902,7 +15943,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.037
+      "seconds": 0.03
      },
      {
       "level": 41,
@@ -16040,7 +16081,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.025
      },
      {
       "level": 43,
@@ -16109,7 +16150,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.03
      },
      {
       "level": 44,
@@ -16179,7 +16220,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.033
      },
      {
       "level": 45,
@@ -16255,7 +16296,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.024
      },
      {
       "level": 46,
@@ -16325,7 +16366,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.028
      },
      {
       "level": 47,
@@ -16395,7 +16436,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.023
      },
      {
       "level": 48,
@@ -16465,7 +16506,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.028
      },
      {
       "level": 49,
@@ -16535,7 +16576,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.03
      },
      {
       "level": 50,
@@ -16606,7 +16647,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.046
+      "seconds": 0.044
      },
      {
       "level": 51,
@@ -16676,7 +16717,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.019
+      "seconds": 0.03
      },
      {
       "level": 52,
@@ -16747,7 +16788,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.032
      },
      {
       "level": 53,
@@ -16823,7 +16864,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.024
      },
      {
       "level": 54,
@@ -16893,7 +16934,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.019
      },
      {
       "level": 55,
@@ -16963,7 +17004,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.022
      },
      {
       "level": 56,
@@ -17033,7 +17074,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.026
      },
      {
       "level": 57,
@@ -17103,7 +17144,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.029
      },
      {
       "level": 58,
@@ -17174,7 +17215,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.042
      },
      {
       "level": 59,
@@ -17250,7 +17291,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.029
      },
      {
       "level": 60,
@@ -17321,7 +17362,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.042
+      "seconds": 0.041
      },
      {
       "level": 61,
@@ -17463,7 +17504,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.037
+      "seconds": 0.033
      },
      {
       "level": 63,
@@ -17533,7 +17574,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.033
+      "seconds": 0.025
      },
      {
       "level": 64,
@@ -17604,7 +17645,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.042
+      "seconds": 0.033
      },
      {
       "level": 65,
@@ -17674,7 +17715,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.034
      },
      {
       "level": 66,
@@ -17745,7 +17786,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.058
+      "seconds": 0.046
      },
      {
       "level": 67,
@@ -17822,7 +17863,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.028
      },
      {
       "level": 68,
@@ -17892,7 +17933,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.026
+      "seconds": 0.025
      },
      {
       "level": 69,
@@ -17962,7 +18003,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.031
      },
      {
       "level": 70,
@@ -18033,7 +18074,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.063
+      "seconds": 0.046
      },
      {
       "level": 71,
@@ -18104,7 +18145,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.059
+      "seconds": 0.034
      },
      {
       "level": 72,
@@ -18175,7 +18216,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.046
+      "seconds": 0.044
      },
      {
       "level": 73,
@@ -18246,7 +18287,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.043
      },
      {
       "level": 74,
@@ -18394,7 +18435,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.037
      },
      {
       "level": 76,
@@ -18465,7 +18506,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.032
      },
      {
       "level": 77,
@@ -18536,7 +18577,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.031
      },
      {
       "level": 78,
@@ -18607,7 +18648,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.032
+      "seconds": 0.029
      },
      {
       "level": 79,
@@ -18678,7 +18719,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.051
+      "seconds": 0.04
      },
      {
       "level": 80,
@@ -18749,7 +18790,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.039
+      "seconds": 0.04
      },
      {
       "level": 81,
@@ -18820,7 +18861,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.046
      },
      {
       "level": 82,
@@ -18891,7 +18932,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.031
      },
      {
       "level": 83,
@@ -18962,7 +19003,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.031
      },
      {
       "level": 84,
@@ -19039,7 +19080,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.042
+      "seconds": 0.038
      },
      {
       "level": 85,
@@ -19110,7 +19151,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.04
      },
      {
       "level": 86,
@@ -19180,7 +19221,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.029
+      "seconds": 0.041
      },
      {
       "level": 87,
@@ -19250,7 +19291,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.026
      },
      {
       "level": 88,
@@ -19321,7 +19362,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.029
      },
      {
       "level": 89,
@@ -19392,7 +19433,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.045
+      "seconds": 0.052
      },
      {
       "level": 90,
@@ -19463,7 +19504,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.057
+      "seconds": 0.059
      },
      {
       "level": 91,
@@ -19534,7 +19575,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.045
+      "seconds": 0.038
      },
      {
       "level": 92,
@@ -19605,7 +19646,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.035
      },
      {
       "level": 93,
@@ -19682,7 +19723,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.07
+      "seconds": 0.049
      },
      {
       "level": 94,
@@ -19753,7 +19794,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.055
+      "seconds": 0.049
      },
      {
       "level": 95,
@@ -19824,7 +19865,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.077
+      "seconds": 0.058
      },
      {
       "level": 96,
@@ -19895,7 +19936,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.06
+      "seconds": 0.035
      },
      {
       "level": 97,
@@ -19966,7 +20007,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.044
+      "seconds": 0.035
      },
      {
       "level": 98,
@@ -20037,7 +20078,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.056
+      "seconds": 0.057
      },
      {
       "level": 99,
@@ -20108,7 +20149,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.066
+      "seconds": 0.052
      },
      {
       "level": 100,
@@ -20179,7 +20220,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.061
+      "seconds": 0.051
      }
     ]
    },
@@ -20189,12 +20230,12 @@
      "mid",
      "mid"
     ],
-    "seconds": 5.438,
+    "seconds": 4.541,
     "stoppedAt": null,
-    "firstTry": 89,
-    "secondTry": 5,
-    "later": 1,
-    "never": 5,
+    "firstTry": 92,
+    "secondTry": 4,
+    "later": 2,
+    "never": 2,
     "levels": [
      {
       "level": 1,
@@ -20207,7 +20248,7 @@
        2
       ],
       "gatePct": 100,
-      "gold": 295,
+      "gold": 245,
       "offerings": 0,
       "starsEarned": 4,
       "starsLeft": 4,
@@ -20240,21 +20281,21 @@
        "station:cauldron"
       ],
       "stuck": null,
-      "seconds": 0.005
+      "seconds": 0.006
      },
      {
       "level": 2,
       "boss": false,
-      "days": 3,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       3
+       5
       ],
       "gatePct": 100,
-      "gold": 670,
-      "offerings": 3,
+      "gold": 775,
+      "offerings": 6,
       "starsEarned": 4,
       "starsLeft": 3,
       "armoury": [
@@ -20274,13 +20315,15 @@
       "keep": {
        "gateTier": 0,
        "slotWeapon": [
-        null,
+        "wheel",
         null,
         null,
         null,
         null
        ],
-       "weaponTier": {},
+       "weaponTier": {
+        "wheel": 1
+       },
        "stations": {
         "cauldron": true,
         "perch": false
@@ -20291,132 +20334,31 @@
        ]
       },
       "bought": [
-       "station:cauldron"
+       "station:cauldron",
+       "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.009
      },
      {
       "level": 3,
       "boss": false,
-      "days": 3,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       3
+       5
       ],
       "gatePct": 100,
-      "gold": 774,
-      "offerings": 0,
+      "gold": 1029,
+      "offerings": 2,
       "starsEarned": 4,
       "starsLeft": 7,
       "armoury": [],
       "handTier": 1,
       "weaponTiers": {
        "wheel": 2
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {},
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1,
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron"
-      ],
-      "stuck": null,
-      "seconds": 0.004
-     },
-     {
-      "level": 4,
-      "boss": false,
-      "days": 3,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       3
-      ],
-      "gatePct": 100,
-      "gold": 1044,
-      "offerings": 0,
-      "starsEarned": 3,
-      "starsLeft": 10,
-      "armoury": [],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 2
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {},
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1,
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron"
-      ],
-      "stuck": null,
-      "seconds": 0.005
-     },
-     {
-      "level": 5,
-      "boss": false,
-      "days": 4,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       4
-      ],
-      "gatePct": 100,
-      "gold": 1306,
-      "offerings": 2,
-      "starsEarned": 4,
-      "starsLeft": 2,
-      "armoury": [
-       {
-        "item": "wheel",
-        "tier": 3,
-        "stars": 12
-       }
-      ],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 3
       },
       "slots": [
        0
@@ -20447,21 +20389,131 @@
        "weapon:0:wheel"
       ],
       "stuck": null,
-      "seconds": 0.006
+      "seconds": 0.008
      },
      {
-      "level": 6,
+      "level": 4,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 1446,
-      "offerings": 1,
+      "gold": 668,
+      "offerings": 4,
+      "starsEarned": 3,
+      "starsLeft": 10,
+      "armoury": [],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 2
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 2
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1,
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.008
+     },
+     {
+      "level": 5,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 916,
+      "offerings": 2,
+      "starsEarned": 4,
+      "starsLeft": 2,
+      "armoury": [
+       {
+        "item": "wheel",
+        "tier": 3,
+        "stars": 12
+       }
+      ],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 3
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 2
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1,
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.009
+     },
+     {
+      "level": 6,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 1123,
+      "offerings": 2,
       "starsEarned": 3,
       "starsLeft": 5,
       "armoury": [],
@@ -20473,7 +20525,7 @@
        0
       ],
       "keep": {
-       "gateTier": 0,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         null,
@@ -20495,77 +20547,27 @@
       },
       "bought": [
        "station:cauldron",
-       "weapon:0:wheel"
+       "weapon:0:wheel",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.007
+      "seconds": 0.011
      },
      {
       "level": 7,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
       "gatePct": 100,
-      "gold": 1637,
-      "offerings": 0,
+      "gold": 1393,
+      "offerings": 2,
       "starsEarned": 4,
       "starsLeft": 9,
-      "armoury": [],
-      "handTier": 1,
-      "weaponTiers": {
-       "wheel": 3
-      },
-      "slots": [
-       0
-      ],
-      "keep": {
-       "gateTier": 0,
-       "slotWeapon": [
-        "wheel",
-        null,
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {
-        "wheel": 3
-       },
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        1,
-        1
-       ]
-      },
-      "bought": [
-       "station:cauldron",
-       "weapon:0:wheel"
-      ],
-      "stuck": null,
-      "seconds": 0.007
-     },
-     {
-      "level": 8,
-      "boss": false,
-      "days": 4,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       4
-      ],
-      "gatePct": 100,
-      "gold": 897,
-      "offerings": 1,
-      "starsEarned": 4,
-      "starsLeft": 13,
       "armoury": [],
       "handTier": 1,
       "weaponTiers": {
@@ -20604,18 +20606,70 @@
       "seconds": 0.012
      },
      {
-      "level": 9,
+      "level": 8,
       "boss": false,
-      "days": 4,
+      "days": 5,
       "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       4
+       5
       ],
-      "gatePct": 93,
-      "gold": 2440,
-      "offerings": 18,
+      "gatePct": 100,
+      "gold": 1629,
+      "offerings": 7,
+      "starsEarned": 4,
+      "starsLeft": 13,
+      "armoury": [],
+      "handTier": 1,
+      "weaponTiers": {
+       "wheel": 3
+      },
+      "slots": [
+       0
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        null,
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 3
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        1,
+        1
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.009
+     },
+     {
+      "level": 9,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 5,
+      "gold": 3600,
+      "offerings": 31,
       "starsEarned": 4,
       "starsLeft": 0,
       "armoury": [
@@ -20666,7 +20720,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.01
+      "seconds": 0.012
      },
      {
       "level": 10,
@@ -20679,8 +20733,8 @@
        8
       ],
       "gatePct": 100,
-      "gold": 6171,
-      "offerings": 7,
+      "gold": 7163,
+      "offerings": 5,
       "starsEarned": 8,
       "starsLeft": 8,
       "armoury": [],
@@ -20694,7 +20748,7 @@
        1
       ],
       "keep": {
-       "gateTier": 2,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -20719,11 +20773,10 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:1:stomper",
-       "gate"
+       "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.034
+      "seconds": 0.019
      },
      {
       "level": 11,
@@ -20736,8 +20789,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 3806,
-      "offerings": 3,
+      "gold": 3120,
+      "offerings": 1,
       "starsEarned": 3,
       "starsLeft": 11,
       "armoury": [],
@@ -20779,7 +20832,7 @@
        "weapon:1:stomper"
       ],
       "stuck": null,
-      "seconds": 0.018
+      "seconds": 0.017
      },
      {
       "level": 12,
@@ -20792,8 +20845,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 2058,
-      "offerings": 5,
+      "gold": 3530,
+      "offerings": 7,
       "starsEarned": 4,
       "starsLeft": 15,
       "armoury": [],
@@ -20807,7 +20860,7 @@
        1
       ],
       "keep": {
-       "gateTier": 2,
+       "gateTier": 1,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -20832,8 +20885,7 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:1:stomper",
-       "gate"
+       "weapon:1:stomper"
       ],
       "stuck": null,
       "seconds": 0.015
@@ -20849,8 +20901,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 4529,
-      "offerings": 9,
+      "gold": 3557,
+      "offerings": 7,
       "starsEarned": 3,
       "starsLeft": 18,
       "armoury": [],
@@ -20893,7 +20945,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.018
      },
      {
       "level": 14,
@@ -20905,9 +20957,9 @@
       "dayPerTry": [
        5
       ],
-      "gatePct": 81,
-      "gold": 3152,
-      "offerings": 41,
+      "gatePct": 94,
+      "gold": 2260,
+      "offerings": 31,
       "starsEarned": 4,
       "starsLeft": 10,
       "armoury": [
@@ -20956,7 +21008,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.028
+      "seconds": 0.03
      },
      {
       "level": 15,
@@ -20969,10 +21021,67 @@
        7
       ],
       "gatePct": 100,
-      "gold": 5552,
-      "offerings": 31,
+      "gold": 4394,
+      "offerings": 17,
       "starsEarned": 4,
       "starsLeft": 14,
+      "armoury": [],
+      "handTier": 2,
+      "weaponTiers": {
+       "wheel": 3,
+       "stomper": 3
+      },
+      "slots": [
+       0,
+       1
+      ],
+      "keep": {
+       "gateTier": 2,
+       "slotWeapon": [
+        "wheel",
+        "stomper",
+        null,
+        null,
+        null
+       ],
+       "weaponTier": {
+        "wheel": 3,
+        "stomper": 3
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        2,
+        2
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate",
+       "weapon:1:stomper",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.024
+     },
+     {
+      "level": 16,
+      "boss": false,
+      "days": 7,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       7
+      ],
+      "gatePct": 100,
+      "gold": 5291,
+      "offerings": 17,
+      "starsEarned": 3,
+      "starsLeft": 17,
       "armoury": [],
       "handTier": 2,
       "weaponTiers": {
@@ -21016,63 +21125,6 @@
       "seconds": 0.022
      },
      {
-      "level": 16,
-      "boss": false,
-      "days": 7,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       7
-      ],
-      "gatePct": 100,
-      "gold": 6417,
-      "offerings": 20,
-      "starsEarned": 3,
-      "starsLeft": 17,
-      "armoury": [],
-      "handTier": 2,
-      "weaponTiers": {
-       "wheel": 3,
-       "stomper": 3
-      },
-      "slots": [
-       0,
-       1
-      ],
-      "keep": {
-       "gateTier": 2,
-       "slotWeapon": [
-        "wheel",
-        "stomper",
-        null,
-        null,
-        null
-       ],
-       "weaponTier": {
-        "wheel": 3,
-        "stomper": 3
-       },
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        2,
-        2
-       ]
-      },
-      "bought": [
-       "station:cauldron",
-       "weapon:0:wheel",
-       "gate",
-       "weapon:1:stomper",
-       "gate"
-      ],
-      "stuck": null,
-      "seconds": 0.023
-     },
-     {
       "level": 17,
       "boss": false,
       "days": 7,
@@ -21083,7 +21135,7 @@
        7
       ],
       "gatePct": 100,
-      "gold": 7830,
+      "gold": 6582,
       "offerings": 23,
       "starsEarned": 4,
       "starsLeft": 0,
@@ -21133,7 +21185,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.023
      },
      {
       "level": 18,
@@ -21146,8 +21198,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 5594,
-      "offerings": 15,
+      "gold": 4524,
+      "offerings": 10,
       "starsEarned": 4,
       "starsLeft": 4,
       "armoury": [],
@@ -21190,7 +21242,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.018
      },
      {
       "level": 19,
@@ -21203,7 +21255,7 @@
        6
       ],
       "gatePct": 100,
-      "gold": 6028,
+      "gold": 4960,
       "offerings": 14,
       "starsEarned": 4,
       "starsLeft": 3,
@@ -21255,7 +21307,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.025
+      "seconds": 0.018
      },
      {
       "level": 20,
@@ -21267,9 +21319,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 52,
-      "gold": 9657,
-      "offerings": 30,
+      "gatePct": 100,
+      "gold": 8022,
+      "offerings": 22,
       "starsEarned": 8,
       "starsLeft": 11,
       "armoury": [],
@@ -21316,7 +21368,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.023
      },
      {
       "level": 21,
@@ -21329,8 +21381,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 9863,
-      "offerings": 24,
+      "gold": 8455,
+      "offerings": 39,
       "starsEarned": 4,
       "starsLeft": 3,
       "armoury": [
@@ -21383,7 +21435,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.027
+      "seconds": 0.029
      },
      {
       "level": 22,
@@ -21396,8 +21448,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 6634,
-      "offerings": 9,
+      "gold": 5517,
+      "offerings": 3,
       "starsEarned": 4,
       "starsLeft": 7,
       "armoury": [],
@@ -21443,7 +21495,7 @@
        "weapon:2:mortar"
       ],
       "stuck": null,
-      "seconds": 0.017
+      "seconds": 0.013
      },
      {
       "level": 23,
@@ -21455,9 +21507,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 99,
-      "gold": 7643,
-      "offerings": 20,
+      "gatePct": 100,
+      "gold": 6277,
+      "offerings": 17,
       "starsEarned": 4,
       "starsLeft": 11,
       "armoury": [],
@@ -21504,7 +21556,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.023
      },
      {
       "level": 24,
@@ -21517,8 +21569,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 4989,
-      "offerings": 11,
+      "gold": 3907,
+      "offerings": 9,
       "starsEarned": 3,
       "starsLeft": 14,
       "armoury": [],
@@ -21565,7 +21617,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.021
+      "seconds": 0.016
      },
      {
       "level": 25,
@@ -21578,8 +21630,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 5340,
-      "offerings": 12,
+      "gold": 4193,
+      "offerings": 11,
       "starsEarned": 3,
       "starsLeft": 17,
       "armoury": [],
@@ -21626,7 +21678,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.022
+      "seconds": 0.016
      },
      {
       "level": 26,
@@ -21638,9 +21690,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 100,
-      "gold": 6925,
-      "offerings": 9,
+      "gatePct": 98,
+      "gold": 5136,
+      "offerings": 18,
       "starsEarned": 3,
       "starsLeft": 20,
       "armoury": [],
@@ -21688,7 +21740,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.03
+      "seconds": 0.034
      },
      {
       "level": 27,
@@ -21701,8 +21753,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 6386,
-      "offerings": 18,
+      "gold": 4979,
+      "offerings": 4,
       "starsEarned": 4,
       "starsLeft": 3,
       "armoury": [
@@ -21755,7 +21807,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.02
+      "seconds": 0.016
      },
      {
       "level": 28,
@@ -21768,8 +21820,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 9218,
-      "offerings": 15,
+      "gold": 12958,
+      "offerings": 22,
       "starsEarned": 3,
       "starsLeft": 6,
       "armoury": [],
@@ -21785,7 +21837,7 @@
        2
       ],
       "keep": {
-       "gateTier": 3,
+       "gateTier": 2,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -21795,8 +21847,8 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 3,
-        "stomper": 4
+        "stomper": 4,
+        "mortar": 3
        },
        "stations": {
         "cauldron": true,
@@ -21811,13 +21863,12 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
-       "gate",
+       "weapon:2:mortar",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.033
      },
      {
       "level": 29,
@@ -21830,8 +21881,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 10293,
-      "offerings": 10,
+      "gold": 8123,
+      "offerings": 12,
       "starsEarned": 4,
       "starsLeft": 5,
       "armoury": [
@@ -21887,22 +21938,21 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.037
+      "seconds": 0.035
      },
      {
       "level": 30,
       "boss": true,
       "days": 8,
-      "tries": 2,
+      "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       8,
        8
       ],
-      "gatePct": 46,
-      "gold": 22373,
-      "offerings": 32,
+      "gatePct": 77,
+      "gold": 18852,
+      "offerings": 28,
       "starsEarned": 8,
       "starsLeft": 1,
       "armoury": [
@@ -21936,74 +21986,8 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 3,
         "stomper": 4,
-        "comet": 2
-       },
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        2,
-        2
-       ]
-      },
-      "bought": [
-       "station:cauldron",
-       "weapon:0:wheel",
-       "gate",
-       "weapon:2:mortar",
-       "weapon:1:stomper",
-       "weapon:3:comet",
-       "gate",
-       "gate"
-      ],
-      "stuck": null,
-      "seconds": 0.117
-     },
-     {
-      "level": 31,
-      "boss": false,
-      "days": 5,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       5
-      ],
-      "gatePct": 100,
-      "gold": 7478,
-      "offerings": 9,
-      "starsEarned": 3,
-      "starsLeft": 4,
-      "armoury": [],
-      "handTier": 2,
-      "weaponTiers": {
-       "wheel": 4,
-       "stomper": 4,
-       "mortar": 3,
-       "comet": 3
-      },
-      "slots": [
-       0,
-       1,
-       2,
-       3
-      ],
-      "keep": {
-       "gateTier": 2,
-       "slotWeapon": [
-        "wheel",
-        "stomper",
-        "mortar",
-        "comet",
-        null
-       ],
-       "weaponTier": {
-        "wheel": 4,
-        "stomper": 4,
-        "comet": 3,
+        "comet": 2,
         "mortar": 3
        },
        "stations": {
@@ -22022,10 +22006,75 @@
        "weapon:1:stomper",
        "weapon:3:comet",
        "weapon:2:mortar",
+       "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.024
+      "seconds": 0.046
+     },
+     {
+      "level": 31,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 8165,
+      "offerings": 6,
+      "starsEarned": 3,
+      "starsLeft": 4,
+      "armoury": [],
+      "handTier": 2,
+      "weaponTiers": {
+       "wheel": 4,
+       "stomper": 4,
+       "mortar": 3,
+       "comet": 3
+      },
+      "slots": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "keep": {
+       "gateTier": 1,
+       "slotWeapon": [
+        "wheel",
+        "stomper",
+        "mortar",
+        "comet",
+        null
+       ],
+       "weaponTier": {
+        "wheel": 4,
+        "stomper": 4,
+        "mortar": 3,
+        "comet": 3
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        2,
+        2
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate",
+       "weapon:1:stomper",
+       "weapon:2:mortar",
+       "weapon:3:comet"
+      ],
+      "stuck": null,
+      "seconds": 0.023
      },
      {
       "level": 32,
@@ -22038,8 +22087,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 8370,
-      "offerings": 9,
+      "gold": 6906,
+      "offerings": 14,
       "starsEarned": 4,
       "starsLeft": 8,
       "armoury": [],
@@ -22090,7 +22139,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.023
+      "seconds": 0.018
      },
      {
       "level": 33,
@@ -22102,9 +22151,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 98,
-      "gold": 13039,
-      "offerings": 12,
+      "gatePct": 100,
+      "gold": 10468,
+      "offerings": 10,
       "starsEarned": 3,
       "starsLeft": 11,
       "armoury": [],
@@ -22133,8 +22182,8 @@
        "weaponTier": {
         "wheel": 4,
         "stomper": 4,
-        "mortar": 3,
-        "comet": 3
+        "comet": 3,
+        "mortar": 3
        },
        "stations": {
         "cauldron": true,
@@ -22150,13 +22199,13 @@
        "weapon:0:wheel",
        "gate",
        "weapon:1:stomper",
-       "weapon:2:mortar",
        "weapon:3:comet",
+       "weapon:2:mortar",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.043
+      "seconds": 0.031
      },
      {
       "level": 34,
@@ -22168,9 +22217,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 96,
-      "gold": 17484,
-      "offerings": 17,
+      "gatePct": 100,
+      "gold": 15035,
+      "offerings": 18,
       "starsEarned": 4,
       "starsLeft": 15,
       "armoury": [],
@@ -22198,8 +22247,8 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 3,
         "stomper": 4,
+        "mortar": 3,
         "comet": 3
        },
        "stations": {
@@ -22215,13 +22264,13 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
+       "weapon:2:mortar",
        "weapon:3:comet",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.031
+      "seconds": 0.026
      },
      {
       "level": 35,
@@ -22234,8 +22283,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 14747,
-      "offerings": 20,
+      "gold": 12649,
+      "offerings": 22,
       "starsEarned": 3,
       "starsLeft": 18,
       "armoury": [],
@@ -22263,8 +22312,8 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 3,
         "stomper": 4,
+        "mortar": 3,
         "comet": 3
        },
        "stations": {
@@ -22280,13 +22329,13 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
+       "weapon:2:mortar",
        "weapon:3:comet",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.036
+      "seconds": 0.024
      },
      {
       "level": 36,
@@ -22298,9 +22347,9 @@
       "dayPerTry": [
        5
       ],
-      "gatePct": 92,
-      "gold": 10928,
-      "offerings": 25,
+      "gatePct": 100,
+      "gold": 9069,
+      "offerings": 11,
       "starsEarned": 4,
       "starsLeft": 1,
       "armoury": [
@@ -22357,7 +22406,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.028
+      "seconds": 0.02
      },
      {
       "level": 37,
@@ -22370,76 +22419,10 @@
        6
       ],
       "gatePct": 100,
-      "gold": 10934,
-      "offerings": 15,
+      "gold": 8598,
+      "offerings": 16,
       "starsEarned": 3,
       "starsLeft": 4,
-      "armoury": [],
-      "handTier": 2,
-      "weaponTiers": {
-       "wheel": 4,
-       "stomper": 4,
-       "mortar": 4,
-       "comet": 3
-      },
-      "slots": [
-       0,
-       1,
-       2,
-       3
-      ],
-      "keep": {
-       "gateTier": 3,
-       "slotWeapon": [
-        "wheel",
-        "stomper",
-        "mortar",
-        "comet",
-        null
-       ],
-       "weaponTier": {
-        "wheel": 4,
-        "stomper": 4,
-        "mortar": 4,
-        "comet": 3
-       },
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        2,
-        2
-       ]
-      },
-      "bought": [
-       "station:cauldron",
-       "weapon:0:wheel",
-       "gate",
-       "weapon:1:stomper",
-       "weapon:2:mortar",
-       "weapon:3:comet",
-       "gate",
-       "gate"
-      ],
-      "stuck": null,
-      "seconds": 0.028
-     },
-     {
-      "level": 38,
-      "boss": false,
-      "days": 5,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       5
-      ],
-      "gatePct": 98,
-      "gold": 5723,
-      "offerings": 13,
-      "starsEarned": 4,
-      "starsLeft": 8,
       "armoury": [],
       "handTier": 2,
       "weaponTiers": {
@@ -22489,7 +22472,72 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.033
+      "seconds": 0.027
+     },
+     {
+      "level": 38,
+      "boss": false,
+      "days": 5,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       5
+      ],
+      "gatePct": 100,
+      "gold": 9800,
+      "offerings": 17,
+      "starsEarned": 4,
+      "starsLeft": 8,
+      "armoury": [],
+      "handTier": 2,
+      "weaponTiers": {
+       "wheel": 4,
+       "stomper": 4,
+       "mortar": 4,
+       "comet": 3
+      },
+      "slots": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "keep": {
+       "gateTier": 2,
+       "slotWeapon": [
+        "wheel",
+        "stomper",
+        "mortar",
+        "comet",
+        null
+       ],
+       "weaponTier": {
+        "wheel": 4,
+        "stomper": 4,
+        "mortar": 4,
+        "comet": 3
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        2,
+        2
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate",
+       "weapon:1:stomper",
+       "weapon:2:mortar",
+       "weapon:3:comet",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.023
      },
      {
       "level": 39,
@@ -22502,8 +22550,8 @@
        5
       ],
       "gatePct": 100,
-      "gold": 12501,
-      "offerings": 19,
+      "gold": 10662,
+      "offerings": 20,
       "starsEarned": 4,
       "starsLeft": 7,
       "armoury": [
@@ -22574,9 +22622,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 54,
-      "gold": 23234,
-      "offerings": 65,
+      "gatePct": 37,
+      "gold": 18300,
+      "offerings": 67,
       "starsEarned": 8,
       "starsLeft": 3,
       "armoury": [
@@ -22633,13 +22681,13 @@
        "weapon:1:stomper",
        "weapon:3:comet",
        "weapon:2:mortar",
-       "weapon:4:bolter",
        "gate",
+       "weapon:4:bolter",
        "gate",
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.068
+      "seconds": 0.07
      },
      {
       "level": 41,
@@ -22651,9 +22699,9 @@
       "dayPerTry": [
        5
       ],
-      "gatePct": 96,
-      "gold": 12324,
-      "offerings": 26,
+      "gatePct": 100,
+      "gold": 10106,
+      "offerings": 10,
       "starsEarned": 3,
       "starsLeft": 6,
       "armoury": [],
@@ -22684,8 +22732,8 @@
        "weaponTier": {
         "wheel": 4,
         "stomper": 4,
-        "comet": 3,
         "mortar": 4,
+        "comet": 3,
         "bolter": 3
        },
        "stations": {
@@ -22702,13 +22750,13 @@
        "weapon:0:wheel",
        "gate",
        "weapon:1:stomper",
-       "weapon:3:comet",
        "weapon:2:mortar",
-       "gate",
-       "weapon:4:bolter"
+       "weapon:3:comet",
+       "weapon:4:bolter",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.028
+      "seconds": 0.029
      },
      {
       "level": 42,
@@ -22721,10 +22769,81 @@
        7
       ],
       "gatePct": 100,
-      "gold": 7768,
-      "offerings": 34,
+      "gold": 16118,
+      "offerings": 20,
       "starsEarned": 4,
       "starsLeft": 10,
+      "armoury": [],
+      "handTier": 2,
+      "weaponTiers": {
+       "wheel": 4,
+       "stomper": 4,
+       "mortar": 4,
+       "comet": 3,
+       "bolter": 3
+      },
+      "slots": [
+       0,
+       1,
+       2,
+       3,
+       4
+      ],
+      "keep": {
+       "gateTier": 3,
+       "slotWeapon": [
+        "wheel",
+        "stomper",
+        "mortar",
+        "comet",
+        "bolter"
+       ],
+       "weaponTier": {
+        "wheel": 4,
+        "stomper": 4,
+        "mortar": 4,
+        "comet": 3,
+        "bolter": 3
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": false
+       },
+       "handTier": [
+        2,
+        2
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate",
+       "weapon:1:stomper",
+       "weapon:2:mortar",
+       "weapon:3:comet",
+       "gate",
+       "weapon:4:bolter",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.041
+     },
+     {
+      "level": 43,
+      "boss": false,
+      "days": 5,
+      "tries": 2,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       3,
+       5
+      ],
+      "gatePct": 100,
+      "gold": 7131,
+      "offerings": 35,
+      "starsEarned": 4,
+      "starsLeft": 14,
       "armoury": [],
       "handTier": 2,
       "weaponTiers": {
@@ -22759,7 +22878,7 @@
        },
        "stations": {
         "cauldron": true,
-        "perch": true
+        "perch": false
        },
        "handTier": [
         2,
@@ -22775,82 +22894,10 @@
        "weapon:2:mortar",
        "gate",
        "weapon:4:bolter",
-       "gate",
-       "station:perch"
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.045
-     },
-     {
-      "level": 43,
-      "boss": false,
-      "days": 5,
-      "tries": 6,
-      "won": false,
-      "forced": true,
-      "dayPerTry": [
-       3,
-       3,
-       3,
-       3,
-       3,
-       3
-      ],
-      "gatePct": 0,
-      "gold": 4592,
-      "offerings": 30,
-      "starsEarned": 4,
-      "starsLeft": 14,
-      "armoury": [],
-      "handTier": 2,
-      "weaponTiers": {
-       "wheel": 4,
-       "stomper": 4,
-       "mortar": 4,
-       "comet": 3,
-       "bolter": 3
-      },
-      "slots": [
-       0,
-       1,
-       2,
-       3,
-       4
-      ],
-      "keep": {
-       "gateTier": 1,
-       "slotWeapon": [
-        "wheel",
-        "stomper",
-        "mortar",
-        "comet",
-        null
-       ],
-       "weaponTier": {
-        "wheel": 4,
-        "stomper": 4,
-        "comet": 3,
-        "mortar": 4
-       },
-       "stations": {
-        "cauldron": true,
-        "perch": false
-       },
-       "handTier": [
-        2,
-        2
-       ]
-      },
-      "bought": [
-       "station:cauldron",
-       "weapon:0:wheel",
-       "gate",
-       "weapon:1:stomper",
-       "weapon:3:comet",
-       "weapon:2:mortar"
-      ],
-      "stuck": null,
-      "seconds": 0.146
+      "seconds": 0.06
      },
      {
       "level": 44,
@@ -22862,9 +22909,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 96,
-      "gold": 11959,
-      "offerings": 34,
+      "gatePct": 100,
+      "gold": 8055,
+      "offerings": 29,
       "starsEarned": 4,
       "starsLeft": 18,
       "armoury": [],
@@ -22915,13 +22962,13 @@
        "weapon:1:stomper",
        "weapon:3:comet",
        "weapon:2:mortar",
-       "gate",
        "weapon:4:bolter",
+       "gate",
        "gate",
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.047
+      "seconds": 0.037
      },
      {
       "level": 45,
@@ -22933,9 +22980,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 79,
-      "gold": 12428,
-      "offerings": 38,
+      "gatePct": 100,
+      "gold": 8470,
+      "offerings": 36,
       "starsEarned": 3,
       "starsLeft": 0,
       "armoury": [
@@ -22972,8 +23019,8 @@
        "weaponTier": {
         "wheel": 4,
         "stomper": 4,
-        "comet": 3,
         "mortar": 4,
+        "comet": 3,
         "bolter": 3
        },
        "stations": {
@@ -22990,15 +23037,15 @@
        "weapon:0:wheel",
        "gate",
        "weapon:1:stomper",
-       "weapon:3:comet",
        "weapon:2:mortar",
-       "gate",
+       "weapon:3:comet",
        "weapon:4:bolter",
        "gate",
-       "station:perch"
+       "station:perch",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.053
+      "seconds": 0.047
      },
      {
       "level": 46,
@@ -23011,8 +23058,8 @@
        7
       ],
       "gatePct": 100,
-      "gold": 13632,
-      "offerings": 36,
+      "gold": 9649,
+      "offerings": 44,
       "starsEarned": 3,
       "starsLeft": 3,
       "armoury": [],
@@ -23069,7 +23116,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.052
+      "seconds": 0.039
      },
      {
       "level": 47,
@@ -23081,9 +23128,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 95,
-      "gold": 19683,
-      "offerings": 13,
+      "gatePct": 97,
+      "gold": 9910,
+      "offerings": 27,
       "starsEarned": 4,
       "starsLeft": 7,
       "armoury": [],
@@ -23103,7 +23150,7 @@
        4
       ],
       "keep": {
-       "gateTier": 3,
+       "gateTier": 2,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -23114,13 +23161,13 @@
        "weaponTier": {
         "wheel": 4,
         "stomper": 4,
+        "comet": 4,
         "mortar": 4,
-        "bolter": 3,
-        "comet": 4
+        "bolter": 3
        },
        "stations": {
         "cauldron": true,
-        "perch": false
+        "perch": true
        },
        "handTier": [
         2,
@@ -23132,14 +23179,14 @@
        "weapon:0:wheel",
        "gate",
        "weapon:1:stomper",
-       "weapon:2:mortar",
-       "weapon:4:bolter",
        "weapon:3:comet",
+       "weapon:2:mortar",
        "gate",
-       "gate"
+       "weapon:4:bolter",
+       "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.045
+      "seconds": 0.032
      },
      {
       "level": 48,
@@ -23151,9 +23198,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 100,
-      "gold": 20145,
-      "offerings": 25,
+      "gatePct": 99,
+      "gold": 16287,
+      "offerings": 17,
       "starsEarned": 3,
       "starsLeft": 10,
       "armoury": [],
@@ -23204,12 +23251,12 @@
        "weapon:1:stomper",
        "weapon:3:comet",
        "weapon:2:mortar",
-       "weapon:4:bolter",
        "gate",
+       "weapon:4:bolter",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.051
+      "seconds": 0.034
      },
      {
       "level": 49,
@@ -23221,9 +23268,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 100,
-      "gold": 17469,
-      "offerings": 48,
+      "gatePct": 90,
+      "gold": 12515,
+      "offerings": 34,
       "starsEarned": 4,
       "starsLeft": 14,
       "armoury": [],
@@ -23254,9 +23301,9 @@
        "weaponTier": {
         "wheel": 4,
         "stomper": 4,
+        "comet": 4,
         "mortar": 4,
-        "bolter": 3,
-        "comet": 4
+        "bolter": 3
        },
        "stations": {
         "cauldron": true,
@@ -23272,15 +23319,15 @@
        "weapon:0:wheel",
        "gate",
        "weapon:1:stomper",
-       "weapon:2:mortar",
-       "weapon:4:bolter",
        "weapon:3:comet",
+       "weapon:2:mortar",
        "gate",
+       "weapon:4:bolter",
        "gate",
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.042
+      "seconds": 0.059
      },
      {
       "level": 50,
@@ -23292,9 +23339,9 @@
       "dayPerTry": [
        9
       ],
-      "gatePct": 36,
-      "gold": 29539,
-      "offerings": 84,
+      "gatePct": 85,
+      "gold": 20755,
+      "offerings": 76,
       "starsEarned": 8,
       "starsLeft": 22,
       "armoury": [],
@@ -23347,12 +23394,12 @@
        "weapon:2:mortar",
        "weapon:4:bolter",
        "gate",
-       "station:perch",
        "gate",
+       "station:perch",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.091
+      "seconds": 0.083
      },
      {
       "level": 51,
@@ -23365,8 +23412,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 11417,
-      "offerings": 32,
+      "gold": 19190,
+      "offerings": 18,
       "starsEarned": 3,
       "starsLeft": 25,
       "armoury": [],
@@ -23403,7 +23450,7 @@
        },
        "stations": {
         "cauldron": true,
-        "perch": true
+        "perch": false
        },
        "handTier": [
         2,
@@ -23417,13 +23464,12 @@
        "weapon:1:stomper",
        "weapon:3:comet",
        "weapon:2:mortar",
+       "gate",
        "weapon:4:bolter",
-       "gate",
-       "gate",
-       "station:perch"
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.05
+      "seconds": 0.035
      },
      {
       "level": 52,
@@ -23436,7 +23482,7 @@
        8
       ],
       "gatePct": 98,
-      "gold": 32873,
+      "gold": 26335,
       "offerings": 74,
       "starsEarned": 4,
       "starsLeft": 29,
@@ -23488,13 +23534,13 @@
        "weapon:1:stomper",
        "weapon:3:comet",
        "weapon:2:mortar",
-       "gate",
        "weapon:4:bolter",
+       "gate",
        "gate",
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.093
+      "seconds": 0.048
      },
      {
       "level": 53,
@@ -23507,8 +23553,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 13379,
-      "offerings": 32,
+      "gold": 9047,
+      "offerings": 34,
       "starsEarned": 3,
       "starsLeft": 2,
       "armoury": [
@@ -23571,7 +23617,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.067
+      "seconds": 0.045
      },
      {
       "level": 54,
@@ -23583,9 +23629,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 100,
-      "gold": 14405,
-      "offerings": 35,
+      "gatePct": 99,
+      "gold": 9970,
+      "offerings": 29,
       "starsEarned": 4,
       "starsLeft": 6,
       "armoury": [],
@@ -23642,7 +23688,7 @@
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.047
+      "seconds": 0.049
      },
      {
       "level": 55,
@@ -23654,9 +23700,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 99,
-      "gold": 15948,
-      "offerings": 37,
+      "gatePct": 100,
+      "gold": 11215,
+      "offerings": 26,
       "starsEarned": 3,
       "starsLeft": 9,
       "armoury": [],
@@ -23707,13 +23753,13 @@
        "weapon:1:stomper",
        "weapon:3:comet",
        "weapon:2:mortar",
-       "gate",
        "weapon:4:bolter",
+       "gate",
        "gate",
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.04
+      "seconds": 0.039
      },
      {
       "level": 56,
@@ -23725,9 +23771,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 92,
-      "gold": 32938,
-      "offerings": 67,
+      "gatePct": 95,
+      "gold": 26522,
+      "offerings": 54,
       "starsEarned": 4,
       "starsLeft": 13,
       "armoury": [],
@@ -23757,9 +23803,9 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 4,
         "stomper": 4,
         "comet": 4,
+        "mortar": 4,
         "bolter": 3
        },
        "stations": {
@@ -23775,16 +23821,16 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:3:comet",
+       "weapon:2:mortar",
        "weapon:4:bolter",
        "gate",
-       "station:perch",
-       "gate"
+       "gate",
+       "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.061
+      "seconds": 0.05
      },
      {
       "level": 57,
@@ -23796,9 +23842,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 85,
-      "gold": 28724,
-      "offerings": 54,
+      "gatePct": 95,
+      "gold": 22855,
+      "offerings": 59,
       "starsEarned": 3,
       "starsLeft": 16,
       "armoury": [],
@@ -23851,11 +23897,11 @@
        "weapon:2:mortar",
        "weapon:4:bolter",
        "gate",
-       "gate",
-       "station:perch"
+       "station:perch",
+       "gate"
       ],
       "stuck": null,
-      "seconds": 0.055
+      "seconds": 0.052
      },
      {
       "level": 58,
@@ -23867,9 +23913,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 96,
-      "gold": 16364,
-      "offerings": 63,
+      "gatePct": 99,
+      "gold": 33057,
+      "offerings": 75,
       "starsEarned": 3,
       "starsLeft": 19,
       "armoury": [],
@@ -23889,7 +23935,7 @@
        4
       ],
       "keep": {
-       "gateTier": 4,
+       "gateTier": 3,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -23923,11 +23969,10 @@
        "gate",
        "weapon:4:bolter",
        "gate",
-       "station:perch",
-       "gate"
+       "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.074
+      "seconds": 0.058
      },
      {
       "level": 59,
@@ -23939,8 +23984,8 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 95,
-      "gold": 19946,
+      "gatePct": 97,
+      "gold": 15002,
       "offerings": 39,
       "starsEarned": 4,
       "starsLeft": 2,
@@ -23977,9 +24022,9 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 4,
         "stomper": 4,
         "comet": 4,
+        "mortar": 4,
         "bolter": 3
        },
        "stations": {
@@ -23995,16 +24040,16 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:3:comet",
-       "weapon:4:bolter",
+       "weapon:2:mortar",
        "gate",
+       "weapon:4:bolter",
        "gate",
        "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.054
+      "seconds": 0.047
      },
      {
       "level": 60,
@@ -24016,9 +24061,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 19,
-      "gold": 37697,
-      "offerings": 63,
+      "gatePct": 50,
+      "gold": 28182,
+      "offerings": 50,
       "starsEarned": 8,
       "starsLeft": 10,
       "armoury": [],
@@ -24048,9 +24093,9 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 4,
         "stomper": 4,
         "comet": 4,
+        "mortar": 4,
         "bolter": 4
        },
        "stations": {
@@ -24066,9 +24111,9 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:3:comet",
+       "weapon:2:mortar",
        "weapon:4:bolter",
        "gate",
        "gate",
@@ -24076,7 +24121,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.092
+      "seconds": 0.064
      },
      {
       "level": 61,
@@ -24088,9 +24133,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 94,
-      "gold": 22961,
-      "offerings": 49,
+      "gatePct": 87,
+      "gold": 15558,
+      "offerings": 55,
       "starsEarned": 4,
       "starsLeft": 14,
       "armoury": [],
@@ -24120,9 +24165,9 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 4,
         "stomper": 4,
         "comet": 4,
+        "mortar": 4,
         "bolter": 4
        },
        "stations": {
@@ -24138,17 +24183,17 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:3:comet",
-       "weapon:4:bolter",
+       "weapon:2:mortar",
        "gate",
+       "weapon:4:bolter",
        "gate",
        "station:perch",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.081
+      "seconds": 0.054
      },
      {
       "level": 62,
@@ -24160,9 +24205,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 98,
-      "gold": 26152,
-      "offerings": 61,
+      "gatePct": 89,
+      "gold": 18162,
+      "offerings": 60,
       "starsEarned": 3,
       "starsLeft": 17,
       "armoury": [],
@@ -24192,10 +24237,10 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 4,
         "stomper": 4,
-        "comet": 4,
-        "bolter": 4
+        "mortar": 4,
+        "bolter": 4,
+        "comet": 4
        },
        "stations": {
         "cauldron": true,
@@ -24210,17 +24255,17 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
-       "weapon:3:comet",
+       "weapon:2:mortar",
        "weapon:4:bolter",
+       "weapon:3:comet",
        "gate",
        "station:perch",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.09
+      "seconds": 0.065
      },
      {
       "level": 63,
@@ -24232,9 +24277,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 89,
-      "gold": 26042,
-      "offerings": 40,
+      "gatePct": 91,
+      "gold": 20703,
+      "offerings": 44,
       "starsEarned": 3,
       "starsLeft": 20,
       "armoury": [],
@@ -24291,7 +24336,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.061
+      "seconds": 0.037
      },
      {
       "level": 64,
@@ -24303,9 +24348,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 95,
-      "gold": 14976,
-      "offerings": 26,
+      "gatePct": 86,
+      "gold": 32410,
+      "offerings": 61,
       "starsEarned": 3,
       "starsLeft": 23,
       "armoury": [],
@@ -24325,7 +24370,7 @@
        4
       ],
       "keep": {
-       "gateTier": 4,
+       "gateTier": 3,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -24335,9 +24380,9 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 4,
         "stomper": 4,
         "comet": 4,
+        "mortar": 4,
         "bolter": 4
        },
        "stations": {
@@ -24353,17 +24398,16 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:3:comet",
+       "weapon:2:mortar",
+       "gate",
        "weapon:4:bolter",
        "gate",
-       "station:perch",
-       "gate",
-       "gate"
+       "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.086
+      "seconds": 0.051
      },
      {
       "level": 65,
@@ -24375,9 +24419,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 76,
-      "gold": 27493,
-      "offerings": 34,
+      "gatePct": 83,
+      "gold": 22068,
+      "offerings": 42,
       "starsEarned": 3,
       "starsLeft": 26,
       "armoury": [],
@@ -24407,9 +24451,9 @@
        ],
        "weaponTier": {
         "wheel": 4,
-        "mortar": 4,
         "stomper": 4,
         "comet": 4,
+        "mortar": 4,
         "bolter": 4
        },
        "stations": {
@@ -24425,16 +24469,16 @@
        "station:cauldron",
        "weapon:0:wheel",
        "gate",
-       "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:3:comet",
+       "weapon:2:mortar",
+       "gate",
        "weapon:4:bolter",
        "gate",
-       "station:perch",
-       "gate"
+       "station:perch"
       ],
       "stuck": null,
-      "seconds": 0.055
+      "seconds": 0.049
      },
      {
       "level": 66,
@@ -24446,9 +24490,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 68,
-      "gold": 32806,
-      "offerings": 59,
+      "gatePct": 88,
+      "gold": 24243,
+      "offerings": 49,
       "starsEarned": 4,
       "starsLeft": 30,
       "armoury": [],
@@ -24480,8 +24524,8 @@
         "wheel": 4,
         "mortar": 4,
         "stomper": 4,
-        "bolter": 4,
-        "comet": 4
+        "comet": 4,
+        "bolter": 4
        },
        "stations": {
         "cauldron": true,
@@ -24498,15 +24542,15 @@
        "gate",
        "weapon:2:mortar",
        "weapon:1:stomper",
-       "weapon:4:bolter",
        "weapon:3:comet",
+       "weapon:4:bolter",
        "gate",
        "station:perch",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.091
+      "seconds": 0.063
      },
      {
       "level": 67,
@@ -24519,8 +24563,8 @@
        7
       ],
       "gatePct": 98,
-      "gold": 20402,
-      "offerings": 41,
+      "gold": 13148,
+      "offerings": 35,
       "starsEarned": 3,
       "starsLeft": 1,
       "armoury": [
@@ -24577,14 +24621,14 @@
        "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:3:comet",
-       "gate",
        "weapon:4:bolter",
+       "gate",
        "gate",
        "station:perch",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.072
+      "seconds": 0.073
      },
      {
       "level": 68,
@@ -24596,9 +24640,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 100,
-      "gold": 31199,
-      "offerings": 34,
+      "gatePct": 99,
+      "gold": 25377,
+      "offerings": 37,
       "starsEarned": 3,
       "starsLeft": 4,
       "armoury": [],
@@ -24655,7 +24699,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.049
+      "seconds": 0.041
      },
      {
       "level": 69,
@@ -24668,8 +24712,8 @@
        6
       ],
       "gatePct": 100,
-      "gold": 31907,
-      "offerings": 40,
+      "gold": 25899,
+      "offerings": 37,
       "starsEarned": 4,
       "starsLeft": 8,
       "armoury": [],
@@ -24726,22 +24770,21 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.053
+      "seconds": 0.041
      },
      {
       "level": 70,
       "boss": true,
       "days": 9,
-      "tries": 2,
+      "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       1,
        9
       ],
-      "gatePct": 73,
-      "gold": 77620,
-      "offerings": 90,
+      "gatePct": 78,
+      "gold": 64065,
+      "offerings": 70,
       "starsEarned": 8,
       "starsLeft": 16,
       "armoury": [],
@@ -24799,7 +24842,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.154
+      "seconds": 0.098
      },
      {
       "level": 71,
@@ -24812,8 +24855,8 @@
        8
       ],
       "gatePct": 100,
-      "gold": 40445,
-      "offerings": 70,
+      "gold": 30868,
+      "offerings": 52,
       "starsEarned": 3,
       "starsLeft": 19,
       "armoury": [],
@@ -24864,30 +24907,28 @@
        "weapon:2:mortar",
        "weapon:1:stomper",
        "weapon:3:comet",
-       "gate",
        "weapon:4:bolter",
        "gate",
        "station:perch",
+       "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.079
+      "seconds": 0.069
      },
      {
       "level": 72,
       "boss": false,
       "days": 8,
-      "tries": 3,
+      "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       1,
-       1,
        8
       ],
-      "gatePct": 99,
-      "gold": 41600,
-      "offerings": 55,
+      "gatePct": 76,
+      "gold": 32135,
+      "offerings": 58,
       "starsEarned": 3,
       "starsLeft": 22,
       "armoury": [],
@@ -24940,27 +24981,28 @@
        "weapon:3:comet",
        "weapon:4:bolter",
        "gate",
-       "gate",
        "station:perch",
+       "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.101
+      "seconds": 0.099
      },
      {
       "level": 73,
       "boss": false,
       "days": 8,
-      "tries": 2,
+      "tries": 3,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       1,
+       5,
+       5,
        8
       ],
-      "gatePct": 21,
-      "gold": 39460,
-      "offerings": 70,
+      "gatePct": 16,
+      "gold": 29864,
+      "offerings": 36,
       "starsEarned": 4,
       "starsLeft": 26,
       "armoury": [],
@@ -24992,8 +25034,8 @@
         "wheel": 5,
         "mortar": 4,
         "stomper": 4,
-        "comet": 4,
-        "bolter": 4
+        "bolter": 4,
+        "comet": 4
        },
        "stations": {
         "cauldron": true,
@@ -25010,15 +25052,15 @@
        "gate",
        "weapon:2:mortar",
        "weapon:1:stomper",
-       "weapon:3:comet",
        "weapon:4:bolter",
-       "gate",
+       "weapon:3:comet",
        "gate",
        "station:perch",
+       "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.119
+      "seconds": 0.184
      },
      {
       "level": 74,
@@ -25030,9 +25072,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 95,
-      "gold": 38823,
-      "offerings": 53,
+      "gatePct": 100,
+      "gold": 32042,
+      "offerings": 40,
       "starsEarned": 3,
       "starsLeft": 29,
       "armoury": [],
@@ -25089,7 +25131,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.069
+      "seconds": 0.057
      },
      {
       "level": 75,
@@ -25101,9 +25143,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 90,
-      "gold": 47780,
-      "offerings": 57,
+      "gatePct": 100,
+      "gold": 37498,
+      "offerings": 53,
       "starsEarned": 3,
       "starsLeft": 0,
       "armoury": [
@@ -25162,12 +25204,12 @@
        "weapon:3:comet",
        "weapon:4:bolter",
        "gate",
-       "station:perch",
        "gate",
+       "station:perch",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.083
+      "seconds": 0.072
      },
      {
       "level": 76,
@@ -25180,8 +25222,8 @@
        7
       ],
       "gatePct": 95,
-      "gold": 32470,
-      "offerings": 39,
+      "gold": 23710,
+      "offerings": 24,
       "starsEarned": 3,
       "starsLeft": 3,
       "armoury": [],
@@ -25239,7 +25281,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.063
+      "seconds": 0.058
      },
      {
       "level": 77,
@@ -25251,11 +25293,154 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 100,
-      "gold": 34941,
-      "offerings": 34,
+      "gatePct": 99,
+      "gold": 25251,
+      "offerings": 24,
       "starsEarned": 3,
       "starsLeft": 6,
+      "armoury": [],
+      "handTier": 3,
+      "weaponTiers": {
+       "wheel": 5,
+       "stomper": 5,
+       "mortar": 4,
+       "comet": 4,
+       "bolter": 4
+      },
+      "slots": [
+       0,
+       1,
+       2,
+       3,
+       4
+      ],
+      "keep": {
+       "gateTier": 4,
+       "slotWeapon": [
+        "wheel",
+        "stomper",
+        "mortar",
+        "comet",
+        "bolter"
+       ],
+       "weaponTier": {
+        "wheel": 5,
+        "mortar": 4,
+        "stomper": 5,
+        "bolter": 4,
+        "comet": 4
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": true
+       },
+       "handTier": [
+        3,
+        3
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate",
+       "weapon:2:mortar",
+       "weapon:1:stomper",
+       "weapon:4:bolter",
+       "weapon:3:comet",
+       "gate",
+       "station:perch",
+       "gate",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.057
+     },
+     {
+      "level": 78,
+      "boss": false,
+      "days": 6,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       6
+      ],
+      "gatePct": 99,
+      "gold": 35844,
+      "offerings": 35,
+      "starsEarned": 3,
+      "starsLeft": 9,
+      "armoury": [],
+      "handTier": 3,
+      "weaponTiers": {
+       "wheel": 5,
+       "stomper": 5,
+       "mortar": 4,
+       "comet": 4,
+       "bolter": 4
+      },
+      "slots": [
+       0,
+       1,
+       2,
+       3,
+       4
+      ],
+      "keep": {
+       "gateTier": 3,
+       "slotWeapon": [
+        "wheel",
+        "stomper",
+        "mortar",
+        "comet",
+        "bolter"
+       ],
+       "weaponTier": {
+        "wheel": 5,
+        "mortar": 4,
+        "stomper": 5,
+        "comet": 4,
+        "bolter": 4
+       },
+       "stations": {
+        "cauldron": true,
+        "perch": true
+       },
+       "handTier": [
+        3,
+        3
+       ]
+      },
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate",
+       "weapon:2:mortar",
+       "weapon:1:stomper",
+       "weapon:3:comet",
+       "weapon:4:bolter",
+       "gate",
+       "station:perch",
+       "gate"
+      ],
+      "stuck": null,
+      "seconds": 0.04
+     },
+     {
+      "level": 79,
+      "boss": false,
+      "days": 8,
+      "tries": 1,
+      "won": true,
+      "forced": false,
+      "dayPerTry": [
+       8
+      ],
+      "gatePct": 92,
+      "gold": 45074,
+      "offerings": 57,
+      "starsEarned": 3,
+      "starsLeft": 12,
       "armoury": [],
       "handTier": 3,
       "weaponTiers": {
@@ -25311,151 +25496,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.061
-     },
-     {
-      "level": 78,
-      "boss": false,
-      "days": 6,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       6
-      ],
-      "gatePct": 99,
-      "gold": 19637,
-      "offerings": 16,
-      "starsEarned": 3,
-      "starsLeft": 9,
-      "armoury": [],
-      "handTier": 3,
-      "weaponTiers": {
-       "wheel": 5,
-       "stomper": 5,
-       "mortar": 4,
-       "comet": 4,
-       "bolter": 4
-      },
-      "slots": [
-       0,
-       1,
-       2,
-       3,
-       4
-      ],
-      "keep": {
-       "gateTier": 4,
-       "slotWeapon": [
-        "wheel",
-        "stomper",
-        "mortar",
-        "comet",
-        "bolter"
-       ],
-       "weaponTier": {
-        "wheel": 5,
-        "mortar": 4,
-        "bolter": 4,
-        "stomper": 5,
-        "comet": 4
-       },
-       "stations": {
-        "cauldron": true,
-        "perch": true
-       },
-       "handTier": [
-        3,
-        3
-       ]
-      },
-      "bought": [
-       "station:cauldron",
-       "weapon:0:wheel",
-       "gate",
-       "weapon:2:mortar",
-       "weapon:4:bolter",
-       "weapon:1:stomper",
-       "weapon:3:comet",
-       "gate",
-       "station:perch",
-       "gate",
-       "gate"
-      ],
-      "stuck": null,
-      "seconds": 0.052
-     },
-     {
-      "level": 79,
-      "boss": false,
-      "days": 8,
-      "tries": 1,
-      "won": true,
-      "forced": false,
-      "dayPerTry": [
-       8
-      ],
-      "gatePct": 89,
-      "gold": 57041,
-      "offerings": 62,
-      "starsEarned": 3,
-      "starsLeft": 12,
-      "armoury": [],
-      "handTier": 3,
-      "weaponTiers": {
-       "wheel": 5,
-       "stomper": 5,
-       "mortar": 4,
-       "comet": 4,
-       "bolter": 4
-      },
-      "slots": [
-       0,
-       1,
-       2,
-       3,
-       4
-      ],
-      "keep": {
-       "gateTier": 4,
-       "slotWeapon": [
-        "wheel",
-        "stomper",
-        "mortar",
-        "comet",
-        "bolter"
-       ],
-       "weaponTier": {
-        "wheel": 5,
-        "mortar": 4,
-        "bolter": 4,
-        "stomper": 5,
-        "comet": 4
-       },
-       "stations": {
-        "cauldron": true,
-        "perch": true
-       },
-       "handTier": [
-        3,
-        3
-       ]
-      },
-      "bought": [
-       "station:cauldron",
-       "weapon:0:wheel",
-       "gate",
-       "weapon:2:mortar",
-       "weapon:4:bolter",
-       "weapon:1:stomper",
-       "weapon:3:comet",
-       "gate",
-       "station:perch",
-       "gate",
-       "gate"
-      ],
-      "stuck": null,
-      "seconds": 0.07
+      "seconds": 0.062
      },
      {
       "level": 80,
@@ -25467,9 +25508,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 82,
-      "gold": 64509,
-      "offerings": 50,
+      "gatePct": 64,
+      "gold": 51754,
+      "offerings": 48,
       "starsEarned": 8,
       "starsLeft": 20,
       "armoury": [],
@@ -25500,8 +25541,8 @@
        "weaponTier": {
         "wheel": 5,
         "mortar": 4,
-        "bolter": 4,
         "stomper": 5,
+        "bolter": 4,
         "comet": 4
        },
        "stations": {
@@ -25518,8 +25559,8 @@
        "weapon:0:wheel",
        "gate",
        "weapon:2:mortar",
-       "weapon:4:bolter",
        "weapon:1:stomper",
+       "weapon:4:bolter",
        "weapon:3:comet",
        "gate",
        "station:perch",
@@ -25527,7 +25568,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.07
+      "seconds": 0.061
      },
      {
       "level": 81,
@@ -25539,9 +25580,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 73,
-      "gold": 42518,
-      "offerings": 44,
+      "gatePct": 88,
+      "gold": 32183,
+      "offerings": 42,
       "starsEarned": 3,
       "starsLeft": 23,
       "armoury": [],
@@ -25572,9 +25613,9 @@
        "weaponTier": {
         "wheel": 5,
         "mortar": 4,
-        "bolter": 4,
         "stomper": 5,
-        "comet": 4
+        "comet": 4,
+        "bolter": 4
        },
        "stations": {
         "cauldron": true,
@@ -25590,16 +25631,16 @@
        "weapon:0:wheel",
        "gate",
        "weapon:2:mortar",
-       "weapon:4:bolter",
        "weapon:1:stomper",
        "weapon:3:comet",
+       "weapon:4:bolter",
        "gate",
        "station:perch",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.077
+      "seconds": 0.062
      },
      {
       "level": 82,
@@ -25611,9 +25652,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 90,
-      "gold": 43236,
-      "offerings": 36,
+      "gatePct": 100,
+      "gold": 32622,
+      "offerings": 41,
       "starsEarned": 3,
       "starsLeft": 26,
       "armoury": [],
@@ -25645,8 +25686,8 @@
         "wheel": 5,
         "mortar": 4,
         "stomper": 5,
-        "bolter": 4,
-        "comet": 4
+        "comet": 4,
+        "bolter": 4
        },
        "stations": {
         "cauldron": true,
@@ -25663,15 +25704,15 @@
        "gate",
        "weapon:2:mortar",
        "weapon:1:stomper",
-       "weapon:4:bolter",
        "weapon:3:comet",
+       "weapon:4:bolter",
        "gate",
        "station:perch",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.072
+      "seconds": 0.051
      },
      {
       "level": 83,
@@ -25683,9 +25724,9 @@
       "dayPerTry": [
        7
       ],
-      "gatePct": 98,
-      "gold": 45077,
-      "offerings": 46,
+      "gatePct": 90,
+      "gold": 34470,
+      "offerings": 38,
       "starsEarned": 3,
       "starsLeft": 29,
       "armoury": [],
@@ -25716,9 +25757,9 @@
        "weaponTier": {
         "wheel": 5,
         "mortar": 4,
-        "bolter": 4,
         "stomper": 5,
-        "comet": 4
+        "comet": 4,
+        "bolter": 4
        },
        "stations": {
         "cauldron": true,
@@ -25734,16 +25775,16 @@
        "weapon:0:wheel",
        "gate",
        "weapon:2:mortar",
-       "weapon:4:bolter",
        "weapon:1:stomper",
        "weapon:3:comet",
+       "weapon:4:bolter",
        "gate",
        "station:perch",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.07
+      "seconds": 0.052
      },
      {
       "level": 84,
@@ -25755,9 +25796,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 88,
-      "gold": 67821,
-      "offerings": 67,
+      "gatePct": 99,
+      "gold": 54376,
+      "offerings": 63,
       "starsEarned": 3,
       "starsLeft": 0,
       "armoury": [
@@ -25794,8 +25835,8 @@
        "weaponTier": {
         "wheel": 5,
         "mortar": 4,
-        "bolter": 4,
         "stomper": 5,
+        "bolter": 4,
         "comet": 4
        },
        "stations": {
@@ -25812,8 +25853,8 @@
        "weapon:0:wheel",
        "gate",
        "weapon:2:mortar",
-       "weapon:4:bolter",
        "weapon:1:stomper",
+       "weapon:4:bolter",
        "weapon:3:comet",
        "gate",
        "station:perch",
@@ -25821,7 +25862,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.106
+      "seconds": 0.063
      },
      {
       "level": 85,
@@ -25833,9 +25874,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 97,
-      "gold": 53720,
-      "offerings": 47,
+      "gatePct": 86,
+      "gold": 44900,
+      "offerings": 46,
       "starsEarned": 4,
       "starsLeft": 4,
       "armoury": [],
@@ -25892,7 +25933,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.046
      },
      {
       "level": 86,
@@ -25904,9 +25945,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 71,
-      "gold": 54936,
-      "offerings": 52,
+      "gatePct": 93,
+      "gold": 45858,
+      "offerings": 40,
       "starsEarned": 3,
       "starsLeft": 7,
       "armoury": [],
@@ -25958,12 +25999,12 @@
        "weapon:4:bolter",
        "weapon:1:stomper",
        "weapon:3:comet",
-       "gate",
        "station:perch",
+       "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.056
+      "seconds": 0.043
      },
      {
       "level": 87,
@@ -25975,9 +26016,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 98,
-      "gold": 55530,
-      "offerings": 45,
+      "gatePct": 93,
+      "gold": 46316,
+      "offerings": 44,
       "starsEarned": 3,
       "starsLeft": 10,
       "armoury": [],
@@ -26029,12 +26070,12 @@
        "weapon:4:bolter",
        "weapon:1:stomper",
        "weapon:3:comet",
-       "gate",
        "station:perch",
+       "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.048
+      "seconds": 0.043
      },
      {
       "level": 88,
@@ -26046,9 +26087,9 @@
       "dayPerTry": [
        6
       ],
-      "gatePct": 97,
-      "gold": 32270,
-      "offerings": 19,
+      "gatePct": 100,
+      "gold": 47160,
+      "offerings": 53,
       "starsEarned": 3,
       "starsLeft": 13,
       "armoury": [],
@@ -26068,7 +26109,7 @@
        4
       ],
       "keep": {
-       "gateTier": 4,
+       "gateTier": 3,
        "slotWeapon": [
         "wheel",
         "stomper",
@@ -26100,13 +26141,12 @@
        "weapon:4:bolter",
        "weapon:1:stomper",
        "weapon:3:comet",
-       "gate",
        "station:perch",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.052
+      "seconds": 0.04
      },
      {
       "level": 89,
@@ -26118,9 +26158,9 @@
       "dayPerTry": [
        8
       ],
-      "gatePct": 94,
-      "gold": 76923,
-      "offerings": 70,
+      "gatePct": 91,
+      "gold": 62516,
+      "offerings": 56,
       "starsEarned": 3,
       "starsLeft": 16,
       "armoury": [],
@@ -26178,7 +26218,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.077
+      "seconds": 0.068
      },
      {
       "level": 90,
@@ -26190,9 +26230,9 @@
       "dayPerTry": [
        9
       ],
-      "gatePct": 58,
-      "gold": 135377,
-      "offerings": 84,
+      "gatePct": 57,
+      "gold": 114719,
+      "offerings": 87,
       "starsEarned": 8,
       "starsLeft": 24,
       "armoury": [],
@@ -26250,7 +26290,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.096
+      "seconds": 0.088
      },
      {
       "level": 91,
@@ -26263,8 +26303,8 @@
        7
       ],
       "gatePct": 94,
-      "gold": 58539,
-      "offerings": 50,
+      "gold": 46235,
+      "offerings": 40,
       "starsEarned": 3,
       "starsLeft": 27,
       "armoury": [],
@@ -26322,7 +26362,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.074
+      "seconds": 0.057
      },
      {
       "level": 92,
@@ -26340,7 +26380,7 @@
        1
       ],
       "gatePct": 0,
-      "gold": 2482,
+      "gold": 2593,
       "offerings": 0,
       "starsEarned": 3,
       "starsLeft": 30,
@@ -26381,22 +26421,21 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.04
+      "seconds": 0.038
      },
      {
       "level": 93,
       "boss": false,
       "days": 9,
-      "tries": 2,
+      "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       1,
        9
       ],
-      "gatePct": 47,
-      "gold": 108362,
-      "offerings": 80,
+      "gatePct": 88,
+      "gold": 90913,
+      "offerings": 70,
       "starsEarned": 3,
       "starsLeft": 1,
       "armoury": [
@@ -26454,28 +26493,27 @@
        "weapon:4:bolter",
        "weapon:1:stomper",
        "weapon:3:comet",
-       "gate",
        "station:perch",
+       "gate",
        "gate",
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.108
+      "seconds": 0.089
      },
      {
       "level": 94,
       "boss": false,
       "days": 9,
-      "tries": 2,
+      "tries": 1,
       "won": true,
       "forced": false,
       "dayPerTry": [
-       1,
        9
       ],
-      "gatePct": 88,
-      "gold": 110821,
-      "offerings": 81,
+      "gatePct": 81,
+      "gold": 93758,
+      "offerings": 92,
       "starsEarned": 3,
       "starsLeft": 4,
       "armoury": [],
@@ -26533,7 +26571,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.105
+      "seconds": 0.082
      },
      {
       "level": 95,
@@ -26545,9 +26583,9 @@
       "dayPerTry": [
        9
       ],
-      "gatePct": 98,
-      "gold": 120020,
-      "offerings": 81,
+      "gatePct": 89,
+      "gold": 101364,
+      "offerings": 78,
       "starsEarned": 4,
       "starsLeft": 8,
       "armoury": [],
@@ -26605,26 +26643,22 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.086
+      "seconds": 0.079
      },
      {
       "level": 96,
       "boss": false,
       "days": 7,
-      "tries": 6,
-      "won": false,
-      "forced": true,
+      "tries": 2,
+      "won": true,
+      "forced": false,
       "dayPerTry": [
        1,
-       1,
-       1,
-       1,
-       1,
-       1
+       7
       ],
-      "gatePct": 0,
-      "gold": 4169,
-      "offerings": 0,
+      "gatePct": 90,
+      "gold": 54974,
+      "offerings": 29,
       "starsEarned": 3,
       "starsLeft": 11,
       "armoury": [],
@@ -26644,46 +26678,60 @@
        4
       ],
       "keep": {
-       "gateTier": 0,
+       "gateTier": 4,
        "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
+        "wheel",
+        "stomper",
+        "mortar",
+        "comet",
+        "bolter"
        ],
-       "weaponTier": {},
+       "weaponTier": {
+        "wheel": 5,
+        "mortar": 5,
+        "bolter": 4,
+        "stomper": 5,
+        "comet": 5
+       },
        "stations": {
-        "cauldron": false,
-        "perch": false
+        "cauldron": true,
+        "perch": true
        },
        "handTier": [
         3,
         3
        ]
       },
-      "bought": [],
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate",
+       "weapon:2:mortar",
+       "weapon:4:bolter",
+       "weapon:1:stomper",
+       "weapon:3:comet",
+       "gate",
+       "station:perch",
+       "gate",
+       "gate"
+      ],
       "stuck": null,
-      "seconds": 0.041
+      "seconds": 0.067
      },
      {
       "level": 97,
       "boss": false,
       "days": 7,
-      "tries": 6,
-      "won": false,
-      "forced": true,
+      "tries": 2,
+      "won": true,
+      "forced": false,
       "dayPerTry": [
        1,
-       1,
-       1,
-       1,
-       1,
-       1
+       7
       ],
-      "gatePct": 0,
-      "gold": 2200,
-      "offerings": 0,
+      "gatePct": 100,
+      "gold": 56736,
+      "offerings": 33,
       "starsEarned": 3,
       "starsLeft": 14,
       "armoury": [],
@@ -26703,41 +26751,60 @@
        4
       ],
       "keep": {
-       "gateTier": 0,
+       "gateTier": 4,
        "slotWeapon": [
-        null,
-        null,
-        null,
-        null,
-        null
+        "wheel",
+        "stomper",
+        "mortar",
+        "comet",
+        "bolter"
        ],
-       "weaponTier": {},
+       "weaponTier": {
+        "wheel": 5,
+        "mortar": 5,
+        "bolter": 4,
+        "stomper": 5,
+        "comet": 5
+       },
        "stations": {
-        "cauldron": false,
-        "perch": false
+        "cauldron": true,
+        "perch": true
        },
        "handTier": [
         3,
         3
        ]
       },
-      "bought": [],
+      "bought": [
+       "station:cauldron",
+       "weapon:0:wheel",
+       "gate",
+       "weapon:2:mortar",
+       "weapon:4:bolter",
+       "weapon:1:stomper",
+       "weapon:3:comet",
+       "gate",
+       "station:perch",
+       "gate",
+       "gate"
+      ],
       "stuck": null,
-      "seconds": 0.035
+      "seconds": 0.072
      },
      {
       "level": 98,
       "boss": false,
       "days": 9,
-      "tries": 1,
+      "tries": 2,
       "won": true,
       "forced": false,
       "dayPerTry": [
+       1,
        9
       ],
-      "gatePct": 74,
-      "gold": 120231,
-      "offerings": 86,
+      "gatePct": 93,
+      "gold": 101846,
+      "offerings": 90,
       "starsEarned": 3,
       "starsLeft": 17,
       "armoury": [],
@@ -26795,21 +26862,23 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.098
+      "seconds": 0.104
      },
      {
       "level": 99,
       "boss": false,
       "days": 9,
-      "tries": 1,
+      "tries": 3,
       "won": true,
       "forced": false,
       "dayPerTry": [
+       1,
+       1,
        9
       ],
-      "gatePct": 76,
-      "gold": 122124,
-      "offerings": 106,
+      "gatePct": 66,
+      "gold": 103267,
+      "offerings": 86,
       "starsEarned": 3,
       "starsLeft": 20,
       "armoury": [],
@@ -26867,7 +26936,7 @@
        "gate"
       ],
       "stuck": null,
-      "seconds": 0.109
+      "seconds": 0.107
      },
      {
       "level": 100,
@@ -26881,11 +26950,11 @@
        8,
        1,
        1,
-       8,
+       1,
        1
       ],
       "gatePct": 0,
-      "gold": 4805,
+      "gold": 3091,
       "offerings": 0,
       "starsEarned": 8,
       "starsLeft": 28,
@@ -26926,7 +26995,7 @@
       },
       "bought": [],
       "stuck": null,
-      "seconds": 0.215
+      "seconds": 0.15
      }
     ]
    }

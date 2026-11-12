@@ -58,7 +58,7 @@ export const DAY = {
  * Columns: countFactor = raiders times this from day 1; lateFactor = the factor after easeTo; easeFrom, easeTo = days
  * of the change; goldFactor = gold per kill times this in co-op; campaignFactor = see its own comment.
  */
-export const COOP = { countFactor: 2.3, lateFactor: 2.1, easeFrom: 22, easeTo: 36, earlyAdjust: [-8, -6, -3, 0], goldFactor: 0.5, /** Raiders of a campaign level times this when two play. */ campaignFactor: 1.9 };
+export const COOP = { countFactor: 2.3, lateFactor: 2.1, easeFrom: 22, easeTo: 36, earlyAdjust: [-8, -6, -3, 0], goldFactor: 0.5, /** Raiders of a campaign level times this when two play. */ campaignFactor: 1.7 };
 
 /** Landscape cycle of endless: the order of the landscapes, changing every DAYS_PER_LANDSCAPE days. */
 export const LANDSCAPES = ['meadow', 'canyon', 'marsh', 'snowpine'] as const;

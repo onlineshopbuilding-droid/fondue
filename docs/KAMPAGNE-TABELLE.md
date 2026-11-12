@@ -27,7 +27,7 @@ Danach `node scripts/campaign-table.ts` ausführen, damit diese Tabelle wieder s
 Wer einer KI sagt „mach Level 37 schwerer“, bekommt genau so einen Eintrag in `LEVEL_OVERRIDES`.
 
 <!-- KAMPAGNE:START (erzeugt von scripts/campaign-table.ts, nicht von Hand ändern) -->
-Stand: 100 Level, 651 Tage, 10 Boss-Level, 388 Sterne für alle ersten Siege zusammen.
+Stand: 100 Level, 662 Tage, 10 Boss-Level, 388 Sterne für alle ersten Siege zusammen.
 
 ### Die Kurve (`CURVE`)
 
@@ -69,14 +69,14 @@ Räuber je Tag: Gesamtzahl für Tag 1 · Tag 2 · …, allein gespielt. Stärke:
 | Level | Name | Landschaft | Tage | Räuber je Tag | Neue Räuber | Besonderheit | Boss | Stärke | Sterne | Sieg schaltet frei |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 ✎ | Pot Helmets | Wiese | 2 | 24 · 27 | Pothelm |  |  | 1 | 4 | Slot 1 (Wall Foot), Waffe Rolling Wheel |
-| 2 | Downhill Wheel | Wiese | 3 | 26 · 31 · 37 |  |  |  | 1,05 | 4 | Tor bis Iron-Bound Gate |
-| 3 | Kegs on the Road | Wiese | 3 | 27 · 34 · 41 | Keg Hauler |  |  | 1,1 | 4 |  |
-| 4 | Crumbs at the Gate | Wiese | 3 | 28 · 36 · 44 |  |  |  | 1,15 | 3 |  |
-| 5 | Summer Siege | Wiese | 4 | 29 · 38 · 48 · 57 |  |  |  | 1,2 | 4 | Waffe Sticky Fondue |
-| 6 | Sticky Situation | Wiese | 4 | 30 · 40 · 51 · 61 |  |  |  | 1,25 | 3 |  |
-| 7 | Hoofbeats | Wiese | 4 | 31 · 42 · 54 · 65 | Goat Rider |  |  | 1,3 | 4 |  |
-| 8 | Meadow Muddle | Wiese | 4 | 32 · 44 · 57 · 69 |  |  |  | 1,35 | 4 | Tor bis Gilded Gate |
-| 9 | The Stampede | Wiese | 4 | 33 · 46 · 59 · 73 |  | Riders only (nur Goat Rider) |  | 1,4 | 4 | Slot 2 (Wall), Waffe Stomper |
+| 2 | Downhill Wheel | Wiese | 5 | 26 · 31 · 37 · 42 · 48 |  |  |  | 1,05 | 4 | Tor bis Iron-Bound Gate |
+| 3 | Kegs on the Road | Wiese | 5 | 27 · 34 · 41 · 48 · 55 | Keg Hauler |  |  | 1,1 | 4 |  |
+| 4 | Crumbs at the Gate | Wiese | 5 | 28 · 36 · 44 · 53 · 61 |  |  |  | 1,15 | 3 |  |
+| 5 | Summer Siege | Wiese | 5 | 29 · 38 · 48 · 57 · 66 |  |  |  | 1,2 | 4 | Waffe Sticky Fondue |
+| 6 | Sticky Situation | Wiese | 5 | 30 · 40 · 51 · 61 · 72 |  |  |  | 1,25 | 3 |  |
+| 7 | Hoofbeats | Wiese | 5 | 31 · 42 · 54 · 65 · 77 | Goat Rider |  |  | 1,3 | 4 |  |
+| 8 | Meadow Muddle | Wiese | 5 | 32 · 44 · 57 · 69 · 81 |  |  |  | 1,35 | 4 | Tor bis Gilded Gate |
+| 9 | The Stampede | Wiese | 5 | 33 · 46 · 59 · 73 · 86 |  | Riders only (nur Goat Rider) |  | 1,4 | 4 | Slot 2 (Wall), Waffe Stomper |
 | 10 | Bigpot's Charge | Wiese | 8 | 33 · 48 · 62 · 76 · 90 · 94 · 97 · 181 |  |  | Sir Hubert Bigpot (Riesen: 1× Pothelm) | 1,62 | 8 |  |
 | 11 | Thinking Caps | Wiese | 6 | 34 · 49 · 64 · 80 · 95 · 98 |  |  |  | 1,5 | 3 |  |
 | 12 | Boing | Wiese | 6 | 35 · 51 · 67 · 83 · 99 · 102 | Pogo Bandit |  |  | 1,55 | 4 | Waffe Alphorn |
