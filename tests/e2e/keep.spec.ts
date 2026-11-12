@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { WORLD, perchX } from '../../src/config/field';
 import { SLOT_COUNT } from '../../src/config/slots';
-import { DEVICES, clearField, equip, gameState, openGame, pointer, spawn, startEndless, waitFor, type Device } from './helpers';
+import { DEVICES, clearField, equip, gameState, openGame, pointer, spawn, startEndless, waitFor, waitGame, type Device } from './helpers';
 
 /** Everything about the keep in a fight, by mouse and by finger, on the three devices. */
 
@@ -58,27 +58,31 @@ for (const d of DEVICES) {
     await page.evaluate(() => { for (const e of (window as any).__fondue.session.sim.s.enemies) { e.hp = 20000; e.maxHp = 20000; } });
     for (let i = 0; i < SLOT_COUNT; i++) {
       await tapCss(page, d, await slotCss(page, i));
-      await waitFor(() => view(page), (s) => s.cooldowns[i] > 0, 4000);
+      await waitGame(page, () => view(page), (s) => s.cooldowns[i] > 0, 4);
       const s = await gameState(page);
       expect(s!.enemies.every((e: any) => e.heldBy.length === 0), `tap on slot ${i} grabbed nobody: ${JSON.stringify(s!.enemies)}`).toBe(true);
     }
     await page.screenshot({ path: `mobile-screenshots/weapons-fired-${d.name}.png` });
     // The shots hit: the raiders lose hit points.
-    await waitFor(() => view(page), (s) => s.enemies.some((e: any) => e.hpFrac < 1), 15000);
+    await waitGame(page, () => view(page), (s) => s.enemies.some((e: any) => e.hpFrac < 1), 15);
 
     // A raider at the gate can still be grabbed right next to the weapons, and a grab fires nothing.
     await clearField(page);
-    await page.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.cooldowns = s.cooldowns.map(() => 0); });
+    // Nothing of the five shots is left on the road either (burning cheese, shells still on their way):
+    // on a slow machine they would kill the next raider before the hand gets to it, and the kill below
+    // must come from the throw.
+    await page.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.cooldowns = s.cooldowns.map(() => 0); s.zones = []; s.delayed = []; });
     await spawn(page, 'grunt', WORLD.gateX + 26);
     const e = (await waitFor(() => gameState(page), (s) => s!.enemies.length === 1, 3000))!.enemies[0];
     const kills = (await gameState(page))!.kills;
     const p = await pointer(page, d.touch);
     await p.down(e.x + 4, e.y - 44);
-    await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'held', 3000);
+    await waitGame(page, () => gameState(page), (s) => s!.enemies[0]?.st === 'held', 3);
     expect((await view(page)).cooldowns.every((c: number) => c === 0)).toBe(true);
     await p.glide(e.x + 4, e.y - 44, e.x + 30, 90);
     await p.up();
-    await waitFor(() => gameState(page), (s) => s!.kills > kills, 8000);
+    // Its flight and fall take game time, which runs slower than real time where frames are slow.
+    await waitGame(page, () => gameState(page), (s) => s!.kills > kills, 8);
     expect(errors).toEqual([]);
     await context.close();
   });

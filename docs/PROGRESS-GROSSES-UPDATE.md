@@ -85,3 +85,11 @@ Browser-Tests (`tests/e2e`), umgestellt auf das neue Spiel. Alle übrigen alten 
 - Danach offen: Sichtpruefung auf den drei Geraeten (Screenshots ansehen), Leistungstest, Issue 1 pruefen, Android-App pruefen, OFFENE-ENTSCHEIDUNGEN nachziehen (Bewertungsliste ist jetzt im Spiel, weaponUnlock wird gelesen), Freischaltungen auf Boss-Level pruefen, Abschlussbericht docs/ABSCHLUSS-GROSSES-UPDATE.md, Merge und Veroeffentlichung, Live-Pruefung, Worktrees aufraeumen (gu-profile, gu-mice, pages-multi-build), tests/balance/diag.test.ts loeschen.
 - Balance zuletzt: Endlos Medium Poor 6, Mid 28.5, Great 48.5; Kampagne Mid 84/11/1/4, Great 100, Mid zu zweit 92/4/2/2 (Koop-Faktor Kampagne 1.7), Level 2 bis 9 haben fuenf Tage.
 - Tim spielt lokal ueber einen Entwicklungsserver auf Port 5180 (laeuft nur, solange die Sitzung offen ist).
+
+## Stand 12.11., 07:10
+- Die sechs auf GitHub roten Browser-Tests sind umgestellt: Wartezeiten zaehlen jetzt Spielzeit statt Uhrzeit (`waitGame`, `gameClock` in tests/e2e/helpers.ts), Wuerfe laufen ueber `fling`/`pointer` mit eigenen Zeitstempeln. Ursache: Die Spieluhr laeuft auf langsamen Maschinen langsamer als die Uhr (hoechstens 6 Ticks je Bild). Lokal gedrosselt und normal gruen (26 bestanden).
+- Das Fenster "New enemy" hat einen Test-Schalter `showMs` (Standard 9 s, Spiel unveraendert), damit es im Test auf den Tipp wartet.
+
+| Test | Warum ersetzt | Neuer Test |
+|---|---|---|
+| flow.spec.ts Entwickler-Menue: Sprung zu Level 3, Tag 3, gewinnt das Level | Level 2 bis 9 haben jetzt fuenf Tage (E-062), Tag 3 ist nicht mehr der letzte | derselbe Test springt zum letzten Tag von Level 3 (aus `levelOf` gelesen) und prueft denselben Sieg |

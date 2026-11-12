@@ -1,4 +1,5 @@
 import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
+import { DT } from '../../src/config/field';
 
 /**
  * Shared pieces of the browser tests. Every test waits on the state of the game (`window.__fondue`)
@@ -103,6 +104,37 @@ export async function waitFor<T>(fn: () => Promise<T>, pred: (v: T) => boolean, 
     const v = await fn();
     if (pred(v)) return v;
     if (Date.now() - start > timeoutMs) throw new Error(`waitFor timed out; last value: ${JSON.stringify(v)?.slice(0, 400)}`);
+    await new Promise((r) => setTimeout(r, pollMs));
+  }
+}
+
+/** Seconds of game time the simulation on this page has run (it stands still while paused); null without one. */
+export const gameClock = (page: Page) => page.evaluate((dt) => {
+  const sim = (window as any).__fondue.session?.sim;
+  return sim ? (sim.s.tick as number) * dt : null;
+}, DT);
+
+/**
+ * Like `waitFor`, but the limit is game time: it runs out after `gameSeconds` of the simulation on
+ * `clockPage` (the host in co-op). The game clock falls behind real time where frames are slow, as
+ * on GitHub's software-drawn machines, so a limit in real time would cut a fight short there.
+ * A limit in real time still applies, for a game that does not run on at all.
+ */
+export async function waitGame<T>(clockPage: Page, fn: () => Promise<T>, pred: (v: T) => boolean, gameSeconds: number, pollMs = 100): Promise<T> {
+  const wallLimit = gameSeconds * 1000 * (CI ? 20 : 6) + 10_000;
+  const start = Date.now();
+  let base = await gameClock(clockPage);
+  let ran = 0;
+  for (;;) {
+    const v = await fn();
+    if (pred(v)) return v;
+    const now = await gameClock(clockPage);
+    // A new run starts its clock at zero again: count on from there.
+    if (now !== null && base !== null && now < base) base = 0;
+    if (now !== null && base !== null) { ran += now - base; base = now; } else base = now;
+    if (ran > gameSeconds || Date.now() - start > wallLimit) {
+      throw new Error(`waitGame timed out after ${ran.toFixed(1)} s of game time (${((Date.now() - start) / 1000).toFixed(1)} s real); last value: ${JSON.stringify(v)?.slice(0, 400)}`);
+    }
     await new Promise((r) => setTimeout(r, pollMs));
   }
 }
@@ -231,7 +263,7 @@ export async function pointer(page: Page, touch: boolean) {
 export async function fling(page: Page, touch: boolean, e: { x: number; y: number }) {
   const p = await pointer(page, touch);
   await p.down(e.x - 6, e.y - 44);
-  await waitFor(() => gameState(page), (v) => !!v && v.enemies.some((q: any) => q.st === 'held'), 3000);
+  await waitGame(page, () => gameState(page), (v) => !!v && v.enemies.some((q: any) => q.st === 'held'), 3);
   await p.glide(e.x - 6, e.y - 44, e.x - 40, 90, 9, 8);
   await p.up();
 }

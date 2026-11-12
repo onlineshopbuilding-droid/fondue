@@ -4,7 +4,7 @@ import { STARS } from '../../src/config/stars';
 import { COOP } from '../../src/config/waves';
 import { DEFAULT_WORLD, levelOf } from '../../src/config/worlds';
 import {
-  CI, GAME_WAIT, closePopups, collectErrors, drag, endDay, equip, gameState, station, waitFor, waitForGame, waitPhase, waitScreen,
+  CI, GAME_WAIT, closePopups, collectErrors, endDay, equip, gameState, pointer, station, waitFor, waitForGame, waitGame, waitPhase, waitScreen,
 } from './helpers';
 
 /** Two players on two browser windows, linked the way the game links them on one machine (loopback). */
@@ -91,9 +91,14 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     }, x);
     const first = await place(760);
     const a = (await waitFor(() => gameState(host), (v) => v!.enemies.some((e: any) => e.id === first), 5000))!.enemies[0];
-    const pa = await toCss(host, a.x - 10, a.y - 44);
-    await drag(host, [pa.x, pa.y], [pa.x - 50, 100], 10, 8);
-    await waitFor(() => gameState(host), (v) => v!.gold >= KILL_GOLD, 8000);
+    // The events of a throw carry their own time stamps, so the flick is as quick on a slow machine;
+    // its flight and fall take game time, which runs slower than real time where frames are slow.
+    const hp = await pointer(host, false);
+    await hp.down(a.x - 10, a.y - 44);
+    await waitGame(host, () => gameState(host), (v) => v!.enemies.some((e: any) => e.id === first && e.st === 'held'), 3);
+    await hp.glide(a.x - 10, a.y - 44, a.x - 60, 100, 10, 8);
+    await hp.up();
+    await waitGame(host, () => gameState(host), (v) => v!.gold >= KILL_GOLD, 8);
 
     const placed = await place(800);
     // The guest's picture lags behind the host, so it must have caught up before it aims.
@@ -101,18 +106,18 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     const before = (await gameState(host))!.gold;
     const target = s!.enemies[0];
     // The guest sees its grab at once, without waiting for the host.
-    const pg = await toCss(guest, target.x - 10, target.y - 44);
-    await guest.mouse.move(pg.x, pg.y);
-    await guest.mouse.down();
+    const gp = await pointer(guest, false);
+    await gp.down(target.x - 10, target.y - 44);
     await guest.waitForTimeout(20);
     const instant = await guest.evaluate((id) => (window as any).__fondue.session.view().enemies.find((e: any) => e.id === id)?.heldBy, target.id);
     expect(instant).toEqual([1]);
-    for (let i = 1; i <= 10; i++) {
-      await guest.mouse.move(pg.x - i * 5, pg.y - i * 40);
-      await guest.waitForTimeout(8);
-    }
-    await guest.mouse.up();
-    await waitFor(() => gameState(host), (v) => v!.gold >= before + KILL_GOLD, 8000);
+    // Up and a little to the left in ten quick steps, stamped like a real hand (see the host's throw).
+    const pg = await toCss(guest, target.x - 10, target.y - 44);
+    const top = await toCss(guest, target.x - 10, target.y - 44 - 400);
+    const k = (top.y - pg.y) / -400;
+    await gp.glide(target.x - 10, target.y - 44, target.x - 10 - 50 / k, target.y - 44 - 400 / k, 10, 8);
+    await gp.up();
+    await waitGame(host, () => gameState(host), (v) => v!.gold >= before + KILL_GOLD, 8);
     const now = await gameState(host);
     await waitFor(() => gameState(guest), (v) => v!.gold >= now!.gold, 5000);
 

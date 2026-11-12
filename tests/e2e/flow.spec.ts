@@ -4,7 +4,7 @@ import { ENEMY_POPUPS } from '../../src/config/worlds/fondue/story';
 import { HELP_SLIDES } from '../../src/ui/content';
 import {
   breakGate, clearField, drag, endDay, gameState, spawn, startSolo, station, tapStation, waitFor, waitForGame, waitForLobby,
-  waitPhase, waitScreen, GAME_WAIT,
+  screenOf, waitGame, waitPhase, waitScreen, GAME_WAIT,
 } from './helpers';
 
 /** Menus, the course of a day and the developer tools, on the laptop with the mouse. */
@@ -198,18 +198,21 @@ test('developer menu: jump to a level and day; a developer win pays no stars and
   await expect(page.locator('#tuning')).toBeVisible();
   await page.click('#devStars');
   expect(await page.evaluate(() => (window as any).__fondue.profile.data.stars)).toBe(50);
+  // The last day of level 3: winning it wins the level.
+  const lastDay = levelOf(DEFAULT_WORLD, 3)!.days.length;
+  expect(lastDay).toBeGreaterThan(1);
   await page.fill('#devLevel', '3');
-  await page.fill('#devDay', '3');
+  await page.fill('#devDay', String(lastDay));
   await page.click('#devJump');
   const s = await waitPhase(page, ['banner', 'battle']);
   expect(s!.mode).toBe('campaign');
   expect(s!.level).toBe(3);
-  expect(s!.day).toBe(3);
+  expect(s!.day).toBe(lastDay);
   expect(await page.evaluate(() => (window as any).__fondue.session.meta().devRun)).toBe(true);
-  // Level 3 has three days: day 3 is its last, so this day wins the level.
   await waitPhase(page, 'battle');
   await endDay(page);
-  await waitScreen(page, 'won');
+  // The end of the day plays in game time.
+  await waitGame(page, () => screenOf(page), (sc) => sc === 'won', 20);
   await expect(page.locator('.panel')).toContainText('Developer run: no stars.');
   await expect(page.locator('#unlocks')).toHaveCount(0);
   expect(await page.evaluate(() => (window as any).__fondue.profile.data.stars)).toBe(50);
@@ -228,6 +231,9 @@ test('a new raider is introduced by its window on the level it first comes; a ta
   await page.click('#devMenuButton');
   await page.fill('#devLevel', String(level.id));
   await page.fill('#devDay', '2');
+  // Untapped, a window goes by itself after some seconds of real time. A slow machine can spend
+  // that long between two steps of this test, so here the windows wait for their tap.
+  await page.evaluate(() => { (window as any).__fondue.popup.showMs = 10 * 60_000; });
   await page.click('#devJump');
   await page.waitForSelector('#enemyPopup', { timeout: GAME_WAIT });
   // Raiders met for the first time come one window after the other.

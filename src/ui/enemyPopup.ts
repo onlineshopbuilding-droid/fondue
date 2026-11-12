@@ -11,6 +11,11 @@ export class EnemyPopup {
   private el: HTMLDivElement | null = null;
   private queue: EnemyType[] = [];
   private timer = 0;
+  /**
+   * How long a window stays without a tap, in real time. Tests stretch it: on a machine that draws
+   * slowly a test step can take longer than a player needs to read.
+   */
+  showMs = SHOW_MS;
 
   constructor(private root: HTMLElement) {}
 
@@ -42,7 +47,7 @@ export class EnemyPopup {
     el.addEventListener('click', (e) => { e.stopPropagation(); this.close(true); });
     this.root.appendChild(el);
     this.el = el;
-    this.timer = window.setTimeout(() => this.close(true), SHOW_MS);
+    this.timer = window.setTimeout(() => this.close(true), this.showMs);
   }
 
   private close(showNext: boolean) {
