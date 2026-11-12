@@ -10,7 +10,7 @@ export const STARS = {
   /** A co-op guest gets this share of a level's stars, once per level, rounded up. */
   guestShare: 0.5,
   /** Price of raising a weapon to tier 2, 3, 4, 5 in the armoury. Index 0 is tier 1 and costs nothing. */
-  weaponTier: [0, 3, 6, 10, 15],
+  weaponTier: [0, 5, 12, 21, 32],
   /** Price of the first unlock of a weapon that the campaign has made available. 0 = free. */
   weaponUnlock: 0,
 };

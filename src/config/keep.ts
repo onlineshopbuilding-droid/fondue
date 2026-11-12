@@ -11,8 +11,8 @@ export const GATES: GateDef[] = [
   { name: 'Oak Gate', gold: 0, offerings: 0, hp: 800, desc: 'Plain, honest wood.' },
   { name: 'Iron-Bound Gate', gold: 900, offerings: 0, hp: 1400, desc: 'Double the strength.' },
   { name: 'Gilded Gate', gold: 2200, offerings: 6, hp: 2200, desc: 'Heavy, shiny and stubborn.' },
-  { name: 'Runic Gate', gold: 9000, offerings: 18, hp: 3400, desc: 'Glows when struck.' },
-  { name: 'Adamant Gate', gold: 32000, offerings: 35, hp: 5200, desc: 'Nothing has ever dented it.' },
+  { name: 'Runic Gate', gold: 6000, offerings: 14, hp: 3400, desc: 'Glows when struck.' },
+  { name: 'Adamant Gate', gold: 24000, offerings: 30, hp: 5200, desc: 'Nothing has ever dented it.' },
 ];
 
 export type StationId = 'cauldron' | 'perch';

@@ -23,9 +23,11 @@ export const CAMPAIGN_SCALING = {
   speedShare: 0.12,
   /** Later levels pay more gold per kill, so a fresh start can still afford the bigger keep. */
   goldPerPower: 0.7,
-  damageGrowth: 0.1,
+  damageGrowth: 0.14,
   speedGrowth: 0.015,
   hpGrowth: 0.05,
+  /** Share of a level's extra strength on its first days: every level starts with bare hands. */
+  easeIn: [0.2, 0.55, 0.85],
 };
 
 export function campaignScaling(level: LevelDef): Scaling {
@@ -34,6 +36,7 @@ export function campaignScaling(level: LevelDef): Scaling {
     count: 1, hp: level.power, damage: 1 + extra * CAMPAIGN_SCALING.damageShare, speed: 1 + extra * CAMPAIGN_SCALING.speedShare,
     gold: 1 + extra * CAMPAIGN_SCALING.goldPerPower,
     damageGrowth: CAMPAIGN_SCALING.damageGrowth, speedGrowth: CAMPAIGN_SCALING.speedGrowth, hpGrowth: CAMPAIGN_SCALING.hpGrowth,
+    easeIn: CAMPAIGN_SCALING.easeIn,
   };
 }
 

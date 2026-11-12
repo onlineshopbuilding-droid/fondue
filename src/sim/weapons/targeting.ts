@@ -2,7 +2,7 @@
  * How weapons pick their target on their own, since they are only tapped: the raider closest to
  * the gate, the densest group, or the toughest raider. All answers come from the visible field.
  */
-import { ENEMIES } from '../../config/enemies';
+import { ENEMIES, TARGETING } from '../../config/enemies';
 import { WORLD } from '../../config/field';
 import type { SimContext } from '../context';
 import type { Enemy } from '../types';
@@ -35,21 +35,25 @@ export function frontTarget(ctx: SimContext, withAir: boolean): Enemy | null {
   return best;
 }
 
+/** A tough raider draws fire like a small group: a Yeti or a cart must not be ignored for three Pothelms. */
+const crowdWeight = (e: Enemy) => (e.big ? TARGETING.bigWeight : TARGETING.crowdWeight[e.type] ?? 1);
+
 /**
- * Middle of the densest group of raiders on the ground, measured with a window of the given half
+ * Middle of the densest group of raiders on the ground, tough raiders counted several times, measured with a window of the given half
  * width; null when the road is empty. With several equal groups the one nearest the gate wins.
  */
 export function crowdX(ctx: SimContext, halfWidth: number, lead = 0): number | null {
-  const xs = groundTargets(ctx).map((e) => leadX(ctx, e, lead)).sort((a, b) => a - b);
-  if (xs.length === 0) return null;
-  let best = xs[0];
-  let bestCount = 0;
+  const list = groundTargets(ctx).map((e) => ({ x: leadX(ctx, e, lead), w: crowdWeight(e) })).sort((a, b) => a.x - b.x);
+  if (list.length === 0) return null;
+  let best = list[0].x;
+  let bestWeight = 0;
   let lo = 0;
+  let sum = 0;
   // Slide a window of full width over the sorted positions.
-  for (let hi = 0; hi < xs.length; hi++) {
-    while (xs[hi] - xs[lo] > halfWidth * 2) lo++;
-    const count = hi - lo + 1;
-    if (count > bestCount) { bestCount = count; best = (xs[lo] + xs[hi]) / 2; }
+  for (let hi = 0; hi < list.length; hi++) {
+    sum += list[hi].w;
+    while (list[hi].x - list[lo].x > halfWidth * 2) { sum -= list[lo].w; lo++; }
+    if (sum > bestWeight) { bestWeight = sum; best = (list[lo].x + list[hi].x) / 2; }
   }
   return best;
 }

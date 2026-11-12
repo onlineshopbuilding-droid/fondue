@@ -67,12 +67,12 @@ const ups = (slots: number[], rounds: number): Step[] => {
 /** A sensible order for a player who buys whatever is next and in reach. */
 const ORDER_MID: Step[] = [
   'station:cauldron', 'slot:0', 'gate', 'slot:1', 'slot:3', 'slot:2', 'gate', 'up:0', 'slot:4', 'up:1', 'up:3', 'gate',
-  'up:2', 'up:4', 'hand', ...ups([0, 1, 3, 2, 4], 1), 'station:perch', 'gate', 'hand', ...ups([0, 1, 3, 2, 4], 2),
+  'up:2', 'up:4', 'hand', ...ups([0, 1, 3, 2, 4], 1), 'hand', 'gate', 'station:perch', ...ups([0, 1, 3, 2, 4], 2),
 ];
 /** Offerings first, then area damage, gates when they are due; saves for the next item instead of spending on whatever is in reach. */
 const ORDER_GREAT: Step[] = [
   'station:cauldron', 'slot:0', 'slot:3', 'gate', 'slot:1', 'up:0', 'slot:2', 'up:3', 'gate', 'slot:4', 'up:1', 'hand',
-  'up:2', 'up:0', 'up:3', 'station:perch', 'gate', 'up:4', 'up:1', 'hand', ...ups([0, 3, 1, 2, 4], 2), 'gate',
+  'up:2', 'up:0', 'up:3', 'hand', 'gate', 'up:4', 'up:1', 'station:perch', ...ups([0, 3, 1, 2, 4], 2), 'gate',
 ];
 
 export class BotShopper {
@@ -149,7 +149,7 @@ export class BotShopper {
     }
     // The list is done: what is left goes to the cheapest open step, again and again.
     for (let guard = 0; guard < 40; guard++) {
-      const left = this.leftovers(sim).filter((i) => sim.quote(i).reason !== 'max' && sim.quote(i).reason !== 'locked' && sim.quote(i).reason !== 'owned');
+      const left = this.leftovers(sim).filter((i) => sim.quote(i).reason === 'ok');
       if (left.length === 0) return;
       left.sort((a, b) => sim.quote(a).gold - sim.quote(b).gold);
       if (!this.buy(sim, left[0])) return;

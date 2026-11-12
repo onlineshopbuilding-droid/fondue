@@ -21,6 +21,11 @@ export interface Scaling {
   damageGrowth: number;
   speedGrowth: number;
   hpGrowth: number;
+  /**
+   * Share of the strength above 1 (speed, damage, hp) that applies on day 1, 2, ...; days past the
+   * list get all of it. A campaign level starts with bare hands, so its first days hold back.
+   */
+  easeIn?: number[];
 }
 
 /** What a run offers for one weapon. */

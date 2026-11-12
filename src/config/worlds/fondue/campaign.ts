@@ -17,15 +17,28 @@ export const LEVEL_COUNT = 100;
 
 /** The curve over all levels. */
 export const CURVE = {
-  /** Raiders on day 1 of level 1, and how many more each level adds. */
+  /**
+   * Raiders on day 1 of level 1. A late day of level L adds countPerLevel * (L - 1) ^ countPower:
+   * below 1 the early levels grow faster than the late ones, as the player's weapons do.
+   */
   baseCount: 24,
-  countPerLevel: 0.8,
-  /** Each further day of a level brings this share more than the day before. */
+  countPerLevel: 6,
+  countPower: 0.75,
+  /** Each further day of a level brings this share more of the base count than the day before. */
   countPerDay: 0.14,
+  /**
+   * Share of the per-level extra raiders on day 1, and how much is added per further day, up to
+   * `levelShareMax`: every level starts with bare hands, so the early days stay small in any level.
+   */
+  levelShareDay1: 0.3,
+  levelSharePerDay: 0.35,
+  levelShareMax: 1.7,
   /** Strength of the raiders: 1 in level 1, growing by this much per level. */
-  powerPerLevel: 0.035,
+  powerPerLevel: 0.05,
   /** The last day of a boss level brings this many times the usual raiders, besides the boss. */
-  bossDayCount: 1.25,
+  bossDayCount: 1.8,
+  /** Raiders of a boss level are this much stronger than the curve says. */
+  bossPower: 1.12,
 };
 
 /** Level in which each raider appears for the first time. */
@@ -76,7 +89,9 @@ const TWISTS: Record<number, TwistDef> = {
   22: { kind: 'flood', type: 'bomber', label: 'Keg parade' },
   27: { kind: 'night', label: 'Night raid' },
   34: { kind: 'flood', type: 'siegeCart', label: 'Heavy day' },
-  38: { kind: 'onlyTypes', types: ['balloonist', 'grunt'], label: 'Air raid' },
+  38: { kind: 'night', label: 'Night raid' },
+  // After the tower slot and the Roof Bolter (won with level 39), so there is an answer to balloons.
+  43: { kind: 'onlyTypes', types: ['balloonist', 'grunt'], label: 'Air raid' },
   47: { kind: 'night', label: 'Night of shades' },
   56: { kind: 'flood', type: 'crowcaller', label: 'Day of crows' },
   66: { kind: 'night', label: 'Night raid' },
@@ -150,7 +165,8 @@ function buildLevel(level: number): LevelDef {
   const days: DayDef[] = [];
   for (let day = 1; day <= dayCount; day++) {
     const last = day === dayCount;
-    let total = (CURVE.baseCount + CURVE.countPerLevel * (level - 1)) * (1 + CURVE.countPerDay * (day - 1));
+    const levelShare = Math.min(CURVE.levelShareMax, CURVE.levelShareDay1 + CURVE.levelSharePerDay * (day - 1));
+    let total = CURVE.baseCount * (1 + CURVE.countPerDay * (day - 1)) + CURVE.countPerLevel * Math.pow(level - 1, CURVE.countPower) * levelShare;
     if (boss && last) total *= CURVE.bossDayCount;
     const counts = mixFor(level, day, Math.round(total), twist);
     if (boss && last) for (const [t, n] of Object.entries(BOSS_EXTRA[level] ?? {}) as [EnemyType, number][]) counts[t] = (counts[t] ?? 0) + n;
@@ -169,7 +185,7 @@ function buildLevel(level: number): LevelDef {
     name: LEVEL_NAMES[level - 1] ?? `Level ${level}`,
     landscape: landscapeOf(level),
     days,
-    power: 1 + CURVE.powerPerLevel * (level - 1),
+    power: (1 + CURVE.powerPerLevel * (level - 1)) * (boss ? CURVE.bossPower : 1),
     boss,
     twist,
     stars: boss ? STARS.level.boss : special ? STARS.level.special : STARS.level.normal,

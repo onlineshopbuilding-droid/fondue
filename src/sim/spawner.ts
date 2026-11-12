@@ -29,7 +29,7 @@ export class Spawner {
     const def = ENEMIES[type];
     const sc = this.ctx.rules.scaling;
     const lane = this.ctx.rng.range(WORLD.laneMin, WORLD.laneMax);
-    const hp = def.hp * sc.hp * this.ctx.growth(sc.hpGrowth) * (big ? BEHAVIOUR.big.hp : 1);
+    const hp = def.hp * this.ctx.eased(sc.hp) * this.ctx.growth(sc.hpGrowth) * (big ? BEHAVIOUR.big.hp : 1);
     const e: Enemy = {
       id: s.nextId++, type, st: 'walk', x, y: WORLD.groundY + lane, vx: 0, vy: 0, rot: 0, rotV: 0, lane,
       hp, maxHp: hp, tugLimit: 0, t: 0, strikeT: def.strikeEvery * this.ctx.rng.range(0.3, 1), heldBy: [], grabOffX: 0, grabOffY: 0,

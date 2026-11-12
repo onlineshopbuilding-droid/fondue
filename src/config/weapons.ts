@@ -95,7 +95,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'cheese', name: 'Sticky Fondue', slotType: 'foot', kind: 'puddle', target: 'front', enabled: true, buyGold: 500, buyOfferings: 2,
+    id: 'cheese', name: 'Sticky Fondue', slotType: 'foot', kind: 'puddle', target: 'front', enabled: true, buyGold: 500, buyOfferings: 1,
     desc: 'Pours molten cheese on the road. Raiders wade through it slowly.',
     tiers: [
       { cooldown: 15, halfWidth: 120, seconds: 5, slow: 0.5, dps: 0, note: 'Slows everyone in the puddle.' },
@@ -106,7 +106,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'forks', name: 'Fondue Forks', slotType: 'foot', kind: 'spikes', target: 'crowd', enabled: true, buyGold: 800, buyOfferings: 4,
+    id: 'forks', name: 'Fondue Forks', slotType: 'foot', kind: 'spikes', target: 'crowd', enabled: true, buyGold: 800, buyOfferings: 2,
     desc: 'Giant forks spring out of the road under the thickest group and pin it.',
     tiers: [
       { cooldown: 12, halfWidth: 90, damage: 110, pin: 1, pulses: 1, note: 'One row of forks.' },
@@ -119,7 +119,7 @@ export const WEAPONS: WeaponDef[] = [
 
   // ----- Wall: heavy machines -----
   {
-    id: 'stomper', name: 'Stomper', slotType: 'wall', kind: 'slam', target: 'crowd', enabled: true, buyGold: 900, buyOfferings: 6,
+    id: 'stomper', name: 'Stomper', slotType: 'wall', kind: 'slam', target: 'crowd', enabled: true, buyGold: 900, buyOfferings: 3,
     desc: 'A heavy block drops on the thickest group.',
     tiers: [
       { cooldown: 10, halfWidth: 90, damage: 260, slams: 1, shockRadius: 0, shockStun: 0, note: 'A timber block on a chain.' },
@@ -130,7 +130,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'alphorn', name: 'Alphorn', slotType: 'wall', kind: 'push', target: 'none', enabled: true, buyGold: 700, buyOfferings: 3,
+    id: 'alphorn', name: 'Alphorn', slotType: 'wall', kind: 'push', target: 'none', enabled: true, buyGold: 700, buyOfferings: 2,
     desc: 'One mighty note throws every raider near the keep back down the road.',
     tiers: [
       { cooldown: 14, reach: 420, push: 260, damage: 20, hitsAir: false, note: 'Blows back whoever stands close to the gate.' },
@@ -141,7 +141,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'cuckoo', name: 'Cuckoo Clock', slotType: 'wall', kind: 'stop', target: 'none', enabled: true, buyGold: 1200, buyOfferings: 8,
+    id: 'cuckoo', name: 'Cuckoo Clock', slotType: 'wall', kind: 'stop', target: 'none', enabled: true, buyGold: 1200, buyOfferings: 4,
     desc: 'The cuckoo calls and every raider on the road stands still for a moment.',
     tiers: [
       { cooldown: 22, seconds: 2, hitsAir: false, breaksGuards: false, note: 'Time stops for raiders on the ground.' },
@@ -154,7 +154,7 @@ export const WEAPONS: WeaponDef[] = [
 
   // ----- Shrine: help from above -----
   {
-    id: 'comet', name: 'Comet', slotType: 'shrine', kind: 'sky', target: 'crowd', enabled: true, buyGold: 700, buyOfferings: 8,
+    id: 'comet', name: 'Comet', slotType: 'shrine', kind: 'sky', target: 'crowd', enabled: true, buyGold: 700, buyOfferings: 4,
     desc: 'A comet falls on the thickest group and leaves fire.',
     tiers: [
       { cooldown: 13, radius: 115, damage: 175, flameSeconds: 2.5, shards: 0, note: 'A burning rock from the sky.' },
@@ -165,7 +165,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'bell', name: 'Storm Bell', slotType: 'shrine', kind: 'chain', target: 'tough', enabled: true, buyGold: 1100, buyOfferings: 10,
+    id: 'bell', name: 'Storm Bell', slotType: 'shrine', kind: 'chain', target: 'tough', enabled: true, buyGold: 1100, buyOfferings: 5,
     desc: 'Lightning strikes the toughest raider and jumps to its neighbours.',
     tiers: [
       { cooldown: 12, damage: 320, jumps: 2, jumpRange: 170, falloff: 0.6, stun: 0, note: 'One bolt, two jumps.' },
@@ -176,7 +176,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'midas', name: 'Golden Fondue', slotType: 'shrine', kind: 'gold', target: 'none', enabled: true, buyGold: 900, buyOfferings: 6,
+    id: 'midas', name: 'Golden Fondue', slotType: 'shrine', kind: 'gold', target: 'none', enabled: true, buyGold: 900, buyOfferings: 3,
     desc: 'For a short while every raider you beat pays more gold.',
     tiers: [
       { cooldown: 24, seconds: 6, factor: 1.5, note: 'Half again as much gold.' },
@@ -200,7 +200,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'frost', name: 'Frost Horn', slotType: 'gate', kind: 'shell', target: 'crowd', enabled: true, buyGold: 1500, buyOfferings: 6,
+    id: 'frost', name: 'Frost Horn', slotType: 'gate', kind: 'shell', target: 'crowd', enabled: true, buyGold: 1500, buyOfferings: 3,
     desc: 'Freezes the thickest group. Tap a frozen raider to shatter it.',
     tiers: [
       { cooldown: 9, effect: 'freeze', radius: 130, damage: 0, seconds: 6, shells: 1, shatterSpread: 0, note: 'A patch of ice.' },
@@ -211,7 +211,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'bellows', name: 'Dragon Bellows', slotType: 'gate', kind: 'shell', target: 'crowd', enabled: true, buyGold: 1800, buyOfferings: 12,
+    id: 'bellows', name: 'Dragon Bellows', slotType: 'gate', kind: 'shell', target: 'crowd', enabled: true, buyGold: 1800, buyOfferings: 6,
     desc: 'Sets the road under the thickest group on fire.',
     tiers: [
       { cooldown: 11, effect: 'flame', radius: 150, damage: 90, seconds: 2.2, shells: 1, shatterSpread: 0, note: 'A stretch of burning road.' },
@@ -222,7 +222,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'thorns', name: 'Hedgehog Gate', slotType: 'gate', kind: 'thorns', target: 'none', enabled: true, buyGold: 1100, buyOfferings: 4,
+    id: 'thorns', name: 'Hedgehog Gate', slotType: 'gate', kind: 'thorns', target: 'none', enabled: true, buyGold: 1100, buyOfferings: 2,
     desc: 'Spikes on the gate hurt whoever strikes it. Tap to burst them outwards.',
     tiers: [
       { cooldown: 12, reflect: 12, burstDamage: 120, burstReach: 110, note: 'Raiders hurt themselves on the gate.' },
@@ -246,7 +246,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'sentry', name: 'Marmot Sentry', slotType: 'tower', kind: 'sentry', target: 'front', enabled: true, buyGold: 1300, buyOfferings: 5,
+    id: 'sentry', name: 'Marmot Sentry', slotType: 'tower', kind: 'sentry', target: 'front', enabled: true, buyGold: 1300, buyOfferings: 3,
     desc: 'A marmot with a crossbow shoots on its own. Tap it for a quick burst.',
     tiers: [
       { cooldown: 12, every: 2.6, damage: 45, burst: 4, note: 'Shoots now and then.' },
@@ -257,7 +257,7 @@ export const WEAPONS: WeaponDef[] = [
     ],
   },
   {
-    id: 'beacon', name: 'Ember Beacon', slotType: 'tower', kind: 'beacon', target: 'none', enabled: true, buyGold: 1200, buyOfferings: 6,
+    id: 'beacon', name: 'Ember Beacon', slotType: 'tower', kind: 'beacon', target: 'none', enabled: true, buyGold: 1200, buyOfferings: 3,
     desc: 'While the beacon burns, every raider you throw explodes where it lands.',
     tiers: [
       { cooldown: 20, seconds: 6, radius: 70, damage: 130, flameSeconds: 0, note: 'Thrown raiders burst on landing.' },
@@ -274,8 +274,8 @@ export const WEAPONS: WeaponDef[] = [
  * (gold) and as offerings on top.
  */
 export const UPGRADE_COST = {
-  goldFactor: [0, 1.6, 3.4, 7, 13],
-  offerings: [0, 8, 20, 38, 60],
+  goldFactor: [0, 1.4, 2.8, 5.5, 10],
+  offerings: [0, 4, 10, 18, 30],
 };
 
 /** Ground flames deal this much damage per second unless the weapon says otherwise. */

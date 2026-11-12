@@ -105,13 +105,22 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   },
   yeti: {
     name: 'Yeti',
-    speed: 40, strike: 40, strikeEvery: 2.2, range: 46, hp: 800, radius: 78, height: 224,
+    speed: 40, strike: 30, strikeEvery: 2.4, range: 46, hp: 600, radius: 78, height: 224,
     gold: 120, score: 1500, grabbable: true, mass: 5,
     tip: 'One hand cannot lift a Yeti. With two players, grab it together. Alone, weapons will have to do.',
   },
 };
 
 export const ENEMY_TYPES = Object.keys(ENEMIES) as EnemyType[];
+
+/**
+ * How weapons that pick the thickest group count raiders: a type listed here counts as that many,
+ * every other as one; an oversized boss raider counts `bigWeight`.
+ */
+export const TARGETING: { crowdWeight: Partial<Record<EnemyType, number>>; bigWeight: number } = {
+  crowdWeight: { yeti: 5, siegeCart: 3, goatRider: 1.5 },
+  bigWeight: 6,
+};
 
 /** Numbers for special behaviours. */
 export const BEHAVIOUR = {

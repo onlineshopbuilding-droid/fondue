@@ -11,7 +11,7 @@ export interface HandTier { strength: number; gold: number; offerings: number; s
 export const HANDS: HandTier[] = [
   { strength: 1, gold: 0, offerings: 0, stars: 0, note: 'Throws a Pothelm with ease. Heavy raiders fly short.' },
   { strength: 1.5, gold: 2500, offerings: 10, stars: 12, note: 'Heavy raiders fly almost like light ones.' },
-  { strength: 2.2, gold: 9000, offerings: 35, stars: 30, note: 'Lifts a Yeti alone.' },
+  { strength: 2.2, gold: 9000, offerings: 20, stars: 30, note: 'Lifts a Yeti alone.' },
 ];
 
 export const MAX_HAND_TIER = HANDS.length;

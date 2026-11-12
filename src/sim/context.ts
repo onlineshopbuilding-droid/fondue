@@ -76,9 +76,15 @@ export class SimContext {
   /** Growth factor of a per-day value on the current day. */
   growth(perDay: number): number { return 1 + (this.s.day - 1) * perDay; }
 
+  /** A scaling factor of the run, held back on the first days when the rules ease in. */
+  eased(factor: number): number {
+    const share = this.rules.scaling.easeIn?.[this.s.day - 1] ?? 1;
+    return 1 + (factor - 1) * share;
+  }
+
   speedOf(e: Enemy): number {
     const sc = this.rules.scaling;
-    return ENEMIES[e.type].speed * (e.big ? BEHAVIOUR.big.speed : 1) * this.tuning.walkSpeed * sc.speed * this.growth(sc.speedGrowth)
+    return ENEMIES[e.type].speed * (e.big ? BEHAVIOUR.big.speed : 1) * this.tuning.walkSpeed * this.eased(sc.speed) * this.growth(sc.speedGrowth)
       * fieldSpeedFactor(this.s.meta.fieldW) * this.zones.slowAt(e);
   }
 

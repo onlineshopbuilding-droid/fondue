@@ -118,7 +118,7 @@ export class Combat {
     const s = this.ctx.s;
     if (s.gateHp <= 0) return;
     const sc = this.ctx.rules.scaling;
-    const scaled = amount * sc.damage * this.ctx.growth(sc.damageGrowth);
+    const scaled = amount * this.ctx.eased(sc.damage) * this.ctx.growth(sc.damageGrowth);
     const floor = this.ctx.rules.gateCannotFall ? 1 : 0;
     const before = s.gateHp;
     s.gateHp = Math.max(floor, s.gateHp - scaled);
