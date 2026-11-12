@@ -1,6 +1,7 @@
+// Draws the two offering sites: the Great Cauldron on its mound and the eagle's hook with its eagle.
 import Phaser from 'phaser';
-import { PERCH } from '../config/shop';
-import { WORLD, perchX } from '../config/world';
+import { WORLD } from '../config/field';
+import { PERCH } from '../config/keep';
 import type { ViewState } from '../net/snapshot';
 import type { Meta } from '../sim/types';
 import { propKey, TEX_SCALE } from './textures';
@@ -9,16 +10,18 @@ import type { GameView } from './viewport';
 const STEAM_PUFFS = 4;
 const EAGLE_IN = 0.22;
 const EAGLE_OUT = 0.28;
+/** The pot's art: its bottom edge lies this far below the middle of its rim. */
+const POT_FOOT = 60;
+/** The pot on the mound is drawn at this size of the road pot's art; steam and cheese follow. */
+const POT_SIZE = 0.75;
 
 interface Puff { img: Phaser.GameObjects.Image; t: number; }
 
-/** Great Cauldron in either place, and the eagle's hook with the eagle that comes for it. */
+/** Great Cauldron on its mound behind the road, and the eagle's hook with the eagle that comes for it. */
 export class Stations {
-  private frontBack: Phaser.GameObjects.Image;
-  private frontFront: Phaser.GameObjects.Image;
-  private ledge: Phaser.GameObjects.Image;
-  private rearBack: Phaser.GameObjects.Image;
-  private rearFront: Phaser.GameObjects.Image;
+  private mound: Phaser.GameObjects.Image;
+  private potBack: Phaser.GameObjects.Image;
+  private potFront: Phaser.GameObjects.Image;
   private cheese: Phaser.GameObjects.Image;
   private puffs: Puff[] = [];
   private busyBar: Phaser.GameObjects.Graphics;
@@ -30,20 +33,20 @@ export class Stations {
   private eagleT = -1;
   private eagleX = 0;
   private eagleY = 0;
+  private splashT = 0;
   private view!: GameView;
 
   constructor(scene: Phaser.Scene) {
-    const f = WORLD.cauldron.x;
-    this.frontBack = scene.add.image(f, 650, propKey('cauldronBack')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(19).setVisible(false);
-    this.frontFront = scene.add.image(f, 650, propKey('cauldronFront')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(19.8).setVisible(false);
-    this.ledge = scene.add.image(195, 560, propKey('potLedge')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(8).setVisible(false);
-    this.rearBack = scene.add.image(WORLD.cauldronBack.x, 516, propKey('potRearBack')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(8.4).setVisible(false);
-    this.rearFront = scene.add.image(WORLD.cauldronBack.x, 516, propKey('potRearFront')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(8.8).setVisible(false);
-    this.cheese = scene.add.image(0, 0, propKey('cheese')).setScale(1 / TEX_SCALE).setDepth(26).setVisible(false);
+    const { x, rimY } = WORLD.cauldron;
+    // Mound below the pot; a raider melting in it is drawn between the pot's back and its front.
+    this.mound = scene.add.image(x, rimY + POT_FOOT - 1, propKey('potMound')).setOrigin(0.5, 22 / 90).setScale(1 / TEX_SCALE).setDepth(8.2).setVisible(false);
+    this.potBack = scene.add.image(x, rimY + POT_FOOT, propKey('potRearBack')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(8.4).setVisible(false);
+    this.potFront = scene.add.image(x, rimY + POT_FOOT, propKey('potRearFront')).setOrigin(0.5, 1).setScale(1 / TEX_SCALE).setDepth(8.8).setVisible(false);
+    this.cheese = scene.add.image(0, 0, propKey('cheese')).setScale(1 / TEX_SCALE).setDepth(8.9).setVisible(false);
     this.busyBar = scene.add.graphics().setDepth(27);
     this.ringCheese = scene.add.image(0, 0, propKey('cheese')).setDepth(27.1).setVisible(false);
     for (let i = 0; i < STEAM_PUFFS; i++) {
-      const img = scene.add.image(0, 0, propKey('steam')).setDepth(26).setVisible(false);
+      const img = scene.add.image(0, 0, propKey('steam')).setDepth(8.95).setVisible(false);
       this.puffs.push({ img, t: i / STEAM_PUFFS });
     }
 
@@ -61,33 +64,35 @@ export class Stations {
     this.eagleT = 0;
   }
 
-  update(view: ViewState, meta: Meta, tint: number, dt: number, time: number) {
-    const owned = meta.owned.includes('cauldron');
-    const rear = meta.flags.cauldron === 'back';
-    this.frontBack.setVisible(owned && !rear);
-    this.frontFront.setVisible(owned && !rear);
-    this.ledge.setVisible(owned && rear);
-    this.rearBack.setVisible(owned && rear);
-    this.rearFront.setVisible(owned && rear);
-    for (const img of [this.frontFront, this.ledge, this.rearFront]) img.setTint(tint);
+  /** Something landed in the pot: it jolts for a moment. */
+  potSplash() { this.splashT = 0.3; }
+
+  /**
+   * `hook` is where the eagle hook hangs (see marketCamera.hookAt); `market` how far the market
+   * view has come in (0 to 1): there, a site not built yet shows as a faint outline at its place.
+   */
+  update(view: ViewState, meta: Meta, tint: number, dt: number, time: number, hook: { x: number; top: number }, market = 0) {
+    const owned = !!meta.loadout.stations.cauldron;
+    const ghost = owned ? 1 : market * 0.38;
+    for (const img of [this.mound, this.potBack, this.potFront]) img.setVisible(owned || market > 0.02).setAlpha(ghost);
+    this.mound.setTint(tint);
+    this.potFront.setTint(tint);
     // The molten cheese is the glow of the scene, so the inside of the pot stays lit at night.
     const lit = Phaser.Display.Color.Interpolate.ColorWithColor(Phaser.Display.Color.ValueToColor(tint), Phaser.Display.Color.ValueToColor(0xffffff), 100, 70);
-    const potLight = Phaser.Display.Color.GetColor(lit.r, lit.g, lit.b);
-    this.frontBack.setTint(potLight);
-    this.rearBack.setTint(potLight);
-    this.updatePot(view, owned, rear, dt, time);
-    this.updatePerch(view, meta, tint, dt, time);
+    this.potBack.setTint(Phaser.Display.Color.GetColor(lit.r, lit.g, lit.b));
+    this.updatePot(view, owned, dt, time);
+    this.updatePerch(view, meta, tint, dt, time, hook, market);
   }
 
-  private updatePot(view: ViewState, owned: boolean, rear: boolean, dt: number, time: number) {
-    const cx = rear ? WORLD.cauldronBack.x : WORLD.cauldron.x;
-    const rimY = rear ? WORLD.cauldronBack.rimY : 610;
+  private updatePot(view: ViewState, owned: boolean, dt: number, time: number) {
+    const { x: cx, rimY } = WORLD.cauldron;
     const busy = view.potBusy > 0 && view.potMax > 0;
-    const shake = busy ? Math.sin(time * 0.05) * 1.6 : 0;
-    this.frontBack.x = this.frontFront.x = WORLD.cauldron.x + shake;
-    this.rearBack.x = this.rearFront.x = WORLD.cauldronBack.x + shake;
+    this.splashT = Math.max(0, this.splashT - dt);
+    const jolt = this.splashT > 0 ? Math.sin(this.splashT * 60) * this.splashT * 10 : 0;
+    const shake = (busy ? Math.sin(time * 0.05) * 1.6 : 0) + jolt;
+    this.potBack.x = this.potFront.x = cx + shake;
 
-    const size = rear ? 0.75 : 1;
+    const size = POT_SIZE;
     for (const p of this.puffs) {
       p.img.setVisible(owned);
       if (!owned) continue;
@@ -107,7 +112,7 @@ export class Stations {
       this.cheese.setPosition(cx, rimY - 8 - u * 26).setScale(((0.3 + u * 0.8) * size) / TEX_SCALE).setRotation(Math.sin(time * 0.02) * 0.12);
     }
 
-    // A ring over the pot that fills up: the plain way of saying "wait".
+    // A ring over the pot that fills up: the plain way of saying "taken, wait".
     const g = this.busyBar;
     g.clear();
     if (owned && busy) {
@@ -125,13 +130,14 @@ export class Stations {
     }
   }
 
-  private updatePerch(view: ViewState, meta: Meta, tint: number, dt: number, time: number) {
-    const owned = meta.owned.includes('perch');
-    this.chain.setVisible(owned);
-    this.hook.setVisible(owned);
-    const x = perchX(meta.fieldW);
+  private updatePerch(view: ViewState, meta: Meta, tint: number, dt: number, time: number, at: { x: number; top: number }, market: number) {
+    const owned = !!meta.loadout.stations.perch;
+    const ghost = owned ? 1 : market * 0.42;
+    this.chain.setVisible(owned || market > 0.02).setAlpha(ghost);
+    this.hook.setVisible(owned || market > 0.02).setAlpha(ghost);
+    const x = at.x;
     const busy = view.perchBusy > 0;
-    const hookTop = WORLD.perch.hookY - 112;
+    const hookTop = at.top;
     const sway = busy ? Math.sin(time * 0.014) * 0.09 : Math.sin(time * 0.002) * 0.02;
     this.chain.setPosition(x, hookTop + 6).setTint(tint);
     this.chain.setRotation(sway * 0.25);
@@ -151,5 +157,5 @@ export class Stations {
     if (t > eat + EAGLE_OUT) this.eagleT = -1;
   }
 
-  reset() { this.eagleT = -1; this.eagle.setVisible(false); }
+  reset() { this.eagleT = -1; this.eagle.setVisible(false); this.splashT = 0; }
 }

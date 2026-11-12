@@ -1,6 +1,11 @@
+// The Crowcaller as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { glint, lit, litTube, paint, r1, rng, stroke, tone, within } from '../shade';
-import { INK, PAL, brassPin, felt, oval, part, seam } from './kit';
+import { INK, PAL, RAT, brassPin, felt, mouseEar, oval, part, seam, tail } from './kit';
+
+/** The caller behind the bone beak is a rat; the crows are its allies and stay crows. */
+const C = RAT;
 
 /**
  * Overlapping rows of feathers, painted inside a shape. Rows are listed top to bottom; lower rows
@@ -100,6 +105,9 @@ const head =
       stroke('M5 -15 L11 -20 M7 -11 L17 -14 M8 -6 L18 -6', tone(PAL.raven, -0.4), 0.8, 0.7),
     { shadow: 2.4, light: 1, lightK: 0.3 },
   ) +
+  // Rat ears stick up between the crest and the mask.
+  mouseEar(-4, -22.5, 5.5, C, { back: true }) +
+  mouseEar(6, -22, 7, C) +
   // The bone mask: shaded bone, a war-paint stripe, cracks, a nostril and a hollow eye socket.
   felt(
     MASK,
@@ -113,6 +121,9 @@ const head =
     { shadow: 2.6, light: 1.4, lightK: 0.4 },
   ) +
   stroke('M-26 -4 Q-17 -3 -9 -5', INK, 1.9) +
+  // Whiskers escape under the mask.
+  stroke('M-12 0.4 Q-15.6 4 -19.6 5.6 M-10.6 0.8 Q-12 5 -13.4 9 M-9 0.8 Q-7.4 5 -5 8.2', INK, 2.2, 0.35) +
+  stroke('M-12 0.4 Q-15.6 4 -19.6 5.6 M-10.6 0.8 Q-12 5 -13.4 9 M-9 0.8 Q-7.4 5 -5 8.2', '#fff6e2', 1.1) +
   // Socket with a glowing amber eye under a heavy, scowling brow ridge.
   paint(oval(-4, -11, 5.2, 4.8), INK) +
   `<circle cx="-4" cy="-11" r="2.6" fill="${PAL.amber}" stroke="none"/>` +
@@ -125,30 +136,32 @@ const armBack =
   feather(9, 6, 13, 6, -6, PAL.raven) +
   feather(13, 15, 13, 6, -10, PAL.raven) +
   litTube('M0 0 L11 22', 3, PAL.raven, { outline: 2.8, shadow: 1, light: 0.5 }) +
-  lit(oval(12, 25, 3.8), PAL.skinD, { outline: 2.8, shadow: 1.2, light: 0.7 }) +
-  stroke('M9.6 26.4 Q11.4 28 13.6 27.4', tone(PAL.skinD, -0.4), 0.8, 0.8);
+  lit(oval(12, 25, 3.8), C.furD, { outline: 2.8, shadow: 1.2, light: 0.7 }) +
+  stroke('M9.6 26.4 Q11.4 28 13.6 27.4', tone(C.furD, -0.4), 0.8, 0.8);
 
 const armFront =
   feather(-8, -2, 13, 6.4, 8, PAL.ravenL) +
   feather(-15, -5, 13, 6.4, 4, PAL.ravenL) +
   litTube('M0 0 L-12 -6 L-21 -2', 3, PAL.raven, { outline: 2.8, shadow: 1, light: 0.5 }) +
   // Bony fingers spread in a summoning gesture, with dark nails.
-  litTube('M-26 -7 L-30 -12', 1.8, PAL.skin, { outline: 1.6, shadow: 0.5, light: 0.3 }) +
-  litTube('M-23 -8 L-25 -15', 1.8, PAL.skin, { outline: 1.6, shadow: 0.5, light: 0.3 }) +
-  litTube('M-20 -7 L-20 -14', 1.8, PAL.skin, { outline: 1.6, shadow: 0.5, light: 0.3 }) +
+  litTube('M-26 -7 L-30 -12', 1.8, C.fur, { outline: 1.6, shadow: 0.5, light: 0.3 }) +
+  litTube('M-23 -8 L-25 -15', 1.8, C.fur, { outline: 1.6, shadow: 0.5, light: 0.3 }) +
+  litTube('M-20 -7 L-20 -14', 1.8, C.fur, { outline: 1.6, shadow: 0.5, light: 0.3 }) +
   paint(oval(-30, -12.2, 0.9) + oval(-25, -15.2, 0.9) + oval(-20, -14.2, 0.9), PAL.sootD) +
-  lit(oval(-23, -4, 4), PAL.skin, { outline: 2.8, shadow: 1.3, light: 0.8 }) +
-  stroke('M-26.4 -3 Q-24.4 -1 -21.6 -1.6', tone(PAL.skin, -0.38), 0.8, 0.8) +
+  lit(oval(-23, -4, 4), C.fur, { outline: 2.8, shadow: 1.3, light: 0.8 }) +
+  stroke('M-26.4 -3 Q-24.4 -1 -21.6 -1.6', tone(C.fur, -0.38), 0.8, 0.8) +
   brassPin(0, 0, 2.2);
 
-/** Crowcaller: a gaunt figure in a feather cloak behind a long bone beak. */
+/** Crowcaller: a gaunt rat in a feather cloak behind a long bone beak. */
 export const crowcallerRig: CharacterRig = {
   parts: [
+    // Bare tail under the feather cloak.
+    part('tail', 9, -29, 'legBack', [-6, -10, 41, 18], tail([0, 0], [13, 12], [28, 12], [34, -4], 5.5, 2, C.tail, { rings: true })),
     part('armBack', 8, -50, 'armBack', [-11, -10, 26, 42], armBack),
     part('legBack', 4, -34, 'legBack', [-18, -8, 13, 38], talonLeg(PAL.ashD)),
     part('legFront', -4, -34, 'legFront', [-18, -8, 13, 38], talonLeg(PAL.ash)),
     part('body', 0, -34, 'body', [-26, -30, 26, 16], body),
-    part('head', 0, -55, 'head', [-35, -30, 28, 11], head),
+    part('head', 0, -55, 'head', [-35, -34, 28, 13], head),
     part('armFront', -6, -49, 'armFront', [-36, -24, 10, 24], armFront),
   ],
 };

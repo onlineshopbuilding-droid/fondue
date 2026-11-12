@@ -1,6 +1,11 @@
+// The Goat Rider as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { glint, lit, litTube, paint, rng, stroke, tone } from '../shade';
-import { PAL, bead, blush, brassPin, brow, felt, fold, fur, hand, metal, oval, part, rim, rrect, seam } from './kit';
+import { MOUSE, PAL, bead, blush, brassPin, brow, felt, fold, fur, hand, metal, mouseEar, oval, part, rim, rrect, seam, snout, tail } from './kit';
+
+/** The goat is a goat; its rider is a mouse. */
+const C = MOUSE;
 
 const MUZZLE = '#e3c3ad';
 
@@ -154,13 +159,11 @@ const riderBody =
   lit(rrect(-5.6, 0.4, 4, 4, 0.8), PAL.mustard, { outline: 1.3, shadow: 0.8, light: 0.5 });
 
 const riderHead =
-  // Ginger braid hanging from under the cap.
-  litTube('M6.6 -10 Q11.4 -4 10 3', 3.6, PAL.copper, { outline: 2.4, shadow: 1.1, light: 0.6 }) +
-  stroke('M7.4 -7.6 l2.4 0.8 M8.8 -4.6 l2.4 0.2 M9.4 -1.4 l2.2 -0.4', tone(PAL.copper, -0.4), 0.9, 0.9) +
-  `<rect x="8.2" y="1.6" width="3.6" height="2.2" rx="0.8" fill="${PAL.teal}" stroke="#2b2118" stroke-width="1"/>` +
   // Face.
-  felt(oval(-1, -7, 10), PAL.skin, paint('M-12 -10 H10 V-7.8 Q-1 -8.6 -12 -7.8 Z', tone(PAL.skin, -0.3), 0.5), { shadow: 3.4, light: 1.6 }) +
-  blush(-6, -1.6, 2.8, 1.9) +
+  felt(oval(-1, -7, 10), C.fur, paint('M-12 -10 H10 V-7.8 Q-1 -8.6 -12 -7.8 Z', tone(C.fur, -0.3), 0.5), { shadow: 3.4, light: 1.6 }) +
+  blush(-5, -1, 2.6, 1.8, 0.26) +
+  // A big round ear under the brim.
+  mouseEar(9.5, -8.5, 7, C) +
   // Horns of the cap, ridged.
   litTube('M-10 -15 Q-17 -17 -16 -22', 2.6, PAL.cream, { outline: 2.8, shadow: 0.8, light: 0.5 }) +
   litTube('M8 -15 Q15 -17 14 -22', 2.6, PAL.cream, { outline: 2.8, shadow: 0.8, light: 0.5 }) +
@@ -182,9 +185,8 @@ const riderHead =
   brow('M-3.4 -8.2 L0.8 -8.8', 1.8) +
   bead(-7, -5.6, 1.8) +
   bead(-1, -5.6, 1.8) +
-  lit(oval(-11, -3, 3, 2.4), PAL.skinD, { outline: 2, shadow: 1, light: 0.6, lightK: 0.38 }) +
-  glint(-11.8, -3.9, 0.6, '#fffaf0', 0.7) +
-  stroke('M-8.6 0.2 Q-4.6 2.6 -0.4 -0.8', '#2b2118', 1.9);
+  stroke('M-8.6 0.6 Q-4.6 3 -0.4 -0.4', '#2b2118', 1.9) +
+  snout(-9, -2.6, 10, 7, C, { outline: 2.2 });
 
 const riderArmFront =
   // Leather reins tied to the goat's horns.
@@ -193,10 +195,10 @@ const riderArmFront =
   stroke('M-15 -3.6 Q-26 1 -34.4 8.8', PAL.copperL, 0.7, 0.6) +
   litTube('M0 0 L-11 -2', 5.5, PAL.plum, { shadow: 1.8, light: 0.9 }) +
   stroke('M-9.4 -5.4 L-10 1.4', tone(PAL.plum, -0.35), 1.4, 0.9) +
-  hand(-14, -3, 4.6, PAL.skin) +
+  hand(-14, -3, 4.6, C.fur) +
   brassPin(0, 0, 2.5);
 
-/** Goat Rider: a small raider in a horned hat on a big shaggy alpine goat. */
+/** Goat Rider: a small mouse raider in a horned hat on a big shaggy alpine goat. */
 export const goatRiderRig: CharacterRig = {
   parts: [
     part('goatLegFarFront', -19, -32, 'legBack', LEG_BOX, goatLeg(PAL.creamD)),
@@ -205,16 +207,17 @@ export const goatRiderRig: CharacterRig = {
     part('goatLegNearRear', 31, -32, 'legBack', LEG_BOX, goatLeg(PAL.cream)),
     part('goatBody', 4, -44, 'static', [-52, -34, 64, 32], goatBody),
     part('goatHead', -38, -54, 'static', [-40, -44, 36, 40], goatHead),
+    part('riderTail', 18, -55, 'legBack', [-6, -18, 28, 11], tail([0, 0], [10, 6], [20, 3], [21, -12], 5.4, 2.4, C.tail)),
     part(
       'riderArmBack',
       13,
       -67,
       'armBack',
       [-10, -9, 10, 25],
-      litTube('M0 0 L1 11', 5.5, PAL.plumD, { shadow: 1.8, light: 0.9 }) + hand(1, 14, 4.2, PAL.skinD),
+      litTube('M0 0 L1 11', 5.5, PAL.plumD, { shadow: 1.8, light: 0.9 }) + hand(1, 14, 4.2, C.furD),
     ),
     part('riderBody', 10, -58, 'body', [-19, -20, 16, 32], riderBody),
-    part('riderHead', 10, -70, 'head', [-23, -31, 22, 10], riderHead),
+    part('riderHead', 10, -70, 'head', [-28, -31, 22, 14], riderHead),
     part('riderArmFront', 5, -67, 'armFront', [-41, -13, 13, 17], riderArmFront),
   ],
 };

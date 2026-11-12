@@ -1,6 +1,10 @@
+// The Balloonist as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { crescent, glint, lit, litTube, paint, r1, radial, stroke, tone, within } from '../shade';
-import { INK, PAL, blush, brassPin, felt, fold, metal, oval, part, rim, rope, rrect, seam } from './kit';
+import { INK, MOUSE, PAL, blush, brassPin, felt, fold, metal, mouseEar, oval, part, rim, rope, rrect, seam, snout, tail } from './kit';
+
+const C = MOUSE;
 
 /** One gore band of the envelope; k = 1 is the full balloon, smaller k a narrower band round the middle. */
 const gore = (k: number): string => {
@@ -102,11 +106,13 @@ const FACE = oval(-1, -8, 10.5);
 const CAP = 'M-12 -9 Q-12 -19 -1 -19 Q10 -19 10 -8 L10 1 Q6 3 4 0 L4 -9 Z';
 
 const head =
+  // Far ear behind the cap.
+  mouseEar(-8, -19.5, 5.5, C, { back: true }) +
   felt(
     FACE,
-    PAL.skin,
+    C.fur,
     // Shadow under the cap and a little stubble on the chin.
-    paint('M-14 -12 H10 V-9 Q-2 -10 -14 -9.4 Z', tone(PAL.skin, -0.3), 0.5) + paint(oval(-3, 1.4, 7, 2.6), tone(PAL.skin, -0.14), 0.6),
+    paint('M-14 -12 H10 V-9 Q-2 -10 -14 -9.4 Z', tone(C.fur, -0.3), 0.5) + paint(oval(-3, 1.4, 7, 2.6), tone(C.fur, -0.14), 0.6),
     { shadow: 3, light: 1.4 },
   ) +
   // Leather aviator cap with a seam and an ear flap.
@@ -118,6 +124,11 @@ const head =
       rim('M-9.4 -14.6 Q-6 -18.2 -1 -18.4', 1.1, 0.5),
     { shadow: 2, light: 1 },
   ) +
+  // Near ear, poking through the cap.
+  mouseEar(6, -19, 7, C) +
+  stroke('M0.6 -14.4 Q6 -11.8 11 -13.6', tone(PAL.woodD, -0.45), 1.6, 0.9) +
+  // Muzzle with a pink nose and whiskers, under the goggles.
+  snout(-9.5, -2.4, 10, 6.6, C, { outline: 2.2 }) +
   // Goggle strap and brass-rimmed goggles; eyes peer through the glass.
   stroke('M-3 -10 L10 -10', INK, 3) +
   stroke('M-3 -10.4 L10 -10.4', tone(PAL.woodD, 0.2), 1, 0.7) +
@@ -130,11 +141,9 @@ const head =
   paint('M-1.6 -8.4 Q1 -12.2 3.6 -10.6 Q1 -10.6 -1.6 -8.4 Z', PAL.pale, 0.75) +
   glint(-10.6, -10.4, 0.7) +
   glint(-0.6, -10.4, 0.7) +
-  // Button nose, rosy cheek and a cheerful grin.
-  lit(oval(-12, -4, 2.4, 2), PAL.skinD, { outline: 1.5, shadow: 0.8, light: 0.6 }) +
-  blush(-5.8, -2.6, 2.4, 1.5, 0.4) +
-  stroke('M-10.6 -1.4 Q-6.6 1.2 -2.6 -1.4', INK, 1.8) +
-  paint('M-9.6 -0.9 Q-6.6 0.8 -3.6 -1 Q-6.6 -0.2 -9.6 -0.9 Z', '#fffaf0', 0.9);
+  // Rosy cheek and a cheerful grin.
+  blush(-4.6, -2, 2.4, 1.5, 0.3) +
+  stroke('M-8.2 2 Q-5 3.8 -1.4 1', INK, 1.8);
 
 const BASKET = 'M-19 -9 L19 -9 L16 7.5 L-16 7.5 Z';
 
@@ -175,14 +184,16 @@ const basket =
   ) +
   lit(oval(24.2, -2.6, 1.6, 1.1), PAL.creamD, { outline: 1.2, shadow: 0.5, light: 0.3 });
 
-/** Balloonist: a goggled pilot in a wicker basket under a patched, striped balloon. */
+/** Balloonist: a goggled mouse pilot in a wicker basket under a patched, striped balloon. */
 export const balloonistRig: CharacterRig = {
   parts: [
     part('balloon', 0, -56, 'static', [-40, -70, 40, 44], balloon),
-    part('armBack', 7, -26, 'armBack', [-12, -10, 18, 24], arm([3, 10], PAL.woodD, PAL.skinD, false)),
+    part('armBack', 7, -26, 'armBack', [-12, -10, 18, 24], arm([3, 10], PAL.woodD, C.furD, false)),
+    // The tail curls up over the back of the basket and sways as the balloon drifts.
+    part('tail', 15, -19, 'armFront', [-6, -27, 29, 6], tail([0, 0], [8, -5], [17, -7], [22, -20], 5.6, 2.4, C.tail)),
     part('body', 0, -16, 'body', [-17, -21, 33, 16], body),
-    part('head', 0, -30, 'head', [-22, -25, 19, 9], head),
+    part('head', 0, -30, 'head', [-28, -30, 19, 14], head),
     part('basket', 0, -9, 'static', [-28, -18, 36, 13], basket),
-    part('armFront', -7, -27, 'armFront', [-22, -10, 10, 22],arm([-8, 9], PAL.wood, PAL.skin, true, [0.6, 2.6])),
+    part('armFront', -7, -27, 'armFront', [-22, -10, 10, 22],arm([-8, 9], PAL.wood, C.fur, true, [0.6, 2.6])),
   ],
 };

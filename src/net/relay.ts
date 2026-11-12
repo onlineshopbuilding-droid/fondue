@@ -1,3 +1,4 @@
+// Plan B for co-op: both players connect to a tiny relay server (server/relay) that forwards everything.
 import type { NetMessage } from './protocol';
 import { BaseTransport, type RoomHost, type Transport, type TransportKind } from './transport';
 

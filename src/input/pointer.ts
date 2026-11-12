@@ -1,4 +1,6 @@
-import { WORLD } from '../config/world';
+// Pointer input of the field: records every pointer event with its time stamp and works out the release
+// velocity of a throw from those raw samples. Free of Phaser; src/render/scene.ts binds it to the canvas (`bindPointer`).
+import { WORLD } from '../config/field';
 
 interface Sample { t: number; x: number; y: number; }
 
@@ -11,15 +13,21 @@ const HISTORY = 64;
 export class PointerTracker {
   x = WORLD.width / 2;
   y = WORLD.height / 2;
-  /** The current or last press came from a finger, which leaves no cursor behind. */
+  /**
+   * The last pointer event came from a finger, which leaves no cursor behind. Decided per event, not
+   * per device: a laptop with a touch screen switches back and forth.
+   */
   touch = false;
   pressed = false;
+  /** Time stamp of the newest sample, in ms on the event clock. */
+  lastT = 0;
   private samples: Sample[] = [];
 
   /** Adds a sample in world coordinates. */
   add(t: number, x: number, y: number) {
     this.x = x;
     this.y = y;
+    this.lastT = t;
     this.samples.push({ t, x, y });
     if (this.samples.length > HISTORY) this.samples.shift();
   }
@@ -67,7 +75,6 @@ export interface PointerHandlers {
 /** Binds pointer events on the game canvas. Mouse and touch both arrive here. */
 export function bindPointer(canvas: HTMLCanvasElement, h: PointerHandlers): { tracker: PointerTracker; dispose(): void } {
   const tracker = new PointerTracker();
-  tracker.touch = window.matchMedia('(pointer: coarse)').matches;
   let hudPress = false;
   let activeId: number | null = null;
 
@@ -82,16 +89,19 @@ export function bindPointer(canvas: HTMLCanvasElement, h: PointerHandlers): { tr
 
   const onMove = (ev: PointerEvent) => {
     if (activeId !== null && ev.pointerId !== activeId) return;
+    tracker.touch = ev.pointerType === 'touch';
     const list = ev.getCoalescedEvents?.() ?? [];
+    // Every sample is handed on, not only the newest: when frames are slow the browser bundles
+    // several moves into one event, and a shake read from the newest alone loses its turning points.
     for (const c of list.length > 0 ? list : [ev]) {
       const p = toWorld(c);
       tracker.add(c.timeStamp, p.x, p.y);
+      h.onMove(tracker);
     }
-    h.onMove(tracker);
   };
 
   const onDown = (ev: PointerEvent) => {
-    // Only the primary button plays; the right button is reserved for cancelling.
+    // Only the primary button plays.
     if (activeId !== null || ev.button !== 0) return;
     activeId = ev.pointerId;
     tracker.touch = ev.pointerType === 'touch';

@@ -1,22 +1,34 @@
 import { expect, test } from '@playwright/test';
-import { gameState, startSolo, waitFor } from './helpers';
+import { LAND_NAMES } from '../../src/art/registry';
+import { startEndless, waitForGame } from './helpers';
 
-test('every landscape and time of day renders', async ({ page }) => {
+test('every landscape renders at day, dusk and night', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  await startSolo(page, '?seed=51');
-  await waitFor(() => gameState(page), (s) => s?.phase === 'battle');
-  const cases: [number, number, string][] = [[1, 40, 'night-meadow'], [4, 30, 'dusk-canyon'], [7, 8, 'day-marsh'], [10, 46, 'night-snowpine']];
-  for (const [day, t, name] of cases) {
-    await page.evaluate(([d, dt]) => {
-      const sim = (window as any).__fondue.session.sim;
-      sim.s.day = d; sim.s.dayT = dt; sim.s.spawnQueue = [];
-      sim.s.enemies = [];
-      for (let i = 0; i < 6; i++) sim.spawnEnemy('grunt', 500 + i * 110);
-      sim.s.paused = false;
-    }, [day, t]);
-    await page.waitForTimeout(350);
-    await page.screenshot({ path: `docs/screenshots/land-${name}.png` });
+  await page.goto('/?menu=1&seed=51');
+  // This test looks at all landscapes, so it waits until the background has made them all.
+  await waitForGame(page, { allArt: true });
+  await startEndless(page);
+  const times: [string, number, boolean][] = [['day', 0.2, false], ['dusk', 0.75, false], ['night', 0.95, true]];
+  for (const land of LAND_NAMES) {
+    for (const [name, share, night] of times) {
+      await page.evaluate(([l, k, n]) => {
+        const sim = (window as any).__fondue.session.sim;
+        const today = sim.s.meta.today;
+        sim.s.meta.today = { ...today, landscape: l, night: n };
+        sim.s.dayT = today.seconds * (k as number);
+        sim.s.spawnQueue = [];
+        sim.s.enemies = [];
+        for (let i = 0; i < 6; i++) sim.spawnEnemy('grunt', 500 + i * 110);
+        sim.s.meta.rev++;
+      }, [land, share, night] as const);
+      // Two frames are enough to draw the new scenery.
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      // Four of them are the pictures in the documents; the rest are only for looking at.
+      const shot = `land-${name}-${land}`;
+      const inDocs = ['land-night-meadow', 'land-dusk-canyon', 'land-day-marsh', 'land-night-snowpine'].includes(shot);
+      await page.screenshot({ path: `${inDocs ? 'docs/screenshots' : 'mobile-screenshots'}/${shot}.png` });
+    }
   }
   expect(errors).toEqual([]);
 });

@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
-import { gameState, startSolo, waitFor } from '../e2e/helpers';
+import { closePopups, gameState, startSolo, waitFor } from '../e2e/helpers';
 
 test.use({
   headless: false,
@@ -9,8 +9,9 @@ test.use({
 
 /** Run by hand: npx playwright test --config playwright.perf.config.ts */
 test('frame rate with 200 enemies and effects', async ({ page }) => {
-  await startSolo(page, '?seed=31');
+  await startSolo(page, '?menu=1&seed=31');
   await waitFor(() => gameState(page), (s) => s?.phase === 'battle');
+  await closePopups(page);
   const result = await page.evaluate(async () => {
     const app = (window as any).__fondue;
     const sim = app.session.sim;

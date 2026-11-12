@@ -1,3 +1,4 @@
+// The common shape of every co-op link (PeerJS, relay, loopback) and the room a host opens for a guest.
 import type { NetMessage } from './protocol';
 
 /** One bidirectional link between the host and a guest. */

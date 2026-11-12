@@ -1,6 +1,7 @@
 name: Tests
 
 # The check that must pass before a pull request can be merged into main.
+# Only the summary job at the end is called `test`; main's protection waits for that name.
 on:
   pull_request:
     branches: [main]
@@ -10,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Types, unit tests and the one build of the game that every browser machine then uses.
   unit:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -22,16 +24,23 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
       - run: npx vitest run
+      - run: npx vite build --base=/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: game-build
+          path: dist/
+          retention-days: 1
 
-  # The browser tests take most of the time, so they share the work between machines
-  # and run against the built game, which starts much faster than the dev server.
+  # The browser tests on the three devices (laptop, iPhone 16, OnePlus 8T) take most of the time,
+  # so they share the work between machines and run against the built game.
   browser:
+    needs: unit
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,18 +48,41 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npx vite build --base=/
+      # The browser is kept between runs; only the system libraries it needs are installed each time.
+      - name: Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: game-build
+          path: dist/
       - name: Serve the built game
         run: |
           npx vite preview --port 5199 --strictPort --base=/ &
-          npx --yes wait-on --timeout 60000 http://localhost:5199
-      - run: npx playwright test --shard=${{ matrix.shard }}/6
+          for i in $(seq 60); do curl -sf http://localhost:5199 > /dev/null && exit 0; sleep 1; done; exit 1
+      - run: npx playwright test --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: mobile-screenshots-${{ matrix.shard }}
           path: mobile-screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
+      # What a failed test saw (page state, screenshots), to find the cause without guessing.
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results-${{ matrix.shard }}
+          path: test-results/
           if-no-files-found: ignore
           retention-days: 7
 

@@ -1,23 +1,17 @@
+// Turns the drawn art into Phaser textures at boot (the rest in the background), plus a few generated ones.
 import Phaser from 'phaser';
-import type { Art, CharacterRig } from '../art/types';
-import { RIGS } from '../art/characters';
-import { PROPS } from '../art/props';
-import { CLOUDS, LANDSCAPE_ART } from '../art/landscapes';
+import type { Art } from '../art/types';
+import { assetsOfGroup, BOOT, KEEP_STAGES, LAND_NAMES, WEAPON_TIERS, type AssetEntry, type AssetGroup, type LandName } from '../art/registry';
 
-/** Texture pixels per world pixel. Characters stay sharp when the game is scaled up. */
-export const TEX_SCALE = 2;
+// Names and scales live in the asset directory; scenes keep importing them from here.
+export { TEX_SCALE, LAND_SCALE, CLOUD_SCALE, partKey, propKey, landscapeKey, cloudKey, weaponKey } from '../art/registry';
 
-/**
- * Texture pixels per world pixel for the landscape layers. Finer layers looked a little sharper on
- * phones, but drawing them scaled down every frame was too slow without a GPU (GitHub's test
- * machines, weak phones) and slowed loading; 1 keeps world size, as before the art redraw.
- */
-export const LAND_SCALE = { far: 1, mid: 1, near: 1, ground: 1 } as const;
-export const CLOUD_SCALE = 1;
-
-function rasterise(art: Art, scale: number): Promise<HTMLCanvasElement> {
+/** Loads a picture from `src` and draws it into a canvas of the art's size times `scale`. */
+function draw(src: string, art: Art, scale: number, what: string): Promise<HTMLCanvasElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    // An image file from another site may only become a texture if that site allows it.
+    if (!src.startsWith('data:')) img.crossOrigin = 'anonymous';
     img.onload = () => {
       const canvas = document.createElement('canvas');
       canvas.width = Math.ceil(art.w * scale);
@@ -25,15 +19,25 @@ function rasterise(art: Art, scale: number): Promise<HTMLCanvasElement> {
       canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve(canvas);
     };
-    img.onerror = () => reject(new Error(`Could not rasterise art (${art.w}x${art.h})`));
-    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(art.svg)}`;
+    img.onerror = () => reject(new Error(`Could not rasterise ${what} (${art.w}x${art.h})`));
+    img.src = src;
   });
 }
 
-export const partKey = (rig: string, part: string) => `rig:${rig}:${part}`;
-export const propKey = (name: string) => `prop:${name}`;
-export const landscapeKey = (land: string, layer: string) => `land:${land}:${layer}`;
-export const cloudKey = (i: number) => `cloud:${i}`;
+/**
+ * Turns one asset into a canvas. With `art.image` set, that file is drawn into the same box as the
+ * SVG (w x h x scale); if it cannot be loaded, the built-in SVG is used and a warning is logged.
+ */
+async function rasterise({ name, art, scale }: AssetEntry): Promise<HTMLCanvasElement> {
+  if (art.image) {
+    try {
+      return await draw(art.image, art, scale, `image ${art.image}`);
+    } catch {
+      console.warn(`Asset ${name}: image ${art.image} could not be loaded, using the built-in art`);
+    }
+  }
+  return draw(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(art.svg)}`, art, scale, `art ${name}`);
+}
 
 /** Soft ground shadow under figures: a cool, dark contact core inside a wide falloff. */
 function shadowCanvas(): HTMLCanvasElement {
@@ -109,34 +113,11 @@ function ringCanvas(): HTMLCanvasElement {
   return c;
 }
 
-type LandName = keyof typeof LANDSCAPE_ART;
-const LANDS = Object.keys(LANDSCAPE_ART) as LandName[];
+const LANDS = LAND_NAMES;
 /** The landscape a game starts in; only this one is needed before the menu shows. */
 const FIRST_LAND: LandName = 'meadow';
-/** Group of the bigger keep stages, which only matter once a gate has been bought. */
-const KEEP_STAGES = 'keepStages';
-type Group = LandName | typeof KEEP_STAGES;
-
-/**
- * Which background group a prop belongs to: a landscape for its dressing (`foot_marsh`,
- * `keepWeather_snowpine_2`), the keep stages 1 to 4 with their window glow, or none (made at boot).
- */
-function groupOfProp(name: string): Group | null {
-  for (const land of LANDS) if (name.endsWith(`_${land}`) || name.includes(`_${land}_`)) return land;
-  if (/^keep(Glow)?[1-9]$/.test(name)) return KEEP_STAGES;
-  return null;
-}
-
-/** Everything a group needs: a landscape's four strips plus its props, or the keep stages. */
-function groupJobs(group: Group): [string, Art, number][] {
-  const list: [string, Art, number][] = [];
-  if (group !== KEEP_STAGES) {
-    const layers = LANDSCAPE_ART[group];
-    for (const layer of ['far', 'mid', 'near', 'ground'] as const) list.push([landscapeKey(group, layer), layers[layer], LAND_SCALE[layer]]);
-  }
-  for (const [name, art] of Object.entries(PROPS)) if (groupOfProp(name) === group) list.push([propKey(name), art, TEX_SCALE]);
-  return list;
-}
+/** A group loaded in the background: a landscape with its props, or the bigger keep stages. */
+type Group = Exclude<AssetGroup, typeof BOOT>;
 
 const ready = new Set<Group>();
 let queue: Group[] = [];
@@ -152,6 +133,11 @@ export function keepStagesReady(): boolean {
   return ready.has(KEEP_STAGES);
 }
 
+/** True once the weapon pictures of tiers 2 to 5 exist; until then tier 1 stands in. */
+export function weaponTiersReady(): boolean {
+  return ready.has(WEAPON_TIERS);
+}
+
 /** Moves a group to the front of the background queue, because it is wanted now. */
 function want(group: Group) {
   if (ready.has(group) || !queue.includes(group)) return;
@@ -159,13 +145,14 @@ function want(group: Group) {
 }
 /** True once the background queue is through: every landscape and keep stage exists. */
 export function allArtReady(): boolean {
-  return ready.has(KEEP_STAGES) && LANDS.every((l) => ready.has(l));
+  return ready.has(KEEP_STAGES) && ready.has(WEAPON_TIERS) && LANDS.every((l) => ready.has(l));
 }
 export const wantLandscape = (land: string) => want(land as Group);
 export const wantKeepStages = () => want(KEEP_STAGES);
+export const wantWeaponTiers = () => want(WEAPON_TIERS);
 
-async function addAll(tex: Phaser.Textures.TextureManager, jobs: [string, Art, number][]) {
-  await Promise.all(jobs.map(([key, art, scale]) => rasterise(art, scale).then((c) => { tex.addCanvas(key, c); })));
+async function addAll(tex: Phaser.Textures.TextureManager, jobs: AssetEntry[]) {
+  await Promise.all(jobs.map((asset) => rasterise(asset).then((c) => { tex.addCanvas(asset.name, c); })));
 }
 
 /** Pause between two background textures, so input, frames and co-op messages get through. */
@@ -183,8 +170,8 @@ async function loadRest(tex: Phaser.Textures.TextureManager) {
   while (queue.length > 0) {
     const group = queue.shift()!;
     try {
-      for (const [key, art, scale] of groupJobs(group)) {
-        tex.addCanvas(key, await rasterise(art, scale));
+      for (const asset of assetsOfGroup(group)) {
+        tex.addCanvas(asset.name, await rasterise(asset));
         await pause(BACKGROUND_GAP_MS);
       }
       ready.add(group);
@@ -198,25 +185,19 @@ async function loadRest(tex: Phaser.Textures.TextureManager) {
 }
 
 /**
- * Turns all art into GPU textures. Called once at boot. Rasterising detailed SVG takes a while on
+ * Turns all art of the asset directory into GPU textures. Called once at boot. Rasterising detailed SVG takes a while on
  * phones, so only what the first landscape needs is made before the game starts; the other three
  * landscapes and the bigger keep stages follow in the background (`landscapeReady`, `keepStagesReady`).
  */
 export async function buildTextures(game: Phaser.Game): Promise<void> {
   const tex = game.textures;
-  const jobs: [string, Art, number][] = [];
-  for (const [name, rig] of Object.entries(RIGS) as [string, CharacterRig][]) {
-    for (const part of rig.parts) jobs.push([partKey(name, part.name), part.art, TEX_SCALE]);
-  }
-  for (const [name, art] of Object.entries(PROPS)) if (groupOfProp(name) === null) jobs.push([propKey(name), art, TEX_SCALE]);
-  CLOUDS.forEach((art, i) => jobs.push([cloudKey(i), art, CLOUD_SCALE]));
-  jobs.push(...groupJobs(FIRST_LAND));
-  await addAll(tex, jobs);
+  // Figures, props without a group and clouds, then the first landscape with its props.
+  await addAll(tex, [...assetsOfGroup(BOOT), ...assetsOfGroup(FIRST_LAND)]);
   ready.add(FIRST_LAND);
   tex.addCanvas('fx:shadow', shadowCanvas());
   tex.addCanvas('fx:burst', burstCanvas());
   tex.addCanvas('fx:ring', ringCanvas());
-  // Keep stages first: a gate can be bought after day 1, the next landscape comes on day 4.
-  queue = [KEEP_STAGES, ...LANDS.filter((l) => l !== FIRST_LAND)];
+  // Keep stages and weapon tiers first: both can be bought after day 1; a new landscape comes later.
+  queue = [KEEP_STAGES, WEAPON_TIERS, ...LANDS.filter((l) => l !== FIRST_LAND)];
   void loadRest(tex);
 }

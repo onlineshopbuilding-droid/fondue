@@ -1,0 +1,39 @@
+/* The lobby inside the keep: the main menu screen is only a small chip over the hall (stars and
+   campaign progress); the hall itself is a Phaser scene and takes the taps. */
+#ui .overlay:has(> .lobby-hud) {
+  background: none; pointer-events: none; padding: 0; overflow: hidden;
+  align-items: flex-start; justify-content: flex-start;
+}
+.lobby-hud {
+  padding: max(8px, env(safe-area-inset-top)) 12px 0 max(12px, env(safe-area-inset-left));
+}
+.lobby-chip {
+  display: inline-block;
+  font-family: 'Lilita One', sans-serif; font-size: 20px; color: #fff6df;
+  background: rgba(43, 33, 24, 0.78); border: 3px solid #2b2118; border-radius: 999px;
+  padding: 3px 14px 4px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+  text-shadow: 0 2px 0 #2b2118;
+}
+.lobby-chip .star { color: #f3cb5e; }
+.lobby-chip .sep { opacity: 0.6; }
+
+/* The storybook window over the hall. */
+.storybook-veil {
+  position: absolute; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
+  padding: 12px; background: rgba(14, 16, 28, 0.55);
+}
+.panel.storybook { max-height: 100%; overflow: auto; text-align: center; }
+.storybook .sb-title { margin: 2px 0 6px; font-size: 22px; color: #853820; }
+.storybook .sb-text { text-align: left; font-size: 16px; line-height: 1.4; }
+.storybook .sb-text p { margin: 0 0 8px; }
+.storybook .sb-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.storybook .sb-foot button { min-width: 56px; min-height: 44px; font-size: 26px; }
+.storybook .sb-count { font-weight: 800; }
+.storybook .sb-more { margin-top: 6px; font-size: 14px; opacity: 0.75; }
+.storybook .sb-close { margin-top: 8px; min-height: 44px; }
+
+@media (max-height: 480px) {
+  .lobby-chip { font-size: 16px; padding: 2px 10px 3px; }
+  .storybook .sb-title { font-size: 18px; margin: 0 0 4px; }
+  .storybook .sb-text { font-size: 14px; }
+}

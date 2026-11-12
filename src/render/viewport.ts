@@ -1,4 +1,5 @@
-import { WORLD, fieldForAspect } from '../config/world';
+// Works out which part of the world a screen shows, for any size and shape, and the safe areas of phones.
+import { WORLD, fieldForAspect } from '../config/field';
 
 export interface SafeArea { left: number; right: number; top: number; bottom: number; }
 

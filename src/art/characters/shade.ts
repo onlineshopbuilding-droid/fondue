@@ -1,6 +1,12 @@
+// The Shade as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { glint, lit, litTube, paint, r1, stroke, tone, within } from '../shade';
-import { INK, PAL, brassPin, felt, fold, litLeg, metal, oval, part, rrect } from './kit';
+import { INK, PAL, RAT, brassPin, felt, fold, litLeg, metal, mouseEar, oval, part, rrect, snout, tail } from './kit';
+import type { Coat } from './kit';
+
+/** A night-grey rat: the same animal as the other rats, with the colour drained out of it. */
+const C: Coat = { fur: '#77717c', furD: '#58535e', muzzle: PAL.ashL, ear: tone(RAT.ear, -0.3), nose: RAT.nose, tail: tone(RAT.tail, -0.3) };
 
 /** Cool rim light: the Shade is dark, so a pale edge keeps it readable against night skies. */
 const edge = (d: string, w = 1.2, opacity = 0.5): string => stroke(d, PAL.ashL, w, opacity);
@@ -54,6 +60,8 @@ const HOOD = oval(-1, -12, 12.5, 13);
 const MASK = 'M-14 -16 Q0 -20 12 -15 L12 -8 Q0 -12 -14 -9 Z';
 
 const head =
+  // Far ear behind the wraps.
+  mouseEar(-8, -24.5, 5.5, C, { back: true }) +
   felt(
     HOOD,
     PAL.ash,
@@ -63,6 +71,9 @@ const head =
       edge('M-12 -16 Q-12 -23.6 -3 -25', 1.4, 0.6),
     { shadow: 3.6, light: 1.4, lightK: 0.24 },
   ) +
+  // Near ear, left free of the wraps.
+  mouseEar(7, -23.5, 6.5, C) +
+  stroke('M2 -19.6 Q7 -17 12 -19', tone(PAL.ash, -0.45), 1.6, 0.9) +
   // The dark eye band, with a fold over the nose and narrowed brows above the glowing eyes.
   felt(
     MASK,
@@ -83,7 +94,10 @@ const head =
   `<circle cx="-8.6" cy="-12.6" r="0.75" fill="${PAL.slateD}" stroke="none"/><circle cx="-2.4" cy="-12.6" r="0.75" fill="${PAL.slateD}" stroke="none"/>` +
   glint(-10, -13.2, 0.45) +
   glint(-3.2, -13.2, 0.45) +
-  `<path d="M-12.4 -16.2 L-6.8 -14.4 M0.8 -16.2 L-4.6 -14.4" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
+  `<path d="M-12.4 -16.2 L-6.8 -14.4 M0.8 -16.2 L-4.6 -14.4" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" fill="none"/>` +
+  // The bound snout: only the pink nose and the whiskers are left bare.
+  snout(-10, -4.4, 12.5, 8, C, { fill: PAL.ash, whiskerColor: PAL.pale }) +
+  stroke('M-13.4 -8 Q-12.4 -4.4 -13 -0.4 M-17 -7 Q-16.2 -4 -16.6 -1.2', tone(PAL.ash, -0.42), 1.1, 0.9);
 
 const BLADE = 'M-16 7 Q-34 4 -37 -18 Q-27 -11 -13 1 Z';
 
@@ -123,14 +137,16 @@ const shin = (cloth: string, boot: string): string =>
     stroke('M-4 6 L4 3.6 M-4 11 L4 8.6 M-4 16 L4 13.6', tone(cloth, 0.32), 1.1, 0.75) + stroke('M-4 7.2 L4 4.8 M-4 12.2 L4 9.8', tone(cloth, -0.4), 0.8, 0.75),
   );
 
-/** Shade: a slim figure bound in charcoal scarves, pale eyes and a short curved blade. */
+/** Shade: a slim rat bound in charcoal scarves, pale eyes and a short curved blade. */
 export const shadeRig: CharacterRig = {
   parts: [
+    // Long bare tail, low behind the scarf tails.
+    part('tail', 6, -29, 'legBack', [-6, -10, 43, 18], tail([0, 0], [14, 12], [30, 12], [36, -4], 5.5, 2, C.tail, { rings: true })),
     part('armBack', 5, -44, 'armBack', [-12, -10, 22, 28], armBack),
     part('legBack', 4, -30, 'legBack', [-21, -10, 13, 33], shin(PAL.ashD, PAL.ashD)),
     part('legFront', -4, -30, 'legFront', [-21, -10, 13, 33], shin(PAL.ash, PAL.ashD)),
     part('body', 0, -30, 'body', [-15, -34, 50, 19], body),
-    part('head', 0, -48, 'head', [-20, -30, 18, 9], head),
+    part('head', 0, -48, 'head', [-31, -35, 18, 14], head),
     part('armFront', -5, -44, 'armFront', [-44, -26, 10, 22], armFront),
   ],
 };

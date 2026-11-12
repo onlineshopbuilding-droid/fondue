@@ -1,0 +1,3190 @@
+{
+  "hinweis": "Ein Punkt wird nur mit echtem Beleg auf erledigt=true gesetzt.",
+  "punkte": [
+    {
+      "id": "A-0-01",
+      "abschnitt": "0",
+      "text": "Mit git pull wurde geprüft, ob seit dem Ausgangsstand (main bei Commit 3c93705) etwas dazugekommen ist.",
+      "erledigt": true,
+      "beleg": "PROGRESS Rahmen: Basis a9e519c (enthält PR #7 nach 3c93705); git log main"
+    },
+    {
+      "id": "A-0-02",
+      "abschnitt": "0",
+      "text": "Offene Pull Requests und Branches wurden geprüft; Branches, an denen jemand anderes arbeitet (Lenny, @claude in einem Issue), wurden nicht angefasst und berücksichtigt.",
+      "erledigt": false,
+      "beleg": "Offen: kein Beleg im Repo, dass offene PRs und fremde Branches zu Beginn geprüft wurden"
+    },
+    {
+      "id": "A-0-03",
+      "abschnitt": "0",
+      "text": "AGENTS.md, docs/HANDBUCH.md, docs/ENTSCHEIDUNGEN.md (E-001 bis E-031), docs/GDD.md, docs/balance.md, docs/uebergabe/IDEEN.md und docs/ABSCHLUSS-GROSSE-RUNDE.md wurden vollständig gelesen.",
+      "erledigt": false,
+      "beleg": "Offen: vollständiges Lesen der Dokumente ist im Repo nicht belegbar"
+    },
+    {
+      "id": "A-0-04",
+      "abschnitt": "0",
+      "text": "Die veralteten Stellen in docs/GDD.md (34 Gegner an Tag 1, Koop-Faktor 1,9) sind auf den neuen Stand gebracht.",
+      "erledigt": true,
+      "beleg": "docs/GDD.md neu: Endlos Tag 1 mit 40 Räubern (DAY.base), Koop 2,3 bzw. Kampagne 1,9 (COOP), Zahlen aus src/config"
+    },
+    {
+      "id": "A-0-05",
+      "abschnitt": "0",
+      "text": "Die veraltete Stelle im Handbuch, Abschnitt 9 („Tag 8 bis 12“ als Ziel), ist auf den neuen Stand gebracht.",
+      "erledigt": true,
+      "beleg": "docs/HANDBUCH.md Abschnitt 9, Zeile Schwierigkeit: Ziele aus docs/balance.md (Poor bis Tag 8, Mid um 24, Great um 40)"
+    },
+    {
+      "id": "A-0-06",
+      "abschnitt": "0",
+      "text": "Die sauberen Kerne bleiben erhalten: Simulation in src/sim/ (deterministisch, ohne Phaser/DOM), Netzcode in src/net/, Sitzung, Grafik aus Code in src/art/, Unit-Tests, Browser-Tests und Balance-Bots.",
+      "erledigt": true,
+      "beleg": "src/sim ohne Phaser/DOM/Math.random (grep), src/net/*, src/game/session.ts, src/art/*, tests/unit (339 grün), src/bots/*"
+    },
+    {
+      "id": "A-0-07",
+      "abschnitt": "0",
+      "text": "Die Begriffe Welt, Level (Kampagnen-Level) und Tag werden in Code, Texten und Dokumenten überall genau so verwendet.",
+      "erledigt": true,
+      "beleg": "docs/GDD.md Abschnitt „Begriffe“ (Welt, Level, Tag); Stichprobe: LevelDef/DayDef/WorldDef in src/config/worlds/types.ts, Spieltexte ohne „wave“/„round“ für Tage"
+    },
+    {
+      "id": "A-0-08",
+      "abschnitt": "0",
+      "text": "Der Ausbaustand einer Waffe oder der Hand heißt überall Stufe oder Upgrade, niemals „Level“.",
+      "erledigt": true,
+      "beleg": "docs/GDD.md „Begriffe“: Stufe, nie „Level“; Code/Texte nutzen tier (weapons.ts tiers, HANDS, shop.ts „Tier“/„Lasting tier“, armoury „Tier x/5“); grep ohne „weapon level“/„hand level“"
+    },
+    {
+      "id": "A-0-09",
+      "abschnitt": "0",
+      "text": "Die Begriffe Slot (Waffenplatz an der Burg), Sterne (dauerhafte Währung zwischen den Leveln) und Gold/Offerings (Währungen im Level oder Lauf) werden überall genau so verwendet.",
+      "erledigt": true,
+      "beleg": "Slot, Sterne, Gold/Offerings einheitlich; „Opfer“/„Opfergabe“/„Opferstätte“ in docs/*.md ersetzt (balance-latest.md und tests/balance/balance.test.ts „Offerings je Tag“, ARCHITEKTUR.md, HANDBUCH.md, GDD.md „Offering-Stationen“, ENTSCHEIDUNGEN.md E-005/E-040/E-049, uebergabe/IDEEN.md, BERICHT.md, START-HIER.md), dazu scripts/dev-page/page.ts; Begriffe in AGENTS.md „Begriffe“"
+    },
+    {
+      "id": "A-1-01",
+      "abschnitt": "1",
+      "text": "Die Uhrzeit wurde immer per Befehl geprüft und nie geschätzt.",
+      "erledigt": false,
+      "beleg": "Offen: im Repo nicht belegbar (PROGRESS nennt nur die Startzeit nach Systemuhr)"
+    },
+    {
+      "id": "A-1-02",
+      "abschnitt": "1",
+      "text": "In den ersten 5 bis 10 Minuten wurden Stand und Werkzeuge geprüft (Node, npm, Playwright, gh-Login, Rechte für Pull Requests, Merges, Workflows und Pages) und ein grober Plan aufgestellt.",
+      "erledigt": false,
+      "beleg": "Offen: PROGRESS 18:35 nennt nur „Werkzeuge geprüft“, ohne Einzelnachweis (Node, npm, Playwright, gh, Rechte für PR/Merge/Workflows/Pages)"
+    },
+    {
+      "id": "A-1-03",
+      "abschnitt": "1",
+      "text": "Tim bekam am Anfang genau eine gebündelte Nachricht mit allem, was von ihm gebraucht wird; danach wurde autonom gearbeitet.",
+      "erledigt": false,
+      "beleg": "Offen: Nachricht an Tim nur im Chat; im Repo nicht belegbar (PROGRESS 18:35 „Rückfrage an Tim gestellt“)"
+    },
+    {
+      "id": "A-1-04",
+      "abschnitt": "1",
+      "text": "Später nötige Bestätigungen wurden gesammelt und gebündelt vorgelegt, nie einzeln und nie wartend.",
+      "erledigt": false,
+      "beleg": "Offen: im Repo nicht belegbar"
+    },
+    {
+      "id": "A-1-05",
+      "abschnitt": "1",
+      "text": "Alles, was der Auftrag offen lässt, wurde selbst entschieden und mit Begründung in docs/ENTSCHEIDUNGEN.md ab E-032 festgehalten.",
+      "erledigt": true,
+      "beleg": "docs/ENTSCHEIDUNGEN.md E-032 bis E-061, je mit Was, Warum und Stelle im Code"
+    },
+    {
+      "id": "A-1-06",
+      "abschnitt": "1",
+      "text": "Entscheidungen, die Tim und Lenny später treffen oder bestätigen sollen, stehen zusätzlich auf der Entscheidungsliste (11.2).",
+      "erledigt": true,
+      "beleg": "docs/OFFENE-ENTSCHEIDUNGEN.md D-01 bis D-21 stimmen mit dem Code: D-12 nennt fünf Tage für Level 2 bis 9 (dayCountOf in src/config/worlds/fondue/campaign.ts, E-062); E-039 nennt weaponUnlockPrice in src/modes/unlocks.ts als Leser von STARS.weaponUnlock; neu D-21 Freischaltung beim Boss-Sieg"
+    },
+    {
+      "id": "A-1-07",
+      "abschnitt": "1",
+      "text": "Der Einsatz von Subagents wurde am Anfang bewusst geplant und zwischendurch überprüft.",
+      "erledigt": false,
+      "beleg": "Offen: kein Subagent-Plan in docs/ARCHITEKTUR.md oder PROGRESS; Einsatz nur nachträglich erwähnt (PROGRESS Unterbrechung 1 und 2)"
+    },
+    {
+      "id": "A-1-08",
+      "abschnitt": "1",
+      "text": "Architektur, Simulation, Profil und Netzcode wurden selbst entworfen; Subagents bekamen klare, abgegrenzte Aufträge mit Dateigrenzen.",
+      "erledigt": false,
+      "beleg": "Offen: Architektur selbst entworfen (Commit 7025277, docs/ARCHITEKTUR.md); dass Simulation, Profil und Netzcode nicht an Subagents gingen und Aufträge Dateigrenzen hatten, ist nicht belegt (Profil kam aus Branch gu/profile)"
+    },
+    {
+      "id": "A-1-09",
+      "abschnitt": "1",
+      "text": "Der Auftrag liegt wortwörtlich als docs/AUFTRAG-GROSSES-UPDATE.md im Repo, ohne lokale Pfade mit Tims Benutzernamen.",
+      "erledigt": false,
+      "beleg": "Offen: liegt im Repo ohne lokale Pfade und Benutzernamen (Commit 7025277, grep ohne „timeb“/„C:\\Users“); wortgetreue Übereinstimmung mit dem Chat-Auftrag ist im Repo nicht prüfbar"
+    },
+    {
+      "id": "A-1-10",
+      "abschnitt": "1",
+      "text": "docs/PROGRESS-GROSSES-UPDATE.md wird geführt mit Zeitstempel per Befehl, Etappe, Erledigtem mit Beleg, nächstem Schritt und offenen Problemen.",
+      "erledigt": true,
+      "beleg": "docs/PROGRESS-GROSSES-UPDATE.md mit Tabelle Zeit/Etappe/Erledigt (Beleg)/Nächster Schritt und 'Offene Probleme'"
+    },
+    {
+      "id": "A-1-11",
+      "abschnitt": "1",
+      "text": "Es gibt eine Abnahmeliste, in der jeder Punkt des Auftrags einzeln steht und nur mit echtem Beleg abgehakt wird.",
+      "erledigt": true,
+      "beleg": "docs/abnahme-grosses-update.json (Commit 728a9cf), jeder Punkt mit erledigt/beleg"
+    },
+    {
+      "id": "A-1-12",
+      "abschnitt": "1",
+      "text": "Nach jeder Kontext-Zusammenfassung wurden zuerst Auftrag, Fortschritt und Abnahmeliste gelesen.",
+      "erledigt": false,
+      "beleg": "Offen: im Repo nicht belegbar (nur Hinweis oben in docs/PROGRESS-GROSSES-UPDATE.md)"
+    },
+    {
+      "id": "A-1-13",
+      "abschnitt": "1",
+      "text": "E-001 ist eingehalten: Fondue bleibt ein eigenständiges Spiel, nichts wurde aus anderen Spielen übernommen.",
+      "erledigt": false,
+      "beleg": "Offen: Verstoß nicht gefunden, aber ein Nachweis „nichts übernommen“ ist im Repo nicht möglich; Beurteilung durch Tim und Lenny"
+    },
+    {
+      "id": "A-1-14",
+      "abschnitt": "1",
+      "text": "Der Skill „Unlazy“ wurde nie verwendet.",
+      "erledigt": false,
+      "beleg": "Offen: im Repo nicht belegbar"
+    },
+    {
+      "id": "A-1-15",
+      "abschnitt": "1",
+      "text": "Es wurden keine Systemeinstellungen geändert.",
+      "erledigt": false,
+      "beleg": "Offen: im Repo nicht belegbar"
+    },
+    {
+      "id": "A-1-16",
+      "abschnitt": "1",
+      "text": "Es gab keinen Force-Push.",
+      "erledigt": true,
+      "beleg": "git reflog --all ohne forced-update-Einträge; main nur über PR #8 geändert"
+    },
+    {
+      "id": "A-1-17",
+      "abschnitt": "1",
+      "text": "Es sind keine Zugangsdaten im Repo.",
+      "erledigt": true,
+      "beleg": "git grep nach key/secret/token/password: nur ${{ secrets.* }} in Workflows, keine Werte"
+    },
+    {
+      "id": "A-1-18",
+      "abschnitt": "1",
+      "text": "Dateien wurden einzeln mit Namen committet, kein git add -A.",
+      "erledigt": true,
+      "beleg": "git log a9e519c..HEAD: keine Testlauf-Screenshots aus docs/screenshots committet (nur gezielt docs/screenshots/grosses-update/mice-*.png in 459bbd1), Commits mit gezielten Dateilisten (z.B. 539e63b)"
+    },
+    {
+      "id": "A-1-19",
+      "abschnitt": "1",
+      "text": "Dokumente sind auf Deutsch; Code, Kommentare und Commits auf Englisch; Spieltexte auf Englisch.",
+      "erledigt": true,
+      "beleg": "git log: alle Commits Englisch; src Kommentare/Spieltexte Englisch (z.B. story.ts); docs/*.md Deutsch"
+    },
+    {
+      "id": "A-1-20",
+      "abschnitt": "1",
+      "text": "Browser-Tests liefen mit Playwright und nicht mit Tims privatem Browser.",
+      "erledigt": true,
+      "beleg": "playwright.config.ts, playwright.live.config.ts, playwright.perf.config.ts; tests/e2e/*.spec.ts mit eigenem Browser-Kontext je Gerät (openGame in tests/e2e/helpers.ts)"
+    },
+    {
+      "id": "A-1-21",
+      "abschnitt": "1",
+      "text": "Pull Requests wurden erst gemergt, als die Prüfung test grün war.",
+      "erledigt": true,
+      "beleg": "gh pr view 8: 'test' SUCCESS 19:06 UTC, gemergt 19:34 UTC; einziger PR der Sitzung"
+    },
+    {
+      "id": "A-2-01",
+      "abschnitt": "2",
+      "text": "Auf dem heutigen Stand von main ist der Tag v0-alpha gesetzt.",
+      "erledigt": true,
+      "beleg": "git rev-parse v0-alpha = a9e519c (damaliger Stand von main)"
+    },
+    {
+      "id": "A-2-02",
+      "abschnitt": "2",
+      "text": "Der Branch classic ist angelegt und bleibt auf dem Stand von v0-alpha stehen.",
+      "erledigt": true,
+      "beleg": "git rev-parse classic = origin/classic = a9e519c"
+    },
+    {
+      "id": "A-2-03",
+      "abschnitt": "2",
+      "text": "Der Classic-Stand ist unter https://onlineshopbuilding-droid.github.io/fondue/classic/ veröffentlicht.",
+      "erledigt": true,
+      "beleg": "PROGRESS Stand 12.11. 01:40: /fondue/classic/ lädt, geprüft mit playwright.live.config.ts (LIVE_URL)"
+    },
+    {
+      "id": "A-2-04",
+      "abschnitt": "2",
+      "text": "Die Pages-Pipeline (.github/workflows/deploy.yml) legt mehrere Builds in einen gemeinsamen Ordner: main unter /, classic unter /classic/, später die Entwickler-Übersicht unter /dev/.",
+      "erledigt": true,
+      "beleg": ".github/workflows/deploy.yml: main nach /, classic nach dist/classic, npm run dev-page nach /dev/"
+    },
+    {
+      "id": "A-2-05",
+      "abschnitt": "2",
+      "text": "Jeder Build hat den richtigen Basis-Pfad (Vite base), sodass die Dateien laden.",
+      "erledigt": true,
+      "beleg": "vite.config.ts base '/fondue/' bei GITHUB_ACTIONS; deploy.yml classic mit --base=/fondue/classic/"
+    },
+    {
+      "id": "A-2-06",
+      "abschnitt": "2",
+      "text": "Die Workflow-Änderung ging als kleiner eigener Pull Request nach main und wurde selbst gemergt, sobald test grün war.",
+      "erledigt": true,
+      "beleg": "PR #8 (ci/pages-multi-build) gemergt 19:34 UTC nach grünem 'test' (19:06 UTC)"
+    },
+    {
+      "id": "A-2-07",
+      "abschnitt": "2",
+      "text": "Das Spiel unter der normalen Adresse hat sich durch die Workflow-Änderung nicht verändert.",
+      "erledigt": true,
+      "beleg": "git diff a9e519c origin/main: nur deploy.yml und playwright.live.config.ts"
+    },
+    {
+      "id": "A-2-08",
+      "abschnitt": "2",
+      "text": "Mit Playwright ist geprüft, dass die normale Adresse und die Classic-Adresse laden und spielbar sind.",
+      "erledigt": true,
+      "beleg": "tests/live/live.spec.ts „published game loads and a day starts“ für / und /classic/ (PROGRESS Stand 12.11. 01:40)"
+    },
+    {
+      "id": "A-2-09",
+      "abschnitt": "2",
+      "text": "Mit Playwright ist geprüft, dass Koop funktioniert, wenn beide dieselbe Adresse öffnen.",
+      "erledigt": true,
+      "beleg": "tests/live/live.spec.ts „a real co-op connection over the public PeerJS service works“, auf / und /classic/ grün (PROGRESS Stand 12.11. 01:40)"
+    },
+    {
+      "id": "A-2-10",
+      "abschnitt": "2",
+      "text": "Tim wurde der Link zur Classic-Version sofort gemeldet, mit dem Hinweis, dass Host und Gast dieselbe Adresse öffnen müssen und die Android-Testapp immer die normale Adresse zeigt.",
+      "erledigt": false,
+      "beleg": "Offen: Meldung an Tim nur im Chat; im Repo nicht belegbar (Link steht in PROGRESS 01:40, ohne Hinweis auf gleiche Adresse und Android-App)"
+    },
+    {
+      "id": "A-2-11",
+      "abschnitt": "2",
+      "text": "Bis zum finalen Merge blieb die normale Adresse unverändert spielbar.",
+      "erledigt": true,
+      "beleg": "origin/main = 3f1b5f5: seit a9e519c nur Workflow-Änderung (PR #8)"
+    },
+    {
+      "id": "A-2-12",
+      "abschnitt": "2",
+      "text": "Der Abschlussbericht enthält eine kurze Rückroll-Anleitung, wie man main auf v0-alpha zurückbringt.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-2-13",
+      "abschnitt": "2",
+      "text": "Die Arbeit am Update lief auf einem eigenen Branch in einem eigenen Git-Worktree, mit einem Commit nach jedem sinnvollen Schritt.",
+      "erledigt": true,
+      "beleg": "git worktree list: .claude/worktrees/grosses-update auf feature/grosses-update, 20+ Commits seit a9e519c"
+    },
+    {
+      "id": "A-2-14",
+      "abschnitt": "2",
+      "text": "Freiwillig: Getestete Zwischenstände wurden zusätzlich unter /fondue/next/ veröffentlicht, oder es ist festgehalten, warum nicht.",
+      "erledigt": true,
+      "beleg": "PROGRESS Rahmen: Pages-Umgebung erlaubt nur main, /next/ ginge nur über Lauf auf main"
+    },
+    {
+      "id": "A-3-01",
+      "abschnitt": "3",
+      "text": "Fondue ist ein richtiges Spiel mit Tutorial, Lobby, Kampagne, Freischaltungen und dauerhaften Verbesserungen; Endlos ist jederzeit spielbar, allein oder zu zweit.",
+      "erledigt": true,
+      "beleg": "src/modes/tutorial.ts, campaign.ts, endless.ts; Lobby src/render/lobby, src/ui/lobby; UNLOCKS + syncUnlocks; armoury.ts (Stufen, Hand); coop.spec.ts „co-op endless with two browsers“ und „co-op campaign: host and guest win level 1“"
+    },
+    {
+      "id": "A-3-02",
+      "abschnitt": "3",
+      "text": "Bedienung, Schriftgrößen, Layout und Tempo sind für den Touchscreen im Querformat ausgelegt (Handy zuerst).",
+      "erledigt": true,
+      "beleg": "tests/e2e/mobile.spec.ts check(): kein Querscrollen, alles im Bild, jede Fläche >= 44 px auf iPhone 16 und OnePlus 8T quer; Hochformat-Hinweis (mobile.spec „upright phones are asked to rotate“); lobby.test.ts Stationen groß genug für den Finger"
+    },
+    {
+      "id": "A-3-03",
+      "abschnitt": "3",
+      "text": "Der Laptop funktioniert weiter für Entwicklung, Tests und Spielen mit der Maus.",
+      "erledigt": true,
+      "beleg": "keep.spec.ts und market.spec.ts für LAPTOP mit Maus, touch.spec.ts „the mouse still works too“; CI-Lauf 43164479076 grün"
+    },
+    {
+      "id": "A-3-04",
+      "abschnitt": "3",
+      "text": "Die CSS-Größe von Tims iPhone 16 (Safari, Web-App vom Homescreen, rund 852 × 393 quer) wurde nachgeprüft.",
+      "erledigt": false,
+      "beleg": "Offen: 852 × 393 aus dem Auftrag übernommen (tests/e2e/helpers.ts IPHONE, HANDBUCH Z. 392); eine Nachprüfung (Safari, Web-App vom Homescreen) ist nicht dokumentiert"
+    },
+    {
+      "id": "A-3-05",
+      "abschnitt": "3",
+      "text": "Die CSS-Größe von Lennys OnePlus 8T (Android, Chrome, 20:9, rund 915 × 412 quer) wurde nachgeprüft.",
+      "erledigt": false,
+      "beleg": "Offen: 915 × 412 aus dem Auftrag übernommen (tests/e2e/helpers.ts ANDROID); eine Nachprüfung ist nicht dokumentiert"
+    },
+    {
+      "id": "A-3-06",
+      "abschnitt": "3",
+      "text": "Die Standard-Bildschirme der Browser-Tests sind durch genau drei Geräte ersetzt: iPhone 16, OnePlus 8T, Laptop.",
+      "erledigt": true,
+      "beleg": "tests/e2e/helpers.ts DEVICES = [LAPTOP, IPHONE, ANDROID], weitere Größen nur mit ALL_SCREENS"
+    },
+    {
+      "id": "A-3-07",
+      "abschnitt": "3",
+      "text": "Alle anderen Größen (kleine Androids, iPads) bleiben im Code hinter ALL_SCREENS=1.",
+      "erledigt": true,
+      "beleg": "tests/e2e/helpers.ts DEVICES/PHONE_DEVICES und mobile.spec.ts ALL_DEVICES hinter ALL_SCREENS"
+    },
+    {
+      "id": "A-3-08",
+      "abschnitt": "3",
+      "text": "Das Packen und Wegschleudern hat sich durch keinen Umbau verschlechtert.",
+      "erledigt": false,
+      "beleg": "Offen: Funktion durch smoke.spec, flow.spec „a realistic flick kills“ und touch.spec belegt; ob sich das Wurfgefühl verschlechtert hat, nur durch Spielen beurteilbar"
+    },
+    {
+      "id": "A-3-09",
+      "abschnitt": "3",
+      "text": "Wurfphysik und Vorhersage beim Gast (Falle 4) wurden nur dort angefasst, wo der Auftrag es verlangt (Gewicht, Hand-Stufen).",
+      "erledigt": false,
+      "beleg": "Offen: nicht belegbar: Wurfcode wurde beim Zerlegen verschoben (src/sim/flight.ts, hands.ts, src/game/session.ts), ein Vergleich nur auf Gewicht und Hand-Stufen fehlt"
+    },
+    {
+      "id": "A-3-10",
+      "abschnitt": "3",
+      "text": "Änderungen an der Wurfphysik sind mit Tests und Bild-für-Bild-Prüfung abgesichert.",
+      "erledigt": false,
+      "beleg": "Offen: tests/unit/weight.test.ts sichert Gewicht und Hand ab; eine Bild-für-Bild-Prüfung (tests/perf/visual.spec.ts „flick for frame-by-frame review“) ist nicht als gelaufen belegt"
+    },
+    {
+      "id": "A-3-11",
+      "abschnitt": "3",
+      "text": "Die Grafik ist schön, stimmig und liebevoll und wurde in mehreren echten Prüfrunden durch frische Subagents geprüft.",
+      "erledigt": false,
+      "beleg": "Offen: keine Prüfrunden durch frische Subagents dokumentiert; nur eigene Sichtprüfung per Screenshots am 12.11."
+    },
+    {
+      "id": "A-3-12",
+      "abschnitt": "3",
+      "text": "Stimmigkeits-Check: Texte, Hilfe, Tipps, Markt, Balance, Koop, Tests und Dokumente wurden bei jeder Änderung mitgeändert.",
+      "erledigt": true,
+      "beleg": "Gegenbeispiele behoben: D-12, GDD.md „Länge“ (fünf Tage), E-039 (weaponUnlockPrice), E-010 (Hinweis auf heutige COOP-Werte), docs/balance.md an balance-latest.md angeglichen (Mid zu zweit 92/4/2/2, nie geschafft 92 und 100, Poor Level 9 im sechsten Versuch, Zeilen COOP.campaignFactor 1,9 → 1,7 und dayCountOf in „Geänderte Werte“); KAMPAGNE-TABELLE.md per npm run campaign-table geprüft (aktuell)"
+    },
+    {
+      "id": "A-4.1-01",
+      "abschnitt": "4.1",
+      "text": "docs/ARCHITEKTUR.md wurde zuerst geschrieben und enthält Zielstruktur, Ordner, Klassen mit je einem Satz Aufgabe, Datenfluss und was wohin wandert.",
+      "erledigt": true,
+      "beleg": "Commit 7025277 (Architektur-Entwurf vor dem Umbau); docs/ARCHITEKTUR.md mit Ordnern, Klassen, Datenfluss, Abschnitt 11 „Was wohin wandert“"
+    },
+    {
+      "id": "A-4.1-02",
+      "abschnitt": "4.1",
+      "text": "Der Architektur-Entwurf wurde vor dem Bau von einem frischen Subagent kritisch geprüft.",
+      "erledigt": true,
+      "beleg": "Commit 227cd0a 'Revise the architecture after an independent review'"
+    },
+    {
+      "id": "A-4.1-03",
+      "abschnitt": "4.1",
+      "text": "Die bewährten Kerne (Simulation, Netzcode, Sitzung, Wurfphysik, Grafik-Bausteine, Audio) wurden hineinbewegt, nicht neu geschrieben.",
+      "erledigt": true,
+      "beleg": "Commit 6aac847 'Split the simulation ... without changing behaviour' (PROGRESS: Balance-Zahlen identisch); src/net, src/game/session.ts, src/audio unverändert übernommen"
+    },
+    {
+      "id": "A-4.1-04",
+      "abschnitt": "4.1",
+      "text": "src/sim/ kennt weiterhin weder Phaser noch DOM.",
+      "erledigt": true,
+      "beleg": "grep src/sim: kein Import von phaser, kein document/window/localStorage"
+    },
+    {
+      "id": "A-4.1-05",
+      "abschnitt": "4.1",
+      "text": "In src/sim/ gibt es kein Math.random.",
+      "erledigt": true,
+      "beleg": "grep src/sim: Math.random nur im Kommentar sim.ts:29; Zufall über src/sim/rng.ts"
+    },
+    {
+      "id": "A-4.1-06",
+      "abschnitt": "4.1",
+      "text": "Zahlen stehen in der Konfiguration.",
+      "erledigt": false,
+      "beleg": "Offen: src/sim enthält noch feste Zahlen, z.B. enemies.ts:113 Bolzentempo -760, enemies.ts:89 Reichweite 24, flight.ts:53 Schwelle 130"
+    },
+    {
+      "id": "A-4.1-07",
+      "abschnitt": "4.1",
+      "text": "Der Spielname steht nur in src/config/game.ts.",
+      "erledigt": true,
+      "beleg": "GAME_NAME nur in src/config/game.ts; index.html hat <title>%GAME_NAME%</title>, Plugin gameTitle in vite.config.ts setzt den Namen aus game.ts (Dev-Server und Build, dist/index.html geprüft), src/main.ts setzt document.title zur Laufzeit"
+    },
+    {
+      "id": "A-4.1-08",
+      "abschnitt": "4.1",
+      "text": "src/ui/app.ts ist zerlegt: ein Bildschirm pro Datei bzw. Klasse, dazu ein kleiner Bildschirm-Manager.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/*.ts (ein Bildschirm je Datei), src/ui/screens/screen.ts ScreenManager, screens/index.ts SCREENS"
+    },
+    {
+      "id": "A-4.1-09",
+      "abschnitt": "4.1",
+      "text": "src/sim/sim.ts ist nach Themen zerlegt: Tagesablauf, Gegnerverhalten, Waffen, Opferstätten, Wirtschaft.",
+      "erledigt": true,
+      "beleg": "src/sim/dayFlow.ts, enemies.ts, weapons/system.ts, stations.ts, shop.ts (+ combat, flight, hands, spawner)"
+    },
+    {
+      "id": "A-4.1-10",
+      "abschnitt": "4.1",
+      "text": "src/art/castle.ts ist zerlegt.",
+      "erledigt": true,
+      "beleg": "src/art/castle/ (cauldron, gates, ground, keepParts, keepStages, mounts, ...)"
+    },
+    {
+      "id": "A-4.1-11",
+      "abschnitt": "4.1",
+      "text": "src/art/props.ts ist zerlegt.",
+      "erledigt": true,
+      "beleg": "src/art/props/ (effects, hand, icons, projectiles, signboard, kit)"
+    },
+    {
+      "id": "A-4.1-12",
+      "abschnitt": "4.1",
+      "text": "Es wurde in Etappen gebaut; nach jeder Etappe lief das Spiel und die Tests waren grün.",
+      "erledigt": false,
+      "beleg": "Offen: PROGRESS „Stand bei Unterbrechung 2“: WIP-Commits 5f954a5 und 7396cf0 mit tsc-Fehlern, das Spiel lief in diesem Stand nicht"
+    },
+    {
+      "id": "A-4.2-01",
+      "abschnitt": "4.2",
+      "text": "Tutorial, Kampagne und Endlos sind eigene Modus-Klassen hinter einer gemeinsamen Schnittstelle.",
+      "erledigt": true,
+      "beleg": "src/modes/mode.ts GameMode; TutorialMode, CampaignMode, EndlessMode in src/modes/*"
+    },
+    {
+      "id": "A-4.2-02",
+      "abschnitt": "4.2",
+      "text": "Ein Modus bestimmt Tagespläne, Sieg- und Niederlagenbedingung, was im Markt kaufbar ist und welche Belohnung es gibt.",
+      "erledigt": true,
+      "beleg": "GameMode.buildRun (planner, lastDay, gateCannotFall, marketOnly, weapons) und GameMode.reward in src/modes/mode.ts"
+    },
+    {
+      "id": "A-4.2-03",
+      "abschnitt": "4.2",
+      "text": "Der Modus Koop-Kampagne ist im Modell vorgehalten (Platz vorhanden, nicht gebaut).",
+      "erledigt": true,
+      "beleg": "src/modes/index.ts RESERVED_MODES 'coopCampaign'; ProfileData.coopCampaign"
+    },
+    {
+      "id": "A-4.2-04",
+      "abschnitt": "4.2",
+      "text": "Der Modus Schnellspiel ist im Modell vorgehalten (Platz vorhanden, nicht gebaut).",
+      "erledigt": true,
+      "beleg": "src/modes/index.ts RESERVED_MODES 'quickPlay'"
+    },
+    {
+      "id": "A-4.2-05",
+      "abschnitt": "4.2",
+      "text": "Der Modus „Wahnsinn“ ist im Modell vorgehalten (Platz vorhanden, nicht gebaut).",
+      "erledigt": true,
+      "beleg": "src/modes/index.ts RESERVED_MODES 'madness'"
+    },
+    {
+      "id": "A-4.2-06",
+      "abschnitt": "4.2",
+      "text": "Ein Level ist ein Datensatz mit Nummer, Name, Tagen, Landschaft, erlaubten Gegnern, Tagesplänen oder Regeln dafür, Schwierigkeit, Boss-Kennzeichen, Belohnung, Freischaltungen, Story-Satz und Besonderheit.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/types.ts LevelDef (id, name, landscape, days, power, boss, twist, stars, story, newEnemies); Freischaltungen über UNLOCKS[level]"
+    },
+    {
+      "id": "A-4.2-07",
+      "abschnitt": "4.2",
+      "text": "Die Simulation bekommt einen Tagesplan und weiß nichts von Kampagne oder Endlos.",
+      "erledigt": true,
+      "beleg": "src/sim/plan.ts FixedPlanner/RunSetup; sim.ts Kopfkommentar 'knows nothing about campaign or endless'"
+    },
+    {
+      "id": "A-4.2-08",
+      "abschnitt": "4.2",
+      "text": "Die Welt ist ein Paket aus König, Story, Gegnerauswahl, Landschaften und Kampagne; Fondue ist Welt 1.",
+      "erledigt": false,
+      "beleg": "Offen: WorldDef (src/config/worlds/types.ts) hat König, Landschaften, Gegner, Kampagne, Freischaltungen, Endlos, aber keinen Story-Teil: PRELUDE_LINES, KING_LOBBY_LINES, STORYBOOK, ENEMY_POPUPS liegen nur in fondue/story.ts"
+    },
+    {
+      "id": "A-4.2-09",
+      "abschnitt": "4.2",
+      "text": "Der Code nimmt nirgends an, dass es nur eine Welt gibt.",
+      "erledigt": false,
+      "beleg": "Offen: src/ui/enemyPopup.ts, src/ui/lobby/lobby.ts, src/render/tutorialView.ts und src/ui/tuningPanel.ts importieren config/worlds/fondue/story direkt; src/bots/armoury.ts und campaignRunner.ts haben „fondue“ als Standard (auch in IDEEN.md vermerkt)"
+    },
+    {
+      "id": "A-4.2-10",
+      "abschnitt": "4.2",
+      "text": "Jede Waffe hat eine Daten-Definition mit Slot-Typ, 5 Stufen mit Werten, Preisen, Texten und Grafiknamen.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts WEAPONS (slotType, tiers, buyGold, desc, Grafik weapon:<id>:<tier>); Test weapons.test.ts 'has 16 weapons, each with exactly five tiers'"
+    },
+    {
+      "id": "A-4.2-11",
+      "abschnitt": "4.2",
+      "text": "Es gibt eine kleine Verhaltensklasse je Waffenart.",
+      "erledigt": true,
+      "beleg": "src/sim/weapons/behaviours/index.ts BEHAVIOURS, eine Klasse je kind"
+    },
+    {
+      "id": "A-4.2-12",
+      "abschnitt": "4.2",
+      "text": "Eine Waffe hinzuzufügen oder zu entfernen berührt nur wenige, klar benannte Stellen.",
+      "erledigt": true,
+      "beleg": "Kopf von src/config/weapons.ts + behaviours/index.ts; Test weapons.test.ts 'leaves the market, the slot lists and the rules of both modes'"
+    },
+    {
+      "id": "A-4.2-13",
+      "abschnitt": "4.2",
+      "text": "Das Profil ist eine eigene Klasse hinter einer Speicher-Schnittstelle.",
+      "erledigt": true,
+      "beleg": "src/profile/profile.ts Profile, src/profile/store.ts ProfileStore/LocalProfileStore"
+    },
+    {
+      "id": "A-4.2-14",
+      "abschnitt": "4.2",
+      "text": "Die Level-Liste liegt als zentrale Tabelle in src/config/.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/campaign.ts buildCampaign/LEVEL_OVERRIDES"
+    },
+    {
+      "id": "A-4.2-15",
+      "abschnitt": "4.2",
+      "text": "Die Freischalt-Tabelle (welches Level schaltet welche Waffe, welchen Slot frei) liegt als zentrale Tabelle in src/config/.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/unlocks.ts UNLOCKS"
+    },
+    {
+      "id": "A-4.2-16",
+      "abschnitt": "4.2",
+      "text": "Stern-Belohnungen und -Preise liegen als zentrale Tabelle in src/config/.",
+      "erledigt": true,
+      "beleg": "src/config/stars.ts STARS"
+    },
+    {
+      "id": "A-4.2-17",
+      "abschnitt": "4.2",
+      "text": "Die Waffenwerte liegen als zentrale Tabelle in src/config/.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts WEAPONS"
+    },
+    {
+      "id": "A-4.2-18",
+      "abschnitt": "4.2",
+      "text": "Die Gegnerwerte inklusive Gewicht liegen als zentrale Tabelle in src/config/.",
+      "erledigt": true,
+      "beleg": "src/config/enemies.ts ENEMIES mit mass; Test weight.test.ts 'every raider has a weight...'"
+    },
+    {
+      "id": "A-4.2-19",
+      "abschnitt": "4.2",
+      "text": "Die Endlos-Zufallsspannen liegen als zentrale Tabelle in src/config/.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/endless.ts ENDLESS"
+    },
+    {
+      "id": "A-4.2-20",
+      "abschnitt": "4.2",
+      "text": "Die Story-Texte liegen als zentrale Tabelle in src/config/.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/story.ts"
+    },
+    {
+      "id": "A-4.2-21",
+      "abschnitt": "4.2",
+      "text": "Jede zentrale Tabelle hat oben einen kurzen Kommentar, was die Spalten bedeuten.",
+      "erledigt": true,
+      "beleg": "Kopfkommentare mit Spaltenerklärung: weapons.ts, worlds/fondue/unlocks.ts, endless.ts, keep.ts (GATES, STATIONS), hand.ts (HANDS), slots.ts, devReview.ts; campaign.ts, stars.ts, enemies.ts, waves.ts mit Kopf- und Feldkommentaren"
+    },
+    {
+      "id": "A-4.2-22",
+      "abschnitt": "4.2",
+      "text": "Die Statistik pro Lauf ist eine eigene Klasse.",
+      "erledigt": true,
+      "beleg": "src/sim/stats.ts RunStats"
+    },
+    {
+      "id": "A-4.2-23",
+      "abschnitt": "4.2",
+      "text": "Die Simulation zählt mehr mit: Kills nach Ursache und Gegnertyp, per Fass-Explosion getötete Gegner, geopferte Gegner, eingesetzte Waffen, verlorenes Torleben.",
+      "erledigt": true,
+      "beleg": "RunStats.kill (killsByCause, killsByType, offerings, kegBlastKills), weaponFired, gateDamaged; Test shake.test.ts 'kills by the burst of a thrown hauler count as keg kills'"
+    },
+    {
+      "id": "A-4.2-24",
+      "abschnitt": "4.2",
+      "text": "Der Code hat sprechende Namen und kurze Klassen mit einer klaren Aufgabe.",
+      "erledigt": false,
+      "beleg": "Offen: große Klassen und Dateien: src/render/scene.ts 822 Zeilen, src/ui/app.ts 703, src/audio/sfx.ts 816, src/art/landscapes.ts 1206"
+    },
+    {
+      "id": "A-4.2-25",
+      "abschnitt": "4.2",
+      "text": "Jede Datei hat am Kopf einen Kommentar, der in zwei Sätzen sagt, wofür sie da ist.",
+      "erledigt": true,
+      "beleg": "Kopfkommentar ergänzt in src/input/pointer.ts und src/ui/style.css; Prüfung über alle Dateien in src: keine ohne Kopfkommentar"
+    },
+    {
+      "id": "A-4.3-01",
+      "abschnitt": "4.3",
+      "text": "Jede Figur, jedes Teil und jede Ebene hat einen festen Namen in einem zentralen Verzeichnis (Asset-Registry).",
+      "erledigt": true,
+      "beleg": "src/art/registry.ts ASSETS; Test assets.test.ts 'holds every figure part, prop, weapon tier, landscape layer and cloud under its texture name'"
+    },
+    {
+      "id": "A-4.3-02",
+      "abschnitt": "4.3",
+      "text": "Hinter einem Asset-Namen kann statt SVG-Code eine Bilddatei (PNG/WebP) liegen, ohne dass Spiellogik oder Szenen geändert werden.",
+      "erledigt": true,
+      "beleg": "src/config/assets.ts ASSET_OVERRIDES/applyOverrides; Test assets.test.ts 'an override sets the image and leaves size, anchor, SVG and the source art alone'"
+    },
+    {
+      "id": "A-4.3-03",
+      "abschnitt": "4.3",
+      "text": "Jedes Asset hat feste Maße und Ankerpunkte (Größe, Fußpunkt, Griffpunkte).",
+      "erledigt": false,
+      "beleg": "Offen: Größe (w, h), Anker (px, py) und Gelenke je Figurenteil im Asset-Verzeichnis (assets.test.ts „gives every asset a size, a scale, an anchor“), aber keine Griffpunkte in src/art/registry.ts"
+    },
+    {
+      "id": "A-4.3-04",
+      "abschnitt": "4.3",
+      "text": "docs/GRAFIK-AUSTAUSCHEN.md enthält eine Schritt-für-Schritt-Anleitung und dokumentiert Maße und Ankerpunkte.",
+      "erledigt": true,
+      "beleg": "docs/GRAFIK-AUSTAUSCHEN.md Abschnitt 2 (Schritte 1-6), 3 (Bildregeln), 6 (Maße/Anker)"
+    },
+    {
+      "id": "A-4.3-05",
+      "abschnitt": "4.3",
+      "text": "docs/GRAFIK-AUSTAUSCHEN.md enthält eine Liste aller Assets.",
+      "erledigt": true,
+      "beleg": "docs/GRAFIK-AUSTAUSCHEN.md Abschnitt 6; Test assets.test.ts 'docs/GRAFIK-AUSTAUSCHEN.md lists the assets as they are now'"
+    },
+    {
+      "id": "A-4.3-06",
+      "abschnitt": "4.3",
+      "text": "Ein Test ersetzt ein Asset probeweise durch eine Bilddatei und beweist die Austauschbarkeit.",
+      "erledigt": true,
+      "beleg": "Test assets.test.ts 'an override sets the image and leaves size, anchor, SVG and the source art alone'"
+    },
+    {
+      "id": "A-5-01",
+      "abschnitt": "5",
+      "text": "Der Fortschritt überdauert Läufe, Neuladen und Updates.",
+      "erledigt": true,
+      "beleg": "src/profile (localStorage + Migrationen); Test profile.test.ts 'saves changes and loads them again'"
+    },
+    {
+      "id": "A-5-02",
+      "abschnitt": "5",
+      "text": "Das Profil enthält Spielername, Sterne und geschaffte Level je Welt.",
+      "erledigt": true,
+      "beleg": "src/profile/schema.ts ProfileData.name, stars, worlds[].levelsDone"
+    },
+    {
+      "id": "A-5-03",
+      "abschnitt": "5",
+      "text": "Das Profil enthält freigeschaltete Waffen und Slots, dauerhafte Waffen-Stufen und die Hand-Stufe.",
+      "erledigt": true,
+      "beleg": "schema.ts unlockedWeapons, unlockedSlots, weaponTiers, handTier"
+    },
+    {
+      "id": "A-5-04",
+      "abschnitt": "5",
+      "text": "Das Profil enthält das gesehene Tutorial, gesehene Gegner-Popups und Tipps und gelesene Story-Seiten.",
+      "erledigt": true,
+      "beleg": "schema.ts tutorialDone, seenEnemies, seenTips, worlds[].storyRead"
+    },
+    {
+      "id": "A-5-05",
+      "abschnitt": "5",
+      "text": "Das Profil enthält Bestenliste und Einstellungen.",
+      "erledigt": true,
+      "beleg": "schema.ts worlds[].scores, settings"
+    },
+    {
+      "id": "A-5-06",
+      "abschnitt": "5",
+      "text": "Das Profil enthält die Entwickler-Bewertungen (11.2).",
+      "erledigt": true,
+      "beleg": "schema.ts devRatings; Test profile.test.ts 'stores ratings and exports them as text'"
+    },
+    {
+      "id": "A-5-07",
+      "abschnitt": "5",
+      "text": "Das Profil hält Platz für eine spätere Koop-Kampagne vor.",
+      "erledigt": true,
+      "beleg": "schema.ts ProfileData.coopCampaign"
+    },
+    {
+      "id": "A-5-08",
+      "abschnitt": "5",
+      "text": "Der Profil-Datensatz hat eine Versionsnummer, und Migrationen wandeln alte Profile um, statt sie zu zerstören.",
+      "erledigt": true,
+      "beleg": "schema.ts PROFILE_VERSION, migrations.ts MIGRATION_STEPS; Tests profile-data.test.ts 'has exactly one step per version jump', 'runs an artificial 0 -> 1 step'"
+    },
+    {
+      "id": "A-5-09",
+      "abschnitt": "5",
+      "text": "Die bisherigen Schlüssel fondue.settings.v1 und fondue.scores.v1 werden einmalig übernommen.",
+      "erledigt": true,
+      "beleg": "migrations.ts importLegacy; Tests profile.test.ts 'takes over name, settings, partial tuning and the leaderboard', 'takes the old data over only while no profile exists'"
+    },
+    {
+      "id": "A-5-10",
+      "abschnitt": "5",
+      "text": "Es gibt Tests für die Profil-Migration.",
+      "erledigt": true,
+      "beleg": "Tests profile-data.test.ts 'keeps what it can read from a future higher version', 'falls back to the stored data when a step throws'"
+    },
+    {
+      "id": "A-5-11",
+      "abschnitt": "5",
+      "text": "Es gibt Tests für beschädigte Profil-Daten.",
+      "erledigt": true,
+      "beleg": "Tests profile-data.test.ts 'replaces every field of the wrong type with its default', 'returns nothing for missing or unreadable data'"
+    },
+    {
+      "id": "A-5-12",
+      "abschnitt": "5",
+      "text": "Die Speicher-Schnittstelle nutzt heute localStorage und ist später austauschbar gegen App-Speicher (Capacitor) und einen eigenen Dienst.",
+      "erledigt": true,
+      "beleg": "src/profile/store.ts ProfileStore (async), LocalProfileStore, MemoryProfileStore"
+    },
+    {
+      "id": "A-5-13",
+      "abschnitt": "5",
+      "text": "Die Profil-Klasse steht späteren Accounts (E-Mail und Passwort, Login auf eigener Webseite, Käufe außerhalb der Stores, Spielstand auf jedem Gerät) nicht im Weg; gebaut ist davon nichts.",
+      "erledigt": true,
+      "beleg": "async ProfileStore + profileId/updatedAt in schema.ts; nichts zu Accounts gebaut"
+    },
+    {
+      "id": "A-5-14",
+      "abschnitt": "5",
+      "text": "In den Options lässt sich das Profil als Textcode exportieren.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/options.ts #profileCode exportCode(); Test profile-data.test.ts 'gives back the same data after export and import...'"
+    },
+    {
+      "id": "A-5-15",
+      "abschnitt": "5",
+      "text": "In den Options lässt sich das Profil aus einem Textcode importieren.",
+      "erledigt": true,
+      "beleg": "options.ts importProfile -> profile.importCode; Test profile.test.ts 'replaces everything on import...'"
+    },
+    {
+      "id": "A-5-16",
+      "abschnitt": "5",
+      "text": "Im Spiel steht der Hinweis, immer über dasselbe Homescreen-Symbol zu öffnen, weil Homescreen-App und Browser-Tab getrennte Speicher haben.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/options.ts #homeScreenHint"
+    },
+    {
+      "id": "A-5-17",
+      "abschnitt": "5",
+      "text": "Das Profil lässt sich im Entwickler-Menü zurücksetzen, mit Sicherheitsabfrage.",
+      "erledigt": true,
+      "beleg": "src/ui/tuningPanel.ts resetProfile -> resetConfirm 'Erase profile'; app.ts resetProfile"
+    },
+    {
+      "id": "A-5-18",
+      "abschnitt": "5",
+      "text": "Im Koop schreibt jeder seine eigene Belohnung in sein eigenes Profil; der Host verwaltet nicht das Profil des Gasts.",
+      "erledigt": true,
+      "beleg": "src/ui/app.ts checkResult (mode.reward je Gerät), CampaignMode.reward role 'guest'"
+    },
+    {
+      "id": "A-5-19",
+      "abschnitt": "5",
+      "text": "Profile liegen nie im Repo.",
+      "erledigt": true,
+      "beleg": "Profil nur in localStorage (store.ts); git ls-files ohne Profildateien"
+    },
+    {
+      "id": "A-6.1-01",
+      "abschnitt": "6.1",
+      "text": "Beim ersten Start gibt es vor dem Spiel kein Menü, keine Erklärtexte und keine Namenseingabe.",
+      "erledigt": true,
+      "beleg": "src/ui/app.ts boot(): tutorialDue() -> startTutorial() vor jedem Menü; Name fällt auf 'Player' zurück"
+    },
+    {
+      "id": "A-6.1-02",
+      "abschnitt": "6.1",
+      "text": "Direkt nach dem Laden sieht man das Schlachtfeld: Burg links, Straße, Angriff von rechts.",
+      "erledigt": true,
+      "beleg": "src/modes/tutorial.ts TutorialMode.buildRun: normale Schlacht in 'meadow', Start per app.ts boot()"
+    },
+    {
+      "id": "A-6.1-03",
+      "abschnitt": "6.1",
+      "text": "Der König kommt von links kurz ins Bild und sagt in ein bis zwei sehr kurzen, witzigen englischen Sätzen sinngemäß: Die Mäuse wollen mein Fondue, verteidige es.",
+      "erledigt": true,
+      "beleg": "story.ts PRELUDE_LINES 'The mice are after my fondue!', 'Stop them, whoever you are!'"
+    },
+    {
+      "id": "A-6.1-04",
+      "abschnitt": "6.1",
+      "text": "Während der König spricht, laufen schon die ersten Gegner ins Bild.",
+      "erledigt": true,
+      "beleg": "src/render/tutorialGuide.ts; Tests tutorialGuide.test.ts 'lets the King talk first, then freezes...', 'counts a throw during the King's lines...'"
+    },
+    {
+      "id": "A-6.1-05",
+      "abschnitt": "6.1",
+      "text": "Das Bild friert kurz ein, und eine angenehme, klare Animation zeigt an einem Gegner die Geste: mit dem Finger packen und nach oben wegschleudern.",
+      "erledigt": true,
+      "beleg": "tutorialGuide.ts Stufen show/try, tutorialView.ts zeichnet Geste; Test 'lets the King talk first, then freezes on the raider closest to the gate'"
+    },
+    {
+      "id": "A-6.1-06",
+      "abschnitt": "6.1",
+      "text": "Der Spieler macht die Geste einmal selbst nach; sobald es geklappt hat, läuft das Spiel weiter und er spielt frei.",
+      "erledigt": true,
+      "beleg": "Test tutorialGuide.test.ts 'runs on at the grab and ends the lesson at the first real throw'"
+    },
+    {
+      "id": "A-6.1-07",
+      "abschnitt": "6.1",
+      "text": "Die Vorrunde ist kurz und keine offizielle Runde, mit wenigen Gegnern (Richtwert 10 bis 15 Pothelms).",
+      "erledigt": true,
+      "beleg": "src/modes/tutorial.ts PRELUDE = { pothelms: 13, seconds: 34 }, lastDay 1, hasMarket false"
+    },
+    {
+      "id": "A-6.1-08",
+      "abschnitt": "6.1",
+      "text": "In der Vorrunde kann das Tor nicht (oder praktisch nicht) fallen.",
+      "erledigt": true,
+      "beleg": "tutorial.ts gateCannotFall: true; src/sim/combat.ts:122 Torleben-Untergrenze 1"
+    },
+    {
+      "id": "A-6.1-09",
+      "abschnitt": "6.1",
+      "text": "Die erste Geste schaltet den Ton auf Handys unauffällig frei, ohne ein Menü davor.",
+      "erledigt": true,
+      "beleg": "src/ui/app.ts Konstruktor: pointerdown -> audio.resume()"
+    },
+    {
+      "id": "A-6.2-01",
+      "abschnitt": "6.2",
+      "text": "Level 1 ist der Rest des Tutorials und hat genau zwei Tage.",
+      "erledigt": true,
+      "beleg": "campaign.ts dayCountOf(1) = 2"
+    },
+    {
+      "id": "A-6.2-02",
+      "abschnitt": "6.2",
+      "text": "Tag 1 von Level 1 ist ein normaler, leichter Tag.",
+      "erledigt": true,
+      "beleg": "Level 1 Tag 1: 24 Pothelms, 40 s, power 1, easeIn 0.2 (campaign.ts buildLevel, CAMPAIGN_SCALING)"
+    },
+    {
+      "id": "A-6.2-03",
+      "abschnitt": "6.2",
+      "text": "Im ersten Markt ist nur der Great Cauldron kaufbar.",
+      "erledigt": true,
+      "beleg": "campaign.ts LEVEL_OVERRIDES[1].marketOnly ['station:cauldron']; src/sim/shop.ts:30"
+    },
+    {
+      "id": "A-6.2-04",
+      "abschnitt": "6.2",
+      "text": "Im ersten Markt sagt der König in einem Satz, wofür der Kessel gut ist.",
+      "erledigt": true,
+      "beleg": "LEVEL_OVERRIDES[1].hints market TUTORIAL_HINTS.cauldronMarket; src/ui/screens/shop.ts:90"
+    },
+    {
+      "id": "A-6.2-05",
+      "abschnitt": "6.2",
+      "text": "Das Gold nach Tag 1 reicht sicher für den Great Cauldron.",
+      "erledigt": false,
+      "beleg": "Offen: kein Beleg: Level 1 startet mit 60 Gold (LEVEL_OVERRIDES[1].startGold, D-13), ob es nach Tag 1 sicher für 250 Gold reicht, prüft kein Test; campaign.spec.ts setzt das Gold vor dem Kauf auf 300"
+    },
+    {
+      "id": "A-6.2-06",
+      "abschnitt": "6.2",
+      "text": "An Tag 2 ist der Kessel im Einsatz, und ein kurzer Hinweis zeigt, wie man hineinwirft.",
+      "erledigt": true,
+      "beleg": "LEVEL_OVERRIDES[1].hints battle Tag 2; tutorialView.ts:149, POT_HINT; Test 'shows the line for a while and the arrow until a raider lands in the pot'"
+    },
+    {
+      "id": "A-6.2-07",
+      "abschnitt": "6.2",
+      "text": "Nach Tag 2 kommt der Sieg-Bildschirm von Level 1, dann zoomt die Kamera in die Burg und man steht zum ersten Mal in der Lobby.",
+      "erledigt": true,
+      "beleg": "won.ts Continue -> app.afterRun -> CampaignMode.next 'lobby' -> Lobby-Kamerafahrt (render/lobby/dive.ts)"
+    },
+    {
+      "id": "A-6.3-01",
+      "abschnitt": "6.3",
+      "text": "Das Tutorial läuft nur beim allerersten Start (Merker im Profil).",
+      "erledigt": true,
+      "beleg": "app.ts tutorialDue() prüft profile.tutorialDone; TutorialMode.reward markTutorialDone; Test profile.test.ts 'switches the tutorial on and off'"
+    },
+    {
+      "id": "A-6.3-02",
+      "abschnitt": "6.3",
+      "text": "Im Entwickler-Menü lässt sich das Tutorial erneut starten.",
+      "erledigt": true,
+      "beleg": "src/ui/tuningPanel.ts #devTutorial 'Replay tutorial' -> app.replayTutorial"
+    },
+    {
+      "id": "A-6.3-03",
+      "abschnitt": "6.3",
+      "text": "Für Spieler, die über einen Koop-Einladungslink kommen und das Tutorial noch nicht kennen, gibt es eine sinnvolle, festgehaltene Lösung.",
+      "erledigt": true,
+      "beleg": "src/ui/app.ts boot(): ?join= geht direkt in den Raum, Tutorial beim nächsten Solo-Start (Kommentar Z. 273)"
+    },
+    {
+      "id": "A-6.3-04",
+      "abschnitt": "6.3",
+      "text": "Die bisherigen Help-Seiten bleiben erreichbar und sind an alle neuen Regeln angepasst.",
+      "erledigt": true,
+      "beleg": "src/ui/content.ts HELP_SLIDES mit Weapons/Campaign/Stars and the armoury/Endless; Lobby-Station 'help'"
+    },
+    {
+      "id": "A-7-01",
+      "abschnitt": "7",
+      "text": "Die Lobby ist das Hauptmenü und liegt im Inneren der Burg, als eigene Spielszene mit eigener Innenraum-Grafik, kein HTML-Panel vor einem Bild.",
+      "erledigt": true,
+      "beleg": "src/render/lobby/lobbyScene.ts LobbyScene (Phaser), Grafik src/art/lobby/*"
+    },
+    {
+      "id": "A-7-02",
+      "abschnitt": "7",
+      "text": "Nach einem Level oder Lauf zoomt die Kamera in die Burg hinein.",
+      "erledigt": true,
+      "beleg": "src/render/lobby/dive.ts diveRect/stepLobby; Test lobby.test.ts 'leaves the battle camera alone at the start and ends right at the gate'"
+    },
+    {
+      "id": "A-7-03",
+      "abschnitt": "7",
+      "text": "Beim Start eines Levels oder Laufs zoomt die Kamera aus der Burg heraus aufs Schlachtfeld.",
+      "erledigt": true,
+      "beleg": "dive.ts stepLobby(inLobby=false) läuft rückwärts; Test lobby.test.ts 'is short: well under 1.5 s in either direction...'"
+    },
+    {
+      "id": "A-7-04",
+      "abschnitt": "7",
+      "text": "Der Kamera-Übergang ist kurz, lässt sich überspringen und fühlt sich wie ein Ort an, nicht wie ein Bildschirmwechsel.",
+      "erledigt": true,
+      "beleg": "src/render/lobby/dive.ts Fahrt durch das Tor (lobby.test.ts „ends right at the gate“, „is short: well under 1.5 s“); src/ui/lobby/lobby.ts:51 ein Tipp überspringt die Fahrt; E-054"
+    },
+    {
+      "id": "A-7-05",
+      "abschnitt": "7",
+      "text": "Die Lobby-Stationen sind antippbar, groß genug für Finger und jede klar erkennbar.",
+      "erledigt": true,
+      "beleg": "layout.ts STATIONS r>=82; Test lobby.test.ts 'keeps every station on screen and big enough for a finger on phones and laptops'"
+    },
+    {
+      "id": "A-7-06",
+      "abschnitt": "7",
+      "text": "Lobby-Station: Kampagne weiterspielen, führt zur Pfad-Karte (8.2).",
+      "erledigt": true,
+      "beleg": "layout.ts Station 'campaign' (mapTable) -> campaignScreen (Pfad-Karte)"
+    },
+    {
+      "id": "A-7-07",
+      "abschnitt": "7",
+      "text": "Lobby-Station: Endlos spielen.",
+      "erledigt": true,
+      "beleg": "layout.ts Station 'play' (Endless)"
+    },
+    {
+      "id": "A-7-08",
+      "abschnitt": "7",
+      "text": "Lobby-Station: Koop, Raum eröffnen oder beitreten.",
+      "erledigt": true,
+      "beleg": "layout.ts Station 'coop' -> coop.ts 'Host a room'/'Join a room'"
+    },
+    {
+      "id": "A-7-09",
+      "abschnitt": "7",
+      "text": "Die Waffenkammer zeigt alle Waffen, freigeschaltet oder gesperrt, mit Hinweis, ab welchem Level, und ihre Stufe.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/armoury.ts weaponCard: alle activeWeapons, 'Unlocks after level N', 'Tier x/5'"
+    },
+    {
+      "id": "A-7-10",
+      "abschnitt": "7",
+      "text": "In der Waffenkammer kauft man Upgrades mit Sternen.",
+      "erledigt": true,
+      "beleg": "armoury.ts upgradeWeapon mit weaponTierPrice (stars.ts)"
+    },
+    {
+      "id": "A-7-11",
+      "abschnitt": "7",
+      "text": "Die Waffenkammer zeigt die Hand und ihre Stufe.",
+      "erledigt": true,
+      "beleg": "armoury.ts handCard 'The Hand Tier x/3'"
+    },
+    {
+      "id": "A-7-12",
+      "abschnitt": "7",
+      "text": "Das Storybuch ist in der Lobby eher unauffällig bis versteckt platziert.",
+      "erledigt": true,
+      "beleg": "layout.ts Station 'storybook' quiet: true (kleineres Schild)"
+    },
+    {
+      "id": "A-7-13",
+      "abschnitt": "7",
+      "text": "Options sind aus der Lobby erreichbar und enthalten das Entwickler-Menü.",
+      "erledigt": true,
+      "beleg": "layout.ts Station 'options'; options.ts #devMenuButton 'Developer menu'"
+    },
+    {
+      "id": "A-7-14",
+      "abschnitt": "7",
+      "text": "Scores, Help und Credits sind aus der Lobby erreichbar.",
+      "erledigt": true,
+      "beleg": "layout.ts Stationen 'scores', 'help', 'credits'; Test lobby.test.ts 'has a station for every action of the old main menu, plus the storybook'"
+    },
+    {
+      "id": "A-7-15",
+      "abschnitt": "7",
+      "text": "In der Lobby sind Sterne-Stand und Kampagnen-Fortschritt sichtbar.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/main.ts lobby-chip #stars und #levelNow über der Halle"
+    },
+    {
+      "id": "A-7-16",
+      "abschnitt": "7",
+      "text": "Der König ist in der Lobby präsent und wirft gelegentlich einen kurzen Satz ein.",
+      "erledigt": true,
+      "beleg": "src/ui/lobby/lobby.ts FIRST_LINE/LINE_GAP, KING_LOBBY_LINES; Tests lobby.test.ts 'always has something for the King to say', 'never says the same remark twice in a row'"
+    },
+    {
+      "id": "A-7-17",
+      "abschnitt": "7",
+      "text": "Für das Aussehen des Innenraums ist eine überzeugende Lösung umgesetzt (Vorschlag: Innenraum zeigt dauerhaft den Kampagnen-Fortschritt, unabhängig vom Ausbau im einzelnen Level).",
+      "erledigt": true,
+      "beleg": "layout.ts DECOR/decorFor nach Kampagnenstand, WEAPON_PEGS; Tests lobby.test.ts 'makes the hall grander with the campaign...', 'has a peg on the wall for every weapon'"
+    },
+    {
+      "id": "A-7-18",
+      "abschnitt": "7",
+      "text": "Die Innenraum-Lösung steht auf der Entscheidungsliste.",
+      "erledigt": true,
+      "beleg": "docs/OFFENE-ENTSCHEIDUNGEN.md D-02 mit Stand aus src/render/lobby/layout.ts DECOR; E-054"
+    },
+    {
+      "id": "A-7-19",
+      "abschnitt": "7",
+      "text": "Beim Eröffnen oder Beitreten eines Koop-Raums zeigt ein kleines, gut eingepasstes Fenster live, wer im Raum ist: der eigene Name, darunter der Mitspieler oder ein leerer Platz.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/roomParts.ts roomMembers ('In this room', eigener Name, 'Free seat') in host.ts und join.ts"
+    },
+    {
+      "id": "A-7-20",
+      "abschnitt": "7",
+      "text": "Das Koop-Raum-Fenster ist so gebaut, dass später drei oder vier Namen hineinpassen.",
+      "erledigt": true,
+      "beleg": "roomParts.ts: eine Zeile je Sitz aus coop.members(), mehr Sitze = mehr Zeilen"
+    },
+    {
+      "id": "A-7-21",
+      "abschnitt": "7",
+      "text": "Im Join-Bildschirm steht „Join“ rechts und „Back“ links.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/join.ts navRow(Back, Join); html.ts navRow: nav-back links, nav-forward rechts"
+    },
+    {
+      "id": "A-7-22",
+      "abschnitt": "7",
+      "text": "Alle Dialoge sind auf dieselbe Anordnung geprüft: weiter rechts, zurück links.",
+      "erledigt": true,
+      "beleg": "alle Dialoge in src/ui/screens/*.ts nutzen navRow(zurück, weiter), auch tuningPanel Cancel/Erase"
+    },
+    {
+      "id": "A-8.1-01",
+      "abschnitt": "8.1",
+      "text": "Welt 1 hat 100 Level, und alle 100 sind in dieser Runde befüllt.",
+      "erledigt": true,
+      "beleg": "campaign.ts LEVEL_COUNT 100, buildCampaign; Test campaignTable.test.ts 'has one row per level, with every unlock and boss in it'"
+    },
+    {
+      "id": "A-8.1-02",
+      "abschnitt": "8.1",
+      "text": "Alle 100 Level sind in dieser Runde getestet.",
+      "erledigt": true,
+      "beleg": "npm run balance (tests/balance/balance.test.ts) spielt Level 1 bis 100 mit vier Bot-Zeilen, docs/balance-latest.md Tabelle „Je Level“ (Commit 3ef9df2); levels.test.ts prüft alle 100"
+    },
+    {
+      "id": "A-8.1-03",
+      "abschnitt": "8.1",
+      "text": "Ein Level dauert 5 bis 15 Tage, im Schnitt 5 bis 10; Level 1 hat zwei Tage.",
+      "erledigt": true,
+      "beleg": "campaign.ts dayCountOf: Level 1 zwei Tage, Level 2-9 fünf, ab 10 fünf bis zehn; gemessen: Level 2-100 5 bis 9 Tage, Schnitt 6,6 (docs/KAMPAGNE-TABELLE.md: 662 Tage)"
+    },
+    {
+      "id": "A-8.1-04",
+      "abschnitt": "8.1",
+      "text": "Die Tageslängen stehen in der Level-Tabelle.",
+      "erledigt": true,
+      "beleg": "LevelDef.days in buildCampaign (campaign.ts dayCountOf), docs/KAMPAGNE-TABELLE.md (Test campaignTable.test.ts)"
+    },
+    {
+      "id": "A-8.1-05",
+      "abschnitt": "8.1",
+      "text": "Die Kampagne ist festgelegt, nicht zufällig: Für jedes Level und jeden Tag steht fest, welche Gegner kommen, wie viele und was neu ist; gleiche Eingaben ergeben denselben Verlauf.",
+      "erledigt": true,
+      "beleg": "campaign.ts chance() fester Hash, modes/campaign.ts levelSeed; Test sim.test.ts 'is deterministic for the same seed and commands'"
+    },
+    {
+      "id": "A-8.1-06",
+      "abschnitt": "8.1",
+      "text": "Die Kampagne hat eine feste Schwierigkeit, keine Auswahl Easy/Medium/Hard.",
+      "erledigt": true,
+      "beleg": "CampaignMode.buildRun difficulty: null, Skalierung nur aus level.power"
+    },
+    {
+      "id": "A-8.1-07",
+      "abschnitt": "8.1",
+      "text": "Jedes Level beginnt frisch: Gold 0, Offerings 0, Holztor, leere Slots.",
+      "erledigt": false,
+      "beleg": "Offen: Holztor und leere Slots ja (freshStart), aber Level 1 startet mit 60 Gold statt 0 (LEVEL_OVERRIDES[1].startGold, offene Entscheidung D-13)"
+    },
+    {
+      "id": "A-8.1-08",
+      "abschnitt": "8.1",
+      "text": "Im Level verdient man Gold und Offerings wie bisher, baut Tor und Burg aus und kauft Waffen in die Slots; dauerhaft ist nur, was im Profil steht.",
+      "erledigt": true,
+      "beleg": "CampaignMode.buildRun: weapons offered nach profile.hasWeapon, fixedTier aus Profil, hasMarket true"
+    },
+    {
+      "id": "A-8.1-09",
+      "abschnitt": "8.1",
+      "text": "Sieg ist ein neuer Zustand in der Simulation: Der letzte Tag des Levels ist überstanden.",
+      "erledigt": true,
+      "beleg": "src/sim/types.ts Phase 'runWon'; src/sim/dayFlow.ts:175 rules.lastDay erreicht -> runWon"
+    },
+    {
+      "id": "A-8.1-10",
+      "abschnitt": "8.1",
+      "text": "Der eigene Sieg-Bildschirm zeigt die verdienten Sterne.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/won.ts #wonStars reward.stars"
+    },
+    {
+      "id": "A-8.1-11",
+      "abschnitt": "8.1",
+      "text": "Der Sieg-Bildschirm zeigt neue Freischaltungen groß und feierlich.",
+      "erledigt": false,
+      "beleg": "Offen: won.ts zeigt Freischaltungen nur als Textliste (ul.unlocks, am Handy 16 px), ohne Bild oder Feier-Effekt"
+    },
+    {
+      "id": "A-8.1-12",
+      "abschnitt": "8.1",
+      "text": "Der Sieg-Bildschirm zeigt einen kurzen Story-Satz, danach folgt der Zoom in die Burg.",
+      "erledigt": true,
+      "beleg": "won.ts #story reward.story; Continue -> afterRun -> Lobby-Kamerafahrt"
+    },
+    {
+      "id": "A-8.1-13",
+      "abschnitt": "8.1",
+      "text": "Fällt das Tor, ist das Level nicht geschafft.",
+      "erledigt": true,
+      "beleg": "dayFlow.ts phase 'gameover' bei Torfall, CampaignMode.reward ohne won nichts; Test sim.test.ts 'falls to defeat when the gate breaks and reaches game over'"
+    },
+    {
+      "id": "A-8.1-14",
+      "abschnitt": "8.1",
+      "text": "Nach einer Niederlage kann man direkt „Try again“ wählen oder zurück zur Kampagnen-Karte.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/gameover.ts campaign(): Back / Try again; app.ts backAfterRun -> 'campaign'"
+    },
+    {
+      "id": "A-8.1-15",
+      "abschnitt": "8.1",
+      "text": "Ein neuer Versuch beginnt immer bei Tag 1 des Levels.",
+      "erledigt": true,
+      "beleg": "app.ts startSoloRun lastPick 'again' (resume -> Level ab Tag 1), restartRun"
+    },
+    {
+      "id": "A-8.1-16",
+      "abschnitt": "8.1",
+      "text": "Ein unterbrochenes Level wird am Beginn des aktuellen Tages fortgesetzt oder mindestens sauber abgebrochen, und das Verhalten ist dokumentiert.",
+      "erledigt": true,
+      "beleg": "src/ui/app.ts savePending/pendingRun/continueLevel, Sim.dayStartSave; dokumentiert in E-058 und D-06"
+    },
+    {
+      "id": "A-8.2-01",
+      "abschnitt": "8.2",
+      "text": "Ein Tipp auf Kampagne zeigt einen Pfad durch eine Landschaft mit allen Leveln als Stationen; man spürt das Vorankommen.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/campaign.ts + src/ui/campaignArt.ts pathSvg, eine Station je Level"
+    },
+    {
+      "id": "A-8.2-02",
+      "abschnitt": "8.2",
+      "text": "Auf der Karte sind geschaffte Level und das aktuelle Level sichtbar.",
+      "erledigt": true,
+      "beleg": "campaign.ts stationHtml Klassen 'done'/'current', Häkchen und Maus"
+    },
+    {
+      "id": "A-8.2-03",
+      "abschnitt": "8.2",
+      "text": "Boss-Level sind auf der Karte deutlich markiert.",
+      "erledigt": true,
+      "beleg": "campaign.ts stationHtml 'boss' mit cm-helm und cm-boss-name"
+    },
+    {
+      "id": "A-8.2-04",
+      "abschnitt": "8.2",
+      "text": "Stationen mit einer Freischaltung sind markiert (zum Beispiel mit einem glänzenden Fragezeichen).",
+      "erledigt": true,
+      "beleg": "campaign.ts stationHtml cm-q '?' bei unlocksOfLevel"
+    },
+    {
+      "id": "A-8.2-05",
+      "abschnitt": "8.2",
+      "text": "Der Wechsel der Landschaft ist entlang des Wegs sichtbar.",
+      "erledigt": true,
+      "beleg": "campaign.ts landscapeHtml(bandsOf(...)) aus campaignArt.ts"
+    },
+    {
+      "id": "A-8.2-06",
+      "abschnitt": "8.2",
+      "text": "Die Karte ist mit dem Finger scrollbar und startet beim aktuellen Level.",
+      "erledigt": true,
+      "beleg": "campaign.ts Zieh-Handler auf #mapScroll, Start mittig auf aktuellem Level (Kopfkommentar)"
+    },
+    {
+      "id": "A-8.2-07",
+      "abschnitt": "8.2",
+      "text": "Geschaffte Level lassen sich erneut spielen.",
+      "erledigt": true,
+      "beleg": "CampaignMode.canPlay (<= höchstes+1), campaign.ts 'Play again'"
+    },
+    {
+      "id": "A-8.3-01",
+      "abschnitt": "8.3",
+      "text": "Die 100 Level sind aus Regeln erzeugt (Schwierigkeitskurve mit mehr, stärkeren, schnelleren Gegnern, feste Einführungspunkte für Gegner, Boss-Level, Landschaftswechsel) und einzeln überschreibbar.",
+      "erledigt": true,
+      "beleg": "campaign.ts CURVE, FIRST_LEVEL, BOSS_BIG, LANDSCAPE_FROM, buildLevel + LEVEL_OVERRIDES"
+    },
+    {
+      "id": "A-8.3-02",
+      "abschnitt": "8.3",
+      "text": "Über den Regeln liegen von Hand gesetzte Besonderheiten.",
+      "erledigt": true,
+      "beleg": "campaign.ts TWISTS und LEVEL_OVERRIDES"
+    },
+    {
+      "id": "A-8.3-03",
+      "abschnitt": "8.3",
+      "text": "Das Ergebnis liegt als lesbare Tabelle vor, in der Tim und Lenny jedes Level einzeln ändern können.",
+      "erledigt": true,
+      "beleg": "docs/KAMPAGNE-TABELLE.md (aus dem Code erzeugt, Test campaignTable.test.ts) mit Abschnitt „Ein einzelnes Level ändern“ über LEVEL_OVERRIDES"
+    },
+    {
+      "id": "A-8.3-04",
+      "abschnitt": "8.3",
+      "text": "Gegner kommen Stück für Stück: zuerst nur Pothelms, dann Keg Hauler, später Goat Rider, Pogo Bandit, Hexer, Slinger, Siege Cart, Balloonist, Shade, Crowcaller, Yeti, über die 100 Level gestreckt.",
+      "erledigt": true,
+      "beleg": "campaign.ts FIRST_LEVEL grunt 1, bomber 3, goatRider 7, pogo 12, hexer 17, slinger 23, siegeCart 29, balloonist 36, shade 44, crowcaller 52, yeti 61"
+    },
+    {
+      "id": "A-8.3-05",
+      "abschnitt": "8.3",
+      "text": "Bei jedem ersten Auftreten eines Gegners erscheint das Popup „New enemy“ mit Bild, Name und ein bis zwei knappen Sätzen, was er kann und wie man ihn besiegt.",
+      "erledigt": true,
+      "beleg": "src/ui/enemyPopup.ts (Bild, Name, Text), story.ts ENEMY_POPUPS für alle 11, app.ts:380 markEnemySeen"
+    },
+    {
+      "id": "A-8.3-06",
+      "abschnitt": "8.3",
+      "text": "Das Popup ist kurz, am Handy gut lesbar und mit einem Tipp weg.",
+      "erledigt": true,
+      "beleg": "src/ui/enemyPopup.ts mit Bild, Titel und ein bis zwei Sätzen aus story.ts ENEMY_POPUPS; flow.spec.ts „a new raider is introduced by its window …; a tap closes it“"
+    },
+    {
+      "id": "A-8.3-07",
+      "abschnitt": "8.3",
+      "text": "Das Popup ersetzt und verbessert das heutige Tipp-System.",
+      "erledigt": true,
+      "beleg": "app.ts:380 meta.today.newTypes -> EnemyPopup statt alter Gegner-Tipps"
+    },
+    {
+      "id": "A-8.3-08",
+      "abschnitt": "8.3",
+      "text": "Ungefähr jedes zehnte Level ist ein Boss-Level, deutlich härter und besonders.",
+      "erledigt": true,
+      "beleg": "campaign.ts buildLevel boss bei level % 10 === 0, CURVE.bossPower 1.12, bossDayCount 1.8, BOSS_BIG"
+    },
+    {
+      "id": "A-8.3-09",
+      "abschnitt": "8.3",
+      "text": "Boss-Level sind wo sinnvoll mit großen Freischaltungen gekoppelt (neuer Slot, besonders starke Waffe).",
+      "erledigt": false,
+      "beleg": "Offen: kein Boss-Level (10 bis 100) schaltet etwas frei; Slots und Waffen liegen auf Level 9, 19, 29, 39 (dazu 49, 59, 69) in src/config/worlds/fondue/unlocks.ts. Als Frage an Tim und Lenny eingetragen: D-21 in docs/OFFENE-ENTSCHEIDUNGEN.md und src/config/devReview.ts; Freischaltungen nicht verschoben"
+    },
+    {
+      "id": "A-8.3-10",
+      "abschnitt": "8.3",
+      "text": "Was ein Boss-Level ausmacht, ist entworfen und mit den vorhandenen Mechaniken fair spielbar, auch solo.",
+      "erledigt": true,
+      "beleg": "D-14 und campaign.ts BOSS_BIG, BOSS_EXTRA, CURVE.bossPower, bossDayCount; docs/balance-latest.md: Mid solo gewinnt alle zehn Boss-Level (Level 100 im 6. Versuch), Great solo alle im ersten"
+    },
+    {
+      "id": "A-8.3-11",
+      "abschnitt": "8.3",
+      "text": "Besonderheiten einzelner Level (nur Springer, nur Reiter, Nacht, viele Schwere, Luftangriff) sind gezielt eingesetzt, damit die 100 Level nicht gleichförmig wirken.",
+      "erledigt": true,
+      "beleg": "campaign.ts TWISTS: Riders only (9), Hoppers only (14), Night raid, Keg parade, Heavy day, Air raid (43), All at once (95)"
+    },
+    {
+      "id": "A-8.3-12",
+      "abschnitt": "8.3",
+      "text": "Die Kampagne zieht sichtbar durch verschiedene Gegenden, mit einem Wechsel ungefähr alle 10 bis 15 Level.",
+      "erledigt": true,
+      "beleg": "campaign.ts LANDSCAPE_FROM 1, 13, 26, 39, 51, 63, 76, 89 (alle 12-13 Level)"
+    },
+    {
+      "id": "A-8.3-13",
+      "abschnitt": "8.3",
+      "text": "Die vier Landschaften (Meadow, Canyon, Marsh, Snowpine) werden genutzt; Varianten oder weitere sind ergänzt, wenn Zeit und Qualität es zuließen.",
+      "erledigt": true,
+      "beleg": "LANDSCAPE_FROM nutzt meadow, canyon, marsh, snowpine"
+    },
+    {
+      "id": "A-8.3-14",
+      "abschnitt": "8.3",
+      "text": "Jedes Level trägt einen kurzen Story-Satz.",
+      "erledigt": true,
+      "beleg": "story.ts LEVEL_STORY mit 100 Einträgen, buildLevel story; alle 100 Level nicht leer (geprüft)"
+    },
+    {
+      "id": "A-8.4-01",
+      "abschnitt": "8.4",
+      "text": "Für jedes geschaffte Level gibt es Sterne: ein fester Betrag je Level aus der Tabelle, Boss-Level mehr.",
+      "erledigt": true,
+      "beleg": "stars.ts STARS.level { normal 3, special 4, boss 8 }, LevelDef.stars; CampaignMode.reward"
+    },
+    {
+      "id": "A-8.4-02",
+      "abschnitt": "8.4",
+      "text": "Für gute Endlos-Läufe gibt es Sterne.",
+      "erledigt": true,
+      "beleg": "endless.ts ENDLESS.milestones; EndlessMode.reward claimEndlessMilestone"
+    },
+    {
+      "id": "A-8.4-03",
+      "abschnitt": "8.4",
+      "text": "Es gibt eine klare Regel, dass wiederholtes Spielen eines geschafften Levels nicht zum Farmen taugt.",
+      "erledigt": true,
+      "beleg": "stars.ts replayShare 0, CampaignMode.reward firstWin; Test profile.test.ts 'pays every one-time reward only once'"
+    },
+    {
+      "id": "A-8.4-04",
+      "abschnitt": "8.4",
+      "text": "Waffen und Slots werden erst durch das Vorankommen in der Kampagne verfügbar, gesteuert über die zentrale Freischalt-Tabelle.",
+      "erledigt": true,
+      "beleg": "modes/unlocks.ts syncUnlocks aus UNLOCKS; CampaignMode.buildRun hasWeapon/hasSlot"
+    },
+    {
+      "id": "A-8.4-05",
+      "abschnitt": "8.4",
+      "text": "Die Freischalt-Tabelle ist eine erste vollständige Fassung (Größenordnung: zweite Waffe um Level 6, zweiter Slot um Level 10).",
+      "erledigt": true,
+      "beleg": "unlocks.ts: 2. Waffe (cheese) nach Level 5, 2. Slot nach Level 9, Einträge bis Level 69"
+    },
+    {
+      "id": "A-8.4-06",
+      "abschnitt": "8.4",
+      "text": "Am Ende der Kampagne sind alle fünf Slots und alle Waffen verfügbar.",
+      "erledigt": true,
+      "beleg": "unlocks.ts: Slots 0-4 bis Level 39, alle 16 Waffen aus weapons.ts bis Level 69"
+    },
+    {
+      "id": "A-8.4-07",
+      "abschnitt": "8.4",
+      "text": "Mit Sternen verbessert man zwischen den Leveln dauerhaft die Stufe einer Waffe (1 bis 5).",
+      "erledigt": true,
+      "beleg": "armoury.ts upgradeWeapon, stars.ts weaponTier; Test profile.test.ts 'keeps weapon and hand tiers inside their limits'"
+    },
+    {
+      "id": "A-8.4-08",
+      "abschnitt": "8.4",
+      "text": "Mit Sternen verbessert man zwischen den Leveln dauerhaft die Stufe der Hand (1 bis 3).",
+      "erledigt": true,
+      "beleg": "src/config/hand.ts HANDS stars 0/12/30, armoury.ts upgradeHand, maxHandTier"
+    },
+    {
+      "id": "A-8.4-09",
+      "abschnitt": "8.4",
+      "text": "Der Stern-Preis für das erste Freischalten einer verfügbar gewordenen Waffe steht in der Tabelle (darf 0 sein) und hat einen sinnvollen Startwert.",
+      "erledigt": true,
+      "beleg": "src/config/stars.ts STARS.weaponUnlock = 0, gelesen von weaponUnlockPrice (src/modes/unlocks.ts); Tests levels.test.ts „at 0 the weapon is simply unlocked“, „above 0 … the armoury sells it“; D-11"
+    },
+    {
+      "id": "A-8.4-10",
+      "abschnitt": "8.4",
+      "text": "Kauft man in einem Kampagnen-Level eine Waffe in einen Slot, kostet das einmalig Gold, und sie hat sofort ihre dauerhafte Stufe aus dem Profil.",
+      "erledigt": true,
+      "beleg": "src/sim/shop.ts:114 weaponTier = rules.weapons[id].fixedTier; Preis buyGold aus weapons.ts"
+    },
+    {
+      "id": "A-8.4-11",
+      "abschnitt": "8.4",
+      "text": "Im Kampagnen-Level selbst wird die Waffenstufe nicht erhöht.",
+      "erledigt": true,
+      "beleg": "CampaignMode.buildRun tierUpgrades: false; shop.ts:67"
+    },
+    {
+      "id": "A-8.4-12",
+      "abschnitt": "8.4",
+      "text": "Vorbereitet, nicht gebaut: Bewertung mit ein bis drei Sternen je Leistung, Sterne für Challenges, Bonus-Sterne und eine Trennung von Sternen und eigener Währung.",
+      "erledigt": true,
+      "beleg": "docs/uebergabe/IDEEN.md Zeilen „Sterne-Bewertung und Challenges“ (Bonus-Sterne) und „Sterne und eigene Währung trennen“; Platz: RunStats (src/sim/stats.ts), schema.ts stars/starsEarned; nichts gebaut"
+    },
+    {
+      "id": "A-8.4-13",
+      "abschnitt": "8.4",
+      "text": "Belohnungslogik und Statistik sind so getrennt, dass spätere Stern-Regeln nur neue Regeln sind.",
+      "erledigt": true,
+      "beleg": "src/sim/stats.ts RunStats zählt nur; Belohnung in GameMode.reward (src/modes)"
+    },
+    {
+      "id": "A-8.5-01",
+      "abschnitt": "8.5",
+      "text": "Koop in der Kampagne folgt dem Modell „Host-Kampagne mit Helfer“: Der Host spielt sein Level mit seinem Profil (Freischaltungen, Stufen, Hand).",
+      "erledigt": true,
+      "beleg": "app.ts coopSetup -> CAMPAIGN.buildRun(this.profile ...) mit Host-Profil"
+    },
+    {
+      "id": "A-8.5-02",
+      "abschnitt": "8.5",
+      "text": "Der Gast bringt nur seine Hand mit.",
+      "erledigt": true,
+      "beleg": "RunEnv.handTiers (Gast meldet Hand-Stufe), CampaignMode.buildRun handStart; Waffen/Stufen nur vom Host"
+    },
+    {
+      "id": "A-8.5-03",
+      "abschnitt": "8.5",
+      "text": "Beide bekommen Sterne; Level-Fortschritt bekommt nur der Host.",
+      "erledigt": true,
+      "beleg": "CampaignMode.reward role 'guest': Sterne ohne markLevelDone"
+    },
+    {
+      "id": "A-8.5-04",
+      "abschnitt": "8.5",
+      "text": "Gegen Stern-Farmen bekommt der Gast Sterne für ein bestimmtes Level nur einmal oder deutlich reduziert.",
+      "erledigt": true,
+      "beleg": "CampaignMode.reward claimGuestStars, stars.ts guestShare 0.5; Test profile.test.ts 'pays every one-time reward only once'"
+    },
+    {
+      "id": "A-8.5-05",
+      "abschnitt": "8.5",
+      "text": "Im Balancing ist geprüft, dass sich durch viel Koop kein unverhältnismäßiger Fortschritt ergibt.",
+      "erledigt": false,
+      "beleg": "Offen: docs/balance.md „Was noch nicht stimmt“: Sterne des Gasts durch viel Koop „ist aber nicht eigens gemessen“"
+    },
+    {
+      "id": "A-8.5-06",
+      "abschnitt": "8.5",
+      "text": "Die Koop-Regeln aus dem Bestand bleiben: gemeinsame Kasse, gemeinsames Tor, Ready im Markt, mehr Gegner, weniger Gold pro Kill.",
+      "erledigt": true,
+      "beleg": "waves.ts COOP goldFactor 0.5 (combat.ts:82), campaignFactor; Test sim.test.ts 'refills the gate for the next day and needs all players ready'"
+    },
+    {
+      "id": "A-8.5-07",
+      "abschnitt": "8.5",
+      "text": "Die Koop-Regeln sind für die Kampagne neu gemessen.",
+      "erledigt": true,
+      "beleg": "docs/balance-latest.md Kampagne „Mid zu zweit“ 92/4/2/2 mit COOP.campaignFactor 1,7 (src/config/waves.ts, E-050, Commit 3ef9df2)"
+    },
+    {
+      "id": "A-8.5-08",
+      "abschnitt": "8.5",
+      "text": "Vorgehalten, nicht gebaut: eine eigene Koop-Kampagne (etwa 10 bis 50 Level, nur zu zweit, früh verfügbar); Datenmodell, Profil und Modus-Schnittstelle können sie ohne Umbau aufnehmen.",
+      "erledigt": true,
+      "beleg": "RESERVED_MODES 'coopCampaign' (src/modes/index.ts), ProfileData.coopCampaign, WORLDS als Verzeichnis"
+    },
+    {
+      "id": "A-9-01",
+      "abschnitt": "9",
+      "text": "Der Markt zwischen den Tagen ist kein Listen-Panel mehr.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/shop.ts ShopScreen (Fenster je Ort) + src/render/marketView.ts MarketView.update (Tippflächen Slots/Tor/Kessel/Haken an der Burg)"
+    },
+    {
+      "id": "A-9-02",
+      "abschnitt": "9",
+      "text": "Im Markt fährt die Kamera etwas näher an die Burg und zeigt zugleich mehr von ihr, auch nach links.",
+      "erledigt": true,
+      "beleg": "src/render/marketCamera.ts; Test tests/unit/marketCamera.test.ts 'comes closer to the keep and also shows its west wing'"
+    },
+    {
+      "id": "A-9-03",
+      "abschnitt": "9",
+      "text": "Die Burg ist nach links weitergezeichnet (weitere Mauern, Türme, Hof), stimmig in allen fünf Ausbaustufen.",
+      "erledigt": true,
+      "beleg": "src/art/castle/westWing.ts: ein Bild je Ausbaustufe (Eckturm, Hofmauer mit Käserei, Vormauer, Endturm) im Material der Stufe; E-056; marketCamera.test.ts „also shows its west wing“"
+    },
+    {
+      "id": "A-9-04",
+      "abschnitt": "9",
+      "text": "Die nach links weitergezeichnete Burg ist stimmig in allen Landschaften.",
+      "erledigt": false,
+      "beleg": "Offen: westWing.ts zeichnet Boden und Schnee je Landschaft, aber eine Sichtprüfung des Westflügels (nur in der Marktansicht sichtbar) in allen vier Landschaften ist nicht belegt"
+    },
+    {
+      "id": "A-9-05",
+      "abschnitt": "9",
+      "text": "Im Kampf bleibt die Burg am linken Bildrand wie bisher (E-021).",
+      "erledigt": true,
+      "beleg": "Test tests/unit/marketCamera.test.ts 'leaves the fight view untouched: the keep stays at the left edge'"
+    },
+    {
+      "id": "A-9-06",
+      "abschnitt": "9",
+      "text": "Ein Tipp direkt auf einen Slot an der Burg öffnet ein Auswahlfenster für diesen Slot: welche Waffen dort möglich sind, kaufen, auswählen/wechseln.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/shop.ts Slot-Fenster (weaponsForSlot, quote 'weapon:<slot>:<id>', Kaufen/Wechseln), Öffnen per MarketView-Spot 'slot:<i>'"
+    },
+    {
+      "id": "A-9-07",
+      "abschnitt": "9",
+      "text": "Im Endlos-Modus lässt sich die Waffe im Slot-Fenster verbessern.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/shop.ts Slot-Fenster mit 'upgrade:<id>' bei rules.tierUpgrades (nur Endlos, src/modes/endless.ts tierUpgrades: true)"
+    },
+    {
+      "id": "A-9-08",
+      "abschnitt": "9",
+      "text": "Leere und noch gesperrte Slots sind klar erkennbar.",
+      "erledigt": true,
+      "beleg": "src/render/marketView.ts: gesperrter Slot mit Schloss und „Level N“, leerer Slot mit gestricheltem Ring und Plus; shop.ts Zeile „Locked“ mit iconLocked; campaign.spec.ts „Win level 1 to build here“"
+    },
+    {
+      "id": "A-9-09",
+      "abschnitt": "9",
+      "text": "Jede Waffe wird im Markt mit ihrem Bild gezeigt, nicht nur als Text.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/shop.ts weaponPic(id, tier) aus weaponArt (Bild je Waffe und Stufe)"
+    },
+    {
+      "id": "A-9-10",
+      "abschnitt": "9",
+      "text": "Höhere Stufen sehen sichtbar mächtiger aus, im Fenster und an der Burg.",
+      "erledigt": true,
+      "beleg": "src/art/weapons/index.ts trimOf (Holz, Eisen, Messing, Gold) und GROWTH_PER_TIER; an der Burg castleView.ts:197 weaponKey(id, tier), im Fenster shop.ts weaponPic(id, tier)"
+    },
+    {
+      "id": "A-9-11",
+      "abschnitt": "9",
+      "text": "Es gibt einen eigenen, gut sichtbaren Knopf an der Burg für Tor und Ausbaustufe.",
+      "erledigt": true,
+      "beleg": "src/render/marketView.ts GATE_BADGE: runde Holzplatte mit Hammer und „Gate“, Spot „gate“; market.spec.ts tippt ihn an und baut das nächste Tor"
+    },
+    {
+      "id": "A-9-12",
+      "abschnitt": "9",
+      "text": "Es gibt einen eigenen Eintrag für die Hand: im Endlos-Modus kaufbar, in der Kampagne nur Anzeige der dauerhaften Stufe.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/shop.ts handWin: Endlos Kauf über quote 'hand', Kampagne (handBuyable false) nur Anzeige 'Lasting tier'"
+    },
+    {
+      "id": "A-9-13",
+      "abschnitt": "9",
+      "text": "Die Opferstätten (Kessel, Adlerhaken) kauft man an ihrem Ort.",
+      "erledigt": true,
+      "beleg": "src/render/marketView.ts Spots 'station:cauldron'/'station:perch' an CAULDRON_SPOT bzw. Haken; Kauf im Stations-Fenster shop.ts"
+    },
+    {
+      "id": "A-9-14",
+      "abschnitt": "9",
+      "text": "Gold und Offerings bleiben im Markt groß sichtbar.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/shop.ts m-purse mit #gold und #offerings oben im Markt; mobile.spec.ts check(„market“) auf beiden Handys"
+    },
+    {
+      "id": "A-9-15",
+      "abschnitt": "9",
+      "text": "Das Ergebnis des Tages und der Ready-Knopf bleiben erhalten.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/shop.ts dayLine (#dayResult) + readyLine/nextButtons aus readyControls.ts"
+    },
+    {
+      "id": "A-9-16",
+      "abschnitt": "9",
+      "text": "Im Koop bleiben die Kaufmeldungen („Lenny bought …“) erhalten.",
+      "erledigt": true,
+      "beleg": "src/sim/shop.ts emit {e:'buy'}; src/ui/app.ts onBuyNotice -> toast außer solo"
+    },
+    {
+      "id": "A-9-17",
+      "abschnitt": "9",
+      "text": "Im Markt geht alles bequem mit dem Daumen; alle Flächen sind mindestens 44 Pixel groß.",
+      "erledigt": true,
+      "beleg": "market.spec.ts: jeder Platz an der Burg >= 44 px (Laptop, iPhone 16); mobile.spec.ts check(„market“, „market-window“) mit MIN_TOUCH_PX 44 auf iPhone 16 und OnePlus 8T; style.css:288"
+    },
+    {
+      "id": "A-10.1-01",
+      "abschnitt": "10.1",
+      "text": "Es gibt fünf Slots an der Burg; in der Kampagne werden sie nach und nach freigeschaltet.",
+      "erledigt": true,
+      "beleg": "src/config/slots.ts SLOTS (5); src/config/worlds/fondue/unlocks.ts slot 0..4 bei Level 1/9/19/29/39"
+    },
+    {
+      "id": "A-10.1-02",
+      "abschnitt": "10.1",
+      "text": "Es gibt 15 bis 20 Waffen insgesamt, jede mit 5 Stufen.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts WEAPONS (16); Test tests/unit/weapons.test.ts 'has 16 weapons, each with exactly five tiers'"
+    },
+    {
+      "id": "A-10.1-03",
+      "abschnitt": "10.1",
+      "text": "Die bisherigen Waffen (Wheel, Stomper, Comet, Gate Mortar, Frost Horn, Dragon Bellows, Roof Bolter) bleiben als Grundstock und haben 5 statt 3 Stufen.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts wheel, stomper, comet, mortar, frost, bellows, bolter mit je 5 Stufen; Test weapons.test.ts 'has 16 weapons, each with exactly five tiers'"
+    },
+    {
+      "id": "A-10.1-04",
+      "abschnitt": "10.1",
+      "text": "Die neuen Waffen sind passend zur Käse- und Alpenwelt erfunden.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts: Sticky Fondue, Fondue Forks, Alphorn, Cuckoo Clock, Marmot Sentry, Golden Fondue, Frost Horn, Storm Bell u.a.; Bilder in src/art/weapons/index.ts"
+    },
+    {
+      "id": "A-10.1-05",
+      "abschnitt": "10.1",
+      "text": "Slots haben einen Typ, und pro Slot wählt man eine Waffe.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts slotType + src/config/slots.ts SLOTS.type; Tests weapons.test.ts 'every weapon fits a slot of the keep and has a price and a description', sim.test.ts 'helpers put each weapon into a slot of its own type'"
+    },
+    {
+      "id": "A-10.1-06",
+      "abschnitt": "10.1",
+      "text": "Für jeden Slot-Typ gibt es mehrere reizvolle Waffen, sodass echte Entscheidungen entstehen.",
+      "erledigt": true,
+      "beleg": "weapons.test.ts „every slot type has at least three active weapons“ (Mauerfuß 3, Mauer 3, Schrein 3, Torarm 4, Turmdach 3)"
+    },
+    {
+      "id": "A-10.1-07",
+      "abschnitt": "10.1",
+      "text": "Jede Waffe ist klar eigenständig (andere Wirkung, anderes Gefühl, nicht nur andere Zahlen).",
+      "erledigt": true,
+      "beleg": "16 Waffen in 14 Verhaltensklassen (src/sim/weapons/behaviours), die drei shell-Waffen mit eigener Wirkung (Mörser, Eis, Feuer); je Waffe eigene Tests in weapons.test.ts"
+    },
+    {
+      "id": "A-10.1-08",
+      "abschnitt": "10.1",
+      "text": "Jede Waffe ist einzeln abschaltbar über ein Kennzeichen in der Tabelle.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts Feld enabled; Tests weapons.test.ts 'a weapon switched off' (zwei Tests)"
+    },
+    {
+      "id": "A-10.1-09",
+      "abschnitt": "10.1",
+      "text": "Jede erfundene Waffe steht auf der Bewertungsliste (11.2).",
+      "erledigt": true,
+      "beleg": "docs/OFFENE-ENTSCHEIDUNGEN.md W-01 bis W-16; src/config/devReview.ts WEAPON_REVIEWS aus WEAPONS; devReview.test.ts „every weapon once“"
+    },
+    {
+      "id": "A-10.1-10",
+      "abschnitt": "10.1",
+      "text": "Jede Stufe verbessert sich spürbar und sichtbar (Wirkung, Zusatzeffekt, Nachladezeit, Aussehen), nicht nur „größer“.",
+      "erledigt": false,
+      "beleg": "Offen: mehrere Stufen sind nur Zahlenschritte, z.B. Golden Fondue Stufe 2 und 4 („A little longer, a little richer“, „Even richer“), Hedgehog Gate 2-4, Dragon Bellows 2 und 4, Ember Beacon 2 und 3 (notes in weapons.ts)"
+    },
+    {
+      "id": "A-10.1-11",
+      "abschnitt": "10.1",
+      "text": "Der Stomper ist neu gestaltet, in Aussehen und Wirkung über die Stufen, und füllt nicht mehr riesige Teile des Bildschirms.",
+      "erledigt": true,
+      "beleg": "weapons.ts stomper: Breite 90-110 statt Wachstum, Beben ab Stufe 2, 2 bzw. 3 Schläge ab Stufe 3/5; weapons.test.ts „tier 1: one block…“, „tier 5: three strikes…“; Bild mit trimOf je Stufe; D-17"
+    },
+    {
+      "id": "A-10.1-12",
+      "abschnitt": "10.1",
+      "text": "Waffen werden nur noch angetippt; das Ziehen zum Zielen (Schleuder-Geste, E-022, E-027) ist vollständig entfallen.",
+      "erledigt": true,
+      "beleg": "Befehle in src/sim/types.ts nur press/release/fireSlot (kein Zielen); keep.spec.ts „every weapon fires with one tap and never grabs“ auf drei Geräten; E-033"
+    },
+    {
+      "id": "A-10.1-13",
+      "abschnitt": "10.1",
+      "text": "Roof Bolter: Antippen feuert sofort eine breit gefächerte Salve über die ganze Höhe (oben Balloonists, unten Läufer).",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts bolter kind volley target none; Test weapons.test.ts 'tier 1: the fan hits a balloonist above and a runner below with one tap'"
+    },
+    {
+      "id": "A-10.1-14",
+      "abschnitt": "10.1",
+      "text": "Gate Mortar: Antippen feuert auf den Gegner, der dem Tor am nächsten ist.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts mortar target 'front'; Test weapons.test.ts 'tier 1: one shell at the raider closest to the gate, not at the crowd'"
+    },
+    {
+      "id": "A-10.1-15",
+      "abschnitt": "10.1",
+      "text": "Frost Horn, Dragon Bellows und alle neuen Waffen werden nur angetippt und haben ein sinnvolles automatisches Ziel; die Entscheidung ist dokumentiert.",
+      "erledigt": true,
+      "beleg": "src/config/weapons.ts Spalte target (frost/bellows crowd, mortar front …), src/sim/weapons/targeting.ts; dokumentiert in E-033"
+    },
+    {
+      "id": "A-10.1-16",
+      "abschnitt": "10.1",
+      "text": "Für Stomper und Comet ist entschieden, ob „antippen, dann Stelle antippen“ bleibt oder ein Tipp automatisch zielt, nach dem, was sich am Handy am besten spielt.",
+      "erledigt": true,
+      "beleg": "weapons.ts target „crowd“ für stomper und comet (ein Tipp zielt selbst), E-033, zur Bestätigung D-08"
+    },
+    {
+      "id": "A-10.1-17",
+      "abschnitt": "10.1",
+      "text": "Die Bedien-Entscheidung für Stomper und Comet steht auf der Entscheidungsliste.",
+      "erledigt": true,
+      "beleg": "docs/OFFENE-ENTSCHEIDUNGEN.md D-08 (Stomper und Comet zielen mit target crowd)"
+    },
+    {
+      "id": "A-10.1-18",
+      "abschnitt": "10.1",
+      "text": "Der nicht mehr gebrauchte Zielcode ist sauber entfernt (Regeln, Zielhilfe, Bots, Hilfe-Texte, Tests).",
+      "erledigt": true,
+      "beleg": "Zielfadenkreuz „reticle“ entfernt (src/art/props/projectiles.ts, src/art/props/index.ts, Kopfkommentar); per grep nirgends benutzt; docs/GRAFIK-AUSTAUSCHEN.md per scripts/list-assets.ts neu erzeugt (328 Assets); tests/e2e/art.spec.ts FREE_PROPS ohne reticle"
+    },
+    {
+      "id": "A-10.1-19",
+      "abschnitt": "10.1",
+      "text": "Die Tests der Zielgeste sind durch Tests der neuen Bedienung ersetzt.",
+      "erledigt": true,
+      "beleg": "docs/PROGRESS-GROSSES-UPDATE.md „Ersetzte Tests“: Zielgesten-Tests durch keep.spec „every weapon fires with one tap…“ ersetzt; dazu targeting.test.ts und weapons.test.ts"
+    },
+    {
+      "id": "A-10.1-20",
+      "abschnitt": "10.1",
+      "text": "Die Bots nutzen die neue Bedienung.",
+      "erledigt": true,
+      "beleg": "src/bots/bot.ts useWeapon -> sim.command({k:'press'}) ohne Ziehen"
+    },
+    {
+      "id": "A-10.1-21",
+      "abschnitt": "10.1",
+      "text": "Die Griffzonen an der Burg (E-024) bleiben: Ein Tipp auf eine Waffe greift nie einen Gegner, ein Gegner am Tor bleibt immer greifbar.",
+      "erledigt": true,
+      "beleg": "Test tests/unit/round.test.ts 'a press on a weapon never grabs a raider at the gate, and the other way round'"
+    },
+    {
+      "id": "A-10.2-01",
+      "abschnitt": "10.2",
+      "text": "Kampagne: Stufen sind dauerhaft; im Level kauft man die Waffe einmalig mit Gold in den Slot und hat sie auf ihrer dauerhaften Stufe.",
+      "erledigt": true,
+      "beleg": "src/modes/campaign.ts buildRun: fixedTier = profile.weaponTier, tierUpgrades false; Kauf mit buyGold über src/sim/shop.ts"
+    },
+    {
+      "id": "A-10.2-02",
+      "abschnitt": "10.2",
+      "text": "Endlos: Jede Waffe startet auf Stufe 1 und wird zwischen den Tagen mit Gold und Offerings bis Stufe 5 verbessert.",
+      "erledigt": true,
+      "beleg": "src/modes/endless.ts fixedTier null, tierUpgrades true; src/config/weapons.ts UPGRADE_COST/upgradePrice (Gold+Opfer), MAX_TIER 5"
+    },
+    {
+      "id": "A-10.2-03",
+      "abschnitt": "10.2",
+      "text": "Endlos: Nach dem Lauf sind die Käufe weg.",
+      "erledigt": true,
+      "beleg": "src/modes/endless.ts reward schreibt nur Sterne und Score ins Profil, Loadout bleibt im Lauf"
+    },
+    {
+      "id": "A-10.2-04",
+      "abschnitt": "10.2",
+      "text": "Im Endlos-Modus sind vorerst alle Waffen und alle fünf Slots verfügbar, unabhängig vom Kampagnen-Fortschritt.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/endless.ts onlyUnlockedWeapons: false; endless.ts buildRun offered/slotsOpen ohne Profilprüfung"
+    },
+    {
+      "id": "A-10.2-05",
+      "abschnitt": "10.2",
+      "text": "Es gibt einen Schalter in der Konfiguration („Endlos nutzt nur freigeschaltete Waffen“), der später umgelegt werden kann.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/endless.ts ENDLESS.onlyUnlockedWeapons, ausgewertet in src/modes/endless.ts"
+    },
+    {
+      "id": "A-10.2-06",
+      "abschnitt": "10.2",
+      "text": "Die Endlos-Annahme (alle Waffen und Slots verfügbar) steht auf der Entscheidungsliste.",
+      "erledigt": true,
+      "beleg": "docs/OFFENE-ENTSCHEIDUNGEN.md D-01 (onlyUnlockedWeapons false)"
+    },
+    {
+      "id": "A-10.3-01",
+      "abschnitt": "10.3",
+      "text": "Jeder Gegner hat ein eigenes Gewicht in der Gegnertabelle: Pothelm leicht, Keg Hauler etwas schwerer, Goat Rider deutlich schwerer, Yeti sehr schwer, die übrigen sinnvoll dazwischen.",
+      "erledigt": true,
+      "beleg": "src/config/enemies.ts mass je Gegner; Test tests/unit/weight.test.ts 'every raider has a weight; Pothelm light, Keg Hauler heavier, Goat Rider much heavier, Yeti very heavy'"
+    },
+    {
+      "id": "A-10.3-02",
+      "abschnitt": "10.3",
+      "text": "Schwere Gegner fliegen bei gleicher Wischbewegung kürzer und flacher.",
+      "erledigt": true,
+      "beleg": "Test tests/unit/weight.test.ts 'the same swipe sends heavier raiders shorter and flatter: Pothelm > Keg Hauler > Goat Rider'"
+    },
+    {
+      "id": "A-10.3-03",
+      "abschnitt": "10.3",
+      "text": "Träges Folgen der Hand bei schweren Gegnern wurde getestet; bei größeren Problemen wurde die einfache Variante (nur kürzerer Flug) genommen.",
+      "erledigt": true,
+      "beleg": "src/config/hand.ts HAND_RULES.minFollow; Tests weight.test.ts 'after a few ticks a Goat Rider is further from the hand than a Pothelm', 'a stronger hand pulls a heavy raider along faster'"
+    },
+    {
+      "id": "A-10.3-04",
+      "abschnitt": "10.3",
+      "text": "Das Werfen schwerer Gegner funktioniert robust auch beim Gast (Falle 4).",
+      "erledigt": true,
+      "beleg": "Tests weight.test.ts 'both import the throw and hold maths from src/sim/physics.ts', 'the guest prediction lands a heavy raider within a few pixels of where the host lands it'"
+    },
+    {
+      "id": "A-10.3-05",
+      "abschnitt": "10.3",
+      "text": "Ein tödlicher Wurf ist mit jedem greifbaren Gegner erreichbar, wenn man kräftig genug wischt.",
+      "erledigt": true,
+      "beleg": "Test weight.test.ts 'a hard swipe kills every raider that can be lifted, with every hand tier'"
+    },
+    {
+      "id": "A-10.3-06",
+      "abschnitt": "10.3",
+      "text": "Die Hand hat Stufen 1 bis 3; eine stärkere Hand wirft schwere Gegner leichter und weiter.",
+      "erledigt": true,
+      "beleg": "src/config/hand.ts HANDS (3 Stufen); Test weight.test.ts 'every hand tier throws a heavy raider further'"
+    },
+    {
+      "id": "A-10.3-07",
+      "abschnitt": "10.3",
+      "text": "Kampagne: Die Hand-Stufe wird dauerhaft mit Sternen zwischen den Leveln verbessert.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/armoury.ts handCard (Preis HANDS[].stars); src/modes/campaign.ts handBuyable false; Freischaltung unlocks.ts hand bei Level 14/47"
+    },
+    {
+      "id": "A-10.3-08",
+      "abschnitt": "10.3",
+      "text": "Endlos: Die Hand-Stufe wird pro Lauf zwischen den Tagen gekauft.",
+      "erledigt": true,
+      "beleg": "src/modes/endless.ts handBuyable true; src/sim/shop.ts Artikel 'hand' (Gold+Opfer aus HANDS)"
+    },
+    {
+      "id": "A-10.3-09",
+      "abschnitt": "10.3",
+      "text": "Der Yeti bleibt etwas Besonderes (allein kaum zu werfen, zu zweit gemeinsam); wie Gewicht und Hand-Stufe dazu passen, ist geprüft und als Regel festgehalten.",
+      "erledigt": true,
+      "beleg": "src/config/hand.ts HAND_RULES.yetiLift = 2; Tests weight.test.ts 'one hand of tier 1 or 2 only pulls it', 'two hands of tier 1 lift it together', 'one hand of tier 3 lifts it alone'"
+    },
+    {
+      "id": "A-10.3-10",
+      "abschnitt": "10.3",
+      "text": "Vorgehalten: mehr Hände als spätere Freischaltung.",
+      "erledigt": true,
+      "beleg": "src/config/hand.ts HANDS als Liste (Kopfkommentar „more hands can become more lists later“), UnlockDef kind „hand“; docs/uebergabe/IDEEN.md „Mehr Hände“"
+    },
+    {
+      "id": "A-10.4-01",
+      "abschnitt": "10.4",
+      "text": "Am Touchscreen wird die eigene Hand nicht mehr gezeichnet; es zählt nur die Berührung.",
+      "erledigt": true,
+      "beleg": "src/render/scene.ts drawn = visible && !(isMe && tracker.touch); src/input/pointer.ts tracker.touch aus pointerType"
+    },
+    {
+      "id": "A-10.4-02",
+      "abschnitt": "10.4",
+      "text": "Die Hand des Koop-Mitspielers bleibt sichtbar.",
+      "erledigt": true,
+      "beleg": "src/render/scene.ts: Ausblenden nur bei isMe, fremde Hände bleiben gezeichnet"
+    },
+    {
+      "id": "A-10.4-03",
+      "abschnitt": "10.4",
+      "text": "Mit der Maus am Laptop bleibt die eigene Hand als Zeiger.",
+      "erledigt": true,
+      "beleg": "src/render/scene.ts: bei Maus (tracker.touch false) wird die eigene Hand gezeichnet"
+    },
+    {
+      "id": "A-11.1-01",
+      "abschnitt": "11.1",
+      "text": "Das Entwickler-Menü hat einen festen, sichtbaren Eintrag in den Options und ist auf dem Handy voll bedienbar.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/options.ts #devMenuButton „Developer menu“; mobile.spec.ts „developer menu on a phone: from Options by finger, and it starts a game“"
+    },
+    {
+      "id": "A-11.1-02",
+      "abschnitt": "11.1",
+      "text": "Das Entwickler-Menü lässt sich später mit einem Schalter verstecken.",
+      "erledigt": true,
+      "beleg": "src/ui/screens/options.ts DEV_MENU_BUTTON = true"
+    },
+    {
+      "id": "A-11.1-03",
+      "abschnitt": "11.1",
+      "text": "Entwickler-Menü: Tuning-Regler und Experiment-Schalter wie bisher.",
+      "erledigt": true,
+      "beleg": "src/ui/tuningPanel.ts TUNING_SLIDERS-Regler und FLAG_DEFS-Schalter"
+    },
+    {
+      "id": "A-11.1-04",
+      "abschnitt": "11.1",
+      "text": "Entwickler-Menü: direkt zu einem beliebigen Level und Tag springen, mit passendem Besitz.",
+      "erledigt": false,
+      "beleg": "Offen: Sprung zu Level und Tag vorhanden (tuningPanel #devJump, app.ts jumpTo, flow.spec), aber der Lauf beginnt am Tag N mit frischem Besitz (CampaignMode.buildRun freshStart, gold = startGold), nicht mit zum Tag passendem Besitz"
+    },
+    {
+      "id": "A-11.1-05",
+      "abschnitt": "11.1",
+      "text": "Entwickler-Menü: Endlos-Schnellstart ab späteren Tagen wie bisher.",
+      "erledigt": true,
+      "beleg": "src/ui/tuningPanel.ts 'Endless starts on' + devQuickSolo; src/config/quickstart.ts; Tests round.test.ts describe 'quick start'"
+    },
+    {
+      "id": "A-11.1-06",
+      "abschnitt": "11.1",
+      "text": "Entwickler-Menü: Profil bearbeiten (Sterne setzen, alles freischalten, Stufen setzen, Tutorial zurücksetzen, Profil löschen).",
+      "erledigt": true,
+      "beleg": "src/ui/tuningPanel.ts: #devStars (+Sterne), #devUnlockAll, Stufen je Waffe und Hand (#devWeaponTier, #devHandTier), #devTutorial, #devResetProfile mit Bestätigung; flow.spec „profile tools unlock, replay and erase“"
+    },
+    {
+      "id": "A-11.1-07",
+      "abschnitt": "11.1",
+      "text": "Entwickler-Menü: Tutorial und einzelne Popups erneut abspielen.",
+      "erledigt": true,
+      "beleg": "tuningPanel.ts #devTutorial „Replay tutorial“ und #devPopupEnemy/#devPopupShow (jedes Gegner-Popup einzeln)"
+    },
+    {
+      "id": "A-11.1-08",
+      "abschnitt": "11.1",
+      "text": "Entwickler-Menü: enthält die Entscheidungs- und Bewertungsliste (11.2).",
+      "erledigt": true,
+      "beleg": "tuningPanel.ts #devReview „Decisions and ratings“ mit REVIEW_ITEMS aus src/config/devReview.ts (siehe aber A-11.2-02)"
+    },
+    {
+      "id": "A-11.1-09",
+      "abschnitt": "11.1",
+      "text": "Entwickler-Menü: enthält den Link zur Entwickler-Übersicht (11.3).",
+      "erledigt": true,
+      "beleg": "tuningPanel.ts #devOverview „Developer overview“, Link auf BASE_URL + dev/"
+    },
+    {
+      "id": "A-11.1-10",
+      "abschnitt": "11.1",
+      "text": "Läufe mit Entwickler-Eingriffen zählen nicht für Bestenliste und Sterne.",
+      "erledigt": true,
+      "beleg": "src/ui/app.ts runEnv devRun; src/sim/sim.ts markDevRun bei setTuning/setFlags; campaign.ts/endless.ts reward -> noReward bei devRun; Test round.test.ts 'quick start' (devRun true)"
+    },
+    {
+      "id": "A-11.2-01",
+      "abschnitt": "11.2",
+      "text": "Die Liste im Entwickler-Menü enthält jede erfundene Waffe mit Bild und Kurzbeschreibung.",
+      "erledigt": true,
+      "beleg": "tuningPanel.ts reviewItem: Bild (weaponUri) und desc für jede der 16 Waffen (WEAPON_REVIEWS); devReview.test.ts"
+    },
+    {
+      "id": "A-11.2-02",
+      "abschnitt": "11.2",
+      "text": "Die Liste enthält alle offenen Entscheidungen aus dem Auftrag und alle unterwegs getroffenen.",
+      "erledigt": false,
+      "beleg": "Offen: src/config/devReview.ts DECISIONS und docs/OFFENE-ENTSCHEIDUNGEN.md jetzt gleich (D-01 bis D-21, D-19 und D-20 ergänzt, D-21 neu); E-062 steht über D-12 auf der Liste. Viele unterwegs getroffene Entscheidungen E-032 bis E-061 (z. B. E-044 Schütteln, E-048 Kessel hinten, E-049 Haken-Preis teils über D-18) haben noch keinen eigenen D-Eintrag"
+    },
+    {
+      "id": "A-11.2-03",
+      "abschnitt": "11.2",
+      "text": "Jeder Eintrag lässt sich abhaken und bewerten („finden wir gut“ / „finden wir nicht gut“), mit kurzer Notiz.",
+      "erledigt": true,
+      "beleg": "tuningPanel.ts reviewItem: Häkchen „Settled“, gut/nicht gut, Notizfeld; profile.ts setRating/ratingsAsText; devReview.test.ts „a rating is kept in the profile…“, profile.test.ts „stores ratings and exports them as text“"
+    },
+    {
+      "id": "A-11.2-04",
+      "abschnitt": "11.2",
+      "text": "Der Stand der Liste wird im Profil gespeichert.",
+      "erledigt": true,
+      "beleg": "src/profile/profile.ts setRating/devRatings; Test tests/unit/profile.test.ts 'stores ratings and exports them as text' (Oberfläche fehlt)"
+    },
+    {
+      "id": "A-11.2-05",
+      "abschnitt": "11.2",
+      "text": "Der Stand der Liste lässt sich als Text exportieren.",
+      "erledigt": true,
+      "beleg": "src/profile/profile.ts ratingsAsText; Test profile.test.ts 'stores ratings and exports them as text' (Oberfläche fehlt)"
+    },
+    {
+      "id": "A-11.2-06",
+      "abschnitt": "11.2",
+      "text": "Dieselbe Liste liegt als docs/OFFENE-ENTSCHEIDUNGEN.md im Repo.",
+      "erledigt": true,
+      "beleg": "docs/OFFENE-ENTSCHEIDUNGEN.md (D-01 bis D-18, W-01 bis W-16)"
+    },
+    {
+      "id": "A-11.3-01",
+      "abschnitt": "11.3",
+      "text": "Die Entwickler-Übersicht ist eine schön gestaltete Seite in der Optik des Spiels, gut lesbar am Handy.",
+      "erledigt": false,
+      "beleg": "Offen: scripts/dev-page.ts erzeugt die Seite; eine Sichtprüfung am Handy ist nicht dokumentiert"
+    },
+    {
+      "id": "A-11.3-02",
+      "abschnitt": "11.3",
+      "text": "Die Entwickler-Übersicht wird automatisch aus den Konfigurationsdateien erzeugt.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page.ts + scripts/dev-page/page.ts renderDevPage aus src/config; .github/workflows/deploy.yml 'npm run dev-page'"
+    },
+    {
+      "id": "A-11.3-03",
+      "abschnitt": "11.3",
+      "text": "Die Entwickler-Übersicht ist unter https://onlineshopbuilding-droid.github.io/fondue/dev/ veröffentlicht.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-11.3-04",
+      "abschnitt": "11.3",
+      "text": "Übersicht Kampagne: für jedes Level und jeden Tag welche Gegner, wie viele, was neu ist, Boss, Landschaft, Sterne, Freischaltungen.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page/page.ts campaignSection (Räuber je Tag, neu, Boss, Landschaft, Sterne, Freischaltungen)"
+    },
+    {
+      "id": "A-11.3-05",
+      "abschnitt": "11.3",
+      "text": "Die Kampagnen-Übersicht hat einen Filter oder Sprung zu einem Level.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page/page.ts campaignSection Filter #q/#kind und Sprung #level-N"
+    },
+    {
+      "id": "A-11.3-06",
+      "abschnitt": "11.3",
+      "text": "Übersicht Endlos: für jeden Tag und jede Schwierigkeit die Spanne der Gegnerzahl und die Wahrscheinlichkeit jedes Gegnertyps, inklusive der Erstauftritte.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page/page.ts endlessSection: Spannen je Tag für Easy/Medium/Hard/zu zweit, Anteile je Typ (nur Medium), Erstauftritte"
+    },
+    {
+      "id": "A-11.3-07",
+      "abschnitt": "11.3",
+      "text": "Übersicht Waffen: alle Waffen mit allen fünf Stufen, Werten und Preisen.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page/page.ts weaponSection: alle Waffen, 5 Stufen, Werte, Gold/Opfer- und Sternpreise"
+    },
+    {
+      "id": "A-11.3-08",
+      "abschnitt": "11.3",
+      "text": "Übersicht Gegner: Werte, Gewicht, Gold.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page/page.ts enemySection: Leben, Tempo, Gewicht (mass), Gold"
+    },
+    {
+      "id": "A-11.3-09",
+      "abschnitt": "11.3",
+      "text": "Die Übersicht zeigt die Freischalt-Tabelle und die Stern-Wirtschaft.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page/page.ts unlockSection (Freischalt-Tabelle, Sterne bis Level, Hand, Gesamtkosten)"
+    },
+    {
+      "id": "A-11.3-10",
+      "abschnitt": "11.3",
+      "text": "Die Übersicht zeigt die neuesten Balance-Ergebnisse der Bots.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page/page.ts Abschnitt #balance aus docs/balance-latest.md"
+    },
+    {
+      "id": "A-12-01",
+      "abschnitt": "12",
+      "text": "Die Geschichte ist umgesetzt: Ein liebenswert-gieriger Schweizer König hat allen Käse für das größte Fondue in seine Burg geschafft; Mäuse und Ratten wollen ihn als Ritterarmee zurück.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/story.ts STORYBOOK 'king'/'cheese' (König sammelt allen Käse), Mäuse-Armee in LEVEL_STORY"
+    },
+    {
+      "id": "A-12-02",
+      "abschnitt": "12",
+      "text": "Die elf Gegnerfiguren bleiben Ritter und haben Details bekommen, an denen man die Maus darunter erkennt (Schwanz, Ohren am Helm, Schnurrhaare, Schnauze); eine Überarbeitung, kein Neuzeichnen.",
+      "erledigt": true,
+      "beleg": "Commit 459bbd1: alle Mäuse-/Rattenritter mit Ohren, Schnauze, Schnurrhaaren und Schwanz (src/art/characters/kit.ts), Kostüme bleiben; Yeti, Krähen, Ziege bleiben (GDD.md Z. 13); Bilder docs/screenshots/grosses-update/mice-*.png"
+    },
+    {
+      "id": "A-12-03",
+      "abschnitt": "12",
+      "text": "Yeti, Krähen und ähnliche sind Verbündete, die die Mäuse im Lauf der Geschichte herbeiholen.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/story.ts LEVEL_STORY (Krähen werden Freunde der Mäuse, Yeti schließt sich den Mäusen an)"
+    },
+    {
+      "id": "A-12-04",
+      "abschnitt": "12",
+      "text": "Namen und Tipps sind nur dort angepasst, wo es nötig ist.",
+      "erledigt": true,
+      "beleg": "git diff a9e519c: Gegnernamen in src/config/enemies.ts unverändert; Tipps und Hilfe in src/ui/content.ts nur zu geänderten Regeln (Antippen, Schütteln, Kessel hinten, Kampagne)"
+    },
+    {
+      "id": "A-12-05",
+      "abschnitt": "12",
+      "text": "Der Spieler ist nicht der König und nicht dessen Hand, sondern vom König gerufen; das wird am Anfang nicht erklärt und steht im Storybuch.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/story.ts STORYBOOK (Zauberspruch ruft einen Helfer), Prelude sagt nur 'dear helper'"
+    },
+    {
+      "id": "A-12-06",
+      "abschnitt": "12",
+      "text": "Die Story läuft im Hintergrund und wird nur in kurzen Sätzen angeteasert (König in der Vorrunde, ein Satz pro Level, Einwürfe in der Lobby, Popups neuer Gegner); nie Textwände.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/story.ts: PRELUDE_LINES, LEVEL_STORY ein Satz je Level (höchstens 94 Zeichen), KING_LOBBY_LINES, ENEMY_POPUPS mit ein bis zwei Sätzen; längere Texte nur im freiwilligen STORYBOOK"
+    },
+    {
+      "id": "A-12-07",
+      "abschnitt": "12",
+      "text": "Das Storybuch füllt sich mit dem Fortschritt und erzählt die Geschichte ausführlicher nach.",
+      "erledigt": true,
+      "beleg": "src/ui/lobby/lobby.ts pagesFor(STORYBOOK, done); Test tests/unit/lobby.test.ts 'opens storybook pages with the campaign'"
+    },
+    {
+      "id": "A-12-08",
+      "abschnitt": "12",
+      "text": "Der Bogen über 100 Level bleibt spannend: neue Verbündete, es wird zwischendurch knapp, es gibt Wendungen.",
+      "erledigt": true,
+      "beleg": "story.ts LEVEL_STORY in Akten: Verbündete (Murmeltier im Turm, Krähen, Yeti), Wendungen („read the letter“, „the Yeti almost changed sides“), knappe Lagen („Down to its last firewood“)"
+    },
+    {
+      "id": "A-12-09",
+      "abschnitt": "12",
+      "text": "In Level 100 ist die Armee besiegt, und der König genießt sein Fondue.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/story.ts LEVEL_STORY[99] 'The army is beaten, the fondue is perfect...'"
+    },
+    {
+      "id": "A-12-10",
+      "abschnitt": "12",
+      "text": "Bogen, alle Level-Sätze und Storybuch-Seiten sind selbst geschrieben, mit Humor und Herz, in gutem, einfachem Englisch.",
+      "erledigt": false,
+      "beleg": "Offen: Texte in story.ts (100 Level-Sätze, Storybuch) vorhanden; Humor, Herz und Sprache nur durch Tim und Lenny beurteilbar, Gegenlesen fehlt (A-12-11)"
+    },
+    {
+      "id": "A-12-11",
+      "abschnitt": "12",
+      "text": "Die Story-Texte wurden von einem frischen Subagent gegengelesen.",
+      "erledigt": false,
+      "beleg": "Offen: kein Gegenlesen durch einen frischen Subagent dokumentiert"
+    },
+    {
+      "id": "A-12-12",
+      "abschnitt": "12",
+      "text": "Vorgehalten: ein neuer König in einer anderen Welt nach Level 100, über das Welt-Paket aus 4.2.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/index.ts + types.ts: Welt-Paket je Welt (src/config/worlds/fondue/*), worldById"
+    },
+    {
+      "id": "A-12-13",
+      "abschnitt": "12",
+      "text": "Der Name „Fondue“ bleibt.",
+      "erledigt": true,
+      "beleg": "src/config/game.ts GAME_NAME = 'Fondue'"
+    },
+    {
+      "id": "A-13-01",
+      "abschnitt": "13",
+      "text": "Der Endlos-Modus ist von Anfang an freigeschaltet; ein Wert in der Konfiguration erlaubt, ihn später erst ab einem Level freizugeben.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/endless.ts availableFromLevel: 0; src/modes/endless.ts isAvailable"
+    },
+    {
+      "id": "A-13-02",
+      "abschnitt": "13",
+      "text": "Easy, Medium und Hard bleiben im Endlos-Modus wählbar.",
+      "erledigt": true,
+      "beleg": "src/config/waves.ts DIFFICULTIES easy/medium/hard; src/modes/endless.ts choice.difficulty"
+    },
+    {
+      "id": "A-13-03",
+      "abschnitt": "13",
+      "text": "Die Gegnerzahl eines Endlos-Tages liegt in einer Spanne.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/endless.ts countSpread 0.1; src/modes/endlessPlanner.ts plan (spread)"
+    },
+    {
+      "id": "A-13-04",
+      "abschnitt": "13",
+      "text": "Gegnertypen haben im Endlos-Modus eine Wahrscheinlichkeit, schon früher oder erst später aufzutauchen (Beispiel: Yeti erstmals zwischen Tag 13 und 17, mit etwa 20 % gleich zwei).",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/endless.ts types.firstDay/extraChance (yeti [13,17], 0.2); endlessPlanner.ts endlessRolls"
+    },
+    {
+      "id": "A-13-05",
+      "abschnitt": "13",
+      "text": "Alle Endlos-Spannen und -Wahrscheinlichkeiten stehen in einer Tabelle.",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/endless.ts ENDLESS (eine Tabelle)"
+    },
+    {
+      "id": "A-13-06",
+      "abschnitt": "13",
+      "text": "Der Endlos-Zufall läuft über den festen Zufallsgenerator der Simulation: gleicher Startwert, gleicher Verlauf.",
+      "erledigt": true,
+      "beleg": "src/modes/endlessPlanner.ts endlessRolls über Rng(daySeed(seed,0)), plan nutzt die Tages-Rng; kein eigener Unit-Test"
+    },
+    {
+      "id": "A-13-07",
+      "abschnitt": "13",
+      "text": "Die Endlos-Kurve ist so angelegt, dass sehr gute Spieler mit fünf Stufen deutlich weiter kommen als heute; es gibt kein eingebautes Ende.",
+      "erledigt": true,
+      "beleg": "docs/balance.md Endlos: Great solo Median 48,5 (Classic a9e519c: 38), Abbruch nur bei Tag 70 der Messung; EndlessMode ohne letzten Tag (modes.test.ts „never ends…“)"
+    },
+    {
+      "id": "A-13-08",
+      "abschnitt": "13",
+      "text": "Für gute Endlos-Läufe gibt es Sterne nach einer einfachen, nicht ausnutzbaren Regel (zum Beispiel einmalig für Meilenstein-Tage je Schwierigkeit).",
+      "erledigt": true,
+      "beleg": "src/config/worlds/fondue/endless.ts milestones je Schwierigkeit; src/modes/endless.ts reward claimEndlessMilestone; Test profile.test.ts 'pays every one-time reward only once'"
+    },
+    {
+      "id": "A-13-09",
+      "abschnitt": "13",
+      "text": "Bestenliste und Game-Over bleiben und sind nicht kaputtgegangen.",
+      "erledigt": true,
+      "beleg": "flow.spec.ts „endless: the gate falls, the run ends with its score, scores and back, then play again“; gameover.ts; Lobby-Station „scores“"
+    },
+    {
+      "id": "A-13-10",
+      "abschnitt": "13",
+      "text": "Die Bestenliste ist ins Profil umgezogen und überdauert Updates.",
+      "erledigt": true,
+      "beleg": "src/profile/profile.ts addScore; Tests profile.test.ts 'keeps the leaderboard sorted and at 30 entries', 'takes over name, settings, partial tuning and the leaderboard'"
+    },
+    {
+      "id": "A-14-01",
+      "abschnitt": "14",
+      "text": "Punkt 1: Der Great Cauldron steht endgültig hinten; der Schalter „vorne/hinten“ und die Variante vorne sind entfallen.",
+      "erledigt": true,
+      "beleg": "Tests tests/unit/round.test.ts 'the cauldron switch is gone from the experiment switches', 'there is no pot on the road any more: a raider set down where the front pot stood just lands'"
+    },
+    {
+      "id": "A-14-02",
+      "abschnitt": "14",
+      "text": "Punkt 1: Der Kessel steht im Hintergrund direkt hinter bzw. neben der Burg (kleiner Hügel, Vorbau oder Mini-Turm); Varianten wurden ausprobiert, per Screenshot bewertet und die stimmigste gewählt.",
+      "erledigt": false,
+      "beleg": "Offen: Kessel steht auf einem Hügel hinter der Burg (E-048, WORLD.cauldron in field.ts, art/castle/mound.ts); dass Varianten per Screenshot verglichen wurden, ist nicht belegt"
+    },
+    {
+      "id": "A-14-03",
+      "abschnitt": "14",
+      "text": "Punkt 1: Gegner landen nur im Kessel, wenn sie geworfen werden.",
+      "erledigt": true,
+      "beleg": "Test round.test.ts 'rear: ignores what merely flies past or walks by underneath'"
+    },
+    {
+      "id": "A-14-04",
+      "abschnitt": "14",
+      "text": "Punkt 1: Der Wurf in den Kessel sieht sauber aus und fühlt sich gut an: Flugbahn in die Tiefe, Eintauchen, Käse-Verwandlung, „belegt“-Zustand.",
+      "erledigt": false,
+      "beleg": "Offen: Funktion belegt (keep.spec.ts „a raider melts in the pot behind the keep“, round.test.ts „cooking“/„potBusy“); Aussehen und Gefühl nur durch Spielen beurteilbar"
+    },
+    {
+      "id": "A-14-05",
+      "abschnitt": "14",
+      "text": "Punkt 1: Der Kessel ist ausführlich getestet in allen Burgstufen und Landschaften.",
+      "erledigt": false,
+      "beleg": "Offen: Kessel nicht in allen Burgstufen und Landschaften getestet; Tests laufen mit Holztor in einer Landschaft (look.spec nur mit LOOK=1 und ohne Kesselwurf)"
+    },
+    {
+      "id": "A-14-06",
+      "abschnitt": "14",
+      "text": "Punkt 1: Der Kessel ist auf allen drei Geräten getestet.",
+      "erledigt": true,
+      "beleg": "keep.spec.ts „a keg is shaken loose, a raider melts in the pot behind the keep…“ für Laptop, iPhone 16, OnePlus 8T; CI-Lauf 43164479076 grün"
+    },
+    {
+      "id": "A-14-07",
+      "abschnitt": "14",
+      "text": "Punkt 2: Ein kurzer Tipp lässt das Fass des Keg Haulers nicht mehr fallen; man muss ihn hochheben und mit mehreren Richtungswechseln schütteln, dann fällt das Fass und explodiert unten.",
+      "erledigt": true,
+      "beleg": "src/input/shake.ts ShakeDetector, src/config/enemies.ts BEHAVIOUR.kegShake reversals 4; Tests shake.test.ts 'a quick tap on a Keg Hauler no longer drops the keg', 'a held, armed Keg Hauler loses its keg: it falls straight down'"
+    },
+    {
+      "id": "A-14-08",
+      "abschnitt": "14",
+      "text": "Punkt 2: Hängt der Keg Hauler am Adlerhaken, fällt das Fass herunter und explodiert unten.",
+      "erledigt": true,
+      "beleg": "Test shake.test.ts 'its keg falls off and bursts on the road below, counted as shaken loose'"
+    },
+    {
+      "id": "A-14-09",
+      "abschnitt": "14",
+      "text": "Punkt 2: Die Bombe ist insgesamt etwas schwächer balanciert bzw. nicht mehr ständig mühelos auslösbar.",
+      "erledigt": true,
+      "beleg": "Tests shake.test.ts 'the keg blast is smaller than in the alpha (95 px, 220 damage)', 'a thrown armed Keg Hauler bursts weaker than a loose keg'"
+    },
+    {
+      "id": "A-14-10",
+      "abschnitt": "14",
+      "text": "Punkt 2: Popup, Tipps und Hilfe zum Keg Hauler sind angepasst.",
+      "erledigt": true,
+      "beleg": "story.ts ENEMY_POPUPS bomber („shake it until the keg drops off“), src/ui/content.ts Hilfe „Keg Haulers“ und Tipp „shake it“; E-044"
+    },
+    {
+      "id": "A-14-11",
+      "abschnitt": "14",
+      "text": "Punkt 3: Tötet eine Explosion oder andere Flächenwirkung mehrere Gegner, erscheint für jeden getöteten Gegner seine Goldzahl.",
+      "erledigt": true,
+      "beleg": "src/sim/combat.ts emit death mit gold je Gegner; src/render/scene.ts onDeath floatText '+gold' je Tod"
+    },
+    {
+      "id": "A-14-12",
+      "abschnitt": "14",
+      "text": "Punkt 4: Armbrust und Mörser werden nur noch angetippt (siehe 10.1).",
+      "erledigt": true,
+      "beleg": "Tests weapons.test.ts Roof Bolter 'tier 1: the fan hits a balloonist above and a runner below with one tap' und Gate Mortar 'tier 1: one shell at the raider closest to the gate, not at the crowd'"
+    },
+    {
+      "id": "A-14-13",
+      "abschnitt": "14",
+      "text": "Punkt 5: Die Darstellung am Adlerhaken ist repariert; Krähe und Balloonist hängen stimmig, und der Ballon des Balloonists verschwindet nicht mehr.",
+      "erledigt": true,
+      "beleg": "Commit b0998a0, src/render/enemyView.ts: HOOK_SWING (Pendeln am Haken), HOOK_BALLOON_LIFT, Ballon bleibt bei „hooked“ sichtbar; Krähe flattert"
+    },
+    {
+      "id": "A-14-14",
+      "abschnitt": "14",
+      "text": "Punkt 5: Alle elf Gegner sind am Haken in jeder Lage Bild für Bild geprüft und stimmig und logisch.",
+      "erledigt": false,
+      "beleg": "Offen: nur ein Pothelm am Haken getestet (keep.spec.ts), look.spec nur ein Hängebild; keine Bild-für-Bild-Prüfung aller elf Gegner"
+    },
+    {
+      "id": "A-14-15",
+      "abschnitt": "14",
+      "text": "Punkt 6: Der Adlerhaken kostet 12.000 Gold statt 1.000.",
+      "erledigt": true,
+      "beleg": "src/config/keep.ts STATIONS.perch.gold = 12000"
+    },
+    {
+      "id": "A-14-16",
+      "abschnitt": "14",
+      "text": "Punkt 6: Balance und Bots sind an den neuen Hakenpreis angepasst.",
+      "erledigt": true,
+      "beleg": "docs/balance.md: Messung mit Haken 12.000 Gold (Abschnitt Geänderte Werte, Z. 127); src/bots/shopper.ts kauft „station:perch“ erst spät"
+    },
+    {
+      "id": "A-14-17",
+      "abschnitt": "14",
+      "text": "Punkt 6: Vorgehalten, dass der Haken später etwas Besonderes gibt (zum Beispiel eine eigene Währung).",
+      "erledigt": true,
+      "beleg": "src/config/keep.ts StationDef.tier „Reserved for later upgrades“, E-049; docs/uebergabe/IDEEN.md „Besondere Belohnung am Adlerhaken“"
+    },
+    {
+      "id": "A-14-18",
+      "abschnitt": "14",
+      "text": "Punkt 7: Gewicht der Gegner und Hand-Stufen sind umgesetzt (siehe 10.3).",
+      "erledigt": true,
+      "beleg": "siehe 10.3: src/config/enemies.ts mass, src/config/hand.ts HANDS; tests/unit/weight.test.ts"
+    },
+    {
+      "id": "A-14-19",
+      "abschnitt": "14",
+      "text": "Punkt 8: Der Stomper ist neu gestaltet (siehe 10.1).",
+      "erledigt": true,
+      "beleg": "wie A-10.1-11: weapons.ts stomper neu (Beben, Mehrfachschlag, feste Breite), weapons.test.ts, D-17"
+    },
+    {
+      "id": "A-14-20",
+      "abschnitt": "14",
+      "text": "Punkt 9: Der Markt zeigt Bilder, und höhere Stufen sehen mächtiger aus (siehe 9).",
+      "erledigt": true,
+      "beleg": "src/ui/screens/shop.ts Bilder je Waffe und Stufe (weaponPic), Tor (artUri gate<n>) und Hand; Stufen mächtiger über trimOf in src/art/weapons/index.ts"
+    },
+    {
+      "id": "A-14-21",
+      "abschnitt": "14",
+      "text": "Punkt 10: Join steht rechts, Back links, und der Koop-Raum zeigt die Spielerliste (siehe 7).",
+      "erledigt": true,
+      "beleg": "src/ui/screens/join.ts navRow(Back, Join): Back links, Join rechts; src/ui/screens/roomParts.ts Spielerliste je Platz"
+    },
+    {
+      "id": "A-14-22",
+      "abschnitt": "14",
+      "text": "Punkt 11: Am Touchscreen gibt es keine eigene Hand, die Mitspieler-Hand bleibt (siehe 10.4).",
+      "erledigt": true,
+      "beleg": "src/render/scene.ts drawn = visible && !(isMe && tracker.touch)"
+    },
+    {
+      "id": "A-14-23",
+      "abschnitt": "14",
+      "text": "Punkt 12: Es ist geprüft, ob Issue #1 („Burg/Turm besser in Hinter- und Vordergrund integrieren“) mit der Burg-Arbeit erledigt ist; wenn ja, verweist der Pull Request mit „Fixes #1“ darauf.",
+      "erledigt": false,
+      "beleg": "Offen: Issue #1 nicht geprüft (PROGRESS 04:45 „Issue 1 pruefen“ offen); PR 9 enthält kein „Fixes #1“"
+    },
+    {
+      "id": "A-14-24",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für Schnellspiel („Quick Play“) ist Platz im Modell vorgehalten, und es ist in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "RESERVED_MODES quickPlay in src/modes/index.ts; docs/uebergabe/IDEEN.md Tabelle „Vorgehalten“"
+    },
+    {
+      "id": "A-14-25",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für die Koop-Kampagne ist Platz im Modell vorgehalten, und sie ist in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "RESERVED_MODES coopCampaign, ProfileData.coopCampaign; docs/uebergabe/IDEEN.md"
+    },
+    {
+      "id": "A-14-26",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für Sterne-Bewertung und Challenges ist Platz im Modell vorgehalten, und sie sind in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "RunStats/RunStatsData (src/sim/stats.ts, rules.ts), Regeln in reward der Modi; docs/uebergabe/IDEEN.md"
+    },
+    {
+      "id": "A-14-27",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für weitere Welten ist Platz im Modell vorgehalten, und sie sind in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "WORLDS in src/config/worlds/index.ts, Profil worlds[weltId]; docs/uebergabe/IDEEN.md (nennt die Stellen, die noch fest an Welt 1 hängen)"
+    },
+    {
+      "id": "A-14-28",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für Accounts und Cloud-Speicher ist Platz im Modell vorgehalten, und sie sind in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "ProfileStore (src/profile/store.ts), profileId/updatedAt, Export-Code; docs/uebergabe/IDEEN.md"
+    },
+    {
+      "id": "A-14-29",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für Käufe ist Platz im Modell vorgehalten, und sie sind in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": false,
+      "beleg": "Offen: Eintrag in docs/uebergabe/IDEEN.md vorhanden, aber kein Platz im Modell (dort: „Noch nichts gebaut; hängt an Accounts“)"
+    },
+    {
+      "id": "A-14-30",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für mehr Hände ist Platz im Modell vorgehalten, und sie sind in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "src/config/hand.ts HANDS als Liste, UnlockDef kind „hand“, Hand-Stufen je Spieler als Liste; docs/uebergabe/IDEEN.md „Mehr Hände“"
+    },
+    {
+      "id": "A-14-31",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für Kessel-Upgrades ist Platz im Modell vorgehalten, und sie sind in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "STATIONS[].tier in src/config/keep.ts („Reserved for later upgrades of the site“); docs/uebergabe/IDEEN.md"
+    },
+    {
+      "id": "A-14-32",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für eine besondere Belohnung am Adlerhaken ist Platz im Modell vorgehalten, und sie ist in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "src/config/keep.ts STATIONS.perch.tier (reserviert, E-049); docs/uebergabe/IDEEN.md „Besondere Belohnung am Adlerhaken“"
+    },
+    {
+      "id": "A-14-33",
+      "abschnitt": "14",
+      "text": "Vorhalten: Für drei bis vier Spieler ist Platz im Modell vorgehalten, und es ist in docs/uebergabe/IDEEN.md eingetragen.",
+      "erledigt": true,
+      "beleg": "Listen für Namen, handStart, Hände; Sitzplätze in src/ui/screens/roomParts.ts; docs/uebergabe/IDEEN.md (Netzcode kennt einen Gast)"
+    },
+    {
+      "id": "A-15-01",
+      "abschnitt": "15",
+      "text": "Das ganze Spiel ist nach dem Umbau neu balanciert: fordernd, nie unfair, befriedigend.",
+      "erledigt": false,
+      "beleg": "Offen: neu balanciert (docs/balance.md, Commits a935f43, 3ef9df2), aber „Was noch nicht stimmt“ nennt offene Ziele (Great spät nicht gefordert, Poor steckt bei Level 12-14 fest, Koop zu leicht)"
+    },
+    {
+      "id": "A-15-02",
+      "abschnitt": "15",
+      "text": "Die Bots Poor, Mid und Great können die Kampagne spielen, Waffen in Slots wählen und Sterne sinnvoll ausgeben.",
+      "erledigt": true,
+      "beleg": "src/bots/campaignRunner.ts (Level für Level mit Profil), src/bots/armoury.ts spendStars, src/bots/shopper.ts Slot-Wahl; docs/balance-latest.md Kampagne Poor/Mid/Great"
+    },
+    {
+      "id": "A-15-03",
+      "abschnitt": "15",
+      "text": "Die Bots beherrschen antippbare Waffen, Schütteln, Gewicht und Hand.",
+      "erledigt": true,
+      "beleg": "src/bots/bot.ts useWeapon (press), Schütteln (k:'shake'), strength/throwFactor; docs/balance-latest.md 'Fässer geschüttelt', Hand 3"
+    },
+    {
+      "id": "A-15-04",
+      "abschnitt": "15",
+      "text": "Die Bots nutzen nur dieselben Befehle wie ein Mensch.",
+      "erledigt": true,
+      "beleg": "src/bots/bot.ts nur sim.command (press/release/shake/ready) und sim.setHand"
+    },
+    {
+      "id": "A-15-05",
+      "abschnitt": "15",
+      "text": "Die Bots haben alle 100 Level in Reihenfolge gespielt, mit dem Profil, das sie sich bis dahin erspielt haben.",
+      "erledigt": true,
+      "beleg": "docs/balance-latest.md Kampagne 'Level 1 bis 100 in Reihenfolge mit einem Profil je Zeile'"
+    },
+    {
+      "id": "A-15-06",
+      "abschnitt": "15",
+      "text": "Ein mittlerer Spieler schafft die meisten Level beim ersten oder zweiten Versuch; Boss-Level brauchen spürbar mehr.",
+      "erledigt": false,
+      "beleg": "Offen: Mid schafft 95 von 100 im 1. oder 2. Versuch, aber Boss-Level brauchen kaum mehr Versuche (docs/balance.md „Was noch nicht stimmt“)"
+    },
+    {
+      "id": "A-15-07",
+      "abschnitt": "15",
+      "text": "Ein schwacher Spieler kommt durch die ersten Level und stößt dann an Grenzen, die sich durch Upgrades lösen lassen.",
+      "erledigt": false,
+      "beleg": "Offen: Poor bleibt um Level 12 bis 14 stecken, Upgrades lösen das bei den Bots nicht (docs/balance.md)"
+    },
+    {
+      "id": "A-15-08",
+      "abschnitt": "15",
+      "text": "Ein sehr guter Spieler wird auch spät noch gefordert.",
+      "erledigt": false,
+      "beleg": "Offen: Great gewinnt alle 100 Level im ersten Versuch (docs/balance.md)"
+    },
+    {
+      "id": "A-15-09",
+      "abschnitt": "15",
+      "text": "Kein Level ist unschaffbar oder belanglos.",
+      "erledigt": false,
+      "beleg": "Offen: Mid solo schafft Level 92, 96, 97, 99 nie; ob Level belanglos sind, ist nicht ausgewertet"
+    },
+    {
+      "id": "A-15-10",
+      "abschnitt": "15",
+      "text": "Die Schwierigkeitskurve steigt über 100 Level gleichmäßig mit spürbaren Höhepunkten.",
+      "erledigt": false,
+      "beleg": "Offen: nicht ausgewertet; Boss-Level sind laut docs/balance.md keine spürbaren Höhepunkte bei den Versuchen"
+    },
+    {
+      "id": "A-15-11",
+      "abschnitt": "15",
+      "text": "Stern-Wirtschaft: Freischaltungen und Stufen kommen in einem guten Takt (regelmäßig etwas Neues, nie alles früh fertig, nie lange Durststrecken).",
+      "erledigt": false,
+      "beleg": "Offen: Takt der Freischaltungen und Stufen nicht gemessen (nur Endstand: 28 Sterne übrig, docs/balance.md)"
+    },
+    {
+      "id": "A-15-12",
+      "abschnitt": "15",
+      "text": "Stern-Wirtschaft: Koop und Wiederholungen erlauben kein Farmen.",
+      "erledigt": true,
+      "beleg": "src/config/stars.ts replayShare 0, guestShare einmal je Level (campaign.ts claimGuestStars), claimRun; Test profile.test.ts 'pays every one-time reward only once'"
+    },
+    {
+      "id": "A-15-13",
+      "abschnitt": "15",
+      "text": "Endlos auf Medium: schwacher Bot meist nicht über Tag 8, mittlerer um Tag 24, sehr guter um Tag 40 oder weiter.",
+      "erledigt": false,
+      "beleg": "Offen: Poor 6 und Great 48,5 erreicht, Mid 28,5 statt um 24 (docs/balance.md: „etwas zu leicht, streut stark“)"
+    },
+    {
+      "id": "A-15-14",
+      "abschnitt": "15",
+      "text": "Easy und Hard liegen im Endlos-Modus sinnvoll daneben.",
+      "erledigt": true,
+      "beleg": "docs/balance-latest.md Mid solo Easy Median 34, Medium 28.5, Hard 23"
+    },
+    {
+      "id": "A-15-15",
+      "abschnitt": "15",
+      "text": "Koop ist ähnlich schwer wie solo, eher etwas schwerer, und bietet ab Tag 1 genug zu tun für zwei.",
+      "erledigt": false,
+      "beleg": "Offen: Mid zu zweit im Endlos zu leicht (Median 41 statt 28,5), Kampagne zu zweit etwas leichter (docs/balance.md)"
+    },
+    {
+      "id": "A-15-16",
+      "abschnitt": "15",
+      "text": "Die Ergebnisse streuen: Können, Tempo, Einkauf und Waffeneinsatz entscheiden spürbar.",
+      "erledigt": false,
+      "beleg": "Offen: Streuung nach Können sichtbar (Poor 6, Mid 28,5, Great 48,5), Einfluss von Einkauf und Waffeneinsatz nicht gemessen; Bots nutzen fast nur 5 von 16 Waffen (docs/balance.md)"
+    },
+    {
+      "id": "A-15-17",
+      "abschnitt": "15",
+      "text": "Ziele, Ergebnisse und alle geänderten Werte stehen in docs/balance.md.",
+      "erledigt": true,
+      "beleg": "docs/balance.md: Ziele (Abschnitt 15), Ergebnisse aus balance-latest.md, Tabelle „Geänderte Werte“ alt → neu, „Was noch nicht stimmt“"
+    },
+    {
+      "id": "A-15-18",
+      "abschnitt": "15",
+      "text": "Die Balance-Ergebnisse erscheinen in der Entwickler-Übersicht.",
+      "erledigt": true,
+      "beleg": "scripts/dev-page/page.ts Abschnitt #balance aus docs/balance-latest.md"
+    },
+    {
+      "id": "A-16-01",
+      "abschnitt": "16",
+      "text": "Im echten Spiel wurde mit Playwright gezielt in Situationen gesprungen (bestimmtes Level, bestimmter Tag, bestimmter Besitz), und Screenshots und Bildfolgen wurden geprüft.",
+      "erledigt": true,
+      "beleg": "flow.spec.ts „developer menu: jump to a level and day…“, Besitz per equip()/spawn() (tests/e2e/helpers.ts) in keep.spec und market.spec; Screenshots in mobile-screenshots/ und docs/screenshots am 12.11. auf drei Geräten angesehen"
+    },
+    {
+      "id": "A-16-02",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Tutorial Schritt für Schritt.",
+      "erledigt": true,
+      "beleg": "campaign.spec.ts „first start on a phone: the tutorial teaches the throw…“ (Stufen intro, show, try, praise)"
+    },
+    {
+      "id": "A-16-03",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Zoom in und aus der Burg.",
+      "erledigt": true,
+      "beleg": "smoke.spec.ts und flow.spec.ts „lobby: every station opens its page and Back returns to the hall“; waitForLobby wartet auf das Ende der Kamerafahrt (lobby.moving)"
+    },
+    {
+      "id": "A-16-04",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Lobby.",
+      "erledigt": true,
+      "beleg": "flow.spec.ts „lobby: every station opens its page…“, mobile.spec.ts „the hall and every menu page fit and work by finger“"
+    },
+    {
+      "id": "A-16-05",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Kampagnen-Karte.",
+      "erledigt": true,
+      "beleg": "campaign.spec.ts „campaign map: a level card, a lost level, try again, and back to the map“"
+    },
+    {
+      "id": "A-16-06",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Markt an der Burg.",
+      "erledigt": true,
+      "beleg": "market.spec.ts „build a weapon, upgrade it, the gate, the cauldron and the hand…“ (Laptop, iPhone 16); mobile.spec.ts Markt auf beiden Handys"
+    },
+    {
+      "id": "A-16-07",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: jede Waffe auf jeder Stufe.",
+      "erledigt": false,
+      "beleg": "Offen: im echten Spiel feuern nur fünf Waffen auf Stufe 1 (keep.spec.ts, visual.spec.ts); jede Waffe auf jeder Stufe nur in Unit-Tests (weapons.test.ts)"
+    },
+    {
+      "id": "A-16-08",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Kessel-Wurf.",
+      "erledigt": true,
+      "beleg": "keep.spec.ts „… a raider melts in the pot behind the keep …“; campaign.spec.ts Kesselwurf in Level 1"
+    },
+    {
+      "id": "A-16-09",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Adlerhaken mit jedem Gegner.",
+      "erledigt": false,
+      "beleg": "Offen: nur ein Pothelm am Adlerhaken im echten Spiel (keep.spec.ts)"
+    },
+    {
+      "id": "A-16-10",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Schütteln des Keg Haulers.",
+      "erledigt": true,
+      "beleg": "keep.spec.ts „a keg is shaken loose…“ (Schüttel-Fortschritt, kegsShaken, auf drei Geräten)"
+    },
+    {
+      "id": "A-16-11",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Boss-Level.",
+      "erledigt": false,
+      "beleg": "Offen: kein Browser-Test und keine dokumentierte Sichtprüfung eines Boss-Levels"
+    },
+    {
+      "id": "A-16-12",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Sieg und Niederlage.",
+      "erledigt": true,
+      "beleg": "campaign.spec.ts Level 1 gewonnen (#wonStars, #unlocks) und „a lost level, try again“; flow.spec.ts „the gate falls, the run ends“"
+    },
+    {
+      "id": "A-16-13",
+      "abschnitt": "16",
+      "text": "Im echten Spiel geprüft: Popups.",
+      "erledigt": true,
+      "beleg": "flow.spec.ts „a new raider is introduced by its window…; a tap closes it“"
+    },
+    {
+      "id": "A-16-14",
+      "abschnitt": "16",
+      "text": "Geprüft wurde auf allen drei Geräten (iPhone 16, OnePlus 8T, Laptop), mit Finger und mit Maus; die Screenshots wurden angesehen, nicht nur erzeugt.",
+      "erledigt": true,
+      "beleg": "Sichtprüfung per Screenshots am 12.11.2026 auf iPhone 16, OnePlus 8T und Laptop, eine Korrektur (src/ui/style.css, Tipps unter dem Banner, Commit 539e63b); keep.spec.ts mit Finger und Maus"
+    },
+    {
+      "id": "A-16-15",
+      "abschnitt": "16",
+      "text": "Unabhängige Spieletester (frische Subagents, die den Code nicht geschrieben haben) haben nach jeder großen Etappe gespielt und bewertet: Tutorial-Verständlichkeit, Spielgefühl, Lesbarkeit am Handy, Grafik, Tempo, Fehler.",
+      "erledigt": false,
+      "beleg": "Offen: keine Spieletester-Runden durch frische Subagents dokumentiert"
+    },
+    {
+      "id": "A-16-16",
+      "abschnitt": "16",
+      "text": "Die wichtigen Befunde der Spieletester sind behoben.",
+      "erledigt": false,
+      "beleg": "Offen: folgt aus A-16-15: keine Spieletester-Befunde vorhanden"
+    },
+    {
+      "id": "A-16-17",
+      "abschnitt": "16",
+      "text": "Jedes der 100 Level wurde mindestens durch Bots gespielt.",
+      "erledigt": true,
+      "beleg": "docs/balance-latest.md Kampagne 'Je Level' 1 bis 100 für vier Bot-Zeilen"
+    },
+    {
+      "id": "A-16-18",
+      "abschnitt": "16",
+      "text": "Eine Stichprobe wurde zusätzlich im echten Browser angesehen: mindestens jedes Boss-Level, jedes Level mit neuem Gegner oder Freischaltung, dazu zufällige.",
+      "erledigt": false,
+      "beleg": "Offen: keine Stichprobe von Boss-Leveln und Leveln mit neuem Gegner im echten Browser dokumentiert"
+    },
+    {
+      "id": "A-16-19",
+      "abschnitt": "16",
+      "text": "Koop-Test mit zwei Browsern in Kampagne und Endlos.",
+      "erledigt": true,
+      "beleg": "coop.spec.ts „co-op endless with two browsers“ und „co-op campaign: host and guest win level 1 together“"
+    },
+    {
+      "id": "A-16-20",
+      "abschnitt": "16",
+      "text": "Koop-Test mit ungleichen Bildschirmen.",
+      "erledigt": true,
+      "beleg": "coop.spec.ts „co-op on different window shapes: one shared field…“"
+    },
+    {
+      "id": "A-16-21",
+      "abschnitt": "16",
+      "text": "Koop-Test mit simulierter Latenz.",
+      "erledigt": true,
+      "beleg": "coop.spec.ts Varianten „simulated latency“ (&lat=45&jit=20&loss=0.02); transport.test.ts withLatency"
+    },
+    {
+      "id": "A-16-22",
+      "abschnitt": "16",
+      "text": "Koop-Test: Wiedereinstieg.",
+      "erledigt": true,
+      "beleg": "coop.spec.ts „co-op endless: a guest who drops out pauses the game and rejoins“ (mit und ohne Latenz)"
+    },
+    {
+      "id": "A-16-23",
+      "abschnitt": "16",
+      "text": "Koop-Test: Belohnung für beide.",
+      "erledigt": true,
+      "beleg": "coop.spec.ts „co-op campaign: … each gets a reward“; modes.test.ts „a co-op guest gets a share of the stars once per level“"
+    },
+    {
+      "id": "A-16-24",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Profil und Migration.",
+      "erledigt": true,
+      "beleg": "tests/unit/profile.test.ts und tests/unit/profile-data.test.ts describe 'migrate' (u. a. 'has exactly one step per version jump')"
+    },
+    {
+      "id": "A-16-25",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Modi.",
+      "erledigt": true,
+      "beleg": "tests/unit/modes.test.ts (TutorialMode, CampaignMode, EndlessMode)"
+    },
+    {
+      "id": "A-16-26",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Level-Erzeugung.",
+      "erledigt": true,
+      "beleg": "tests/unit/levels.test.ts (100 Level, fest, erste Level je Gegner, Boss jedes zehnte, Twists); campaignTable.test.ts"
+    },
+    {
+      "id": "A-16-27",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Freischaltungen.",
+      "erledigt": true,
+      "beleg": "tests/unit/levels.test.ts „a fresh profile has only what no win is needed for“, „gives what the won levels bring…“, „brings an old profile up to date“"
+    },
+    {
+      "id": "A-16-28",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Sterne.",
+      "erledigt": true,
+      "beleg": "tests/unit/profile.test.ts 'adds and spends stars', 'refuses to spend more stars than there are', 'pays every one-time reward only once'"
+    },
+    {
+      "id": "A-16-29",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Waffenstufen.",
+      "erledigt": true,
+      "beleg": "tests/unit/weapons.test.ts 'tier N is never weaker than tier N-1, and its reload is never longer' und Stufen-Tests je Waffe"
+    },
+    {
+      "id": "A-16-30",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Gewicht und Hand.",
+      "erledigt": true,
+      "beleg": "tests/unit/weight.test.ts (z. B. 'every hand tier throws a heavy raider further')"
+    },
+    {
+      "id": "A-16-31",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Schütteln.",
+      "erledigt": true,
+      "beleg": "tests/unit/shake.test.ts describe 'shaking a Keg Hauler' (Kommando-Ebene; ShakeDetector selbst ohne Test)"
+    },
+    {
+      "id": "A-16-32",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Endlos-Zufall (Spannen und Verteilung).",
+      "erledigt": true,
+      "beleg": "tests/unit/endlessRandom.test.ts „every raider first appears inside its window…“, „the Yeti brings an extra one about as often as the table says“"
+    },
+    {
+      "id": "A-16-33",
+      "abschnitt": "16",
+      "text": "Unit-Tests für den Sieg-Zustand.",
+      "erledigt": true,
+      "beleg": "tests/unit/runEnd.test.ts „surviving the last day ends the run as won, with a result“"
+    },
+    {
+      "id": "A-16-34",
+      "abschnitt": "16",
+      "text": "Unit-Tests für Statistik.",
+      "erledigt": true,
+      "beleg": "tests/unit/runEnd.test.ts „a thrown kill counts as a throw, a kill of its type and cause…“, „weapon shots are counted per weapon…“"
+    },
+    {
+      "id": "A-16-35",
+      "abschnitt": "16",
+      "text": "Leistung: flüssig auf Handy-Größe mit vielen Gegnern.",
+      "erledigt": false,
+      "beleg": "Offen: docs/perf-latest.json 57,7 fps mit 200 Gegnern, aber gemessen in 1280 × 720 (playwright.perf.config.ts), nicht in Handy-Größe"
+    },
+    {
+      "id": "A-16-36",
+      "abschnitt": "16",
+      "text": "Leistung: Der Start ist nicht langsamer als heute.",
+      "erledigt": false,
+      "beleg": "Offen: Startzeit wurde nicht gemessen und nicht mit dem Alpha verglichen"
+    },
+    {
+      "id": "A-16-37",
+      "abschnitt": "16",
+      "text": "Kein Test wurde abgeschwächt oder gelöscht, um ihn grün zu bekommen.",
+      "erledigt": false,
+      "beleg": "Offen: nicht vollständig belegbar: nur tests/balance/harness.ts gelöscht (ersetzt durch src/bots); Stichprobe der entfernten Unit-Tests in sim.test.ts/round.test.ts fand Ersatz, eine vollständige Prüfung fehlt"
+    },
+    {
+      "id": "A-16-38",
+      "abschnitt": "16",
+      "text": "Tests zu bewusst geänderten Regeln (Zielgeste, Kessel vorne, Fass per Tipp, drei Stufen, Geräteliste) sind durch Tests der neuen Regel ersetzt.",
+      "erledigt": true,
+      "beleg": "PROGRESS „Ersetzte Tests“: Zielgeste -> keep.spec Antippen; Kessel vorne -> keep.spec Kessel hinten; Fass per Tipp -> shake.test.ts „a quick tap on a Keg Hauler no longer drops the keg“; fünf Stufen weapons.test.ts; Geräteliste -> helpers.ts DEVICES"
+    },
+    {
+      "id": "A-16-39",
+      "abschnitt": "16",
+      "text": "docs/PROGRESS-GROSSES-UPDATE.md enthält eine Liste, welcher Test warum ersetzt wurde.",
+      "erledigt": true,
+      "beleg": "docs/PROGRESS-GROSSES-UPDATE.md, Abschnitt „Ersetzte Unit-Tests (sim.test.ts, round.test.ts)“: alle 33 seit a9e519c entfernten it-Titel mit Ersatz oder „kein Ersatz, Regel entfällt laut Auftrag Abschnitt 10.1“; fehlende Markt-Tests neu in tests/unit/shop.test.ts (11 Tests)"
+    },
+    {
+      "id": "A-16-40",
+      "abschnitt": "16",
+      "text": "Die Pipeline auf GitHub prüft nur noch die drei Geräte.",
+      "erledigt": true,
+      "beleg": ".github/workflows/ci.yml npx playwright test ohne ALL_SCREENS, also DEVICES = Laptop, iPhone 16, OnePlus 8T (tests/e2e/helpers.ts)"
+    },
+    {
+      "id": "A-16-41",
+      "abschnitt": "16",
+      "text": "Tests bekommen auf GitHub mehr Zeit und warten auf Zustände statt auf feste Zeiten.",
+      "erledigt": true,
+      "beleg": "playwright.config.ts timeout CI 420 s, actionTimeout 45 s; tests/e2e/helpers.ts GAME_WAIT, waitGame/gameClock (Spielzeit statt Uhrzeit, Commit 6d14d02)"
+    },
+    {
+      "id": "A-16-42",
+      "abschnitt": "16",
+      "text": "Die Pflichtprüfung ist schlank und stabil; lange Läufe (alle 100 Level, Balance) laufen lokal und nicht in der Pflichtprüfung.",
+      "erledigt": true,
+      "beleg": "ci.yml: tsc, vitest (nur tests/unit), ein Build, vier Browser-Teile; Balance nur mit BALANCE=1 (vitest.config.ts), Leistung nur mit playwright.perf.config.ts"
+    },
+    {
+      "id": "A-16-43",
+      "abschnitt": "16",
+      "text": "Scheiterte die Prüfung auf GitHub trotz lokal grüner Tests, wurde die Ursache gefunden, Pipeline oder Test stabil gemacht und erneut geprüft.",
+      "erledigt": true,
+      "beleg": "PROGRESS 04:45 und 07:10: Ursache langsame Spieluhr auf GitHub, Tests auf Spielzeit umgestellt (Commit 6d14d02), danach Lauf 43164479076 grün"
+    },
+    {
+      "id": "A-16-44",
+      "abschnitt": "16",
+      "text": "Der Abschlussbericht erklärt Tim in einfachen Worten, was die Prüfung test ist und was daran geändert wurde.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.1-01",
+      "abschnitt": "17.1",
+      "text": "Lokal grün: npx tsc --noEmit.",
+      "erledigt": true,
+      "beleg": "npx tsc --noEmit am 12.11.2026 07:23 lokal ohne Fehler (Stand 539e63b); auch im CI-Schritt unit grün"
+    },
+    {
+      "id": "A-17.1-02",
+      "abschnitt": "17.1",
+      "text": "Lokal grün: npm test.",
+      "erledigt": true,
+      "beleg": "npx vitest run tests/unit: 18 Dateien, 339 Tests grün (2026-11-12)"
+    },
+    {
+      "id": "A-17.1-03",
+      "abschnitt": "17.1",
+      "text": "Lokal grün: npm run test:e2e.",
+      "erledigt": false,
+      "beleg": "Offen: voller lokaler Lauf nur vor Commit 6d14d02 belegt (PROGRESS 04:45: 47 bestanden, 4 übersprungen); danach lokal nur eine Teilmenge (26), voller Lauf nur auf GitHub (43164479076)"
+    },
+    {
+      "id": "A-17.1-04",
+      "abschnitt": "17.1",
+      "text": "Der Balance-Lauf ist lokal durchgelaufen.",
+      "erledigt": true,
+      "beleg": "docs/balance-latest.md 'Automatisch erzeugt von npm run balance am 2026-11-12 00:23'"
+    },
+    {
+      "id": "A-17.1-05",
+      "abschnitt": "17.1",
+      "text": "Der Leistungstest ist lokal durchgelaufen.",
+      "erledigt": true,
+      "beleg": "docs/perf-latest.json: 57,7 fps im Schnitt mit 200 Gegnern (playwright.perf.config.ts, Commit 539e63b)"
+    },
+    {
+      "id": "A-17.2-01",
+      "abschnitt": "17.2",
+      "text": "AGENTS.md ist aktuell (neue Regeln, drei Geräte, Begriffe).",
+      "erledigt": true,
+      "beleg": "AGENTS.md: drei Geräte, Classic, Befehle und neuer Abschnitt „Begriffe“ (Welt, Level, Tag, Stufe/Upgrade, Slot, Sterne, Gold/Offerings) mit Verweis auf Auftrag und docs/GDD.md"
+    },
+    {
+      "id": "A-17.2-02",
+      "abschnitt": "17.2",
+      "text": "docs/HANDBUCH.md ist aktuell (neuer Aufbau, „Wo liegt was“).",
+      "erledigt": true,
+      "beleg": "docs/HANDBUCH.md neu: Aufbau, „Wo liegt was“, Befehle, Adress-Schalter, Fallen, Stimmigkeits-Check, Weg zum Store"
+    },
+    {
+      "id": "A-17.2-03",
+      "abschnitt": "17.2",
+      "text": "docs/HANDBUCH.md enthält Rezepte für: neues Level, neue Waffe, neue Stufe, neuer Gegner, neue Welt, neue Freischaltung, Grafik austauschen.",
+      "erledigt": true,
+      "beleg": "docs/HANDBUCH.md Abschnitt 5: Level ändern, neues Level, neue Freischaltung, neue Waffe, Stufe ändern, neuer Gegner, neue Welt, Grafik austauschen"
+    },
+    {
+      "id": "A-17.2-04",
+      "abschnitt": "17.2",
+      "text": "docs/ARCHITEKTUR.md ist aktuell.",
+      "erledigt": true,
+      "beleg": "docs/ARCHITEKTUR.md an den Code angeglichen (12.11.2026): Modi-Schnittstelle, LevelDef, RunRules, Bildschirme, Lobby, Tutorial, Markt"
+    },
+    {
+      "id": "A-17.2-05",
+      "abschnitt": "17.2",
+      "text": "docs/GDD.md ist aktuell.",
+      "erledigt": true,
+      "beleg": "docs/GDD.md neu, Zahlen aus src/config und Verweise auf KAMPAGNE-TABELLE und /dev/"
+    },
+    {
+      "id": "A-17.2-06",
+      "abschnitt": "17.2",
+      "text": "docs/ENTSCHEIDUNGEN.md ist aktuell (ab E-032, jede nicht offensichtliche Entscheidung mit Begründung).",
+      "erledigt": true,
+      "beleg": "docs/ENTSCHEIDUNGEN.md E-032 bis E-061"
+    },
+    {
+      "id": "A-17.2-07",
+      "abschnitt": "17.2",
+      "text": "docs/balance.md ist aktuell.",
+      "erledigt": true,
+      "beleg": "docs/balance.md neu (Stand Commit a935f43)"
+    },
+    {
+      "id": "A-17.2-08",
+      "abschnitt": "17.2",
+      "text": "docs/OFFENE-ENTSCHEIDUNGEN.md ist aktuell.",
+      "erledigt": true,
+      "beleg": "docs/OFFENE-ENTSCHEIDUNGEN.md: Stand für D-02 und D-06 nachgetragen, D-09 bis D-18 ergänzt"
+    },
+    {
+      "id": "A-17.2-09",
+      "abschnitt": "17.2",
+      "text": "docs/GRAFIK-AUSTAUSCHEN.md ist aktuell.",
+      "erledigt": true,
+      "beleg": "tests/unit/assets.test.ts „docs/GRAFIK-AUSTAUSCHEN.md lists the assets as they are now“, npm test am 12.11. 07:23 grün (390 Tests)"
+    },
+    {
+      "id": "A-17.2-10",
+      "abschnitt": "17.2",
+      "text": "docs/uebergabe/IDEEN.md ist aktuell.",
+      "erledigt": true,
+      "beleg": "docs/uebergabe/IDEEN.md: Tabelle „Vorgehalten im großen Update“ mit Stelle im Modell je Idee"
+    },
+    {
+      "id": "A-17.2-11",
+      "abschnitt": "17.2",
+      "text": "Die Abnahmeliste ist aktuell.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.3-01",
+      "abschnitt": "17.3",
+      "text": "Es gibt einen Pull Request gegen main, und die Prüfung test ist grün.",
+      "erledigt": true,
+      "beleg": "PR 9 (feature/grosses-update nach main); Prüfung test grün in Lauf 43164479076 auf 6d14d02 (unit und vier Browser-Teile); Lauf für 539e63b lief bei Eintrag noch"
+    },
+    {
+      "id": "A-17.3-02",
+      "abschnitt": "17.3",
+      "text": "Der Pull Request wurde selbst gemergt und das Update veröffentlicht.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.4-01",
+      "abschnitt": "17.4",
+      "text": "Nach dem Merge geprüft: Die Live-Seite lädt und zeigt das Update.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.4-02",
+      "abschnitt": "17.4",
+      "text": "Nach dem Merge geprüft: Der erste Start führt ins Tutorial.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.4-03",
+      "abschnitt": "17.4",
+      "text": "Nach dem Merge geprüft: /classic/ ist weiter spielbar.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.4-04",
+      "abschnitt": "17.4",
+      "text": "Nach dem Merge geprüft: /dev/ zeigt die Übersicht.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.4-05",
+      "abschnitt": "17.4",
+      "text": "Für die Android-Testapp ist geprüft, ob ein neuer Bau nötig ist.",
+      "erledigt": false,
+      "beleg": "Offen: noch nicht geprüft (PROGRESS 04:45 „Android-App pruefen“); android.yml baut nur bei Änderungen an capacitor.config.ts und android-setup"
+    },
+    {
+      "id": "A-17.5-01",
+      "abschnitt": "17.5",
+      "text": "Die Worktrees sind aufgeräumt.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-01",
+      "abschnitt": "17.6",
+      "text": "Der Abschlussbericht liegt als docs/ABSCHLUSS-GROSSES-UPDATE.md vor und wurde als letzte Nachricht im Chat gegeben, auf Deutsch, kurz und verständlich.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-02",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: was gebaut wurde und was nicht.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-03",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: die drei Links (Spiel, Classic, Entwickler-Übersicht).",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-04",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: wie man das Entwickler-Menü am Handy öffnet.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-05",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: die neue Struktur in wenigen Sätzen, für jemanden mit leichten Programmierkenntnissen.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-06",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: Balance-Ergebnisse für Kampagne und Endlos.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-07",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: die Liste der Entscheidungen, die Tim und Lenny jetzt treffen sollen.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-08",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: was nur Menschen beurteilen können und gezielt getestet werden sollte (Tutorial-Verständlichkeit, Wurfgefühl mit Gewicht, Antipp-Waffen, Kessel hinten, Markt an der Burg, echte Handys, Safari).",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-09",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: offene Punkte, ehrlich benannt.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-10",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: wie man auf den alten Stand zurückrollt.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-11",
+      "abschnitt": "17.6",
+      "text": "Abschlussbericht nennt: benötigte Zeit.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    },
+    {
+      "id": "A-17.6-12",
+      "abschnitt": "17.6",
+      "text": "Was am Ende nicht fertig ist, steht offen im Bericht.",
+      "erledigt": false,
+      "beleg": "Offen: folgt beim Abschluss"
+    }
+  ]
+}

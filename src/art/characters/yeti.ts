@@ -1,3 +1,5 @@
+// The Yeti as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { crescent, glint, lit, paint, r1, rng, stroke, tone, within } from '../shade';
 import { INK, PAL, oval, part } from './kit';

@@ -11,6 +11,11 @@ export interface Art {
   /** Rotation pivot in art pixels, measured from the top-left. */
   px: number;
   py: number;
+  /**
+   * URL of an image file (PNG, WebP) shown instead of the SVG. It is drawn into the same box
+   * (`w` x `h`), and the pivot stays the same. Set through `src/config/assets.ts`, not by hand.
+   */
+  image?: string;
 }
 
 export type Anim =

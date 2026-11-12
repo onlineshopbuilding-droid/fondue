@@ -13,13 +13,6 @@ export interface FlagDef {
 
 export const FLAG_DEFS: FlagDef[] = [
   {
-    id: 'cauldron',
-    label: 'Great Cauldron',
-    hint: 'In front stands on the road. Behind hangs on the keep and catches what you throw at it.',
-    options: [{ value: 'front', label: 'In front' }, { value: 'back', label: 'Behind' }],
-    value: 'front',
-  },
-  {
     id: 'dayEnd',
     label: 'End of day',
     hint: 'Fight on keeps raiders on the field until they are dead. Retreat is the old rule.',

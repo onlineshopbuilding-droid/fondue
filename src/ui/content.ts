@@ -6,45 +6,41 @@ export interface HelpSlide {
 }
 
 export const HELP_SLIDES: HelpSlide[] = [
-  { title: 'You are the hand', icon: 'handOpen', text: 'The raiders come down the road toward your gate. Reach in with your mouse or finger. No hero, no army, just your hand.' },
-  { title: 'Grab and fling', icon: 'handClosed', text: 'Press on a raider to grab it. Swipe fast and let go to throw it. It dies when it lands hard, so a good flick skyward is enough.' },
-  { title: 'Drop', icon: 'dust', text: 'Lift a raider well above the road and simply let go. A short drop only dazes it for a second.' },
-  { title: 'Offerings', icon: 'cauldronBack', text: 'Gold buys upgrades at the Market between days. Throw raiders into the Great Cauldron and they melt into cheese, or fling them onto the Eagle Perch in the top right. Each one earns an offering, which the best upgrades cost.' },
-  { title: 'Your keep', icon: 'iconCastle', text: 'Every weapon you buy is built into the keep, and every new gate makes the whole keep grow. A ring around a weapon shows it reloading. When the ring is gone, it is ready.' },
-  { title: 'Wheels and Stompers', icon: 'iconStomper', text: 'Tap the Wheel at the foot of the wall and it rolls at once. Tap the Stomper on the wall, then tap where it should land.' },
-  { title: 'Comets', icon: 'iconComet', text: 'Tap the shrine on the keep, then tap the spot on the road. The comet falls from the sky right there.' },
-  { title: 'Aiming', icon: 'iconFrost', text: 'Crossbow and Gate Arms work like a sling. Press on the weapon, pull away from it towards the raiders, and let go. The dotted line shows where it goes. Pull further to shoot further, or move back to the weapon to cancel.' },
-  { title: 'Know your enemy', icon: 'iconCastle', text: 'Tap Keg Haulers quickly to make them drop the keg. Tap Siege Carts again and again. Hexers are untouchable while their bubble is up. A Yeti needs two hands.' },
+  { title: 'Hold the gate', icon: 'king', text: 'The mice and rats of the valley want the King\'s cheese back. Their knights march down the road toward his gate. Reach in with your finger and stop them.' },
+  { title: 'Grab and fling', icon: 'handClosed', text: 'Touch a raider to grab it. Swipe up fast and let go to throw it. It is beaten when it lands hard, so a quick flick skyward is enough.' },
+  { title: 'Heavy raiders', icon: 'dust', text: 'Heavy raiders fly shorter for the same swipe. A Yeti needs two players lifting together, or a hand of tier 3. Lift a raider high and just let go: the fall does the rest.' },
+  { title: 'Keg Haulers', icon: 'bomb', text: 'Lift a Keg Hauler and shake it a few times. The keg comes loose, falls and bursts on the raiders below.' },
+  { title: 'Offerings', icon: 'cauldronBack', text: 'Between days the market opens at the keep: tap a place on it to buy there with gold. Throw raiders into the Great Cauldron behind the keep and they melt into cheese, or fling them onto the Eagle Perch in the top right. Each one pays an offering.' },
+  { title: 'Weapons', icon: 'iconCastle', text: 'Weapons sit in five slots on the keep. Just tap a weapon to fire it; it picks its own target. A ring shows it reloading. When the ring is gone, it is ready.' },
+  { title: 'Campaign', icon: 'iconComet', text: 'One hundred levels, each a few days long. Every level starts fresh with an oak gate and empty slots. Win the last day to earn stars and unlock new weapons and slots.' },
+  { title: 'Stars and the armoury', icon: 'star', text: 'Spend stars in the armoury. Weapon tiers and a stronger hand stay with you for every later level. In a level you only buy the weapon into its slot.' },
+  { title: 'Endless', icon: 'iconStomper', text: 'No last day. Every weapon starts on tier 1 and you upgrade it with gold and offerings along the way. How long can you hold?' },
+  { title: 'Know your enemy', icon: 'iconFrost', text: 'Tap Siege Carts again and again. Hexers are untouchable while their bubble is up. Every new raider is explained the first time it shows up.' },
 ];
 
-/** Shown once when a weapon first stands on the keep. */
-export const WEAPON_TIPS: Record<string, string> = {
-  wheel: 'Your Wheel waits at the foot of the wall. Tap it and it rolls.',
-  stomper: 'Tap the Stomper on the wall, then tap where it should land.',
-  comet: 'Tap the shrine on the keep, then tap the road to call the comet.',
-  bolter: 'Press the crossbow on the tower, pull towards the raiders and let go.',
-  horn: 'Press the weapon over the gate, pull away from it and let go.',
-};
-
-/** Shown once when the cauldron or the hook has been bought. */
+/** Shown once per profile when the cauldron or the hook first stands on the keep. */
 export const STATION_TIPS: Record<string, string> = {
-  cauldronfront: 'Throw raiders into the Great Cauldron. It melts one at a time into cheese, for an offering.',
-  cauldronback: 'The Great Cauldron hangs on the keep. Carry or throw raiders at it and it pulls them in.',
+  cauldron: 'The Great Cauldron stands behind the keep. Throw raiders into it: each one melts into cheese for an offering.',
   perch: 'Fling a raider onto the hook in the top right, or carry it there. The eagle pays an offering.',
 };
+
+/** Shown once per profile when a weapon first stands in a slot. */
+export const weaponTip = (name: string) => `${name} is on the keep. Just tap it to fire.`;
+
+/** Shown once per profile at the start of the first fight. */
+export const FIRST_FIGHT_TIP = 'Hold the gate until the sun has set and the last raider is gone. Gold buys things in the market between days.';
 
 export const LOADING_TIPS: string[] = [
   'A flick does not need to be big. It needs to be quick.',
   'When the sun sets no more raiders come, but the ones on the road fight to the end.',
   'The cauldron can only melt one raider at a time.',
-  'Offerings early on pay for the great upgrades later.',
+  'Offerings early on pay for the great things later.',
   'A bomb in the air can be caught and thrown back.',
-  'Throw a Keg Hauler into a crowd and watch.',
+  'Lift a Keg Hauler over a crowd and shake it: the keg falls and bursts below.',
   'Frozen raiders can be picked up too.',
   'Weapons recharge for everyone at once. Agree who fires.',
-  'Pull a crossbow further and its bolts fly faster and hit harder.',
-  'Mortar shells fly high and land late. Aim ahead of fast raiders.',
-  'Weapons recharge on their own. Use them often.',
+  'Heavy raiders fly shorter. A stronger hand from the armoury helps.',
+  'Weapons recharge on their own. Tap them often.',
 ];
 
 export const CREDITS_HTML = `

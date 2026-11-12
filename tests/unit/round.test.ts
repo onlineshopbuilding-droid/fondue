@@ -1,42 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { ENEMIES } from '../../src/config/enemies';
 import { FLAG_DEFS, cleanFlags, defaultFlags } from '../../src/config/flags';
 import { QUICK_STARTS } from '../../src/config/quickstart';
-import { AIM, PERCH, SHOP_ITEMS, type WeaponSlot } from '../../src/config/shop';
-import { TUNING_DEFAULT } from '../../src/config/tuning';
+import { GATES, PERCH } from '../../src/config/keep';
+import { SLOTS } from '../../src/config/slots';
 import { DAY } from '../../src/config/waves';
-import { FIELD, WORLD, fieldEntry, fieldForAspect, fieldSpeedFactor, fieldWall, perchX } from '../../src/config/world';
+import { MAX_TIER, weaponById } from '../../src/config/weapons';
+import { FIELD, WORLD, fieldEntry, fieldForAspect, fieldSpeedFactor, fieldWall, perchX } from '../../src/config/field';
 import { decodeSnapshot, encodeSnapshot } from '../../src/net/snapshot';
-import { buildTier, ownsSlot } from '../../src/sim/keep';
+import { ENDLESS } from '../../src/modes';
 import { PROPS } from '../../src/art/props';
-import { aimShot, pointerFor, pullStrength, slotAt } from '../../src/sim/aim';
+import { slotAt } from '../../src/sim/slots';
 import { Sim } from '../../src/sim/sim';
-import type { Enemy, SimEvent, SimOptions } from '../../src/sim/types';
+import type { SimEvent } from '../../src/sim/types';
+import { PROFILE, arm, battleSim, carryTo, fire, type SimOpts } from './helpers';
 
-function battle(over: Partial<SimOptions> = {}) {
-  const sim = new Sim({ seed: 42, difficulty: 'medium', names: ['A'], tuning: { ...TUNING_DEFAULT }, ...over });
-  while (sim.s.phase === 'banner') sim.step();
-  sim.s.spawnQueue = [];
-  sim.drainEvents();
-  return sim;
-}
+const battle = (o: SimOpts = {}) => battleSim(o);
 
 function run(sim: Sim, cond: () => boolean, max = 2000): SimEvent[] {
   const out: SimEvent[] = [];
   for (let i = 0; i < max && !cond(); i++) { sim.step(); out.push(...sim.drainEvents()); }
   return out;
 }
-
-function carryTo(sim: Sim, e: Enemy, x: number, y: number, vx = 0, vy = 0, p = 0) {
-  const gy = e.y - ENEMIES[e.type].height * 0.5;
-  sim.setHand(p, e.x, gy);
-  sim.command({ k: 'press', p, x: e.x, y: gy });
-  sim.setHand(p, x, y);
-  sim.step();
-  sim.command({ k: 'release', p, x, y, vx, vy });
-}
-
-const pressSlot = (sim: Sim, slot: WeaponSlot, p = 0) => sim.command({ k: 'pressSlot', p, slot, x: WORLD.slots[slot].x, y: WORLD.slots[slot].y });
 
 describe('end of the day', () => {
   it('stops new arrivals at nightfall and keeps the field fighting', () => {
@@ -76,10 +60,10 @@ describe('end of the day', () => {
 
   it('a raider being melted or eaten counts as still there, and then pays out', () => {
     const sim = battle();
-    sim.s.meta.owned.push('cauldron');
+    sim.loadout.stations.cauldron = true;
     const e = sim.spawnEnemy('grunt', 700);
     sim.s.dayT = DAY.seconds + 1;
-    carryTo(sim, e, WORLD.cauldron.x, 300);
+    carryTo(sim, e, WORLD.cauldron.x, WORLD.cauldron.rimY + 40);
     run(sim, () => e.st === 'cooking', 200);
     sim.step();
     expect(sim.s.phase).toBe('battle');
@@ -98,67 +82,63 @@ describe('end of the day', () => {
 });
 
 describe('cauldron', () => {
-  for (const variant of ['front', 'back'] as const) {
-    const drop = (sim: Sim, e: Enemy) => {
-      if (variant === 'front') carryTo(sim, e, WORLD.cauldron.x, 300);
-      else carryTo(sim, e, WORLD.cauldronBack.x, WORLD.cauldronBack.rimY + 40);
-    };
-    const pot = () => battle({ flags: { cauldron: variant } });
+  // The pot on the road ("front") is gone; these were the "back" variants of a front/back pair.
+  const drop = (sim: Sim, e: Parameters<typeof carryTo>[1]) => carryTo(sim, e, WORLD.cauldron.x, WORLD.cauldron.rimY + 40);
+  const pot = () => battle();
 
-    it(`${variant}: melts one raider at a time, pays after the melt, frees up at once`, () => {
-      const sim = pot();
-      sim.s.meta.owned.push('cauldron');
-      const a = sim.spawnEnemy('grunt', 700);
-      const b = sim.spawnEnemy('grunt', 760);
-      drop(sim, a);
-      const seen = [...sim.drainEvents(), ...run(sim, () => a.st === 'cooking', 200)];
-      expect(seen.some((x) => x.e === 'splash')).toBe(true);
-      expect(sim.s.potBusy).toBeGreaterThan(0);
-      expect(sim.s.offerings).toBe(0);
+  it('melts one raider at a time, pays after the melt, frees up at once', () => {
+    const sim = pot();
+    sim.loadout.stations.cauldron = true;
+    const a = sim.spawnEnemy('grunt', 700);
+    const b = sim.spawnEnemy('grunt', 760);
+    drop(sim, a);
+    const seen = [...sim.drainEvents(), ...run(sim, () => a.st === 'cooking', 200)];
+    expect(seen.some((x) => x.e === 'splash')).toBe(true);
+    expect(sim.s.potBusy).toBeGreaterThan(0);
+    expect(sim.s.offerings).toBe(0);
 
-      // A second raider finds the pot taken while the first one melts.
-      drop(sim, b);
-      expect(b.st).not.toBe('cooking');
-      for (let i = 0; i < 10; i++) { sim.step(); seen.push(...sim.drainEvents()); expect(b.st).not.toBe('cooking'); }
+    // A second raider finds the pot taken while the first one melts.
+    drop(sim, b);
+    expect(b.st).not.toBe('cooking');
+    for (let i = 0; i < 10; i++) { sim.step(); seen.push(...sim.drainEvents()); expect(b.st).not.toBe('cooking'); }
 
-      seen.push(...run(sim, () => a.dead, 200));
-      expect(seen.some((x) => x.e === 'cheese')).toBe(true);
-      expect(seen.some((x) => x.e === 'death' && x.cause === 'cauldron')).toBe(true);
-      expect(sim.s.offerings).toBe(1);
-      expect(sim.s.potBusy).toBe(0);
-    });
+    seen.push(...run(sim, () => a.dead, 200));
+    expect(seen.some((x) => x.e === 'cheese')).toBe(true);
+    expect(seen.some((x) => x.e === 'death' && x.cause === 'cauldron')).toBe(true);
+    expect(sim.s.offerings).toBe(1);
+    expect(sim.s.potBusy).toBe(0);
+  });
 
-    it(`${variant}: a raider in the pot cannot be grabbed or blown up`, () => {
-      const sim = pot();
-      sim.s.meta.owned.push('cauldron');
-      const a = sim.spawnEnemy('grunt', 700);
-      drop(sim, a);
-      run(sim, () => a.st === 'cooking', 200);
-      sim.setHand(0, a.x, a.y - 20);
-      sim.command({ k: 'press', p: 0, x: a.x, y: a.y - 20 });
-      expect(a.heldBy).toEqual([]);
-      (sim as unknown as { blast(x: number, y: number, r: number, d: number, p: number): void }).blast(a.x, a.y, 200, 9999, -1);
-      expect(a.dead).toBe(false);
-    });
+  it('a raider in the pot cannot be grabbed or blown up', () => {
+    const sim = pot();
+    sim.loadout.stations.cauldron = true;
+    const a = sim.spawnEnemy('grunt', 700);
+    drop(sim, a);
+    run(sim, () => a.st === 'cooking', 200);
+    sim.setHand(0, a.x, a.y - 20);
+    sim.command({ k: 'press', p: 0, x: a.x, y: a.y - 20 });
+    expect(a.heldBy).toEqual([]);
+    sim.blast(a.x, a.y, 200, 9999, -1);
+    expect(a.dead).toBe(false);
+  });
 
-    it(`${variant}: the melt time comes from the tuning panel`, () => {
-      const sim = pot();
-      sim.setTuning({ ...sim.tuning, cauldronSeconds: 0.5 });
-      sim.s.meta.owned.push('cauldron');
-      const a = sim.spawnEnemy('grunt', 700);
-      drop(sim, a);
-      run(sim, () => a.st === 'cooking', 200);
-      let ticks = 0;
-      while (!a.dead && ticks < 300) { sim.step(); ticks++; }
-      expect(ticks / 60).toBeCloseTo(0.5, 1);
-    });
-  }
+  it('the melt time comes from the tuning panel', () => {
+    const sim = pot();
+    sim.setTuning({ ...sim.tuning, cauldronSeconds: 0.5 });
+    sim.loadout.stations.cauldron = true;
+    const a = sim.spawnEnemy('grunt', 700);
+    drop(sim, a);
+    run(sim, () => a.st === 'cooking', 200);
+    let ticks = 0;
+    while (!a.dead && ticks < 300) { sim.step(); ticks++; }
+    expect(ticks / 60).toBeCloseTo(0.5, 1);
+  });
 
   it('rear: pulls in a throw headed near it, even a sloppy one', () => {
-    const sim = battle({ flags: { cauldron: 'back' } });
-    sim.s.meta.owned.push('cauldron');
+    const sim = battle();
+    sim.loadout.stations.cauldron = true;
     const e = sim.spawnEnemy('grunt', 620);
-    const { x, rimY } = WORLD.cauldronBack;
+    const { x, rimY } = WORLD.cauldron;
     // From road height out on the field, a lob aimed roughly at the pot.
     carryTo(sim, e, 520, 470, -780, -500);
     expect(e.st).toBe('air');
@@ -169,25 +149,32 @@ describe('cauldron', () => {
   });
 
   it('rear: ignores what merely flies past or walks by underneath', () => {
-    const sim = battle({ flags: { cauldron: 'back' } });
-    sim.s.meta.owned.push('cauldron');
+    const sim = battle();
+    sim.loadout.stations.cauldron = true;
     const away = sim.spawnEnemy('grunt', 500);
     carryTo(sim, away, 330, 430, 900, -300);
     run(sim, () => away.st !== 'air', 200);
     expect(away.st).not.toBe('cooking');
-    const walker = sim.spawnEnemy('grunt', WORLD.cauldronBack.x + 40);
+    const walker = sim.spawnEnemy('grunt', WORLD.cauldron.x + 40);
     run(sim, () => walker.st === 'attack', 400);
     expect(walker.st).toBe('attack');
     expect(sim.s.potBusy).toBe(0);
   });
 
-  it('rear pot is not there in the front variant, and the other way round', () => {
-    const front = battle();
-    front.s.meta.owned.push('cauldron');
-    const a = front.spawnEnemy('grunt', 700);
-    carryTo(front, a, WORLD.cauldronBack.x, WORLD.cauldronBack.rimY + 40);
-    expect(a.st).toBe('air');
-    expect(front.s.potBusy).toBe(0);
+  // Replaced "rear pot is not there in the front variant, and the other way round": there is one pot only.
+  it('there is no pot on the road any more: a raider set down where the front pot stood just lands', () => {
+    const sim = battle();
+    sim.loadout.stations.cauldron = true;
+    const a = sim.spawnEnemy('grunt', 700);
+    // Where the old pot on the road stood (x 345), at road height.
+    carryTo(sim, a, 345 + 120, WORLD.groundY - 10);
+    run(sim, () => a.st !== 'air', 200);
+    expect(a.st).not.toBe('cooking');
+    expect(sim.s.potBusy).toBe(0);
+  });
+
+  it('the cauldron switch is gone from the experiment switches', () => {
+    expect(FLAG_DEFS.map((f) => f.id)).not.toContain('cauldron');
   });
 });
 
@@ -197,7 +184,7 @@ describe('eagle hook', () => {
   it('hangs at the top right of the field, also on a wider field', () => {
     for (const w of [1280, 1560, 1760]) {
       const sim = battle({ fieldW: w });
-      sim.s.meta.owned.push('perch');
+      sim.loadout.stations.perch = true;
       const e = sim.spawnEnemy('grunt', 900);
       carryTo(sim, e, perchX(w), hookY);
       expect(e.st).toBe('hooked');
@@ -208,7 +195,7 @@ describe('eagle hook', () => {
 
   it('catches a throw that flies past it', () => {
     const sim = battle();
-    sim.s.meta.owned.push('perch');
+    sim.loadout.stations.perch = true;
     const e = sim.spawnEnemy('grunt', 760);
     carryTo(sim, e, 760, 330, 1500, -420);
     run(sim, () => e.st === 'hooked' || e.dead, 200);
@@ -217,7 +204,7 @@ describe('eagle hook', () => {
 
   it('a throw that is headed for the hook gets there, even from far away', () => {
     const sim = battle();
-    sim.s.meta.owned.push('perch');
+    sim.loadout.stations.perch = true;
     const e = sim.spawnEnemy('grunt', 500);
     carryTo(sim, e, 700, 420, 1600, -500);
     run(sim, () => e.st === 'hooked' || e.dead, 200);
@@ -226,7 +213,7 @@ describe('eagle hook', () => {
 
   it('an ordinary fling up and away is not caught by the hook', () => {
     const sim = battle();
-    sim.s.meta.owned.push('perch');
+    sim.loadout.stations.perch = true;
     const e = sim.spawnEnemy('grunt', 800);
     carryTo(sim, e, 860, 500, 100, -1500);
     run(sim, () => e.st !== 'air', 200);
@@ -235,7 +222,7 @@ describe('eagle hook', () => {
 
   it('holds one at a time, the eagle eats it, then the hook is free at once', () => {
     const sim = battle();
-    sim.s.meta.owned.push('perch');
+    sim.loadout.stations.perch = true;
     const a = sim.spawnEnemy('grunt', 700);
     const b = sim.spawnEnemy('grunt', 760);
     carryTo(sim, a, perchX(1280), hookY);
@@ -254,7 +241,7 @@ describe('eagle hook', () => {
 
   it('the eagle comes during the wait, not before', () => {
     const sim = battle();
-    sim.s.meta.owned.push('perch');
+    sim.loadout.stations.perch = true;
     const a = sim.spawnEnemy('grunt', 700);
     carryTo(sim, a, perchX(1280), hookY);
     const hung = run(sim, () => a.t <= PERCH.eatSeconds + 0.02, 300);
@@ -265,10 +252,10 @@ describe('eagle hook', () => {
 
   it('a hanging raider is safe from weapons and tells the snapshot', () => {
     const sim = battle();
-    sim.s.meta.owned.push('perch');
+    sim.loadout.stations.perch = true;
     const a = sim.spawnEnemy('grunt', 700);
     carryTo(sim, a, perchX(1280), hookY);
-    (sim as unknown as { blast(x: number, y: number, r: number, d: number, p: number): void }).blast(a.x, a.y, 200, 9999, -1);
+    sim.blast(a.x, a.y, 200, 9999, -1);
     expect(a.dead).toBe(false);
     const view = decodeSnapshot(encodeSnapshot(sim.s));
     expect(view.perchBusy).toBeGreaterThan(0);
@@ -276,137 +263,46 @@ describe('eagle hook', () => {
   });
 });
 
-describe('aiming at the keep', () => {
-  const G = TUNING_DEFAULT.gravity;
-
-  it('a pull inside the dead zone is not a shot and costs nothing', () => {
-    const sim = battle();
-    sim.s.meta.owned.push('bolter1');
-    pressSlot(sim, 'bolter');
-    expect(sim.s.hands[0].mode).toBe('bolter');
-    const { x, y } = WORLD.slots.bolter;
-    sim.command({ k: 'release', p: 0, x: x + 5, y: y + 5, vx: 0, vy: 0 });
-    const ev = sim.drainEvents();
-    expect(ev.some((e) => e.e === 'aimHint')).toBe(true);
-    expect(sim.s.projectiles).toHaveLength(0);
-    expect(sim.s.cooldowns.bolter).toBe(0);
-    expect(sim.s.hands[0].mode).toBe('none');
-  });
-
-  it('pulling further reaches further, from near the gate to the end of the field', () => {
-    for (const fieldW of [1280, 1760]) {
-      const { x: x0, y: y0 } = WORLD.slots.horn;
-      const land = (dist: number) => aimShot('horn', 'mortar', x0 + dist * Math.cos(1.1), y0 - dist * Math.sin(1.1), fieldW, G).landX;
-      expect(land(AIM.deadzone + 4)).toBeLessThan(WORLD.gateX + 180);
-      expect(land(250)).toBeGreaterThan(land(120));
-      expect(land(AIM.maxPull)).toBeGreaterThan(fieldW - 40);
-    }
-  });
-
-  it('a full pull ends at the field, never beyond it, and the preview says the same', () => {
-    for (const fieldW of [1280, 1560, 1760]) {
-      for (const [slot, id] of [['horn', 'mortar'], ['horn', 'frost'], ['horn', 'bellows']] as const) {
-        const { x: x0, y: y0 } = WORLD.slots[slot];
-        const shot = aimShot(slot, id, x0 + AIM.maxPull * 2, y0 - 10, fieldW, G);
-        expect(shot.landX).toBeLessThanOrEqual(fieldW + 30);
-        expect(shot.landX).toBeGreaterThan(fieldW - 30);
-      }
-    }
-  });
-
-  it('pulling steeper flies higher and longer but lands in the same place', () => {
-    const { x: x0, y: y0 } = WORLD.slots.horn;
-    const flat = aimShot('horn', 'mortar', x0 + 300, y0, 1280, G);
-    const steep = aimShot('horn', 'mortar', x0 + 300 * Math.cos(1.4), y0 - 300 * Math.sin(1.4), 1280, G);
-    expect(steep.landX).toBeCloseTo(flat.landX, 3);
-    expect(steep.flight).toBeGreaterThan(flat.flight);
-  });
-
-  it('can land on any spot of the road', () => {
-    for (const x of [260, 500, 900, 1250]) {
-      const p = pointerFor('horn', 'mortar', x, 1280);
-      expect(Math.abs(aimShot('horn', 'mortar', p.x, p.y, 1280, G).landX - x)).toBeLessThan(6);
-    }
-  });
-
-  it('the mortar always goes high, the crossbow stays flat and quick', () => {
-    const horizontal = aimShot('horn', 'mortar', 700, WORLD.slots.horn.y, 1280, G);
-    expect(-horizontal.vy / horizontal.vx).toBeGreaterThan(1.4);
-    const bolt = aimShot('bolter', null, 800, 500, 1280, G);
-    expect(bolt.kind).toBe('line');
-    expect(Math.hypot(bolt.vx, bolt.vy)).toBeGreaterThan(1200);
-    expect(pullStrength(AIM.maxPull * 3)).toBe(1);
-  });
-
-  it('crossbow bolts fly where the pull points and hit harder at full pull', () => {
-    const sim = battle();
-    sim.s.meta.owned.push('bolter1');
-    const e = sim.spawnEnemy('grunt', 620);
-    const at = pointerFor('bolter', null, 620, sim.fieldW);
-    pressSlot(sim, 'bolter');
-    sim.setHand(0, at.x, at.y);
-    sim.command({ k: 'release', p: 0, x: at.x, y: at.y, vx: 0, vy: 0 });
-    expect(sim.s.projectiles.filter((q) => q.kind === 'roofBolt')).toHaveLength(4);
-    expect(sim.s.projectiles[0].damage).toBeGreaterThan(100);
-    expect(sim.s.cooldowns.bolter).toBeGreaterThan(0);
-    run(sim, () => e.dead, 200);
-    expect(e.dead).toBe(true);
-  });
-
-  it('a weak pull falls short and is weaker', () => {
-    const { x: x0, y: y0 } = WORLD.slots.bolter;
-    const weak = aimShot('bolter', null, x0 + 70, y0 + 10, 1280, G);
-    const full = aimShot('bolter', null, x0 + AIM.maxPull, y0 + 10, 1280, G);
-    expect(weak.range).toBeLessThan(full.range);
-    expect(weak.power).toBeLessThan(full.power);
-  });
-
+// "aiming at the keep": the pull-to-aim tests are replaced by weapons.test.ts and targeting.test.ts.
+describe('weapons on the keep', () => {
   it('a press on a weapon never grabs a raider at the gate, and the other way round', () => {
     const sim = battle();
-    sim.s.meta.owned.push('mortar');
-    sim.s.meta.hornEquipped = 'mortar';
+    const slot = arm(sim, 'mortar', 1);
     const e = sim.spawnEnemy('grunt', WORLD.gateX + 22);
     e.st = 'attack';
     // Grip zones stop before the road, however fat the finger.
-    expect(slotAt(WORLD.slotZoneMaxX + 1, WORLD.slots.horn.y, 200, () => true)).toBe(null);
-    expect(slotAt(e.x, e.y - 40, 200, () => true)).toBe(null);
-    pressSlot(sim, 'horn');
+    expect(slotAt(WORLD.slotZoneMaxX + 1, SLOTS[slot].y, 200, () => true)).toBe(-1);
+    expect(slotAt(e.x, e.y - 40, 200, () => true)).toBe(-1);
+    // A tap on the weapon fires it and leaves the raider alone.
+    const ev = fire(sim, slot);
+    expect(ev.some((x) => x.e === 'fire')).toBe(true);
     expect(e.heldBy).toEqual([]);
     expect(sim.s.hands[0].holding).toBe(-1);
-    expect(sim.s.hands[0].mode).toBe('horn');
-    sim.command({ k: 'cancelMode', p: 0 });
-    sim.command({ k: 'release', p: 0, x: e.x, y: e.y, vx: 0, vy: 0 });
 
     sim.setHand(0, e.x, e.y - 40);
     sim.command({ k: 'press', p: 0, x: e.x, y: e.y - 40 });
     expect(e.heldBy).toEqual([0]);
-    expect(sim.s.hands[0].mode).toBe('none');
   });
 
   it('a weapon that is reloading refuses and grabs nothing', () => {
     const sim = battle();
-    sim.s.meta.owned.push('bolter1');
-    sim.s.cooldowns.bolter = 3;
-    pressSlot(sim, 'bolter');
-    expect(sim.s.hands[0].mode).toBe('none');
-    expect(sim.drainEvents().some((x) => x.e === 'denied')).toBe(true);
+    const slot = arm(sim, 'bolter', 1);
+    sim.spawnEnemy('grunt', 600);
+    sim.s.cooldowns[slot] = 3;
+    const ev = fire(sim, slot);
+    expect(ev.some((x) => x.e === 'denied')).toBe(true);
+    expect(sim.s.projectiles).toHaveLength(0);
+    expect(sim.s.hands[0].holding).toBe(-1);
   });
 
   it('slotAt picks the nearest weapon you own and nothing you do not', () => {
-    const owned = (s: WeaponSlot) => s === 'bolter';
-    const { x, y } = WORLD.slots.bolter;
-    expect(slotAt(x + 4, y, 60, owned)).toBe('bolter');
-    expect(slotAt(WORLD.slots.comet.x, WORLD.slots.comet.y, 60, owned)).toBe(null);
-    expect(slotAt(WORLD.slots.comet.x, WORLD.slots.comet.y, 60, () => true)).toBe('comet');
-  });
-
-  it('the snapshot tells the other player what is being aimed', () => {
-    const sim = battle();
-    sim.s.meta.owned.push('bolter1');
-    pressSlot(sim, 'bolter');
-    const v = decodeSnapshot(encodeSnapshot(sim.s));
-    expect(v.hands[0].mode).toBe('bolter');
-    expect(v.hands[0].aiming).toBe(true);
+    const tower = SLOTS.findIndex((s) => s.type === 'tower');
+    const shrine = SLOTS.findIndex((s) => s.type === 'shrine');
+    const owned = (s: number) => s === tower;
+    const { x, y } = SLOTS[tower];
+    expect(slotAt(x + 4, y, 60, owned)).toBe(tower);
+    expect(slotAt(SLOTS[shrine].x, SLOTS[shrine].y, 60, owned)).toBe(-1);
+    expect(slotAt(SLOTS[shrine].x, SLOTS[shrine].y, 60, () => true)).toBe(shrine);
   });
 
   it('every mounted weapon is drawn ready and reloading', () => {
@@ -419,92 +315,89 @@ describe('aiming at the keep', () => {
 
 describe('keep upgrades', () => {
   it('every gate has a keep of its own', () => {
-    const gates = SHOP_ITEMS.filter((i) => i.tab === 'gates');
-    expect(gates).toHaveLength(5);
-    gates.forEach((_, i) => {
+    expect(GATES).toHaveLength(5);
+    GATES.forEach((_, i) => {
       expect(PROPS[`keep${i}`]).toBeDefined();
       expect(PROPS[`keepGlow${i}`]).toBeDefined();
     });
   });
-
-  it('the build stage follows the best gate owned', () => {
-    const sim = battle();
-    expect(buildTier(sim.s.meta)).toBe(0);
-    sim.s.meta.owned.push('gate1');
-    expect(buildTier(sim.s.meta)).toBe(1);
-    sim.s.meta.owned.push('gate2', 'gate3', 'gate4');
-    expect(buildTier(sim.s.meta)).toBe(4);
-  });
-
-  it('a weapon stands on the keep once owned', () => {
-    const sim = battle();
-    expect(ownsSlot('wheel', sim.s.meta)).toBe(false);
-    sim.s.meta.owned.push('wheel1');
-    expect(ownsSlot('wheel', sim.s.meta)).toBe(true);
-    expect(ownsSlot('horn', sim.s.meta)).toBe(false);
-    sim.s.meta.hornEquipped = 'frost';
-    expect(ownsSlot('horn', sim.s.meta)).toBe(true);
-  });
+  // "the build stage follows the best gate owned" and "a weapon stands on the keep once owned"
+  // are replaced by shop.test.ts (gate tier and slot weapon in the loadout).
 });
 
 describe('quick start', () => {
+  const quick = (day: number, names = ['A']) => new Sim(ENDLESS.buildRun(PROFILE, { world: 'fondue', difficulty: 'medium', quickStart: day }, {
+    names, fieldW: 1280, handTiers: names.map(() => 1), seed: 3,
+  }));
+
   for (const q of QUICK_STARTS) {
     it(`day ${q.day}: starts there with what a run would own`, () => {
-      const sim = new Sim({ seed: 3, difficulty: 'medium', names: ['A'], tuning: { ...TUNING_DEFAULT }, quickStart: q.day });
+      const sim = quick(q.day);
       expect(sim.s.day).toBe(q.day);
       expect(sim.s.gold).toBe(q.gold);
       expect(sim.s.offerings).toBe(q.offerings);
-      expect(sim.s.meta.quickStart).toBe(q.day);
-      expect(sim.s.meta.hornEquipped).toBe(q.hornEquipped);
-      for (const id of q.owned) expect(sim.owns(id), id).toBe(true);
+      // A quick start is a developer run: no scores, no stars.
+      expect(sim.s.meta.devRun).toBe(true);
+      expect(sim.loadout.slotWeapon).toEqual(q.slots);
+      expect(sim.loadout.weaponTier).toEqual(q.tiers);
+      expect(sim.loadout.gateTier).toBe(q.gateTier);
+      expect(sim.loadout.stations).toEqual({ cauldron: q.cauldron, perch: q.perch });
+      expect(sim.loadout.handTier).toEqual([q.hand]);
       expect(sim.s.gateHp).toBe(sim.s.gateMax);
+      expect(sim.s.gateMax).toBe(GATES[q.gateTier].hp);
       expect(sim.s.spawnQueue.length).toBeGreaterThan(50);
     });
 
-    it(`day ${q.day}: every item is real, and its requirements are owned too`, () => {
-      for (const id of q.owned) {
-        const item = SHOP_ITEMS.find((i) => i.id === id);
-        expect(item, id).toBeDefined();
-        if (item?.requires && item.requires !== 'gate0') expect(q.owned, `${id} needs ${item.requires}`).toContain(item.requires);
-      }
+    it(`day ${q.day}: every weapon is real, fits its slot and has a tier`, () => {
+      expect(q.slots).toHaveLength(SLOTS.length);
+      q.slots.forEach((id, slot) => {
+        if (id === null) return;
+        const def = weaponById(id);
+        expect(def, id).toBeDefined();
+        expect(def!.slotType, id).toBe(SLOTS[slot].type);
+        expect(q.tiers[id], id).toBeGreaterThanOrEqual(1);
+        expect(q.tiers[id], id).toBeLessThanOrEqual(MAX_TIER);
+      });
+      for (const id of Object.keys(q.tiers)) expect(q.slots, `${id} has a tier but no slot`).toContain(id);
     });
   }
 
   it('works for two players', () => {
-    const sim = new Sim({ seed: 3, difficulty: 'medium', names: ['A', 'B'], tuning: { ...TUNING_DEFAULT }, quickStart: 20 });
+    const sim = quick(20, ['A', 'B']);
     expect(sim.s.day).toBe(20);
     expect(sim.s.hands).toHaveLength(2);
+    expect(sim.loadout.handTier).toHaveLength(2);
   });
 
   it('an unknown day is a normal run', () => {
-    const sim = new Sim({ seed: 3, difficulty: 'medium', names: ['A'], tuning: { ...TUNING_DEFAULT }, quickStart: 13 });
+    const sim = quick(13);
     expect(sim.s.day).toBe(1);
-    expect(sim.s.meta.quickStart).toBe(0);
+    expect(sim.s.meta.devRun).toBe(false);
   });
 
   it('does not repeat the tips for days that were skipped', () => {
-    const sim = new Sim({ seed: 3, difficulty: 'medium', names: ['A'], tuning: { ...TUNING_DEFAULT }, quickStart: 20 });
-    expect(sim.s.meta.newTipTypes).toEqual([]);
+    const sim = quick(20);
+    expect(sim.s.meta.today.newTypes).toEqual([]);
   });
 });
 
 describe('experiment switches', () => {
   it('every switch has a default among its options', () => {
     for (const f of FLAG_DEFS) expect(f.options.map((o) => o.value)).toContain(f.value);
-    expect(FLAG_DEFS.map((f) => f.id)).toContain('cauldron');
+    expect(FLAG_DEFS.map((f) => f.id)).toContain('dayEnd');
   });
 
   it('old settings and unknown values fall back to the default', () => {
-    expect(cleanFlags({ cauldron: 'sideways', nonsense: 'x' })).toEqual(defaultFlags());
+    expect(cleanFlags({ dayEnd: 'sideways', nonsense: 'x' })).toEqual(defaultFlags());
     expect(cleanFlags(undefined)).toEqual(defaultFlags());
-    expect(cleanFlags({ cauldron: 'back' }).cauldron).toBe('back');
+    expect(cleanFlags({ dayEnd: 'retreat' }).dayEnd).toBe('retreat');
   });
 
   it('are part of the shared game state, so the guest gets the host values', () => {
     const sim = battle();
     const rev = sim.s.meta.rev;
-    sim.setFlags({ cauldron: 'back' });
-    expect(sim.flag('cauldron')).toBe('back');
+    sim.setFlags({ dayEnd: 'retreat' });
+    expect(sim.flag('dayEnd')).toBe('retreat');
     expect(sim.s.meta.rev).toBeGreaterThan(rev);
   });
 });

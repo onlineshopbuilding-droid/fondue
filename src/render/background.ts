@@ -1,13 +1,17 @@
+// The landscape behind the field: its layers, the light from day to night, and the parallax as the camera moves.
 import Phaser from 'phaser';
 import { CLOUDS, LANDSCAPE_ART, type SkyStops } from '../art/landscapes';
 import { rng } from '../art/shade';
-import { DAY, DAYS_PER_LANDSCAPE, LANDSCAPES, type Landscape } from '../config/waves';
-import { WORLD } from '../config/world';
+import type { Landscape } from '../config/waves';
+import { WORLD } from '../config/field';
 import { CLOUD_SCALE, LAND_SCALE, cloudKey, landscapeKey, landscapeReady, wantLandscape } from './textures';
 import type { GameView } from './viewport';
+import { MARKET_LEFT } from './marketCamera';
 
 /** How far to the right the widest supported screen can look. */
 const EAST_REACH = 2120;
+/** How far left of the field the market view looks (the keep's west wing), with some room for parallax. */
+const WEST_REACH = -MARKET_LEFT + 60;
 /** How far above the world the squarest screen can look. */
 const SKY_REACH = 640;
 
@@ -23,9 +27,8 @@ const SKY_STOPS = [-300, 200, 470, 575];
 const HAZE = { far: 0.6, mid: 0.38, near: 0.18, ground: 0 } as const;
 type Layer = keyof typeof HAZE;
 
-export function landscapeForDay(day: number): Landscape {
-  return LANDSCAPES[Math.floor((Math.max(1, day) - 1) / DAYS_PER_LANDSCAPE) % LANDSCAPES.length];
-}
+/** A night level is dark from the start: the light as late in the evening as this. */
+const NIGHT_LEVEL_U = 0.93;
 
 const hexToRgb = (h: string) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const mix = (a: number[], b: number[], f: number) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
@@ -129,6 +132,10 @@ export class Background {
   private midEast: Phaser.GameObjects.Image;
   private nearEast: Phaser.GameObjects.Image;
   private groundEast: Phaser.GameObjects.Image;
+  private farWest: Phaser.GameObjects.Image;
+  private midWest: Phaser.GameObjects.Image;
+  private nearWest: Phaser.GameObjects.Image;
+  private groundWest: Phaser.GameObjects.Image;
   private far: Phaser.GameObjects.Image;
   private mid: Phaser.GameObjects.Image;
   private near: Phaser.GameObjects.Image;
@@ -168,7 +175,7 @@ export class Background {
     this.twinkleA = scene.add.graphics().setDepth(1);
     this.twinkleB = scene.add.graphics().setDepth(1);
     for (let i = 0; i < 300; i++) {
-      const x = R() * EAST_REACH;
+      const x = -WEST_REACH + R() * (EAST_REACH + WEST_REACH);
       const y = -SKY_REACH + Math.pow(R(), 1.3) * (SKY_REACH + 500);
       const low = clamp01((y - 200) / 300);
       this.stars.fillStyle(hues[Math.floor(R() * hues.length)], (0.25 + R() * 0.55) * (1 - low * 0.7));
@@ -176,7 +183,7 @@ export class Background {
     }
     for (let i = 0; i < 46; i++) {
       const g = i % 2 ? this.twinkleA : this.twinkleB;
-      const x = R() * EAST_REACH;
+      const x = -WEST_REACH + R() * (EAST_REACH + WEST_REACH);
       const y = -SKY_REACH + Math.pow(R(), 1.2) * (SKY_REACH + 420);
       const r = 1 + R() * 1.1;
       const hue = hues[Math.floor(R() * hues.length)];
@@ -217,6 +224,13 @@ export class Background {
     this.midEast = east(this.mid, 4);
     this.nearEast = east(this.near, 5);
     this.groundEast = east(this.ground, 6);
+    // And to the left, for the market view of the keep's west wing.
+    const west = (of: Phaser.GameObjects.Image, depth: number) =>
+      scene.add.image(of.x - of.displayWidth, of.y, of.texture.key).setOrigin(0, of.originY).setScale(of.scaleX, of.scaleY).setFlipX(true).setDepth(depth);
+    this.farWest = west(this.far, 3);
+    this.midWest = west(this.mid, 4);
+    this.nearWest = west(this.near, 5);
+    this.groundWest = west(this.ground, 6);
   }
 
   /** Far clouds hang low near the horizon, near ones high up. */
@@ -228,15 +242,16 @@ export class Background {
   layout(v: GameView) {
     this.eastEdge = v.width;
     const top = Math.min(SKY_TOP, v.offsetY - 40);
-    this.sky.setPosition(v.offsetX - 40, top).setDisplaySize(v.width + 80, SKY_BOTTOM - top);
+    const left = Math.min(v.offsetX, MARKET_LEFT) - 40;
+    this.sky.setPosition(left, top).setDisplaySize(v.offsetX + v.width + 40 - left, SKY_BOTTOM - top);
     this.lastSkyKey = '';
   }
 
   /** The landscape on screen; the keep dresses itself for this one. */
   get shown(): Landscape { return this.land ?? 'meadow'; }
 
-  setDay(day: number) {
-    const land = landscapeForDay(day);
+  /** Shows a landscape (from `meta.today.landscape`). */
+  setLandscape(land: Landscape) {
     if (land === this.land) return;
     // Later landscapes are prepared in the background after boot; until then the old one stays.
     if (!landscapeReady(land)) { wantLandscape(land); return; }
@@ -249,7 +264,8 @@ export class Background {
   }
 
   private layers(): [Phaser.GameObjects.Image, Phaser.GameObjects.Image, Layer][] {
-    return [[this.far, this.farEast, 'far'], [this.mid, this.midEast, 'mid'], [this.near, this.nearEast, 'near'], [this.ground, this.groundEast, 'ground']];
+    return [[this.far, this.farEast, 'far'], [this.mid, this.midEast, 'mid'], [this.near, this.nearEast, 'near'], [this.ground, this.groundEast, 'ground'],
+      [this.far, this.farWest, 'far'], [this.mid, this.midWest, 'mid'], [this.near, this.nearWest, 'near'], [this.ground, this.groundWest, 'ground']];
   }
 
   /** The four sky colours at time u (0 dawn of the fight, 1 its end). */
@@ -265,12 +281,15 @@ export class Background {
     return dusk.map((c, i) => mix(c, night[i], f));
   }
 
-  /** dayT in seconds; handX for a small parallax with the pointer. */
-  update(dayT: number, handX: number, dt: number) {
+  /**
+   * dayT and daySeconds in seconds (`meta.today.seconds`); `nightLevel` keeps the whole day dark;
+   * handX for a small parallax with the pointer.
+   */
+  update(dayT: number, daySeconds: number, nightLevel: boolean, handX: number, dt: number) {
     this.clock += dt;
     for (const c of this.clouds) {
       c.img.x -= c.v * dt;
-      if (c.img.x < -240) { c.img.x = this.eastEdge + 240; this.placeCloudY(c); }
+      if (c.img.x < -WEST_REACH - 240) { c.img.x = this.eastEdge + 240; this.placeCloudY(c); }
     }
     const offset = Math.max(-1, Math.min(1, (handX - WORLD.width / 2) / (WORLD.width / 2)));
     this.far.x = -160 - offset * 8;
@@ -279,8 +298,11 @@ export class Background {
     this.farEast.x = this.far.x + this.far.displayWidth;
     this.midEast.x = this.mid.x + this.mid.displayWidth;
     this.nearEast.x = this.near.x + this.near.displayWidth;
+    this.farWest.x = this.far.x - this.far.displayWidth;
+    this.midWest.x = this.mid.x - this.mid.displayWidth;
+    this.nearWest.x = this.near.x - this.near.displayWidth;
 
-    const u = Math.min(1, dayT / DAY.seconds);
+    const u = nightLevel ? NIGHT_LEVEL_U : daySeconds > 0 ? Math.min(1, dayT / daySeconds) : 0;
     const sky = this.skyAt(u);
     const starA = Math.max(0, (u - 0.72) / 0.2);
     this.stars.setAlpha(starA);

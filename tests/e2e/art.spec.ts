@@ -9,7 +9,7 @@ import { waitForGame } from './helpers';
  */
 
 const FREE_PROPS = [
-  'handOpen', 'handClosed', 'reticle', 'wheel', 'comet', 'bomb', 'stone', 'shell', 'bolt', 'roofBolt',
+  'handOpen', 'handClosed', 'wheel', 'comet', 'bomb', 'stone', 'shell', 'bolt', 'roofBolt',
   'gibHelmet', 'gibPlate', 'gibBoot', 'gibStick', 'coin', 'offering', 'drop1', 'dust', 'spark', 'star', 'shieldBubble',
 ];
 

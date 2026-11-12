@@ -3,49 +3,69 @@ import '../render/glFix';
 import Phaser from 'phaser';
 import { PROPS } from '../art/props';
 import { AudioEngine } from '../audio/audio';
-import { ENEMIES } from '../config/enemies';
-import { GAME_NAME } from '../config/game';
-import { SHOP_ITEMS, SHOP_TABS, WEAPON_SLOTS, type ShopTab } from '../config/shop';
-import { fieldForAspect } from '../config/world';
-import { DIFFICULTIES, type Difficulty } from '../config/waves';
-import { GuestSession, HostSession, type Session } from '../game/session';
-import { addScore, loadScores, loadSettings, saveSettings, type Settings } from '../game/storage';
-import { loopbackTransport } from '../net/loopback';
-import { peerTransport } from '../net/peer';
-import { PROTOCOL_VERSION, type NetMessage } from '../net/protocol';
-import { relayTransport } from '../net/relay';
+import { reviewLabels } from '../config/devReview';
+import { quickStartFor } from '../config/quickstart';
+import { FLAG_DEFS } from '../config/flags';
+import { fieldForAspect } from '../config/field';
+import { STATION_IDS } from '../config/keep';
+import { SLOT_COUNT } from '../config/slots';
+import { TUNING_DEFAULT, type Tuning } from '../config/tuning';
+import { WEAPONS, weaponById } from '../config/weapons';
+import { DEFAULT_WORLD, levelOf, worldById } from '../config/worlds';
+import { HostSession, type Session } from '../game/session';
+import { CAMPAIGN, ENDLESS, MODES, TUTORIAL, modeOf, syncUnlocks, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from '../modes';
 import type { ViewState } from '../net/snapshot';
-import { makeRoomCode, normalizeRoomCode, withLatency, type RoomHost, type Transport, type TransportKind } from '../net/transport';
+import type { RoomPlan } from '../net/protocol';
+import { normalizeRoomCode, type Transport } from '../net/transport';
+import { LocalProfileStore, MemoryProfileStore, Profile, type ProfileSettings, type ProfileStore } from '../profile';
 import { GameScene } from '../render/scene';
 import { allArtReady, buildTextures } from '../render/textures';
 import { RIGS } from '../art/characters';
 import { computeView, readSafeArea, renderScale, sameView } from '../render/viewport';
+import type { RunResult, RunRules, RunSetup } from '../sim/rules';
 import type { Meta } from '../sim/types';
-import { ownsSlot } from '../sim/keep';
-import { CREDITS_HTML, HELP_SLIDES, LOADING_TIPS, STATION_TIPS, WEAPON_TIPS } from './content';
+import { FIRST_FIGHT_TIP, LOADING_TIPS, STATION_TIPS, weaponTip } from './content';
+import { BUILD, CoopRoom, type CoopRoomHost } from './coop/room';
+import { EnemyPopup } from './enemyPopup';
+import { SCREENS } from './screens';
+import type { PendingRun, ScreenContext } from './screens/context';
+import { ScreenManager, type ScreenId } from './screens/screen';
+import { mainScreen } from './screens/main';
+import { shopScreen } from './screens/shop';
+import { Lobby } from './lobby/lobby';
 import { TuningPanel } from './tuningPanel';
-
-declare const __GAME_VERSION__: string;
-// A test can pretend to be an out-of-date client with ?fakever=x.
-const BUILD = new URLSearchParams(location.search).get('fakever') ?? `${PROTOCOL_VERSION}-${__GAME_VERSION__}`;
 
 /** Upright touch devices are asked to rotate; the game is built for landscape. */
 const UPRIGHT_PHONE = '(orientation: portrait) and (pointer: coarse)';
 
 const LOGO_HOLD_MS = 700;
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-const artUri = (name: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(PROPS[name].svg)}`;
+/** What started the current solo run, so "Try again" can start it once more. */
+interface RunPick { mode: string; choice: RunChoice }
 
-type Screen =
-  | 'none' | 'main' | 'play' | 'host' | 'join' | 'options' | 'help' | 'scores' | 'credits'
-  | 'results' | 'shop' | 'gameover' | 'pause' | 'lostHost' | 'lostGuest';
+/** Reads the profile the page asks for: a throw-away one for tests, an imported one, or the saved one. */
+async function loadProfile(params: URLSearchParams): Promise<{ profile: Profile; temporary: boolean; importFailed: boolean }> {
+  const code = params.get('profile');
+  if (params.get('fresh') === '1' || code) {
+    const profile = await Profile.load(new MemoryProfileStore());
+    let importFailed = false;
+    if (code) {
+      try { profile.importCode(code); } catch { importFailed = true; }
+    }
+    return { profile, temporary: true, importFailed };
+  }
+  const store: ProfileStore = new LocalProfileStore();
+  return { profile: await Profile.load(store), temporary: false, importFailed: false };
+}
 
-/** Owns the DOM screens and the session lifecycle. */
-export class App {
+/** The entry point: loads the profile, boots Phaser, owns the session, and keeps the screens in step with the game. */
+export class App implements ScreenContext, CoopRoomHost {
   game!: Phaser.Game;
   scene!: GameScene;
   session: Session | null = null;
+  profile!: Profile;
+  temporaryProfile = false;
+  readonly world = DEFAULT_WORLD;
   readonly audio = new AudioEngine();
   /** How long turning all art into textures took at boot, for the debug overlay and tests. */
   textureMs = 0;
@@ -53,69 +73,96 @@ export class App {
   get artReady(): boolean { return allArtReady(); }
   /** The raw art, so the art test can check it in the built game as well as on the dev server. */
   readonly art = { rigs: RIGS, props: PROPS };
-  private settings: Settings = loadSettings();
+  readonly params = new URLSearchParams(location.search);
+  readonly coop = new CoopRoom(this);
+  /** Day the next endless game starts on; set from the developer menu, 1 for a normal run. */
+  startDay = 1;
+  loadingTip = LOADING_TIPS[0];
+  /** What the run that just ended brought; the result screens show it. */
+  reward: Reward | null = null;
+  result: RunResult | null = null;
+  resultRules: RunRules | null = null;
+  readonly popup: EnemyPopup;
+  /** The main menu as the hall inside the keep; tests use `lobby.spots()` and `lobby.tap(id)`. */
+  readonly lobby: Lobby;
   private ui: HTMLElement;
-  private overlay: HTMLDivElement | null = null;
+  private screens: ScreenManager;
   private toasts: HTMLDivElement;
   private badge: HTMLDivElement;
   private debugEl: HTMLDivElement | null = null;
-  private screen: Screen = 'none';
-  private tuning: TuningPanel;
-  /** Day the next game starts on; set from the developer menu, 1 for a normal run. */
-  private startDay = 1;
-  private shownWeaponTips = new Set<string>();
-  private params = new URLSearchParams(location.search);
+  private tuning!: TuningPanel;
+  private lastPick: RunPick | null = null;
 
-  // Lobby state
-  private room: RoomHost | null = null;
-  private lobbyLink: Transport | null = null;
-  private guestName = '';
-  private code = '';
-  private joinLink: Transport | null = null;
-  private lobbyStatus = '';
-  private lobbyError = false;
-
-  private shopTab: ShopTab = 'gates';
-  private helpIndex = 0;
   private lastPhase = '';
   private lastMetaRev = -1;
-  private scoreSaved = false;
-  private tipShownDay = 0;
-  private loadingTip = LOADING_TIPS[0];
-  private lastGuestName = '';
-  private lastSavedRun = '';
+  private handledRun = '';
+  private bannerKey = '';
   private lastPurse = '';
   private lostToastShown = false;
-  /** Bumped whenever the lobby is left, so that slow connection attempts know they are stale. */
-  private lobbyToken = 0;
-  private joining = false;
+
+  get settings(): Readonly<ProfileSettings> { return this.profile.data.settings; }
+  /** The screen on show; tests read this. */
+  get screen(): ScreenId { return this.screens.current; }
+  /** Tests reach the host's link to the guest and the room code here. */
+  get lobbyLink(): Transport | null { return this.coop.lobbyLink; }
+  get code(): string { return this.coop.code; }
 
   constructor() {
     this.ui = document.getElementById('ui')!;
     this.toasts = document.createElement('div');
     this.toasts.className = 'toast-area';
     this.ui.appendChild(this.toasts);
+    this.screens = new ScreenManager(this.ui, this.toasts, SCREENS, this);
+    this.popup = new EnemyPopup(this.ui);
+    this.lobby = new Lobby(this, this.ui);
     this.badge = document.createElement('div');
     this.badge.className = 'net-badge';
     this.badge.style.display = 'none';
     this.ui.appendChild(this.badge);
+  }
+
+  /** Everything that needs the profile; runs once it is loaded. */
+  private wireUp() {
     this.tuning = new TuningPanel(this.ui, {
       values: () => this.session?.meta()?.tuning ?? this.settings.tuning,
       canEdit: () => this.session?.role !== 'guest',
       apply: (t) => {
-        this.settings.tuning = t;
-        saveSettings(this.settings);
+        this.profile.updateSettings({ tuning: t });
         if (this.session instanceof HostSession) this.session.sim.setTuning(t);
       },
       flags: () => this.session?.meta()?.flags ?? this.settings.flags,
       setFlag: (id, value) => {
-        this.settings.flags = { ...this.settings.flags, [id]: value };
-        saveSettings(this.settings);
-        if (this.session instanceof HostSession) this.session.sim.setFlags(this.settings.flags);
+        this.profile.updateSettings({ flags: { [id]: value } });
+        if (this.session instanceof HostSession) this.session.sim.setFlags({ ...this.settings.flags });
       },
       startDay: () => this.startDay,
       setStartDay: (day) => { this.startDay = day; if (this.screen === 'play' || this.screen === 'host') this.show(this.screen); },
-      startSoloNow: () => this.startSolo(),
+      startQuickEndless: () => this.startEndless(),
+      profileSummary: () => `★ ${this.profile.data.stars} · levels won: ${this.profile.highestLevelDone(this.world)} · hand tier ${this.profile.data.handTier}${this.temporaryProfile ? ' · test profile' : ''}`,
+      addStars: (n) => { this.profile.addStars(n); this.redrawMenus(); },
+      unlockEverything: () => { this.unlockEverything(); this.redrawMenus(); },
+      replayTutorial: () => { this.profile.resetTutorial(); this.startTutorial(); },
+      resetProfile: () => {
+        this.profile.reset();
+        syncUnlocks(this.profile, this.world);
+        this.applyAudioSettings();
+        this.toast('Profile erased');
+        this.redrawMenus();
+      },
+      jumpTo: (level, day) => {
+        const max = worldById(this.world).campaign.length;
+        this.startSoloRun(CAMPAIGN, { world: this.world, level: Math.max(1, Math.min(max, level)), day });
+      },
+      levelCount: () => worldById(this.world).campaign.length,
+      levelDays: (level) => levelOf(this.world, level)?.days.length ?? 1,
+      weaponTier: (id) => this.profile.weaponTier(id),
+      setWeaponTier: (id, tier) => { this.profile.setWeaponTier(id, tier); this.redrawMenus(); },
+      handTier: () => this.profile.data.handTier,
+      setHandTier: (tier) => { this.profile.setHandTier(tier); this.redrawMenus(); },
+      showEnemyPopup: (type) => this.popup.show([type]),
+      ratings: () => this.profile.data.devRatings,
+      setRating: (id, patch) => this.profile.setRating(id, patch),
+      ratingsText: () => this.profile.ratingsAsText(reviewLabels()),
     });
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
@@ -131,6 +178,19 @@ export class App {
       this.audio.resume();
       if (!this.session) this.audio.startMusic('menu');
     });
+  }
+
+  /** Menus that show stars or unlocks are redrawn after a developer tool changed the profile. */
+  private redrawMenus() {
+    if (['main', 'armoury', 'campaign', 'options'].includes(this.screen)) this.show(this.screen);
+  }
+
+  /** Developer tool: every weapon, slot and offering site, as if the campaign were far along. */
+  private unlockEverything() {
+    for (const w of WEAPONS) if (w.enabled) this.profile.unlockWeapon(w.id);
+    for (let i = 0; i < SLOT_COUNT; i++) this.profile.unlockSlot(i);
+    for (const s of STATION_IDS) this.profile.unlockStation(s);
+    this.toast('Everything unlocked');
   }
 
   /** Phones have no F1: holding the logo in the main menu opens the developer menu. */
@@ -173,6 +233,15 @@ export class App {
   }
 
   async boot() {
+    // The profile comes first: settings, name and progress decide what the first screen is.
+    const loaded = await loadProfile(this.params);
+    this.profile = loaded.profile;
+    this.temporaryProfile = loaded.temporary;
+    syncUnlocks(this.profile, this.world);
+    (window as unknown as Record<string, unknown>).__fondue = this;
+    this.wireUp();
+    if (this.params.get('relay')) this.profile.updateSettings({ relayAddress: this.params.get('relay')! });
+
     await Promise.all([
       document.fonts.load('30px "Lilita One"'),
       document.fonts.load('600 20px "Nunito"'),
@@ -182,8 +251,10 @@ export class App {
     this.scene.hooks = {
       onFrame: (v) => this.onFrame(v),
       togglePause: () => this.togglePause(),
-      isInputBlocked: () => this.overlay !== null,
+      isInputBlocked: () => this.screens.isOpen,
       onBuyNotice: (t) => { if (this.session?.role !== 'solo') this.toast(t); },
+      // The market at the keep: a tapped place opens its window.
+      onKeepTap: (spot) => { if (this.screen === 'shop') shopScreen.openSpot(this, spot); },
     };
     const view = computeView(innerWidth, innerHeight, readSafeArea());
     this.scene.view = view;
@@ -205,18 +276,26 @@ export class App {
     await buildTextures(this.game);
     this.textureMs = Math.round(performance.now() - texStart);
     this.game.scene.add('game', this.scene, true);
-    (window as unknown as Record<string, unknown>).__fondue = this;
+    this.lobby.attach(this.game, this.scene);
     window.addEventListener('resize', () => this.applyView());
 
-    if (this.params.get('relay')) this.settings.relayAddress = this.params.get('relay')!;
     const invite = this.params.get('join');
     if (invite) {
+      // A friend's link goes straight into their room; the tutorial waits for the next solo start.
       this.show('join');
-      const input = this.overlay?.querySelector<HTMLInputElement>('#code');
+      const input = this.query<HTMLInputElement>('#code');
       if (input) input.value = normalizeRoomCode(invite);
+    } else if (this.params.get('tutorial') === '1' || this.tutorialDue()) {
+      this.startTutorial();
     } else {
       this.show('main');
     }
+    if (loaded.importFailed) this.toast('The profile code in the address is broken. Started with an empty test profile.', '', 5000);
+  }
+
+  /** A new player meets the tutorial before anything else, unless the page asks for the menu (tests). */
+  private tutorialDue(): boolean {
+    return !this.profile.data.tutorialDone && !['1', 'html'].includes(this.params.get('menu') ?? '');
   }
 
   /** Follows window resizes and phone rotation. */
@@ -239,10 +318,15 @@ export class App {
   }
 
   private applyAudioSettings() {
-    this.audio.setMusicVolume(this.settings.musicVolume);
-    this.audio.setSfxVolume(this.settings.sfxVolume);
-    this.audio.setMuted(this.settings.muted);
+    const s = this.settings;
+    this.audio.setMusicVolume(s.musicVolume);
+    this.audio.setSfxVolume(s.sfxVolume);
+    this.audio.setMuted(s.muted);
   }
+
+  commitSettings() { this.applyAudioSettings(); }
+
+  openDevMenu() { if (!this.tuning.open) this.tuning.toggle(); }
 
   private onKey(e: KeyboardEvent) {
     if (e.key === 'F1' || e.key === '^') { e.preventDefault(); this.tuning.toggle(); }
@@ -257,7 +341,7 @@ export class App {
     this.ui.appendChild(this.debugEl);
   }
 
-  private toast(text: string, kind = '', ms = 2600) {
+  toast(text: string, kind = '', ms = 2600) {
     const t = document.createElement('div');
     t.className = `toast ${kind}`;
     t.textContent = text;
@@ -284,6 +368,7 @@ export class App {
       this.lastMetaRev = meta.rev;
       if (this.screen === 'results' || this.screen === 'shop') this.show(this.screen);
     }
+    if (meta) this.checkResult(meta);
     // A guest learns the field width from the host once the game has started.
     if (meta && s.role !== 'solo' && meta.fieldW !== this.scene.view.fieldW) this.applyView();
     const purse = `${view.gold}/${view.offerings}`;
@@ -293,58 +378,114 @@ export class App {
     }
     this.syncPause(view, meta);
     this.syncConnection();
-    if (view.phase === 'banner' && meta && this.tipShownDay !== view.day) {
-      this.tipShownDay = view.day;
-      if (view.day === 1) this.toast('Hold the gate until the sun has set and the last raider is gone. Gold buys upgrades between days.', 'tip', 5500);
-      for (const t of meta.newTipTypes) this.toast(ENEMIES[t].tip, 'tip', 5500);
-      this.tipNewWeapons(meta);
-    }
+    if (view.phase === 'banner' && meta) this.onBanner(view, meta);
   }
 
-  /** Each weapon explains itself the first time it stands on the keep. */
-  private tipNewWeapons(meta: Meta) {
-    for (const slot of WEAPON_SLOTS) {
-      if (this.shownWeaponTips.has(slot) || !ownsSlot(slot, meta)) continue;
-      this.shownWeaponTips.add(slot);
-      if (meta.quickStart === 0) this.toast(WEAPON_TIPS[slot], 'tip', 5500);
+  /** Once per day at its start: windows for new raiders and short tips the profile has not seen yet. */
+  private onBanner(view: ViewState, meta: Meta) {
+    const key = `${meta.rules.runId}:${view.day}`;
+    if (this.bannerKey === key || meta.today === undefined) return;
+    this.bannerKey = key;
+    // The prelude introduces its Pothelms by hand, so level 1 needs no window for them.
+    if (meta.rules.mode === 'tutorial') { for (const t of meta.today.newTypes) this.profile.markEnemySeen(t); return; }
+    const fresh = meta.today.newTypes.filter((t) => this.profile.markEnemySeen(t));
+    if (fresh.length > 0) this.popup.show(fresh);
+    if (meta.devRun) return;
+    if (this.profile.markTipSeen('firstFight')) this.toast(FIRST_FIGHT_TIP, 'tip', 5500);
+    for (const id of meta.loadout.slotWeapon) {
+      const def = id ? weaponById(id) : undefined;
+      if (def && this.profile.markTipSeen(`weapon:${def.id}`)) this.toast(weaponTip(def.name), 'tip', 5500);
     }
-    for (const station of ['cauldron', 'perch']) {
-      if (this.shownWeaponTips.has(station) || !meta.owned.includes(station)) continue;
-      this.shownWeaponTips.add(station);
-      const tip = station === 'cauldron' ? `cauldron${meta.flags.cauldron}` : station;
-      if (meta.quickStart === 0) this.toast(STATION_TIPS[tip], 'tip', 5500);
+    // When the level's King explains this day himself (the pot on day 2 of level 1), no tip on top.
+    const level = meta.rules.level !== null ? levelOf(meta.rules.world, meta.rules.level) : undefined;
+    const kingSpeaks = !!level?.hints.some((h) => h.when === 'battle' && h.day === view.day);
+    for (const st of STATION_IDS) {
+      if (meta.loadout.stations[st] && STATION_TIPS[st] && this.profile.markTipSeen(`station:${st}`) && !kingSpeaks) this.toast(STATION_TIPS[st], 'tip', 5500);
     }
   }
 
   private onPhase(view: ViewState, meta: Meta | null) {
     switch (view.phase) {
       case 'banner':
+        if (meta) this.savePending(meta, view.day);
+        if (this.screen === 'results' || this.screen === 'shop') this.show('none');
+        this.audio.startMusic('battle');
+        break;
       case 'battle':
         if (this.screen === 'results' || this.screen === 'shop') this.show('none');
         this.audio.startMusic('battle');
         break;
       case 'intermission':
+        if (meta) this.savePending(meta, view.day + 1);
         this.loadingTip = LOADING_TIPS[Math.floor(Math.random() * LOADING_TIPS.length)];
         this.audio.startMusic('menu');
         this.show('results');
         break;
       case 'gameover':
+      case 'runWon':
+        this.popup.clear();
         this.audio.stopMusic();
-        if (meta && meta.quickStart === 0 && !this.scoreSaved && this.runKey(meta, view) !== this.lastSavedRun) {
-          this.scoreSaved = true;
-          this.lastSavedRun = this.runKey(meta, view);
-          addScore({
-            names: meta.names.join(' & '), coop: meta.names.length > 1, day: view.day,
-            score: meta.totalScore, kills: meta.totalKills, difficulty: meta.difficulty,
-            date: new Date().toISOString().slice(0, 10),
-          });
-        }
-        this.show('gameover');
         break;
     }
   }
 
-  private runKey(meta: Meta, view: ViewState) { return `${meta.names.join()}-${view.day}-${meta.totalScore}-${meta.totalKills}`; }
+  /** Solo campaign: keeps the start of this day, so the level can be continued after the app was closed. */
+  private savePending(meta: Meta, day: number) {
+    const s = this.session;
+    if (!(s instanceof HostSession) || s.role !== 'solo') return;
+    if (meta.rules.mode !== CAMPAIGN.id || meta.devRun || meta.result) return;
+    const pending: PendingRun = { v: 1, rules: meta.rules, seed: s.sim.s.seed, start: s.sim.dayStartSave(day) };
+    this.profile.setPendingRun(pending);
+  }
+
+  /** The interrupted level in the profile, if it still fits the level table. */
+  pendingRun(): PendingRun | null {
+    const p = this.profile.data.pendingRun as Partial<PendingRun> | null;
+    if (!p || p.v !== 1 || !p.rules || !p.start || typeof p.seed !== 'number') return null;
+    if (p.rules.mode !== CAMPAIGN.id || !levelOf(p.rules.world, p.rules.level ?? 0)) return null;
+    if (typeof p.start.day !== 'number' || p.start.day > (p.rules.lastDay ?? 0)) return null;
+    return p as PendingRun;
+  }
+
+  /** The run is over: each device pays its own reward exactly once, then shows the result. */
+  private checkResult(meta: Meta) {
+    const r = meta.result;
+    const s = this.session;
+    if (!r || !s || r.runId === this.handledRun) return;
+    this.handledRun = r.runId;
+    const mode = modeOf(meta.rules.mode);
+    this.reward = mode.reward(r, meta.rules, this.profile, s.role);
+    this.result = r;
+    this.resultRules = meta.rules;
+    // The prelude has no result screen: level 1 follows at once.
+    if (meta.rules.mode === TUTORIAL.id) { this.follow(mode.next(r, meta.rules, this.profile)); return; }
+    this.show(r.won ? 'won' : 'gameover');
+  }
+
+  /** Goes where a mode says after a run. */
+  private follow(step: NextStep) {
+    const role = this.session?.role ?? 'solo';
+    if (role === 'guest') return;
+    if (step.to === 'level') {
+      if (role === 'host') { this.coop.setPlan({ mode: CAMPAIGN.id, level: step.level }); this.coop.restartCoop(); return; }
+      this.startSoloRun(CAMPAIGN, { world: step.world, level: step.level }, true);
+      return;
+    }
+    if (role === 'host') { this.coop.returnToRoom(); return; }
+    this.leaveToMenu();
+  }
+
+  /** Continue on the win screen. */
+  afterRun() {
+    if (!this.result || !this.resultRules) { this.leaveToMenu(); return; }
+    this.follow(modeOf(this.resultRules.mode).next(this.result, this.resultRules, this.profile));
+  }
+
+  /** Back on a lost level: the campaign list alone, the room in co-op. */
+  backAfterRun() {
+    if (this.session?.role === 'host') { this.coop.returnToRoom(); return; }
+    this.leaveToMenu(this.resultRules?.mode === CAMPAIGN.id ? 'campaign' : 'main');
+  }
 
   private syncPause(view: ViewState, meta: Meta | null) {
     const isLoss = meta?.pausedBy === 'Connection lost';
@@ -381,7 +522,7 @@ export class App {
       + `role ${s?.role ?? '-'}  ping ${s ? Math.round(s.pingMs()) : 0} ms  build ${BUILD}`;
   }
 
-  private togglePause() {
+  togglePause() {
     const s = this.session;
     if (!s) return;
     const v = s.view();
@@ -390,599 +531,172 @@ export class App {
   }
 
   // ---------------------------------------------------------------------------
-  // Session lifecycle
+  // Building and starting runs
   // ---------------------------------------------------------------------------
 
-  private transport(): TransportKind {
-    if (this.params.get('net') === 'loopback') return loopbackTransport;
-    const relay = this.settings.relayAddress.trim();
-    return relay ? relayTransport(relay) : peerTransport;
+  /** Changed tuning or switches: such runs count for nothing. */
+  private devValuesActive(): boolean {
+    const t = this.settings.tuning;
+    const tuningChanged = (Object.keys(TUNING_DEFAULT) as (keyof Tuning)[]).some((k) => t[k] !== TUNING_DEFAULT[k]);
+    const flagsChanged = FLAG_DEFS.some((f) => this.settings.flags[f.id] !== f.value);
+    return tuningChanged || flagsChanged;
   }
 
-  private shaped(link: Transport): Transport {
-    const lat = Number(this.params.get('lat') ?? 0);
-    if (lat <= 0) return link;
-    return withLatency(link, {
-      latencyMs: lat,
-      jitterMs: Number(this.params.get('jit') ?? 0),
-      loss: Number(this.params.get('loss') ?? 0),
+  private seedParam(): number | undefined {
+    const fixed = this.params.get('seed');
+    return fixed !== null && fixed !== '' && Number.isFinite(Number(fixed)) ? Number(fixed) : undefined;
+  }
+
+  /**
+   * What the app tells a mode about a new run. Saved tuning and switches only go in when a
+   * developer tool is in play; otherwise every run plays with the standard values.
+   */
+  private runEnv(choice: RunChoice, names: string[], handTiers: number[]): RunEnv {
+    const env: RunEnv = { names, fieldW: fieldForAspect(innerWidth / innerHeight), handTiers, seed: this.seedParam() };
+    const quick = (choice.quickStart ?? 0) > 0 || (choice.devDay ?? 0) > 0 || (choice.day ?? 1) > 1;
+    if (quick || this.devValuesActive()) {
+      env.tuning = { ...this.settings.tuning };
+      env.flags = { ...this.settings.flags };
+      env.devRun = true;
+    }
+    return env;
+  }
+
+  private buildSetup(mode: GameMode, choice: RunChoice, names: string[], handTiers: number[]): RunSetup {
+    return mode.buildRun(this.profile, choice, this.runEnv(choice, names, handTiers));
+  }
+
+  /** The host's run for what the co-op room plans. */
+  coopSetup(plan: RoomPlan, names: string[], handTiers: number[]): RunSetup {
+    return this.buildSetup(plan.mode === CAMPAIGN.id ? CAMPAIGN : ENDLESS, this.planChoice(plan), names, handTiers);
+  }
+
+  private planChoice(plan: RoomPlan): RunChoice {
+    if (plan.mode === CAMPAIGN.id) return { world: plan.world, level: plan.level ?? 1 };
+    return { world: plan.world, difficulty: plan.difficulty ?? this.settings.difficulty, ...this.endlessStart() };
+  }
+
+  /** The developer menu's endless start day: a quick start on its own days, any other day as a free developer day. */
+  private endlessStart(): Pick<RunChoice, 'quickStart' | 'devDay'> {
+    if (this.startDay <= 1) return {};
+    return quickStartFor(this.startDay) ? { quickStart: this.startDay } : { devDay: this.startDay };
+  }
+
+  startPlanSolo(plan: RoomPlan) {
+    this.startSoloRun(plan.mode === CAMPAIGN.id ? CAMPAIGN : ENDLESS, this.planChoice(plan), true);
+  }
+
+  /**
+   * Starts a run alone. A new player gets the tutorial first, unless this is a developer start,
+   * a continued level, or the tutorial itself is what follows (`skipTutorial`).
+   */
+  private startSoloRun(mode: GameMode, choice: RunChoice, skipTutorial = false) {
+    const dev = (choice.quickStart ?? 0) > 0 || (choice.devDay ?? 0) > 0 || (choice.day ?? 1) > 1 || !!choice.resume;
+    if (!skipTutorial && !dev && this.tutorialDue()) { this.startTutorial(); return; }
+    this.coop.closeRoom();
+    // "Try again" starts a continued level from its first day.
+    const again: RunChoice = choice.resume ? { world: choice.world, level: choice.resume.rules.level ?? 1 } : choice;
+    this.lastPick = { mode: mode.id, choice: again };
+    const setup = this.buildSetup(mode, choice, [this.playerName()], [this.profile.data.handTier]);
+    this.useSession(new HostSession(setup, false));
+  }
+
+  startTutorial() {
+    this.coop.closeRoom();
+    this.lastPick = null;
+    const setup = TUTORIAL.buildRun(this.profile, { world: this.world }, {
+      names: [this.playerName()], fieldW: fieldForAspect(innerWidth / innerHeight), handTiers: [this.profile.data.handTier],
+    });
+    this.useSession(new HostSession(setup, false));
+  }
+
+  startCampaign(level: number) {
+    if (!CAMPAIGN.canPlay(this.profile, this.world, level)) return;
+    this.startSoloRun(CAMPAIGN, { world: this.world, level });
+  }
+
+  startEndless() {
+    this.startSoloRun(ENDLESS, {
+      world: this.world, difficulty: this.settings.difficulty, ...this.endlessStart(),
     });
   }
 
-  private useSession(s: Session) {
+  continueLevel() {
+    const p = this.pendingRun();
+    if (!p) { this.show('main'); return; }
+    this.startSoloRun(CAMPAIGN, { world: p.rules.world, resume: { rules: p.rules, start: p.start, seed: p.seed } }, true);
+  }
+
+  restartRun() {
+    if (this.session?.role === 'host') { this.coop.restartCoop(); return; }
+    const pick = this.lastPick;
+    if (!pick) { this.leaveToMenu(); return; }
+    this.startSoloRun(MODES[pick.mode] ?? ENDLESS, pick.choice, true);
+  }
+
+  playerName(): string { return this.profile.data.name.trim() || 'Player'; }
+
+  // ---------------------------------------------------------------------------
+  // Session lifecycle
+  // ---------------------------------------------------------------------------
+
+  private resetRunState() {
+    this.lastPhase = '';
+    this.lastMetaRev = -1;
+    this.bannerKey = '';
+    this.popup.clear();
+  }
+
+  useSession(s: Session) {
     this.session?.dispose();
     this.session = s;
     this.scene.resetForNewGame();
     this.scene.session = s;
-    this.lastPhase = '';
-    this.lastMetaRev = -1;
-    this.scoreSaved = false;
-    this.tipShownDay = 0;
-    this.shownWeaponTips.clear();
+    this.resetRunState();
     this.show('none');
     this.applyView();
   }
 
-  /** What a new game takes from the host's settings and screen. */
-  private gameOptions() {
-    return {
-      seed: this.seed(), difficulty: this.settings.difficulty, tuning: this.settings.tuning, flags: this.settings.flags,
-      fieldW: fieldForAspect(innerWidth / innerHeight), quickStart: this.startDay > 1 ? this.startDay : undefined,
-    };
+  releaseSession(alsoFromScene = false) {
+    this.session = null;
+    if (alsoFromScene) this.scene.session = null;
   }
 
-  private seed(): number {
-    const fixed = this.params.get('seed');
-    return fixed ? Number(fixed) : Math.floor(Math.random() * 2 ** 31);
+  /** Leaves a finished co-op run but keeps the link to the other player open. */
+  leaveRunForRoom() {
+    this.session = null;
+    this.scene.session = null;
+    this.scene.resetForNewGame();
+    this.resetRunState();
+    this.audio.startMusic('menu');
   }
 
-  startSolo() {
-    this.room?.close();
-    this.room = null;
-    this.lobbyLink = null;
-    this.useSession(new HostSession({ ...this.gameOptions(), names: [this.playerName()], coop: false }));
+  onGuestRestart() {
+    this.scene.resetForNewGame();
+    this.resetRunState();
+    this.show('none');
   }
 
-  private playerName(): string { return this.settings.name.trim() || 'Player'; }
-
-  private leaveToMenu() {
-    this.lobbyToken++;
-    this.joining = false;
-    if (this.session?.role === 'host') this.lobbyLink?.send({ k: 'leftGame' });
-    this.lobbyLink?.close();
-    this.joinLink?.close();
+  leaveToMenu(screen: ScreenId = 'main') {
+    this.coop.hangUp(this.session?.role === 'host');
     this.session?.dispose();
     this.session = null;
     this.scene.session = null;
     this.scene.resetForNewGame();
-    this.room?.close();
-    this.room = null;
-    this.lobbyLink = null;
-    this.joinLink = null;
-    this.guestName = '';
+    this.resetRunState();
+    this.coop.reset();
     this.audio.startMusic('menu');
-    this.show('main');
-  }
-
-  // Host side ------------------------------------------------------------------
-
-  async openRoom() {
-    const token = ++this.lobbyToken;
-    this.code = makeRoomCode();
-    this.lobbyStatus = 'Opening room...';
-    this.lobbyError = false;
-    this.show('host');
-    try {
-      const room = await this.transport().host(
-        this.code,
-        (raw) => this.onGuestLink(this.shaped(raw)),
-        (msg) => { this.lobbyStatus = msg; this.lobbyError = true; if (this.screen === 'host') this.show('host'); },
-      );
-      if (token !== this.lobbyToken) { room.close(); return; }
-      this.room = room;
-      this.lobbyStatus = 'Waiting for your friend...';
-    } catch (err) {
-      this.lobbyStatus = (err as Error).message;
-      this.lobbyError = true;
-    }
-    if (this.screen === 'host') this.show('host');
-  }
-
-  private onGuestLink(link: Transport) {
-    link.onMessage = (m) => {
-      if (m.k !== 'hello') return;
-      if (m.ver !== BUILD) {
-        link.send({ k: 'reject', reason: 'version', hostVer: BUILD });
-        return;
-      }
-      const name = m.name || 'Guest';
-      const s = this.session;
-      const occupied = s instanceof HostSession ? s.connection() === 'connected' : this.lobbyLink !== null;
-      // The same name again is a reload whose old link has not timed out yet.
-      if (occupied && name !== this.guestName) {
-        link.send({ k: 'reject', reason: 'full', hostVer: BUILD });
-        return;
-      }
-      if (!(s instanceof HostSession) && this.lobbyLink && this.lobbyLink !== link) {
-        const old = this.lobbyLink;
-        old.onClose = () => {};
-        old.close();
-      }
-      this.guestName = name;
-      this.lastGuestName = this.guestName;
-      this.lobbyLink = link;
-      if (s instanceof HostSession && s.role === 'host') {
-        link.send({ k: 'welcome', names: s.sim.s.meta.names, inGame: true, difficulty: s.sim.s.meta.difficulty });
-        s.attach(link);
-        this.toast(`${this.guestName} is back`);
-        return;
-      }
-      link.send({ k: 'welcome', names: [this.playerName(), this.guestName], inGame: false, difficulty: this.settings.difficulty });
-      this.lobbyStatus = `${this.guestName} joined!`;
-      this.lobbyError = false;
-      link.onClose = () => {
-        if (this.lobbyLink !== link) return;
-        this.lobbyLink = null;
-        this.guestName = '';
-        this.lobbyStatus = 'Your friend left. Waiting...';
-        if (this.screen === 'host') this.show('host');
-      };
-      if (this.screen === 'host') this.show('host');
-    };
-  }
-
-  startCoopAsHost() {
-    if (!this.lobbyLink) return;
-    const session = new HostSession({ ...this.gameOptions(), names: [this.playerName(), this.guestName], coop: true });
-    const link = this.lobbyLink;
-    this.lobbyLink = link;
-    session.attach(link);
-    link.send({ k: 'start' });
-    // dispose() on the previous session would close the shared link; drop it first.
-    this.session = null;
-    this.useSession(session);
-  }
-
-  private restartCoop() {
-    const connected = this.session?.connection() === 'connected';
-    if (!connected || !this.lobbyLink) { this.startSolo(); return; }
-    // The link stays open across runs, so the old session must not close it.
-    this.session = null;
-    this.guestName = this.lastGuestName;
-    this.startCoopAsHost();
-  }
-
-  // Guest side -----------------------------------------------------------------
-
-  async joinRoom(rawCode: string) {
-    const code = normalizeRoomCode(rawCode);
-    if (!code || this.joining) return;
-    this.joinLink?.close();
-    this.joinLink = null;
-    this.joining = true;
-    const token = ++this.lobbyToken;
-    this.code = code;
-    this.lobbyStatus = 'Connecting...';
-    this.lobbyError = false;
-    this.show('join', code);
-    try {
-      const link = this.shaped(await this.transport().join(code));
-      if (token !== this.lobbyToken) { link.close(); return; }
-      this.joining = false;
-      this.joinLink = link;
-      link.onClose = () => { this.lobbyStatus = 'Connection closed.'; this.lobbyError = true; if (this.screen === 'join') this.show('join', code); };
-      link.onMessage = (m) => this.onHostMessage(m, link, code);
-      link.send({ k: 'hello', ver: BUILD, name: this.playerName() });
-    } catch (err) {
-      this.joining = false;
-      if (token !== this.lobbyToken) return;
-      this.lobbyStatus = (err as Error).message;
-      this.lobbyError = true;
-      if (this.screen === 'join') this.show('join', code);
-    }
-  }
-
-  private onHostMessage(m: NetMessage, link: Transport, code: string) {
-    switch (m.k) {
-      case 'welcome':
-        if (m.inGame) { this.enterGuest(link); return; }
-        this.lobbyStatus = `In the room with ${m.names[0]}. Waiting for the host to start.`;
-        this.lobbyError = false;
-        this.show('join', code);
-        break;
-      case 'reject':
-        this.lobbyStatus = m.reason === 'full'
-          ? 'This room already has two players.'
-          : 'Your game version differs from the host. Please reload the page (Ctrl+F5) on both sides.';
-        this.lobbyError = true;
-        this.show('join', code);
-        link.close();
-        break;
-      case 'start':
-        this.enterGuest(link);
-        break;
-      default:
-        break;
-    }
-  }
-
-  private enterGuest(link: Transport) {
-    this.session = null;
-    const s = new GuestSession(link);
-    s.onRestart = () => {
-      this.scene.resetForNewGame();
-      this.lastPhase = '';
-      this.lastMetaRev = -1;
-      this.scoreSaved = false;
-      this.tipShownDay = 0;
-      this.show('none');
-    };
-    this.useSession(s);
+    this.show(screen);
   }
 
   // ---------------------------------------------------------------------------
-  // Screens
+  // Screens: one file each in screens/, shown by the ScreenManager.
   // ---------------------------------------------------------------------------
 
-  show(screen: Screen, arg?: string) {
-    const samePage = this.screen === screen;
-    this.screen = screen;
-    if (screen === 'none') {
-      this.overlay?.remove();
-      this.overlay = null;
-      return;
-    }
-    const html = this.render(screen, arg);
-    if (!this.overlay) {
-      this.overlay = document.createElement('div');
-      this.overlay.className = 'overlay';
-      this.overlay.addEventListener('click', (e) => this.onClick(e));
-      this.overlay.addEventListener('input', (e) => this.onInput(e));
-      this.ui.insertBefore(this.overlay, this.toasts);
-    }
-    const focused = document.activeElement as HTMLInputElement | null;
-    const focusId = focused?.id;
-    const caret = focused?.selectionStart ?? null;
-    // A purchase redraws the market; the player's place in the lists must survive that.
-    const list = samePage ? this.overlay.querySelector('.items') : null;
-    const tabs = samePage ? this.overlay.querySelector('.tabs') : null;
-    const panel = samePage ? this.overlay.querySelector('.panel') : null;
-    const listTop = list?.scrollTop ?? 0;
-    const tabsLeft = tabs?.scrollLeft ?? 0;
-    const panelTop = panel?.scrollTop ?? 0;
-    const tabBefore = tabs?.querySelector('.tab.on')?.getAttribute('data-tab');
-    this.overlay.innerHTML = html;
-    // Only a new screen pops in; a redraw of the same one must not flicker.
-    if (!samePage) this.overlay.querySelector('.panel')?.classList.add('enter');
-    if (samePage) {
-      const items = this.overlay.querySelector('.items');
-      if (items && tabBefore === this.shopTab) items.scrollTop = listTop;
-      const newTabs = this.overlay.querySelector('.tabs');
-      if (newTabs) newTabs.scrollLeft = tabsLeft;
-      const newPanel = this.overlay.querySelector('.panel');
-      if (newPanel) newPanel.scrollTop = panelTop;
-    }
-    if (focusId) {
-      const el = this.overlay.querySelector<HTMLInputElement>(`#${focusId}`);
-      if (el) { el.focus(); if (caret !== null) el.setSelectionRange(caret, caret); }
-    }
-  }
+  show(screen: ScreenId, arg?: string) { this.screens.show(screen, arg); this.lobby.sync(); }
 
-  private render(screen: Screen, arg?: string): string {
-    const back = '<button class="secondary" data-a="main">Back</button>';
-    switch (screen) {
-      case 'main':
-        return `<div class="panel narrow"><div class="logo">${esc(GAME_NAME)}</div>
-          <div class="tagline">Grab them. Fling them. Hold the gate.</div>
-          <div class="stack">
-            <button data-a="play">Play</button>
-            <button class="secondary" data-a="scores">Scores</button>
-            <button class="secondary" data-a="options">Options</button>
-            <button class="secondary" data-a="help">Help</button>
-            <button class="secondary" data-a="credits">Credits</button>
-          </div>
-          <div class="version">build ${esc(__GAME_VERSION__)}</div></div>`;
-      case 'play':
-        return `<div class="panel narrow"><h2>Play</h2>
-          <div class="stack">
-            <label class="field">Your name<input id="name" type="text" maxlength="14" value="${esc(this.settings.name)}" placeholder="Player"></label>
-            <label class="field">Difficulty<select id="difficulty">${this.difficultyOptions()}</select></label>
-            ${this.quickNote()}
-            <button data-a="solo">Single Player</button>
-            <button class="alt" data-a="openRoom">Host Co-op</button>
-            <button class="alt" data-a="gotoJoin">Join Co-op</button>
-            ${back}
-          </div></div>`;
-      case 'host':
-        return this.renderHost();
-      case 'join':
-        return this.renderJoin(arg ?? this.code);
-      case 'options':
-        return this.renderOptions(back);
-      case 'help':
-        return this.renderHelp(back);
-      case 'scores':
-        return this.renderScores(back);
-      case 'credits':
-        return `<div class="panel"><h2>Credits</h2>${CREDITS_HTML}<div class="row">${back}</div></div>`;
-      case 'results':
-        return this.renderResults();
-      case 'shop':
-        return this.renderShop();
-      case 'gameover':
-        return this.renderGameOver();
-      case 'pause':
-        return `<div class="panel narrow"><h2>Paused</h2>
-          <p style="text-align:center">Paused by ${esc(this.session?.meta()?.pausedBy ?? '')}</p>
-          <div class="stack"><button data-a="resume">Resume</button>
-          <button class="secondary" data-a="options">Options</button>
-          <button class="alt" data-a="quit">Quit to menu</button></div></div>`;
-      case 'lostHost':
-        return `<div class="panel narrow"><h2>Connection lost</h2>
-          <p style="text-align:center">Your friend dropped out. They can rejoin with code <b>${esc(this.code)}</b>.</p>
-          <div class="stack"><button data-a="aloneOn">Continue alone</button><button class="alt" data-a="quit">Quit to menu</button></div></div>`;
-      case 'lostGuest':
-        return `<div class="panel narrow"><h2>Connection lost</h2>
-          <p style="text-align:center">${(this.session as GuestSession | null)?.hostLeft ? 'The host ended the game.' : 'The link to the host broke.'}</p>
-          <div class="stack">${(this.session as GuestSession | null)?.hostLeft ? '' : '<button data-a="rejoin">Rejoin</button>'}<button class="alt" data-a="quit">Quit to menu</button></div></div>`;
-      default:
-        return '';
-    }
-  }
+  /** A station in the lobby was tapped: the same as the menu button with that `data-a`. */
+  lobbyAction(id: string) { mainScreen.onAction?.(id, this.ui, this); }
 
-  private inviteLink(): string {
-    const url = new URL(location.href);
-    url.search = '';
-    url.searchParams.set('join', this.code);
-    if (this.settings.relayAddress.trim()) url.searchParams.set('relay', this.settings.relayAddress.trim());
-    return url.toString();
-  }
-
-  private quickNote(): string {
-    return this.startDay > 1 ? `<div class="status" id="quickNote">Quick start: day ${this.startDay}. Does not count for the scores.</div>` : '';
-  }
-
-  private difficultyOptions(): string {
-    return (Object.keys(DIFFICULTIES) as Difficulty[])
-      .map((d) => `<option value="${d}" ${d === this.settings.difficulty ? 'selected' : ''}>${DIFFICULTIES[d].label}</option>`).join('');
-  }
-
-  private renderHost(): string {
-    const ready = this.lobbyLink !== null;
-    const opts = this.difficultyOptions();
-    return `<div class="panel narrow"><h2>Host Co-op</h2>
-      <p style="text-align:center;margin:0">Room code</p>
-      <div class="code" id="roomCode">${esc(this.code)}</div>
-      <div class="status ${this.lobbyError ? 'err' : ''}" id="status">${esc(this.lobbyStatus)}</div>
-      <div class="stack">
-        <button class="secondary" data-a="copyInvite">Copy invite link</button>
-        <label class="field">Difficulty<select id="difficulty">${opts}</select></label>
-        ${this.quickNote()}
-        <label class="field">Relay server (optional, only if the direct link fails)
-          <input id="relay" type="text" value="${esc(this.settings.relayAddress)}" placeholder="https://....trycloudflare.com"></label>
-        <button data-a="reopen" class="small secondary">Re-open room with this relay setting</button>
-        <button id="startCoop" data-a="startCoop" ${ready ? '' : 'disabled'}>Start</button>
-        <button class="secondary" data-a="quit">Back</button>
-      </div></div>`;
-  }
-
-  private renderJoin(code: string): string {
-    return `<div class="panel narrow"><h2>Join Co-op</h2>
-      <div class="stack">
-        <label class="field">Your name<input id="name" type="text" maxlength="14" value="${esc(this.settings.name)}" placeholder="Player"></label>
-        <label class="field">Room code<input id="code" type="text" maxlength="8" value="${esc(code)}" style="text-transform:uppercase"></label>
-        <label class="field">Relay server (optional)
-          <input id="relay" type="text" value="${esc(this.settings.relayAddress)}" placeholder="https://....trycloudflare.com"></label>
-        <div class="status ${this.lobbyError ? 'err' : ''}" id="status">${esc(this.lobbyStatus)}</div>
-        <button data-a="doJoin">Join</button>
-        <button class="secondary" data-a="quit">Back</button>
-      </div></div>`;
-  }
-
-  private renderOptions(back: string): string {
-    const s = this.settings;
-    const opts = this.difficultyOptions();
-    const returnBtn = this.session ? '<button class="secondary" data-a="backPause">Back</button>' : back;
-    return `<div class="panel narrow"><h2>Options</h2><div class="stack">
-      <label class="field">Difficulty (applies to new games)<select id="difficulty">${opts}</select></label>
-      <label class="field">Music volume<input id="music" type="range" min="0" max="1" step="0.05" value="${s.musicVolume}"></label>
-      <label class="field">Effects volume<input id="sfx" type="range" min="0" max="1" step="0.05" value="${s.sfxVolume}"></label>
-      <label class="field" style="flex-direction:row;align-items:center"><input id="mute" type="checkbox" ${s.muted ? 'checked' : ''}> Mute everything</label>
-      ${returnBtn}</div></div>`;
-  }
-
-  private renderHelp(back: string): string {
-    const slide = HELP_SLIDES[this.helpIndex];
-    return `<div class="panel"><h2>${esc(slide.title)}</h2>
-      <div class="slide"><img src="${artUri(slide.icon)}" alt=""><p>${esc(slide.text)}</p></div>
-      <div class="dots">${this.helpIndex + 1} / ${HELP_SLIDES.length}</div>
-      <div class="row" style="margin-top:12px">
-        <button class="secondary" data-a="helpPrev">Previous</button><button data-a="helpNext">Next</button>${back}
-      </div></div>`;
-  }
-
-  private renderScores(back: string): string {
-    const list = loadScores();
-    const rows = list.map((e, i) => `<tr><td>${i + 1}</td><td>${esc(e.names)}</td><td>${e.coop ? 'Co-op' : 'Solo'}</td><td>${DIFFICULTIES[e.difficulty].label}</td><td>${e.day}</td><td>${e.score}</td></tr>`).join('');
-    return `<div class="panel"><h2>Scores</h2>
-      <table class="scores"><thead><tr><th>#</th><th>Name</th><th>Mode</th><th>Level</th><th>Day</th><th>Score</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="6">No runs yet. Go hold that gate.</td></tr>'}</tbody></table>
-      <div class="row" style="margin-top:14px">${this.session?.view()?.phase === 'gameover' ? '<button class="secondary" data-a="backGameOver">Back</button>' : back}</div></div>`;
-  }
-
-  private readyLine(meta: Meta): string {
-    if (meta.names.length < 2) return '';
-    const me = this.session?.me ?? 0;
-    const other = 1 - me;
-    const mine = meta.ready[me];
-    return `<div class="status" id="readyStatus">${mine ? `Waiting for ${esc(meta.names[other])}...` : meta.ready[other] ? `${esc(meta.names[other])} is ready!` : ''}</div>`;
-  }
-
-  private nextButtons(meta: Meta): string {
-    const me = this.session?.me ?? 0;
-    const label = meta.names.length > 1 ? (meta.ready[me] ? 'Not ready' : 'Ready') : 'Next Day';
-    const force = this.session?.role === 'host' && meta.ready[0] ? '<button class="alt" data-a="force">Start anyway</button>' : '';
-    return `<button class="alt" id="ready" data-a="ready">${label}</button>${force}`;
-  }
-
-  private renderResults(): string {
-    const meta = this.session?.meta();
-    if (!meta?.lastDay) return '<div class="panel narrow"><h2>Results</h2></div>';
-    const d = meta.lastDay;
-    return `<div class="panel narrow"><h2>Day ${d.day} results</h2>
-      <div class="stats">
-        <span>Raiders defeated</span><b id="kills">${d.kills}</b>
-        <span>Gold earned</span><b>${d.goldEarned}</b>
-        <span>Offerings</span><b>${d.offeringsEarned}</b>
-        <span>Gate left</span><b>${d.gatePct}%</b>
-        <span>Score</span><b>${d.score}</b>
-      </div>
-      <p style="text-align:center;font-style:italic">${esc(this.loadingTip)}</p>
-      ${this.readyLine(meta)}
-      <div class="row" style="margin-top:10px"><button id="toShop" data-a="toShop">Market</button>${this.nextButtons(meta)}</div></div>`;
-  }
-
-  private renderShop(): string {
-    const s = this.session;
-    const meta = s?.meta();
-    const v = s?.view();
-    if (!s || !meta || !v) return '';
-    const tabs = SHOP_TABS.map((t) => `<div class="tab ${t.id === this.shopTab ? 'on' : ''}" data-tab="${t.id}">${t.label}</div>`).join('');
-    const coin = `<img src="${artUri('coin')}" alt="gold">`;
-    const off = `<img src="${artUri('offering')}" alt="offerings">`;
-    const items = SHOP_ITEMS.filter((i) => i.tab === this.shopTab).map((i) => {
-      const owned = meta.owned.includes(i.id);
-      const locked = !!i.requires && !meta.owned.includes(i.requires);
-      const afford = v.gold >= i.gold && v.offerings >= i.offerings;
-      const tierSiblings = SHOP_ITEMS.filter((o) => o.tab === i.tab && meta.owned.includes(o.id));
-      const isEquipped = i.tab === 'horns' ? meta.hornEquipped === i.id
-        : i.tab === 'offerings' ? owned : tierSiblings[tierSiblings.length - 1]?.id === i.id;
-      let action = '';
-      if (owned) {
-        if (i.tab === 'horns' && !isEquipped) action = `<button class="small secondary" data-equip="${i.id}">Equip</button>`;
-        else action = `<span class="tag">${isEquipped ? 'Equipped' : 'Owned'}</span>`;
-      } else if (locked) {
-        action = `<span class="tag">Needs ${esc(SHOP_ITEMS.find((o) => o.id === i.requires)?.name ?? '')}</span>`;
-      } else {
-        action = `<button class="small" data-buy="${i.id}" ${afford ? '' : 'disabled'}>Buy</button>`;
-      }
-      const price = i.gold === 0 && i.offerings === 0 ? '' : `<span class="price">${coin}${i.gold}${i.offerings > 0 ? `${off}${i.offerings}` : ''}</span>`;
-      return `<div class="item ${owned ? 'owned' : ''} ${locked ? 'locked' : ''}" data-item="${i.id}">
-        <div class="name">${esc(i.name)}</div><div class="desc">${esc(i.desc)}</div>
-        <div class="foot">${price}${action}</div></div>`;
-    }).join('');
-    return `<div class="panel wide"><h2>The Market</h2>
-      <div class="purse"><span>${coin}<span id="gold">${v.gold}</span></span><span>${off}<span id="offerings">${v.offerings}</span></span></div>
-      <div class="tabs">${tabs}</div>${this.shopTab === 'horns' ? '<p style="text-align:center;margin:0 0 8px">Only one Gate Arm can be equipped at a time.</p>' : ''}<div class="items">${items}</div>
-      ${this.readyLine(meta)}
-      <div class="row" style="margin-top:14px"><button class="secondary" data-a="toResults">Results</button>${this.nextButtons(meta)}</div></div>`;
-  }
-
-  private renderGameOver(): string {
-    const meta = this.session?.meta();
-    const v = this.session?.view();
-    if (!meta || !v) return '';
-    const restart = this.session?.role === 'guest' ? '<p style="text-align:center">The host can start a new run.</p>' : '<button data-a="restart" id="restart">Play again</button>';
-    return `<div class="panel narrow"><h2>The gate has fallen</h2>
-      <div class="stats">
-        <span>Fell on day</span><b>${v.day}</b>
-        <span>Raiders defeated</span><b>${meta.totalKills}</b>
-        <span>Final score</span><b id="finalScore">${meta.totalScore}</b>
-      </div>
-      ${meta.quickStart > 0 ? '<p style="text-align:center;margin:4px 0">Quick start: not added to the scores.</p>' : ''}
-      <div class="stack">${restart}<button class="secondary" data-a="scores2">Scores</button><button class="alt" data-a="quit">Quit to menu</button></div></div>`;
-  }
-
-  private onInput(e: Event) {
-    const t = e.target as HTMLInputElement;
-    const s = this.settings;
-    switch (t.id) {
-      case 'name': s.name = t.value; break;
-      case 'difficulty': s.difficulty = t.value as Difficulty; break;
-      case 'music': s.musicVolume = Number(t.value); break;
-      case 'sfx': s.sfxVolume = Number(t.value); break;
-      case 'mute': s.muted = t.checked; break;
-      case 'relay': s.relayAddress = t.value; break;
-      default: return;
-    }
-    saveSettings(s);
-    this.applyAudioSettings();
-  }
-
-  private onClick(e: Event) {
-    const el = e.target as HTMLElement;
-    const tab = el.closest<HTMLElement>('[data-tab]');
-    if (tab) { this.audio.play('uiClick'); this.shopTab = tab.dataset.tab as ShopTab; this.show('shop'); return; }
-    const btn = el.closest<HTMLButtonElement>('button');
-    if (!btn || btn.disabled) return;
-    this.audio.resume();
-    this.audio.play('uiClick');
-    if (btn.dataset.buy) { this.session?.send({ k: 'buy', item: btn.dataset.buy }); return; }
-    if (btn.dataset.equip) { this.session?.send({ k: 'equip', item: btn.dataset.equip }); return; }
-    switch (btn.dataset.a) {
-      case 'main': this.helpIndex = 0; this.show('main'); break;
-      case 'play': this.show('play'); break;
-      case 'options': this.show('options'); break;
-      case 'help': this.show('help'); break;
-      case 'scores': this.show('scores'); break;
-      case 'scores2': this.show('scores'); break;
-      case 'backGameOver': this.show('gameover'); break;
-      case 'credits': this.show('credits'); break;
-      case 'solo': this.startSolo(); break;
-      case 'openRoom': void this.openRoom(); break;
-      case 'gotoJoin': this.lobbyStatus = ''; this.show('join', ''); break;
-      case 'doJoin': void this.joinRoom(this.overlay?.querySelector<HTMLInputElement>('#code')?.value ?? ''); break;
-      case 'copyInvite':
-        void navigator.clipboard?.writeText(this.inviteLink());
-        this.toast('Invite link copied');
-        break;
-      case 'reopen':
-        this.lobbyLink?.close();
-        this.lobbyLink = null;
-        this.guestName = '';
-        this.room?.close();
-        this.room = null;
-        void this.openRoom();
-        break;
-      case 'startCoop': this.startCoopAsHost(); break;
-      case 'helpPrev': this.helpIndex = (this.helpIndex + HELP_SLIDES.length - 1) % HELP_SLIDES.length; this.show('help'); break;
-      case 'helpNext': this.helpIndex = (this.helpIndex + 1) % HELP_SLIDES.length; this.show('help'); break;
-      case 'toShop': this.shopTab = this.bestShopTab(); this.show('shop'); break;
-      case 'toResults': this.show('results'); break;
-      case 'ready': this.clickReady(); break;
-      case 'force': this.session?.send({ k: 'forceStart' }); break;
-      case 'restart': this.session?.role === 'host' ? this.restartCoop() : this.startSolo(); break;
-      case 'resume': this.togglePause(); break;
-      case 'backPause': this.show(this.session?.view()?.paused ? 'pause' : 'none'); break;
-      case 'aloneOn': (this.session as HostSession).continueAlone(); this.show('none'); break;
-      case 'rejoin': this.enterRejoin(); break;
-      case 'quit': this.leaveToMenu(); break;
-    }
-  }
-
-  /** Opens the market where something can actually be bought. */
-  private bestShopTab(): ShopTab {
-    const s = this.session;
-    const meta = s?.meta();
-    const v = s?.view();
-    if (!meta || !v) return this.shopTab;
-    const buyable = SHOP_ITEMS.find((i) => !meta.owned.includes(i.id) && (!i.requires || meta.owned.includes(i.requires))
-      && v.gold >= i.gold && v.offerings >= i.offerings);
-    return buyable?.tab ?? this.shopTab;
-  }
-
-  private clickReady() {
-    const s = this.session;
-    const meta = s?.meta();
-    if (!s || !meta) return;
-    s.send({ k: 'ready', ready: !meta.ready[s.me] });
-  }
-
-  private enterRejoin() {
-    const code = this.code;
-    this.session = null;
-    this.scene.session = null;
-    this.show('join', code);
-    void this.joinRoom(code);
-  }
+  query<T extends Element>(selector: string): T | null { return this.screens.query<T>(selector); }
 }

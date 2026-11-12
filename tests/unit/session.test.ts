@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { TUNING_DEFAULT } from '../../src/config/tuning';
-import { WORLD } from '../../src/config/world';
+import { WORLD } from '../../src/config/field';
 import { GuestSession, HostSession } from '../../src/game/session';
 import type { NetMessage } from '../../src/net/protocol';
 import type { Transport } from '../../src/net/transport';
+import { makeSetup } from './helpers';
 
 /** Two in-memory ends of a link. Messages arrive only when flush() is called. */
 function pipe() {
@@ -29,7 +29,7 @@ function pipe() {
 
 function setup() {
   vi.useFakeTimers({ toFake: ['performance'] });
-  const host = new HostSession({ seed: 1, difficulty: 'medium', names: ['A', 'B'], tuning: { ...TUNING_DEFAULT }, coop: true });
+  const host = new HostSession(makeSetup({ seed: 1, names: ['A', 'B'] }), true);
   const p = pipe();
   host.attach(p.a);
   const guest = new GuestSession(p.b);
@@ -151,7 +151,7 @@ describe('host and guest sessions', () => {
     for (let i = 0; i < 150; i++) {
       const e = host.sim.spawnEnemy('grunt', WORLD.cauldron.x + 400);
       e.hp = 0.1;
-      (host.sim as unknown as { hurt(e: unknown, a: number, c: string, p: number): void }).hurt(e, 1, 'blast', 0);
+      host.sim.hurt(e, 1, 'blast', 0);
     }
     host.update(40);
     const lists = sent.filter((m) => m.k === 'ev') as Extract<NetMessage, { k: 'ev' }>[];

@@ -1,3 +1,4 @@
+// The normal co-op link: a direct WebRTC connection between host and guest through PeerJS.
 import Peer, { type DataConnection } from 'peerjs';
 import type { NetMessage } from './protocol';
 import { BaseTransport, type RoomHost, type Transport, type TransportKind } from './transport';

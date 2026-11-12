@@ -1,6 +1,11 @@
+// The Hexer as a felt-puppet rig: its drawn parts and the joints they turn on.
+// The animation that moves these parts lives in src/render/enemyView.ts.
 import type { CharacterRig } from '../types';
 import { glint, lit, litTube, paint, radial, stroke, tone } from '../shade';
-import { PAL, brassPin, felt, fold, hand, litLeg, metal, oval, part, rim, rivet, rrect, seam } from './kit';
+import { PAL, RAT, brassPin, felt, fold, hand, litLeg, metal, mouseEar, oval, part, rim, rivet, rrect, seam, snout, tail } from './kit';
+
+/** Whatever mutters under the hood is a rat. */
+const C = RAT;
 
 const ROBE = 'M-10 -24 Q-16 -2 -24 21 Q-12 27 0 24 Q12 27 24 21 Q16 -2 10 -24 Q0 -28 -10 -24 Z';
 const HOOD = 'M-17 5 Q-22 -15 -3 -23 Q11 -29 24 -26 Q15 -20 17 -8 Q19 3 14 8 Q-2 12 -17 5 Z';
@@ -44,6 +49,8 @@ const robe =
   glint(-6.9, -12, 0.7);
 
 const hood =
+  // Far ear, poking out behind the hood's edge.
+  mouseEar(-10, -19.5, 6, C, { back: true }) +
   felt(
     HOOD,
     PAL.plum,
@@ -56,15 +63,14 @@ const hood =
     { shadow: 4, light: 2 },
   ) +
   lit(oval(24, -26, 1.8), PAL.mustard, { outline: 1.4, shadow: 0.7, light: 0.4 }) +
+  // Near ear through a slit in the hood.
+  mouseEar(3, -25, 7, C) +
+  stroke('M-3 -20.4 Q3 -17.4 9 -20.4', PAL.plumD, 2, 0.95) +
   // Darkness inside the hood.
   (() => {
     const g = radial([[0, '#1a1020'], [0.7, '#2c1b2e'], [1, PAL.plumD]], 0.4, 0.55, 0.6);
     return g.def + `<path d="${OPENING}" fill="${g.url}" stroke="none"/>`;
   })() +
-  // A long nose catching lantern light, and wisps of a pale beard.
-  paint('M-11 -1.6 L-18.4 2.6 L-10.6 2.4 Z', '#4a3348') +
-  stroke('M-11.4 -1.4 L-18 2.4', PAL.amber, 0.9, 0.7) +
-  stroke('M-13 4.4 Q-14 8 -12.6 11 M-10 4.8 Q-10.6 8.4 -9 11.4 M-7.2 4.6 Q-7 7.6 -5.6 9.8', PAL.creamD, 1.2, 0.9) +
   // Glowing slanted eyes.
   `<circle cx="-12" cy="-4" r="4" fill="${PAL.amber}" stroke="none" opacity="0.22"/>` +
   `<circle cx="-4" cy="-4" r="4" fill="${PAL.amber}" stroke="none" opacity="0.22"/>` +
@@ -72,7 +78,10 @@ const hood =
   `<path d="M-7 -3.4 Q-4 -6.6 -0.8 -5 Q-3.6 -2.6 -7 -3.4 Z" fill="${PAL.amberL}" stroke="none"/>` +
   `<circle cx="-11.8" cy="-4.3" r="0.8" fill="#fffaf0" stroke="none"/><circle cx="-4.2" cy="-4.3" r="0.8" fill="#fffaf0" stroke="none"/>` +
   `<path d="${OPENING}" fill="none" stroke="#2b2118" stroke-width="2.6" stroke-linejoin="round"/>` +
-  stroke('M-15.6 2.4 Q-16.4 -9 -7 -12.4', PAL.plumL, 1, 0.6);
+  stroke('M-15.6 2.4 Q-16.4 -9 -7 -12.4', PAL.plumL, 1, 0.6) +
+  // A long rat snout pokes out of the dark, its nose and whiskers catching the lantern light.
+  snout(-9, 0.6, 13, 8, C, { fill: tone(C.muzzle, -0.2) }) +
+  stroke('M-12 -3 Q-17 -2.6 -21 -0.6', PAL.amber, 0.9, 0.6);
 
 const staffArm =
   // Lantern glow.
@@ -113,12 +122,14 @@ const staffArm =
   stroke('M-15 6.2 L-7.4 14.2', PAL.mustard, 3) +
   seam('M-14.4 6.8 L-8 13.6', PAL.cream, 0.8, 0.8) +
   fold('M-3 2.4 L-9 7.6', PAL.plumL, 1.2, 0.7) +
-  hand(-17, 15, 5, PAL.skin) +
+  hand(-17, 15, 5, C.fur) +
   brassPin();
 
-/** Hexer: a hooded plum robe, gnarled staff and amber lantern. */
+/** Hexer: a rat in a hooded plum robe, gnarled staff and amber lantern. */
 export const hexerRig: CharacterRig = {
   parts: [
+    // Bare tail trailing from under the robe.
+    part('tail', 17, -11, 'legBack', [-6, -19, 36, 10], tail([0, 0], [12, 4], [24, 3], [29, -13], 6, 2.2, C.tail, { rings: true })),
     part(
       'armBack',
       8,
@@ -127,12 +138,12 @@ export const hexerRig: CharacterRig = {
       [-14, -11, 17, 35],
       litTube('M0 0 L5 18', 9, PAL.plumD, { shadow: 2.8, light: 1.3 }) +
         stroke('M0.6 17.4 L9.4 15', PAL.mustardD, 2.4) +
-        hand(6, 25, 4.6, PAL.skinD),
+        hand(6, 25, 4.6, C.furD),
     ),
     part('legBack', 8, -12, 'legBack', [-22, -10, 13, 15], litLeg(12, 7, PAL.plumD, PAL.woodD, 8)),
     part('legFront', -8, -12, 'legFront', [-22, -10, 13, 15], litLeg(12, 7, PAL.plumD, PAL.woodD, 8)),
     part('body', 0, -30, 'body', [-29, -32, 29, 31], robe),
-    part('head', 0, -53, 'head', [-24, -34, 29, 15], hood),
+    part('head', 0, -53, 'head', [-31, -37, 29, 19], hood),
     part('armFront', -8, -47, 'armFront', [-50, -58, 16, 56], staffArm),
   ],
 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WORLD } from '../../src/config/world';
+import { WORLD } from '../../src/config/field';
 import { computeView, MAX_ASPECT, MAX_RENDER_PIXELS, MAX_RENDER_SCALE, renderScale } from '../../src/render/viewport';
 
 describe('computeView', () => {

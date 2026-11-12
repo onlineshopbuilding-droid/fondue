@@ -1,3 +1,4 @@
+// A link between two tabs of the same browser over a BroadcastChannel, for the co-op tests.
 import type { NetMessage } from './protocol';
 import { BaseTransport, type RoomHost, type Transport, type TransportKind } from './transport';
 
