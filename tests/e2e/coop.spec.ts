@@ -70,15 +70,15 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await closePopups(host);
     await closePopups(guest);
     await guest.mouse.move(700, 300);
-    await waitFor(() => gameState(host), (s) => Math.abs(s!.hands[1].x - 700) < 5 && Math.abs(s!.hands[1].y - 300) < 5, 5000);
+    await waitFor(() => gameState(host), (s) => Math.abs(s!.hands[1].x - 700) < 5 && Math.abs(s!.hands[1].y - 300) < 5, GAME_WAIT);
     await host.mouse.move(420, 200);
-    await waitFor(() => gameState(guest), (s) => Math.abs(s!.hands[0].x - 420) < 5, 5000);
+    await waitFor(() => gameState(guest), (s) => Math.abs(s!.hands[0].x - 420) < 5, GAME_WAIT);
     await host.screenshot({ path: 'docs/screenshots/coop-host.png' });
     await guest.screenshot({ path: 'docs/screenshots/coop-guest.png' });
 
     // Host tuning applies to both.
     await host.evaluate(() => { const sim = (window as any).__fondue.session.sim; sim.setTuning({ ...sim.tuning, shake: 1.7 }); });
-    await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().tuning.shake), (v) => v === 1.7, 5000);
+    await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().tuning.shake), (v) => v === 1.7, GAME_WAIT);
 
     // Each player kills one raider; the money is shared. The targets are placed on purpose: how a
     // crowd spreads depends on the speed of the machine.
@@ -90,7 +90,7 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
       return sim.spawnEnemy('grunt', px).id as number;
     }, x);
     const first = await place(760);
-    const a = (await waitFor(() => gameState(host), (v) => v!.enemies.some((e: any) => e.id === first), 5000))!.enemies[0];
+    const a = (await waitFor(() => gameState(host), (v) => v!.enemies.some((e: any) => e.id === first), GAME_WAIT))!.enemies[0];
     // The events of a throw carry their own time stamps, so the flick is as quick on a slow machine;
     // its flight and fall take game time, which runs slower than real time where frames are slow.
     const hp = await pointer(host, false);
@@ -119,14 +119,14 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await gp.up();
     await waitGame(host, () => gameState(host), (v) => v!.gold >= before + KILL_GOLD, 8);
     const now = await gameState(host);
-    await waitFor(() => gameState(guest), (v) => v!.gold >= now!.gold, 5000);
+    await waitFor(() => gameState(guest), (v) => v!.gold >= now!.gold, GAME_WAIT);
 
     // Shared pause.
     await guest.keyboard.press('p');
-    await waitFor(() => headline(host), (t) => t === 'Paused', 5000);
+    await waitFor(() => headline(host), (t) => t === 'Paused', GAME_WAIT);
     await expect(host.locator('.panel')).toContainText('Lenny');
     await host.click('button[data-a="resume"]');
-    await guest.waitForSelector('.overlay', { state: 'detached', timeout: 5000 });
+    await guest.waitForSelector('.overlay', { state: 'detached', timeout: GAME_WAIT });
 
     // The market at the keep with Ready on both sides; a purchase is announced to the other player.
     await endDay(host);
@@ -136,12 +136,22 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await host.waitForSelector('#toShop', { timeout: GAME_WAIT });
     await host.click('#toShop');
     await guest.click('#toShop');
-    await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.view().gold as number), (g) => g === 2000, 5000);
+    await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.view().gold as number), (g) => g === 2000, GAME_WAIT);
     await guest.evaluate(() => (window as any).__fondue.scene.tapMarketSpot('station:cauldron'));
+    // The notice stays for a few seconds of real time; a slow machine may not look in time, so the
+    // host page itself notes every notice that appears.
+    await host.evaluate(() => {
+      const seen: Element[] = ((window as any).__toastsSeen = []);
+      new MutationObserver((ms) => {
+        for (const m of ms) for (const n of m.addedNodes) if (n instanceof Element && n.classList.contains('toast')) seen.push(n);
+      }).observe(document.body, { childList: true, subtree: true });
+    });
     await guest.click('#marketWindow button[data-buy="station:cauldron"]');
     // The purchase travels to the host, is booked on a tick of its game clock and comes back with the
     // next state, so both waits count the host's game time: it runs slower than real time where frames are slow.
-    await expect(host.locator('.toast').filter({ hasText: 'Lenny bought Great Cauldron' })).toBeVisible({ timeout: GAME_WAIT });
+    await waitFor(
+      () => host.evaluate(() => ((window as any).__toastsSeen as Element[]).map((n) => n.textContent ?? '')),
+      (texts) => texts.some((t) => t.includes('Lenny bought Great Cauldron')), GAME_WAIT);
     await waitGame(host, () => guest.evaluate(() => (window as any).__fondue.session.meta().loadout.stations.cauldron), (b) => b === true, 5);
     await host.screenshot({ path: 'docs/screenshots/shop.png' });
 
@@ -162,7 +172,7 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await guest.close();
     // A closed tab cannot say goodbye over BroadcastChannel; signal it the way a dropped link would.
     await host.evaluate(() => (window as any).__fondue.lobbyLink.onClose());
-    await waitFor(() => headline(host), (t) => t === 'Connection lost', 5000);
+    await waitFor(() => headline(host), (t) => t === 'Connection lost', GAME_WAIT);
     expect(await host.evaluate(() => (window as any).__fondue.session.view().paused)).toBe(true);
     const code = await host.evaluate(() => (window as any).__fondue.code);
     const back = await context.newPage();
@@ -170,7 +180,7 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     // Rejoining right away, while the rest of the art still loads in the background, as a player would.
     await joinRoom(back, code, query);
     await waitFor(() => gameState(back), (v) => v?.day === 1 && v.mode === 'endless', GAME_WAIT);
-    await waitFor(() => host.evaluate(() => !(window as any).__fondue.session.view().paused), (b) => b, 5000);
+    await waitFor(() => host.evaluate(() => !(window as any).__fondue.session.view().paused), (b) => b, GAME_WAIT);
     expect([...errors(), ...backErrors]).toEqual([]);
     await context.close();
   });
@@ -234,10 +244,10 @@ test('co-op on different window shapes: one shared field, and the guest fires th
 
   await equip(host, { 0: 'wheel' });
   await host.evaluate(() => (window as any).__fondue.session.sim.spawnEnemy('grunt', 700));
-  await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().loadout.slotWeapon[0]), (w) => w === 'wheel', 5000);
+  await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().loadout.slotWeapon[0]), (w) => w === 'wheel', GAME_WAIT);
   const at = await guest.evaluate(() => (window as any).__fondue.scene.slotCss(0));
   await guest.mouse.click(at.x, at.y);
-  await waitFor(() => host.evaluate(() => (window as any).__fondue.session.view().cooldowns[0] as number), (c) => c > 0, 5000);
+  await waitFor(() => host.evaluate(() => (window as any).__fondue.session.view().cooldowns[0] as number), (c) => c > 0, GAME_WAIT);
   expect([...errors, ...guestErrors]).toEqual([]);
   await context.close();
 });
