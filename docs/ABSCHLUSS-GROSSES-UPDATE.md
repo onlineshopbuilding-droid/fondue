@@ -12,6 +12,19 @@ Stand: 12.11.2026. Auftrag: `docs/AUFTRAG-GROSSES-UPDATE.md`. Abnahmeliste mit B
 
 Zu zweit müssen beide dieselbe Adresse öffnen. Das neue Spiel und Classic haben getrennte Spielstände.
 
+## Stand
+
+Das Update ist veröffentlicht: Pull Request 9 ist gemergt, die Prüfung `test` war grün. Danach live geprüft (12.11.2026, mit dem Testbrowser, `tests/live/live.spec.ts`):
+
+- Das Spiel lädt, ein erster Start führt ins Tutorial mit dem König.
+- Über die Halle startet ein Endlos-Tag, zu zweit verbindet sich das Spiel über das Internet.
+- `/dev/` zeigt die Entwickler-Übersicht.
+- `/classic/` ist weiter spielbar (Tag startet, Koop verbindet).
+- Die Android-Testapp braucht keinen neuen Bau: Sie lädt die Live-Adresse und zeigt das Update von selbst.
+- Die Worktrees dieser Runde sind aufgeräumt.
+
+Wer das Spiel schon im Browser offen hatte, lädt die Seite einmal neu.
+
 ## Was gebaut wurde
 
 - **Erste Minuten:** Vorrunde mit dem König, der Greifen und Werfen zeigt, danach ein geführtes Level 1 mit dem ersten Marktbesuch (Kessel).
@@ -27,7 +40,7 @@ Zu zweit müssen beide dieselbe Adresse öffnen. Das neue Spiel und Classic habe
 
 ## Was nicht oder nur teilweise fertig ist
 
-Von 455 Abnahmepunkten sind die meisten belegt; die genaue Zahl und jeder offene Punkt mit Grund stehen in `docs/abnahme-grosses-update.json` (Einträge mit „Offen:“). Die wichtigsten:
+Von 455 Abnahmepunkten sind 391 mit Beleg erfüllt, 64 sind offen. Jeder offene Punkt steht mit Grund in `docs/abnahme-grosses-update.json` (Einträge mit „Offen:“). Die wichtigsten:
 
 - **Balance-Ziele nicht alle erreicht** (Abschnitt „Balance“ unten).
 - **Boss-Level schalten nichts frei.** Die Freischaltungen liegen auf Level 9, 19, 29, 39, also ein Level vor dem Boss.
@@ -127,7 +140,8 @@ Bevor etwas nach `main` darf und damit live geht, startet GitHub auf eigenen Rec
 Was ich daran geändert habe:
 
 - Die Prüfung baut das Spiel nur noch einmal und verteilt die Browser-Tests auf vier Teile, die gleichzeitig laufen. Sie dauert so rund 16 Minuten.
-- Beim ersten Lauf dieses Updates fielen sechs Browser-Tests durch, obwohl sie auf dem Laptop bestanden. Ursache: Auf den langsamen GitHub-Rechnern läuft die Spieluhr langsamer als die echte Uhr, die Tests warteten aber in echter Zeit. Jetzt warten sie in Spielzeit, und Würfe im Test hängen nicht mehr von der Bildrate ab. Kein Test wurde abgeschwächt oder gelöscht; ersetzte Tests stehen in der Tabelle „Ersetzte Tests“ in `docs/PROGRESS-GROSSES-UPDATE.md`.
+- Bei einem Fehlschlag lädt die Prüfung jetzt hoch, was der Test gesehen hat. So lässt sich die Ursache nachlesen.
+- Beim ersten Lauf dieses Updates fielen sechs Browser-Tests durch, obwohl sie auf dem Laptop bestanden. Ursache: Auf den langsamen GitHub-Rechnern läuft die Spieluhr langsamer als die echte Uhr, die Tests warteten aber in echter Zeit. Jetzt warten sie in Spielzeit, und Würfe im Test hängen nicht mehr von der Bildrate ab. Der Koop-Test brauchte dafür mehrere Anläufe. Dabei kam ein echter Fehler im Spiel ans Licht: Zeichnete sich der Markt genau zwischen Drücken und Loslassen eines Knopfes neu (etwa weil der Mitspieler gerade kaufte), ging der Tipp verloren. Das ist behoben und hat einen eigenen Test. Kein Test wurde abgeschwächt oder gelöscht; ersetzte Tests stehen in der Tabelle „Ersetzte Tests“ in `docs/PROGRESS-GROSSES-UPDATE.md`.
 
 ## Zurückrollen auf den alten Stand
 
@@ -142,4 +156,4 @@ Einfacher geht es über eine KI-Sitzung mit dem Satz: „Bring `main` per Pull R
 
 ## Benötigte Zeit
 
-Begonnen am 11.11.2026 um 18:35 Uhr, abgeschlossen am Vormittag des 12.11.2026. Dazwischen lagen zwei Pausen wegen des Nutzungslimits (20:34 bis 01:00 Uhr und 04:45 bis 05:53 Uhr). Reine Arbeitszeit: rund zehn Stunden.
+Begonnen am 11.11.2026 um 18:35 Uhr, veröffentlicht am 12.11.2026 um 10:15 Uhr, abgeschlossen gegen 11 Uhr. Dazwischen lagen zwei Pausen wegen des Nutzungslimits (20:34 bis 01:00 Uhr und 04:45 bis 05:53 Uhr). Reine Arbeitszeit: rund elf Stunden.

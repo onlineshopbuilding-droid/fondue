@@ -292,8 +292,8 @@
       "id": "A-2-12",
       "abschnitt": "2",
       "text": "Der Abschlussbericht enthält eine kurze Rückroll-Anleitung, wie man main auf v0-alpha zurückbringt.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "docs/ABSCHLUSS-GROSSES-UPDATE.md, Abschnitt „Zurückrollen auf den alten Stand“"
     },
     {
       "id": "A-2-13",
@@ -2056,8 +2056,8 @@
       "id": "A-11.3-03",
       "abschnitt": "11.3",
       "text": "Die Entwickler-Übersicht ist unter https://onlineshopbuilding-droid.github.io/fondue/dev/ veröffentlicht.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "Live geprüft am 12.11.2026: tests/live/live.spec.ts „the developer overview is published next to the game“ grün"
     },
     {
       "id": "A-11.3-04",
@@ -2931,8 +2931,8 @@
       "id": "A-16-44",
       "abschnitt": "16",
       "text": "Der Abschlussbericht erklärt Tim in einfachen Worten, was die Prüfung test ist und was daran geändert wurde.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "docs/ABSCHLUSS-GROSSES-UPDATE.md, Abschnitt „Die Prüfung auf GitHub, einfach erklärt“"
     },
     {
       "id": "A-17.1-01",
@@ -2953,7 +2953,7 @@
       "abschnitt": "17.1",
       "text": "Lokal grün: npm run test:e2e.",
       "erledigt": false,
-      "beleg": "Offen: voller lokaler Lauf nur vor Commit 6d14d02 belegt (PROGRESS 04:45: 47 bestanden, 4 übersprungen); danach lokal nur eine Teilmenge (26), voller Lauf nur auf GitHub (43164479076)"
+      "beleg": "Offen: Der letzte vollständige lokale Lauf liegt vor den letzten Test-Korrekturen; der vollständige Lauf auf GitHub (Lauf 43186701303, Stand f03c799) ist grün"
     },
     {
       "id": "A-17.1-04",
@@ -3043,8 +3043,8 @@
       "id": "A-17.2-11",
       "abschnitt": "17.2",
       "text": "Die Abnahmeliste ist aktuell.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "Diese Liste, Stand nach Merge und Live-Prüfung am 12.11.2026"
     },
     {
       "id": "A-17.3-01",
@@ -3057,134 +3057,134 @@
       "id": "A-17.3-02",
       "abschnitt": "17.3",
       "text": "Der Pull Request wurde selbst gemergt und das Update veröffentlicht.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "PR 9 gemergt (Merge-Commit eaa6174), Deploy-Lauf 43189792378 grün"
     },
     {
       "id": "A-17.4-01",
       "abschnitt": "17.4",
       "text": "Nach dem Merge geprüft: Die Live-Seite lädt und zeigt das Update.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "Live geprüft am 12.11.2026: tests/live/live.spec.ts „the hall inside the keep opens and an endless day starts“ grün (playwright.live.config.ts)"
     },
     {
       "id": "A-17.4-02",
       "abschnitt": "17.4",
       "text": "Nach dem Merge geprüft: Der erste Start führt ins Tutorial.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "Live geprüft am 12.11.2026: tests/live/live.spec.ts „a first start leads into the tutorial with the King“ grün"
     },
     {
       "id": "A-17.4-03",
       "abschnitt": "17.4",
       "text": "Nach dem Merge geprüft: /classic/ ist weiter spielbar.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "Live geprüft am 12.11.2026: Live-Tests mit LIVE_URL=…/fondue/classic/ grün (Tag startet, Koop verbindet)"
     },
     {
       "id": "A-17.4-04",
       "abschnitt": "17.4",
       "text": "Nach dem Merge geprüft: /dev/ zeigt die Übersicht.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "Live geprüft am 12.11.2026: /fondue/dev/ antwortet, zeigt Titel „Entwickler-Übersicht“ und die Entscheidungen ab D-01"
     },
     {
       "id": "A-17.4-05",
       "abschnitt": "17.4",
       "text": "Für die Android-Testapp ist geprüft, ob ein neuer Bau nötig ist.",
-      "erledigt": false,
-      "beleg": "Offen: noch nicht geprüft (PROGRESS 04:45 „Android-App pruefen“); android.yml baut nur bei Änderungen an capacitor.config.ts und android-setup"
+      "erledigt": true,
+      "beleg": "capacitor.config.ts: Die App lädt die Live-Adresse (server.url), das Update kommt ohne neuen Bau an; kein neuer Bau nötig"
     },
     {
       "id": "A-17.5-01",
       "abschnitt": "17.5",
       "text": "Die Worktrees sind aufgeräumt.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "Worktrees gu-profile, gu-mice, pages-multi-build entfernt, gemergte Branches gelöscht (git worktree list)"
     },
     {
       "id": "A-17.6-01",
       "abschnitt": "17.6",
       "text": "Der Abschlussbericht liegt als docs/ABSCHLUSS-GROSSES-UPDATE.md vor und wurde als letzte Nachricht im Chat gegeben, auf Deutsch, kurz und verständlich.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "docs/ABSCHLUSS-GROSSES-UPDATE.md; derselbe Bericht als letzte Chat-Nachricht"
     },
     {
       "id": "A-17.6-02",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: was gebaut wurde und was nicht.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Was gebaut wurde“, „Was nicht oder nur teilweise fertig ist“"
     },
     {
       "id": "A-17.6-03",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: die drei Links (Spiel, Classic, Entwickler-Übersicht).",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Die drei Links“"
     },
     {
       "id": "A-17.6-04",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: wie man das Entwickler-Menü am Handy öffnet.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Entwickler-Menü am Handy“"
     },
     {
       "id": "A-17.6-05",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: die neue Struktur in wenigen Sätzen, für jemanden mit leichten Programmierkenntnissen.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Die neue Struktur in wenigen Sätzen“"
     },
     {
       "id": "A-17.6-06",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: Balance-Ergebnisse für Kampagne und Endlos.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Balance“"
     },
     {
       "id": "A-17.6-07",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: die Liste der Entscheidungen, die Tim und Lenny jetzt treffen sollen.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Entscheidungen, die ihr jetzt treffen solltet“ (D-01 bis D-21)"
     },
     {
       "id": "A-17.6-08",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: was nur Menschen beurteilen können und gezielt getestet werden sollte (Tutorial-Verständlichkeit, Wurfgefühl mit Gewicht, Antipp-Waffen, Kessel hinten, Markt an der Burg, echte Handys, Safari).",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Was nur ihr beurteilen könnt“"
     },
     {
       "id": "A-17.6-09",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: offene Punkte, ehrlich benannt.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Was nicht oder nur teilweise fertig ist“, „Was noch nicht stimmt“"
     },
     {
       "id": "A-17.6-10",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: wie man auf den alten Stand zurückrollt.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Zurückrollen auf den alten Stand“"
     },
     {
       "id": "A-17.6-11",
       "abschnitt": "17.6",
       "text": "Abschlussbericht nennt: benötigte Zeit.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Benötigte Zeit“"
     },
     {
       "id": "A-17.6-12",
       "abschnitt": "17.6",
       "text": "Was am Ende nicht fertig ist, steht offen im Bericht.",
-      "erledigt": false,
-      "beleg": "Offen: folgt beim Abschluss"
+      "erledigt": true,
+      "beleg": "ABSCHLUSS: „Was nicht oder nur teilweise fertig ist“; jeder offene Punkt dieser Liste hat einen Grund"
     }
   ]
 }
