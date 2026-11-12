@@ -139,8 +139,10 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.view().gold as number), (g) => g === 2000, 5000);
     await guest.evaluate(() => (window as any).__fondue.scene.tapMarketSpot('station:cauldron'));
     await guest.click('#marketWindow button[data-buy="station:cauldron"]');
-    await expect(host.locator('.toast').filter({ hasText: 'Lenny bought Great Cauldron' })).toBeVisible({ timeout: 5000 });
-    await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().loadout.stations.cauldron), (b) => b === true, 5000);
+    // The purchase travels to the host, is booked on a tick of its game clock and comes back with the
+    // next state, so both waits count the host's game time: it runs slower than real time where frames are slow.
+    await expect(host.locator('.toast').filter({ hasText: 'Lenny bought Great Cauldron' })).toBeVisible({ timeout: GAME_WAIT });
+    await waitGame(host, () => guest.evaluate(() => (window as any).__fondue.session.meta().loadout.stations.cauldron), (b) => b === true, 5);
     await host.screenshot({ path: 'docs/screenshots/shop.png' });
 
     await host.click('#ready');
