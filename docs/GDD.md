@@ -167,7 +167,7 @@ Jedes Tor ist zugleich eine Ausbaustufe der ganzen Burg (`GATES` in `src/config/
 ## Koop
 - Host-autoritativ mit 30 Snapshots pro Sekunde, Interpolation, Vorhersage von Griff und Wurf beim Gast. Gemeinsame Kasse, gemeinsames Tor, Markt mit „Ready“ für beide.
 - **Endlos zu zweit:** 2,3-mal so viele Räuber, zwischen Tag 22 und 36 sinkend auf 2,1-mal, an Tag 1 bis 3 etwas weniger (−8, −6, −3). 50 % Gold je Kill (`COOP` in `src/config/waves.ts`).
-- **Kampagne zu zweit: Host-Kampagne mit Helfer.** Der Host spielt sein Level mit seinem Profil (Freischaltungen, Stufen, Hand), der Gast bringt nur seine Hand-Stufe mit. 1,9-mal so viele Räuber, 50 % Gold je Kill. Level-Fortschritt bekommt nur der Host. Der Gast bekommt einmal je Level die Hälfte der Sterne, aufgerundet. Jeder schreibt die eigene Belohnung ins eigene Profil.
+- **Kampagne zu zweit: Host-Kampagne mit Helfer.** Der Host spielt sein Level mit seinem Profil (Freischaltungen, Stufen, Hand), der Gast bringt nur seine Hand-Stufe mit. 1,7-mal so viele Räuber, 50 % Gold je Kill. Level-Fortschritt bekommt nur der Host. Der Gast bekommt einmal je Level die Hälfte der Sterne, aufgerundet. Jeder schreibt die eigene Belohnung ins eigene Profil.
 - **Koop-Raum:** Ein kleines Fenster zeigt live, wer im Raum ist (eigener Name, darunter der Mitspieler oder ein freier Platz). In Dialogen steht „weiter“ rechts und „zurück“ links, im Join-Bildschirm „Join“ rechts und „Back“ links.
 - Host und Gast brauchen denselben Build und dieselbe Adresse (zum Beispiel beide `/fondue/` oder beide `/fondue/classic/`).
 

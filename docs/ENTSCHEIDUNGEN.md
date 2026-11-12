@@ -177,7 +177,7 @@ Der Schalter „vorne/hinten“ und der Kessel auf der Straße sind entfernt. De
 Der Haken kostet im Lauf 12.000 statt 1.000 Gold (`STATIONS.perch` in `src/config/keep.ts`); in der Kampagne wird er mit Level 32 freigeschaltet. Das Feld `tier` je Opferstätte ist für spätere Ausbauten und eine besondere Belohnung am Haken reserviert. Warum: Der Haken soll erst spät eine Rolle spielen.
 
 ## E-050 – Koop in der Kampagne: Host-Kampagne mit Helfer
-Der Host spielt sein Level mit seinem Profil (Freischaltungen, Stufen); der Gast bringt nur seine Hand-Stufe mit und schickt sie beim Start. Zu zweit kommen 1,9-mal so viele Räuber (`COOP.campaignFactor` in `src/config/waves.ts`). Jeder schreibt seine Belohnung in sein eigenes Profil; der Host verwaltet das Profil des Gasts nicht. Zu zweit gibt es in beiden Modi 50 % Gold je Kill (`COOP.goldFactor`, vorher 0,7; angewendet in `Combat`, `src/sim/combat.ts`), weil die gemeinsame Kasse sonst doppelt so schnell wächst. Warum: Gemeinsames Spielen soll helfen, aber den Fortschritt nicht verdoppeln.
+Der Host spielt sein Level mit seinem Profil (Freischaltungen, Stufen); der Gast bringt nur seine Hand-Stufe mit und schickt sie beim Start. Zu zweit kommen 1,7-mal so viele Räuber (`COOP.campaignFactor` in `src/config/waves.ts`; zuerst 1,9, gesenkt, weil die Bots zu zweit Level 9 mit fünf Tagen nie gewannen). Jeder schreibt seine Belohnung in sein eigenes Profil; der Host verwaltet das Profil des Gasts nicht. Zu zweit gibt es in beiden Modi 50 % Gold je Kill (`COOP.goldFactor`, vorher 0,7; angewendet in `Combat`, `src/sim/combat.ts`), weil die gemeinsame Kasse sonst doppelt so schnell wächst. Warum: Gemeinsames Spielen soll helfen, aber den Fortschritt nicht verdoppeln.
 
 ## E-051 – Wer über einen Einladungslink kommt, tritt direkt bei
 Öffnet jemand die Seite mit `?join=CODE`, öffnet sich der Beitritt sofort, auch wenn das Tutorial noch nicht gesehen ist; es kommt beim nächsten Solo-Start (`App.boot` und `startSoloRun` in `src/ui/app.ts`). Warum: Ein Freund, der eingeladen wird, soll nicht erst allein üben müssen. Steht auf der Entscheidungsliste (D-03).
@@ -211,3 +211,6 @@ Jede Grafik hat einen festen Namen im Asset-Verzeichnis (`src/art/registry.ts`).
 
 ## E-061 – Test-Profile über die Adresse: `?fresh=1` und `?profile=`
 Mit `?fresh=1` startet die Seite mit einem leeren Profil, das nur im Speicher lebt; mit `?profile=CODE` mit einem importierten Profil, ebenfalls nur im Speicher (`loadProfile` in `src/ui/app.ts`). Das echte Profil im Browser bleibt dabei unberührt. `?tutorial=1` startet das Tutorial erneut. Warum: Browser-Tests und schnelles Ausprobieren eines bestimmten Fortschritts, ohne den eigenen Spielstand zu gefährden.
+
+## E-062 – Level 2 bis 9 haben fünf Tage
+Der Auftrag verlangt 5 bis 15 Tage je Level. Nur Level 1 bleibt als geführtes Lern-Level bei zwei Tagen, die Level 2 bis 9 haben jetzt fünf Tage statt drei oder vier (`dayCountOf` in `src/config/worlds/fondue/campaign.ts`). Die Level ab 10 haben 5 bis 10 Tage. Warum: Erst ab fünf Tagen lohnt sich ein Kauf im Markt innerhalb eines Levels.
