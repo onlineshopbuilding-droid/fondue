@@ -12,7 +12,7 @@ import { weaponById, type WeaponDef } from '../../config/weapons';
 import { weaponUnlockLevel } from '../../config/worlds/fondue/unlocks';
 import { PROPS } from '../../art/props';
 import {
-  buy, equip, quote, slotIntro, slotOpen, slotRole, unlockLevelOf, weaponsForRole, type Price, type Quote, type Target,
+  buy, equip, quote, slotOpen, slotRole, unlockLevelOf, weaponsForRole, type Price, type Quote, type Target,
 } from '../../modes';
 import { BACK_BUTTON, esc, pipsHtml, propUri, weaponUri } from '../html';
 import { finishFirstUpgrade, firstUpgradeDue } from '../../modes/tutorial';
@@ -219,7 +219,8 @@ function slotPanel(ctx: ScreenContext, slot: number): string {
   const open = slotOpen(ctx.profile, ctx.world, slot);
   const level = unlockLevelOf(ctx.world, 'slot', slot) ?? def.unlockLevel;
   const head = open
-    ? `<p class="sh-lead">${esc(slotIntro(slot) || def.intro)}</p>`
+    // The King introduces the slot once on the win screen; here only what to do with it.
+    ? `<p class="sh-lead">Pick the weapon that sits here. Tiers stay when you swap.</p>`
     : `<p class="sh-lead lock">This slot opens after winning level ${level}. You can look already.</p>`;
   const list = role ? weaponsForRole(role).map((w) => weaponRow(ctx, w, slot)).join('') : '';
   return `<h3 class="sh-title">${esc(def.name)} slot</h3>${head}<div class="sw-list">${list}</div>`;

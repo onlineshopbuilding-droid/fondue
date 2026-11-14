@@ -4,18 +4,19 @@
  *
  * Columns: role = which weapons fit; name = shown to players; x, y = centre of the weapon's art and of
  * its tap zone, in world units; unlockLevel = campaign level whose win opens the slot (0: open from the
- * start); intro = what the king says when the slot opens.
+ * start). What the King says when a slot opens is world story: `SLOT_INTROS` in
+ * src/config/worlds/fondue/story.ts, the only place of those lines.
  */
 export type SlotRole = 'damage' | 'slow' | 'support' | 'passive' | 'gate';
 
-export interface SlotDef { role: SlotRole; name: string; x: number; y: number; unlockLevel: number; intro: string }
+export interface SlotDef { role: SlotRole; name: string; x: number; y: number; unlockLevel: number }
 
 export const SLOTS: SlotDef[] = [
-  { role: 'damage', name: 'Damage', x: 52, y: 590, unlockLevel: 0, intro: 'Tap the wheel and it rolls down the road. Hurt them before they reach the gate!' },
-  { role: 'slow', name: 'Slow', x: 46, y: 392, unlockLevel: 2, intro: 'A new slot! Weapons here hold the raiders back so your hand can catch them.' },
-  { role: 'gate', name: 'Gate', x: 146, y: 410, unlockLevel: 4, intro: 'The gate arm is free. Whatever sits here strikes the raiders right at our door.' },
-  { role: 'support', name: 'Support', x: 46, y: 282, unlockLevel: 7, intro: 'Support weapons help your hands and the gate. Tap them at the right moment.' },
-  { role: 'passive', name: 'Passive', x: 136, y: 272, unlockLevel: 11, intro: 'The tower roof! Passive weapons fire all on their own. Watch the ring fill up.' },
+  { role: 'damage', name: 'Damage', x: 52, y: 590, unlockLevel: 0 },
+  { role: 'slow', name: 'Slow', x: 46, y: 392, unlockLevel: 2 },
+  { role: 'gate', name: 'Gate', x: 146, y: 410, unlockLevel: 4 },
+  { role: 'support', name: 'Support', x: 46, y: 282, unlockLevel: 7 },
+  { role: 'passive', name: 'Passive', x: 136, y: 272, unlockLevel: 11 },
 ];
 
 export const SLOT_COUNT = SLOTS.length;

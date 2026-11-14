@@ -19,6 +19,8 @@ import { CAMPAIGN } from '../../src/modes';
 import type { Sim } from '../../src/sim/sim';
 import type { Enemy } from '../../src/sim/types';
 import { quote, unlockWeapon } from '../../src/modes/progress';
+import { slotIntro } from '../../src/modes/unlocks';
+import { SLOT_INTROS } from '../../src/config/worlds/fondue/story';
 import { PROFILE, arm, battleSim, denied, eventsOf, fire, firedOk, flingUp, grabAt, newProfile, place, runFor, runUntil } from './helpers';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,12 +59,14 @@ describe('the weapon table', () => {
 
   it('the slots open at levels 0, 2, 4, 7 and 11 and the first weapon of each comes with its slot', () => {
     const open: Record<string, number> = { damage: 0, slow: 2, gate: 4, support: 7, passive: 11 };
-    for (const s of SLOTS) {
+    SLOTS.forEach((s, i) => {
       expect(s.unlockLevel, s.role).toBe(open[s.role]);
-      expect(s.intro.length, s.role).toBeGreaterThan(10);
+      // The King's line lives once, in the world story (SLOT_INTROS), and the unlock table reads it.
+      expect(slotIntro(i), s.role).toBe(SLOT_INTROS[i]);
+      expect(slotIntro(i).length, s.role).toBeGreaterThan(10);
       const first = Math.min(...weaponsForSlot(s.role).map((w) => w.unlockLevel));
       expect(first, s.role).toBe(s.unlockLevel);
-    }
+    });
   });
 
   it('the Rolling Wheel is free from the start', () => {
