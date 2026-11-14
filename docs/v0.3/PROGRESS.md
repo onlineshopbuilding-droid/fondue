@@ -39,3 +39,4 @@ Zeiten per `date` (Ortszeit des Laptops, WEST).
 ### Weitere ersetzte Tests
 - `tests/e2e/keep.spec.ts` (Adlerhaken): „hinauftragen und loslassen“ wird zu „nur loslassen zählt nicht, ein echter Wurf schon“ (C6, gezielter Haken).
 - `marketCamera.test.ts` wird zu `camera.test.ts` (Markt-Kamera entfällt); `dayEnd`-Tests werden zu Tests des Schalters für die zweite Hand.
+- **10:50–13:05** CI des Pull Requests #12 war rot (zwei Koop-Tests, danach Wurf-Tests): Wartezeiten in Echtzeit liefen auf dem langsamen CI-Rechner (2 bis 4 Bilder je Sekunde) ab, bevor genug Spielzeit vergangen war. Kein Spielfehler. Die Tests warten jetzt in Spielzeit mit denselben Sekunden (`fc86259`, `1dded8f`, `7ea1b7d`). CI-Lauf 43588558991: alle Prüfungen grün, auch `test`.
