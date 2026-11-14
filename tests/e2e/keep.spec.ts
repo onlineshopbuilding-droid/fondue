@@ -151,10 +151,38 @@ for (const d of DEVICES) {
     const hookCss = await page.evaluate(([a, b]) => (window as any).__fondue.scene.worldToCss(a, b), [hook, WORLD.perch.hookY]);
     expect(hookCss.x).toBeGreaterThan(d.width * 0.7);
     expect(hookCss.y).toBeGreaterThan(await page.evaluate(() => (window as any).__fondue.scene.hudBottomCss()));
+    // Carried up to the hook and let go there, without a throw: the eagle does not take it (C6).
     await p.down(h.x, h.y - 44);
     await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'held', 3000);
     await p.glide(h.x, h.y - 44, hook, WORLD.perch.hookY, 16, 25);
     await p.up(160);
+    let hookedByDrop = false;
+    await waitFor(() => gameState(page), (s) => {
+      const q = s!.enemies.find((r: any) => r.id === h.id);
+      if (q?.st === 'hooked') hookedByDrop = true;
+      return hookedByDrop || !q || (q.st !== 'held' && q.st !== 'air');
+    }, 6000, 30);
+    expect(hookedByDrop, 'a raider only carried to the hook and let go is not caught').toBe(false);
+    expect(await page.evaluate(() => (window as any).__fondue.session.sim.s.perchBusy as number)).toBe(0);
+
+    // A real throw at the hook is caught: carried down and to the left of it, then flung straight at it.
+    await clearField(page);
+    await spawn(page, 'grunt', 800);
+    const t = (await waitFor(() => gameState(page), (s) => s!.enemies.length === 1, 3000))!.enemies[0];
+    // The finger holds the raider 44 above its feet; its collar (0.3 of the body) is what meets the hook.
+    // The aim point sits a little above, for the drop during the short flight.
+    const aimX = hook;
+    const aimY = WORLD.perch.hookY + 87 * 0.3 - 44 - 14;
+    const dir = { x: Math.cos(Math.PI / 6), y: -Math.sin(Math.PI / 6) };
+    const from = { x: aimX - 240 * dir.x, y: aimY - 240 * dir.y };
+    const to = { x: aimX - 60 * dir.x, y: aimY - 60 * dir.y };
+    await p.down(t.x, t.y - 44);
+    await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'held', 3000);
+    await p.glide(t.x, t.y - 44, from.x, from.y, 16, 25);
+    // Let the raider settle in the hand, then a quick flick along the line to the hook (about 1500 px/s).
+    await page.waitForTimeout(400);
+    await p.glide(from.x, from.y, to.x, to.y, 10, 12);
+    await p.up();
     await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'hooked', 4000, 30);
     await page.screenshot({ path: `mobile-screenshots/hook-${d.name}.png` });
     // The game clock falls behind real time on a software renderer, so the meal gets a long limit.
