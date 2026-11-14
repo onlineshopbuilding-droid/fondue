@@ -7,7 +7,7 @@ export const CAMPAIGN_SCALING = {
   damageShare: 0.8,
   speedShare: 0.12,
   /** Later levels pay more gold per kill, so the bigger keep stays affordable. */
-  goldPerPower: 0.7,
+  goldPerPower: 0,
   /**
    * Growth over a whole level, from its first wave to its last, as a share (0.6 = +60 % gate damage
    * in the last wave): damage, walk speed, hit points. Split evenly over the level's waves.

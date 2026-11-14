@@ -30,20 +30,25 @@ export const CURVE = {
   levelSharePerDay: 0.35,
   levelShareMax: 1.7,
   countShare: 0.4,
-  /** Strength of the raiders: 1 in level 1, growing by this much per level. */
+  /**
+   * Strength of the raiders: 1 in level 1, growing by powerPerLevel per level, and from level powerLateFrom on
+   * by powerLate more, growing with the square (the late campaign asks for tier 6 and 7, balance.md).
+   */
   powerPerLevel: 0.05,
+  powerLateFrom: 40,
+  powerLate: 3,
   /** Raiders of a boss level are this much stronger than the curve says. */
-  bossPower: 1.12,
+  bossPower: 1.45,
   /** Planned length in seconds: levels 1 to 5, the ramp to level 20, the middle, boss and special levels. */
   secondsFirst: 70,
   secondsPerEarlyLevel: 11,
   secondsAt20: 200,
   secondsMiddleMin: 180,
   secondsMiddleMax: 300,
-  secondsBossMin: 360,
+  secondsBossMin: 450,
   secondsBossMax: 600,
-  secondsSpecialMin: 360,
-  secondsSpecialMax: 470,
+  secondsSpecialMin: 430,
+  secondsSpecialMax: 560,
   /** Seconds per wave on average (arrival plus pause); the level's length decides how many waves. */
   secondsPerWave: 15,
   /** Share of the planned length that is arrivals and pauses; the rest is fighting the last raiders. */
@@ -239,6 +244,12 @@ function wavesOf(level: number, target: number, counts: Partial<Record<EnemyType
   return waves;
 }
 
+/** Strength of a level's raiders before the boss factor. */
+export function powerOf(level: number): number {
+  const late = Math.max(0, level - CURVE.powerLateFrom) / (LEVEL_COUNT - CURVE.powerLateFrom);
+  return 1 + CURVE.powerPerLevel * (level - 1) + CURVE.powerLate * late * late;
+}
+
 function buildLevel(level: number): LevelDef {
   const twist = TWISTS[level] ?? null;
   const bossInfo = BOSSES[level];
@@ -258,7 +269,7 @@ function buildLevel(level: number): LevelDef {
     waves,
     targetSeconds,
     challenges: challengesFor(level, levelCounts),
-    power: (1 + CURVE.powerPerLevel * (level - 1)) * (boss ? CURVE.bossPower : 1),
+    power: powerOf(level) * (boss ? CURVE.bossPower : 1),
     boss,
     twist,
     story: LEVEL_STORY[level - 1] ?? '',

@@ -10,7 +10,7 @@ export const TIER_MAX = 7;
  * Gold base price of a weapon's step up to tier 2, 3, 4, 5, 6 and 7, before the weapon's own
  * `goldScale`. Index = tier - 1; index 0 (tier 1) is the unlock and costs cheese, not gold.
  */
-export const WEAPON_TIER_GOLD = [0, 300, 800, 2000, 4800, 11000, 24000];
+export const WEAPON_TIER_GOLD = [0, 300, 900, 3000, 9000, 24000, 50000];
 
 /** Raider Crests every step up to tier 7 needs on top of its gold (weapon, castle and hand alike). */
 export const CREST_COST = 40;

@@ -3,9 +3,10 @@
 // A lost level is tried again with a fresh bot stream; the level itself plays out the same every time.
 import { WORLD } from '../config/field';
 import { levelOf, worldById } from '../config/worlds';
-import { CAMPAIGN, applyLevelCheese, cheeseMask, completeTutorial, openSlots, syncUnlocks } from '../modes';
+import type { Difficulty } from '../config/waves';
+import { CAMPAIGN, ENDLESS, applyLevelCheese, cheeseMask, completeTutorial, endlessOpen, openSlots, syncUnlocks } from '../modes';
 import { MemoryProfileStore, Profile } from '../profile';
-import { spendProgress, type ArmouryBuy } from './armoury';
+import { DEFAULT_STYLE, goldWanted, spendProgress, type ArmouryBuy, type SpendStyle } from './armoury';
 import { runGame, type GameResult } from './harness';
 import { skillOf, type BotSkill } from './skills';
 
@@ -25,7 +26,25 @@ export interface CampaignOptions {
   fieldW?: number;
   /** Called after each level, for progress output. */
   onLevel?: (r: LevelRun) => void;
+  /** How the player spends between runs (taste in weapons, gold upgrades on or off). */
+  style?: SpendStyle;
+  /**
+   * Endless runs for gold, once endless is open: 'never'; 'stuck' after `stuckAfter` lost attempts of a level
+   * (a player who is stuck goes and earns gold); 'always' before every level while gold is what holds it back (the farmer).
+   */
+  farm?: 'never' | 'stuck' | 'always';
+  stuckAfter?: number;
+  /** Endless runs per farming stop, and the wave after which a farming run is ended (the player goes back). */
+  farmRuns?: number;
+  farmMaxWave?: number;
+  /** Difficulty the player farms on. */
+  farmDifficulty?: Difficulty;
+  /** Copies of the profile after these levels, for endless runs with a keep a player has at that point. */
+  snapshots?: number[];
 }
+
+/** One endless run played to earn gold. */
+export interface FarmRun { beforeLevel: number; difficulty: Difficulty; wave: number; seconds: number; gold: number }
 
 export interface LevelRun {
   level: number;
@@ -54,6 +73,8 @@ export interface LevelRun {
   goldLeft: number;
   crestsLeft: number;
   armoury: ArmouryBuy[];
+  /** Endless runs played for gold before or during this level. */
+  farm: FarmRun[];
   /** What the profile owns after this level. */
   handTier: number;
   weaponTiers: Record<string, number>;
@@ -70,6 +91,8 @@ export interface CampaignRun {
   /** Stopped at this level because it was never won and forceThrough was off. */
   stoppedAt: number | null;
   seconds: number;
+  /** Profile data after the levels asked for in `snapshots`. */
+  snapshots: Record<number, unknown>;
 }
 
 export class CampaignRunner {
@@ -85,12 +108,37 @@ export class CampaignRunner {
     const maxTries = o.maxTries ?? 6;
     const seed = o.seed ?? 1;
     const profile = await Profile.load(new MemoryProfileStore());
+    const style = o.style ?? DEFAULT_STYLE;
+    const spend = () => spendProgress(profile, skills[0], world, style);
+    const farmMode = o.farm ?? 'never';
+    const stuckAfter = o.stuckAfter ?? 2;
+    let farmCount = 0;
+    /** Plays endless runs for gold, as long as gold is what the player lacks. */
+    const farm = (beforeLevel: number, runs: number, out: FarmRun[]) => {
+      for (let k = 0; k < runs && endlessOpen(profile, world) && goldWanted(profile, skills[0], world, style) > 0; k++) {
+        const difficulty = o.farmDifficulty ?? 'medium';
+        const hand = profile.data.keep.handTier;
+        const fseed = seed * 7717 + 104729 * ++farmCount;
+        const setup = ENDLESS.buildRun(profile, { world, difficulty }, { names, fieldW: o.fieldW ?? WORLD.width, handTiers: names.map(() => hand), seed: fseed });
+        const g = runGame(setup, skills, { botSeed: fseed * 3 + 1, maxWaves: o.farmMaxWave ?? 30, targetSeconds: 3 * 3600 });
+        // A run the player leaves at farmMaxWave still pays the gold earned so far.
+        let gold: number;
+        if (g.result) gold = ENDLESS.reward(g.result, setup.rules, profile, 'solo').gold;
+        else {
+          gold = g.goldEnd;
+          profile.edit((d) => { d.wallet.gold += gold; d.earned.gold += gold; });
+        }
+        out.push({ beforeLevel, difficulty, wave: g.wave, seconds: +g.seconds.toFixed(1), gold });
+        spend();
+      }
+    };
     // A player reaches the campaign through the tutorial, which gives the free Rolling Wheel.
     completeTutorial(profile, world);
     // Levels skipped at the front count as won, with their cheese, so the profile is where it would be.
-    for (let l = 1; l < from; l++) { this.markWon(profile, world, l); spendProgress(profile, skills[0], world); }
+    for (let l = 1; l < from; l++) { this.markWon(profile, world, l); spend(); }
     const t0 = Date.now();
     const levels: LevelRun[] = [];
+    const snapshots: Record<number, unknown> = {};
     let stoppedAt: number | null = null;
 
     for (let level = from; level <= last; level++) {
@@ -100,6 +148,8 @@ export class CampaignRunner {
       const secondsPerTry: number[] = [];
       const quietPerTry: number[] = [];
       const armoury: ArmouryBuy[] = [];
+      const farmed: FarmRun[] = [];
+      if (farmMode === 'always') farm(level, o.farmRuns ?? 3, farmed);
       let game: GameResult | null = null;
       let cheeseEarned = 0;
       let goldEarned = 0;
@@ -121,28 +171,31 @@ export class CampaignRunner {
         }
         won = game.won;
         // Gold of a lost attempt is kept; spending it may be what wins the next one.
-        armoury.push(...spendProgress(profile, skills[0], world));
+        armoury.push(...spend());
+        // Stuck: go and earn gold in endless, then try again.
+        if (!won && farmMode !== 'never' && attempt + 1 >= stuckAfter && attempt + 1 < maxTries) farm(level, o.farmRuns ?? 2, farmed);
       }
       const forced = !won && !!o.forceThrough;
       if (forced) {
         cheeseEarned += this.markWon(profile, world, level);
-        armoury.push(...spendProgress(profile, skills[0], world));
+        armoury.push(...spend());
       }
       const g = game!;
       const r: LevelRun = {
         level, boss: !!def.boss, waves: def.waves.length, targetSeconds: def.targetSeconds, tries: wavePerTry.length, won, forced,
         wavePerTry, secondsPerTry, quietPerTry,
         gatePct: g.gatePct, gold: g.goldEnd, crests: g.crestsEnd, cheeseEarned, goldEarned,
-        cheeseLeft: profile.data.wallet.cheese, goldLeft: profile.data.wallet.gold, crestsLeft: profile.data.wallet.crests, armoury,
+        cheeseLeft: profile.data.wallet.cheese, goldLeft: profile.data.wallet.gold, crestsLeft: profile.data.wallet.crests, armoury, farm: farmed,
         handTier: profile.data.keep.handTier, weaponTiers: Object.fromEntries(Object.entries(profile.data.keep.weapons).map(([id, w]) => [id, w.tier])),
         slots: openSlots(profile, world).flatMap((open, i) => (open ? [i] : [])),
         keep: g.loadout, stuck, seconds: (Date.now() - lt0) / 1000,
       };
       levels.push(r);
       o.onLevel?.(r);
+      if (o.snapshots?.includes(level)) snapshots[level] = JSON.parse(JSON.stringify(profile.data));
       if (!won && !forced) { stoppedAt = level; break; }
     }
-    return { skills: skills.map((s) => s.name), levels, stoppedAt, seconds: (Date.now() - t0) / 1000 };
+    return { skills: skills.map((s) => s.name), levels, stoppedAt, seconds: (Date.now() - t0) / 1000, snapshots };
   }
 
   /** Counts a level as won without playing it: progress, its win cheese and its unlocks. Returns the new cheese. */

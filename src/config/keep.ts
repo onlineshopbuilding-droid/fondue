@@ -13,10 +13,10 @@ export const CASTLE_TIERS: CastleTierDef[] = [
   { name: 'Oak Gate', hp: 800, gold: 0, crests: 0, desc: 'Plain, honest wood.' },
   { name: 'Iron-Bound Gate', hp: 1250, gold: 400, crests: 0, desc: 'Iron bands hold the planks together.' },
   { name: 'Stone Keep', hp: 1900, gold: 1200, crests: 0, desc: 'A stone tower rises behind the gate.' },
-  { name: 'Bannered Keep', hp: 2800, gold: 3000, crests: 0, desc: 'Flags on every tower, and thicker walls.' },
-  { name: 'Gilded Keep', hp: 4000, gold: 7000, crests: 0, desc: 'Heavy, shiny and stubborn.' },
-  { name: 'Runic Fortress', hp: 5600, gold: 15000, crests: 0, desc: 'Old runes glow when the gate is struck.' },
-  { name: 'Alpine Citadel', hp: 7800, gold: 30000, crests: 40, desc: 'The pride of the mountains. Nothing has ever dented it.' },
+  { name: 'Bannered Keep', hp: 2800, gold: 4000, crests: 0, desc: 'Flags on every tower, and thicker walls.' },
+  { name: 'Gilded Keep', hp: 4000, gold: 10000, crests: 0, desc: 'Heavy, shiny and stubborn.' },
+  { name: 'Runic Fortress', hp: 5600, gold: 24000, crests: 0, desc: 'Old runes glow when the gate is struck.' },
+  { name: 'Alpine Citadel', hp: 7800, gold: 50000, crests: 40, desc: 'The pride of the mountains. Nothing has ever dented it.' },
 ];
 
 export type StationId = 'cauldron' | 'perch';

@@ -71,7 +71,7 @@ export const ENDLESS_WAVES = {
  * matters more than before; start 1.8, tuned by bots so that two do not win more often than one).
  * goldPerKill: share of a kill's gold in co-op; both players are paid the whole gold of the round (E-066).
  */
-export const COOP = { countFactor: 1.8, goldPerKill: 0.6 };
+export const COOP = { countFactor: 2.4, goldPerKill: 0.6 };
 
 /** Landscape cycle of endless: the order of the landscapes, changing every WAVES_PER_LANDSCAPE waves. */
 export const LANDSCAPES = ['meadow', 'canyon', 'marsh', 'snowpine'] as const;

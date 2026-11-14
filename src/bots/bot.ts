@@ -9,6 +9,7 @@ import type { WeaponDef } from '../config/weapons';
 import { weaponById } from '../config/weapons';
 import { handStrength, massOfType, throwFactor } from '../sim/physics';
 import type { Sim } from '../sim/sim';
+import { meltSeconds } from '../sim/stations';
 import type { Enemy } from '../sim/types';
 import type { BotSkill } from './skills';
 
@@ -289,7 +290,7 @@ export class Bot {
       const ex = x + e.grabOffX;
       const ey = y + e.grabOffY;
       const v = this.lobTo(sim, e, ex, ey - ENEMIES[e.type].height * 0.45, WORLD.cauldron.x, WORLD.cauldron.rimY, 0.34);
-      if (v) { this.potFreeAt = this.now + 0.7 + sim.tuning.cauldronSeconds; return this.swipe(sim, e, v); }
+      if (v) { this.potFreeAt = this.now + 0.7 + meltSeconds(sim.s.meta.loadout.stationTier?.cauldron ?? 1, sim.tuning); return this.swipe(sim, e, v); }
     }
     return this.swipe(sim, e, { vx: this.gauss(60), vy: -1250 - this.rand() * 250 });
   }
