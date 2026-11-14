@@ -358,6 +358,10 @@ Die Bots lesen die Tabelle und bewerten Waffen grob nach den Zahlen der Stufe (`
 
 Die Pages-Umgebung nimmt nur Läufe von `main` an. Nach einer Änderung an `v0.3-dev`, `v0.2` oder `classic` den Deploy deshalb von Hand starten: `gh workflow run deploy.yml --ref main` (Actions, „Run workflow“, Branch `main`). Zurückrollen auf einen alten Stand: `main` per Pull Request auf den Stand des Tags bringen (kein Force-Push). Alle Adressen teilen sich den Browser-Speicher, v0.3 benutzt aber nur Schlüssel `fondue.v3.…`. Auf dem iPhone legt man `/fondue/next/` über „Zum Home-Bildschirm“ als eigene App an; sie hat einen eigenen Speicher, getrennt vom bisherigen Symbol.
 
+Alle Adressen teilen sich den Browser-Speicher. Deshalb speichert v0.3 unter eigenen Schlüsseln (`fondue.v3.*`) und lässt den Spielstand der Live-Version in Ruhe.
+
+Ist der Stand auf `v0.3-dev` kaputt, läuft die Auslieferung trotzdem durch: `/next/` (oder `/next/dev/`) zeigt dann eine kurze Seite „v0.3 build failed, see Actions“, und der Lauf hat eine Warnung. Das Spiel unter `/fondue/` ist davon nie betroffen.
+
 ## 8. Hilfen beim Ausprobieren
 
 **Entwickler-Menü:** Options → „Developer menu“ (auch am Handy), am Laptop F1, im einfachen HTML-Menü auch langes Drücken aufs Logo. Dort:
