@@ -1,0 +1,240 @@
+[
+  {
+    "id": "A1",
+    "titel": "Dauerhafte Burg",
+    "pruefung": "Test, dass eine Waffe nach Ablegen, Anlegen, Levelwechsel und Neuladen ihre Stufe behält; im Spiel gibt es keinen Kauf mehr während eines Levels.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "A2",
+    "titel": "Käse",
+    "pruefung": "automatischer Test, dass die Summe aller Käse-Preise 500 ist und dass ein Käse nicht doppelt vergeben wird; Test, dass jede Challenge im jeweiligen Level erfüllbar ist (benötigte Waffen und Gegner sind dort verfügbar).",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "A3",
+    "titel": "Gold",
+    "pruefung": "Gold bleibt nach Levelende und Neuladen erhalten; Bot-Lauf zeigt, dass ein Spieler, der nur farmt, die späte Kampagne nicht mühelos schafft.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "A4",
+    "titel": "Räuberwappen",
+    "pruefung": "Bot-Lauf zeigt den Median der Runden bis zum ersten Stufe-7-Upgrade im Bereich 20 bis 30.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "A5",
+    "titel": "Stufen 1 bis 7, jede spürbar",
+    "pruefung": "Tabelle in der Entwickler-Übersicht zeigt für jede Waffe, was sich je Stufe ändert; kein Stufensprung ändert nur eine Zahl um weniger als 15 % (Startwert).",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "A6",
+    "titel": "Spielstand",
+    "pruefung": "Tests für Speichern, Laden, Migration und den Fall „Speicher voll oder gesperrt“; Test, dass fondue.profile unberührt bleibt; Prüfung im Browser-Test mit Neuladen.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "B1",
+    "titel": "Level ohne Tage",
+    "pruefung": "Level-Tabelle zeigt für alle 100 Level die geplante Dauer; Messung der tatsächlichen Dauer mit dem mittleren Bot liegt je Abschnitt im Zielbereich.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "B2",
+    "titel": "Wellen",
+    "pruefung": "In keinem Level gibt es eine Pause ohne lebenden Gegner von mehr als 5 Sekunden (Startwert), gemessen über alle 100 Level.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "B3",
+    "titel": "Schneller Start",
+    "pruefung": "Messung der Zeit bis zum ersten sichtbaren Gegner in den Leveln 1 bis 5, im Endlos-Modus und im Koop, jeweils auf iPhone 16 quer, OnePlus 8T quer und Laptop; alle Werte höchstens 2,0 Sekunden, Werte stehen im Bericht.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "B4",
+    "titel": "Weniger, aber schnellere Gegner",
+    "pruefung": "Konfigurationswerte dokumentiert; Browser-Test auf dem Handy-Format zeigt, dass schnelle Gegner im Lauf greifbar sind (Trefferbereich groß genug).",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "B5",
+    "titel": "Schwierigkeit über die Kampagne",
+    "pruefung": "Bot-Läufe zeigen: ohne Ausbau bleibt der mittlere Bot vor Level 30 stecken (Startwert); mit Ausbau kommt er weiter; der sehr gute Bot braucht in späten Leveln und Boss-Leveln spürbar mehr Versuche als in frühen.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C1",
+    "titel": "Die fünf Slots",
+    "pruefung": "Konfiguration ordnet jede Waffe genau einem Slot zu; Screenshot der Burg mit allen fünf belegten Slots auf allen drei Formaten.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C2",
+    "titel": "Slots über die Kampagne freischalten",
+    "pruefung": "Level-Tabelle zeigt die Slot-Freischaltungen bis spätestens Level 15; Browser-Test sieht die Einführung.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C3",
+    "titel": "Große Waffen-Palette",
+    "pruefung": "Liste aller Waffen mit Slot, Freischalt-Level und Käse-Preis in der Entwickler-Übersicht; Bot-Auswertung zeigt, dass in jedem Slot mindestens 3 Waffen von Bots genutzt werden; Browser-Test für Antippen ohne Fehlgriff.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C4",
+    "titel": "Rolling Wheel zuerst",
+    "pruefung": "frisches Profil hat nach der Vorrunde genau das Rolling Wheel.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C5",
+    "titel": "Great Cauldron",
+    "pruefung": "Test für doppeltes Gold; Level-Tabelle zeigt den Freischaltzeitpunkt.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C6",
+    "titel": "Eagle Perch",
+    "pruefung": "Suche im Code und in den Texten findet kein „Offering“ mehr; Bot-Messung der Trefferquote steht im Bericht.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C7",
+    "titel": "Burg-Stufen 1 bis 7 und Issue 1",
+    "pruefung": "Screenshots aller sieben Burg-Stufen auf allen drei Formaten; Kommentar in Issue 1.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C8",
+    "titel": "Hand bis Stufe 7",
+    "pruefung": "Test der Yeti-Regel für eine Hand der Stufe 3 und 4 und für zwei Hände.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C9",
+    "titel": "Zweite Hand",
+    "pruefung": "Browser-Test mit zwei gleichzeitigen Berührungen auf beiden Handy-Formaten.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "D1",
+    "titel": "Dauerhafter Shop an der Burg",
+    "pruefung": "Screenshots auf allen drei Formaten; pruefer prüft mit frischem Blick, ob ein neuer Spieler ohne Erklärung ein Upgrade findet und kauft, und hält das Ergebnis fest.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "D2",
+    "titel": "Bildschirm vor jedem Level",
+    "pruefung": "Browser-Test: vom Tippen auf ein Level bis zum Spielstart sind höchstens zwei Tipps nötig.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "D3",
+    "titel": "Lobby, Texte und Hilfe",
+    "pruefung": "Suche in allen Spieltexten nach „star“, „day“ im Sinne von Spieltag, „market“ und „offering“ findet keine veralteten Stellen.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "D4",
+    "titel": "Tutorial",
+    "pruefung": "Browser-Test spielt mit frischem Profil Vorrunde, Level 1 und das erste Upgrade durch.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "E1",
+    "titel": "Endlos-Modus",
+    "pruefung": "Test, dass Endlos vor dem fünften Slot gesperrt ist; Bot-Lauf zeigt Gold pro Minute je Schwierigkeit.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "E2",
+    "titel": "Koop",
+    "pruefung": "Koop-Test mit zwei Browsern; Messwerte zum Ruckeln vorher und nachher; Bot-Lauf zu zweit gegen allein.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "F1",
+    "titel": "Waffen-Editor im Entwickler-Menü",
+    "pruefung": "Browser-Test ändert einen Wert und sieht die Wirkung im Spiel.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "F2",
+    "titel": "Cheats im Entwickler-Menü",
+    "pruefung": "Test für jeden Cheat und für die Kennzeichnung.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "F3",
+    "titel": "Entwickler-Übersicht und offene Entscheidungen",
+    "pruefung": "Browser-Test füllt eine Entscheidung aus und erhält eine gültige Issue-Adresse.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "F4",
+    "titel": "Versionen und Fahrplan",
+    "pruefung": "Versionsnummer in Screenshots sichtbar; Fahrplan auf der Entwickler-Übersicht.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "G1",
+    "titel": "Tests und Balance",
+    "pruefung": "npm test, npm run test:e2e und npm run balance grün, Ergebnisse im Bericht.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "G2",
+    "titel": "Handy zuerst",
+    "pruefung": "Screenshots jedes neuen Bildschirms auf allen drei Formaten in docs/screenshots/v0.3/.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "G3",
+    "titel": "Bereit für App Store und Google Play",
+    "pruefung": "Liste im Bericht, was für den Store-Bau später noch nötig ist.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "G4",
+    "titel": "Dokumente",
+    "pruefung": "pruefer gleicht die Dokumente stichprobenartig mit Code und Konfiguration ab.",
+    "status": "offen",
+    "beleg": ""
+  }
+]
