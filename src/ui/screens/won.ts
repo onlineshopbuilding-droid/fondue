@@ -11,7 +11,8 @@ import { levelOf } from '../../config/worlds';
 import type { UnlockDef } from '../../config/worlds/types';
 import { levelCheese } from '../../modes';
 import { markIntroSeen, shopAfterWin, type Intro } from '../../modes/tutorial';
-import { FIRST_WIN_LINES, SLOT_INTROS, STATION_INTROS } from '../../config/worlds/fondue/story';
+import { slotIntro } from '../../modes/unlocks';
+import { FIRST_WIN_LINES, STATION_INTROS } from '../../config/worlds/fondue/story';
 import { esc, navRow, propUri } from '../html';
 import type { ScreenContext } from './context';
 import type { Screen } from './screen';
@@ -33,7 +34,7 @@ export function cheeseList(texts: string[], have: number, fresh: number): string
     const isNew = (fresh & (1 << bit)) !== 0;
     const got = (have & (1 << bit)) !== 0;
     const cls = isNew ? 'new' : got ? 'got' : 'open';
-    return `<li class="cheese-${cls}" data-bit="${bit}"><span class="star">${got ? '🧀' : '◯'}</span> ${esc(text)}${isNew ? ' <b>New!</b>' : ''}</li>`;
+    return `<li class="cheese-${cls}" data-bit="${bit}"><span class="cur-icon">${got ? '🧀' : '◯'}</span> ${esc(text)}${isNew ? ' <b>New!</b>' : ''}</li>`;
   });
   return `<ul class="cheese-list" id="cheeseList">${rows.join('')}</ul>`;
 }
@@ -52,15 +53,16 @@ export function cheeseTexts(challenges: { text: string }[]): string[] {
 /** King Fridolin with a speech bubble, for screens outside the battlefield. */
 export function kingSaysHtml(lines: string[], id = 'kingSays'): string {
   if (lines.length === 0) return '';
-  return `<div class="king-says" id="${id}" style="display:flex;gap:10px;align-items:flex-end;margin:6px 0 8px;text-align:left">
-      <img src="${propUri('kingTalk') || propUri('king')}" alt="King Fridolin" style="width:58px;height:auto;flex:none">
-      <div class="king-bubble" style="background:#fff6df;color:#2b2118;border:3px solid #2b2118;border-radius:14px;padding:7px 12px;font-weight:800;font-size:15px;line-height:1.35">${lines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>
+  // Looks in style.css (`.king-says`), so phones can pack it tighter.
+  return `<div class="king-says" id="${id}">
+      <img src="${propUri('kingTalk') || propUri('king')}" alt="King Fridolin">
+      <div class="king-bubble">${lines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>
     </div>`;
 }
 
-/** The King's line for a newly opened slot or station. */
+/** The King's line for a newly opened slot or station. This screen is the only place it is shown. */
 export function introLine(intro: Intro): string {
-  return intro.kind === 'slot' ? SLOT_INTROS[intro.slot] ?? '' : STATION_INTROS[intro.station] ?? '';
+  return intro.kind === 'slot' ? slotIntro(intro.slot) : STATION_INTROS[intro.station] ?? '';
 }
 
 /** What the King says on this win screen: cheese and gold after level 1 (with the way to the shop), and the new slots and stations. */
@@ -100,13 +102,18 @@ export const wonScreen: Screen = {
     const nav = guest
       ? navRow('<button class="alt" data-a="quit">Leave</button>')
       : navRow('', `<button data-a="continue" id="continue">${king.toShop ? 'To the Keep Shop' : 'Continue'}</button>`);
-    return `<div class="panel narrow won"><h2>Level ${rules.level ?? ''} won!</h2>
-      <div class="won-name" id="wonLevel">${esc(level?.name ?? '')}</div>
-      <div class="won-stars" id="wonStars"><span class="star">🧀</span> +${reward.cheese}</div>
-      ${kingSaysHtml(king.lines)}${note}${cheese}${purse}${unlocks}
-      ${reward.story ? `<p class="story" id="story">${esc(reward.story)}</p>` : ''}
-      ${guest ? '<p class="note-line">The host decides what comes next.</p>' : ''}
-      ${nav}</div>`;
+    // Three blocks: on a laptop they stack in this order; on a phone in landscape the head and the
+    // purse share the left column and the King and the cheese the right one, so everything fits and
+    // the nav row with Continue stays in sight below (style.css, `.won`).
+    return `<div class="panel narrow won"><div class="won-body">
+      <div class="won-head"><h2>Level ${rules.level ?? ''} won!</h2>
+        <div class="won-name" id="wonLevel">${esc(level?.name ?? '')}</div>
+        <div class="won-cheese" id="wonCheese"><span class="cur-icon">🧀</span> +${reward.cheese}</div></div>
+      <div class="won-side">${kingSaysHtml(king.lines)}${note}${cheese}</div>
+      <div class="won-foot">${purse}${unlocks}
+        ${reward.story ? `<p class="story" id="story">${esc(reward.story)}</p>` : ''}
+        ${guest ? '<p class="note-line">The host decides what comes next.</p>' : ''}</div>
+      </div>${nav}</div>`;
   },
   onAction(action, _el, ctx) {
     switch (action) {
