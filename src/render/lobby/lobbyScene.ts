@@ -19,9 +19,11 @@ export interface LobbyState {
   /** Unlocked weapons, in the order of the weapon table. */
   weapons: readonly string[];
   /** The interrupted level that can be continued, if any. */
-  pending: { level: number; day: number } | null;
+  pending: { level: number; wave: number } | null;
   /** Endless mode is open. */
   endless: boolean;
+  /** Short hint under the closed Endless pot. */
+  endlessHint: string;
 }
 
 export interface LobbyHooks {
@@ -102,7 +104,7 @@ export class LobbyScene extends Phaser.Scene {
       const pill = this.add.graphics().setDepth(7);
       const label = this.text(def.lx, def.ly, def.label, def.quiet ? 22 : 30, CREAM).setDepth(8);
       if (def.quiet) label.setAlpha(0.85);
-      const sub = def.id === 'continueLevel' ? this.text(def.lx, def.ly + 30, '', 20, CREAM).setDepth(8) : null;
+      const sub = def.id === 'continueLevel' || def.id === 'play' ? this.text(def.lx, def.ly + 30, '', 20, CREAM).setDepth(8) : null;
       this.stations.set(def.id, { def, img, label, sub, pill });
     }
 
@@ -196,7 +198,7 @@ export class LobbyScene extends Phaser.Scene {
   /** Brings stations, decor and weapons in line with the profile. */
   private refresh(force = false) {
     const s = this.hooks.state();
-    const key = `${s.levelDone}|${s.weapons.join(',')}|${s.pending ? `${s.pending.level}:${s.pending.day}` : '-'}|${s.endless}`;
+    const key = `${s.levelDone}|${s.weapons.join(',')}|${s.pending ? `${s.pending.level}:${s.pending.wave}` : '-'}|${s.endless}`;
     if (!force && key === this.stateKey) return;
     this.stateKey = key;
     const shown = new Set(decorFor(s.levelDone).map((d) => d.id));
@@ -208,16 +210,20 @@ export class LobbyScene extends Phaser.Scene {
       img.setScale(WEAPON_SIZE / Math.max(img.width, img.height));
     });
     for (const v of this.stations.values()) {
-      const on = v.def.id === 'continueLevel' ? !!s.pending : v.def.id === 'play' ? s.endless : true;
-      v.label.setVisible(on);
-      v.sub?.setVisible(on);
-      if (v.sub && s.pending) v.sub.setText(`Level ${s.pending.level}, day ${s.pending.day}`);
-      // The pot stays in the hall when endless is still closed; it just does not open anything.
+      const on = v.def.id === 'continueLevel' ? !!s.pending : true;
+      // The pot is always there; while endless is still closed it says so and a tap brings the King's hint.
+      const closed = v.def.id === 'play' && !s.endless;
+      v.label.setVisible(on).setText(closed ? `${v.def.label} 🔒` : v.def.label).setAlpha(closed ? 0.8 : v.def.quiet ? 0.85 : 1);
+      v.sub?.setVisible(on && (v.def.id === 'continueLevel' || closed));
+      if (v.sub && v.def.id === 'continueLevel' && s.pending) v.sub.setText(`Level ${s.pending.level}, wave ${s.pending.wave}`);
+      if (v.sub && v.def.id === 'play') v.sub.setText(closed ? s.endlessHint : '');
       v.pill.clear();
       if (!on) continue;
       const bw = v.label.width + 26;
-      const bh = v.label.height + (v.sub ? v.sub.height : 0) + 4;
-      v.pill.fillStyle(0x2b2118, v.def.quiet ? 0.35 : 0.55).fillRoundedRect(v.def.lx - bw / 2, v.def.ly - v.label.height / 2 - 2, bw, bh, 16);
+      const bh = v.label.height + (v.sub?.visible ? v.sub.height : 0) + 4;
+      const sw = v.sub?.visible ? v.sub.width + 26 : 0;
+      const pw = Math.max(bw, sw);
+      v.pill.fillStyle(0x2b2118, v.def.quiet ? 0.35 : 0.55).fillRoundedRect(v.def.lx - pw / 2, v.def.ly - v.label.height / 2 - 2, pw, bh, 16);
     }
   }
 

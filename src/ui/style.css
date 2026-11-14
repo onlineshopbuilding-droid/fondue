@@ -783,3 +783,183 @@ body:has(.market) #app canvas { cursor: pointer; }
   .market .price img { width: 15px; height: 15px; vertical-align: -3px; margin-left: 4px; }
   .market .m-pips i { width: 6px; height: 6px; border-width: 1.5px; }
 }
+
+/* ------------------------------------------------------------------------------------------- */
+/* Wallet: cheese, gold and Raider Crests on a dark wooden plate (shop and campaign map).     */
+/* ------------------------------------------------------------------------------------------- */
+.wallet {
+  display: inline-flex; gap: 14px; align-items: center; padding: 3px 14px; min-height: 44px; white-space: nowrap;
+  font-family: 'Lilita One', sans-serif; font-size: 24px; color: var(--cream); text-shadow: 0 2px 0 var(--ink);
+  background: linear-gradient(180deg, #8a5a33 0%, var(--wood-dark) 100%); border: 3px solid var(--ink); border-radius: 12px;
+  box-shadow: inset 0 2px 0 rgba(255, 236, 200, 0.25), 0 3px 0 var(--ink);
+}
+.wal-chip { display: inline-flex; align-items: center; gap: 5px; }
+.wal-ico { font-size: 0.9em; text-shadow: none; }
+
+/* ------------------------------------------------------------------------------------------- */
+/* Keep Shop: the keep seen from outside on the left, the chosen spot's panel on the right.   */
+/* ------------------------------------------------------------------------------------------- */
+#ui .overlay:has(> .shop) { padding: 10px; }
+.panel.shop {
+  width: min(1180px, 100%); height: min(760px, 100%); max-height: none; overflow: hidden; padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.sh-top { display: flex; align-items: center; gap: 14px; flex: none; }
+.sh-top h2 { margin: 0; flex: 1; text-align: left; font-size: 34px; }
+.sh-top h2::before, .sh-top h2::after { display: none; }
+.sh-body { flex: 1 1 0; min-height: 0; display: flex; gap: 14px; }
+.sh-keep {
+  position: relative; flex: none; height: 100%; aspect-ratio: 480 / 590; max-width: 48%;
+  border: 4px solid var(--ink); border-radius: 16px; overflow: hidden;
+  background: linear-gradient(180deg, #8fc6e8 0%, #c6e4f2 55%, #e9f3e0 100%);
+}
+.sh-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.sh-spot {
+  position: absolute; transform: translate(-50%, -50%); width: 60px; height: 60px; min-width: 48px; min-height: 48px; padding: 0;
+  border-radius: 50%; --b: transparent; background: rgba(255, 246, 223, 0.12); border: 3px dashed rgba(255, 246, 223, 0.95);
+  box-shadow: 0 0 0 2px rgba(43, 33, 24, 0.7), 0 0 12px rgba(255, 236, 160, 0.7);
+  color: var(--cream); font-size: 13px; text-shadow: 0 1.5px 0 var(--ink), 0 0 3px var(--ink);
+  display: flex; align-items: flex-end; justify-content: center; animation: sh-breathe 2.4s ease-in-out infinite;
+}
+.sh-spot:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.94); }
+.sh-spot.sel { border: 4px solid var(--mustard); background: rgba(233, 180, 76, 0.22); box-shadow: 0 0 0 3px var(--ink), 0 0 18px 4px rgba(255, 214, 110, 0.95); animation: none; }
+.sh-spot-name {
+  position: absolute; top: calc(100% - 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
+  font-size: 13px; line-height: 1; padding: 2px 6px; border-radius: 7px; background: rgba(43, 33, 24, 0.78); border: 1.5px solid var(--ink);
+}
+.sh-badge {
+  position: absolute; top: -6px; right: -6px; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 13px; color: var(--ink); text-shadow: none;
+  background: var(--cream); border: 2px solid var(--ink);
+}
+.sh-badge.plus { background: var(--mustard); font-size: 18px; }
+.sh-badge.new { background: var(--mustard); }
+@keyframes sh-breathe { 0%, 100% { box-shadow: 0 0 0 2px rgba(43, 33, 24, 0.7), 0 0 6px rgba(255, 236, 160, 0.4); } 50% { box-shadow: 0 0 0 2px rgba(43, 33, 24, 0.7), 0 0 16px 3px rgba(255, 236, 160, 0.9); } }
+
+.sh-side { flex: 1 1 0; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 4px 6px 0; }
+.sh-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; font-size: 26px; color: var(--plum); }
+.sh-lead { font-size: 16px; margin: 4px 0; }
+.sh-lead.lock, .sh-why { color: var(--rust); font-weight: 800; }
+.sh-why { font-size: 14px; margin-top: 3px; }
+.sh-change { display: inline-block; font-weight: 800; color: var(--teal); background: rgba(47, 127, 122, 0.1); border: 2px solid rgba(47, 127, 122, 0.45); border-radius: 10px; padding: 3px 10px; }
+.sh-buy { margin-top: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.sh-price { font-family: 'Nunito', sans-serif; font-weight: 900; margin-left: 4px; }
+.sh-max { font-family: 'Lilita One', sans-serif; color: var(--teal); font-size: 17px; }
+button.buy { min-height: 48px; }
+.shop button.small { min-height: 44px; }
+
+.pips { display: inline-flex; gap: 3px; vertical-align: middle; }
+.pips i { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--ink); background: rgba(43, 33, 24, 0.12); }
+.pips i.on { background: var(--mustard); }
+.pips i.top.on { background: radial-gradient(circle at 35% 30%, #fffbe0 0%, #ffd95e 45%, #d1972f 100%); box-shadow: 0 0 5px 1px rgba(255, 214, 110, 0.9); }
+
+.sw-list { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.sw-row {
+  display: flex; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 12px;
+  background: #fffaf0; border: 3px solid rgba(138, 90, 51, 0.5); box-shadow: inset 0 2px 0 #fff;
+}
+.sw-row.worn { border-color: var(--teal); background: #f1fbf6; }
+.sw-row.locked .sw-pic { filter: grayscale(0.7) brightness(0.9); }
+.sw-pic { width: 64px; height: 64px; flex: none; }
+.sw-main { flex: 1; min-width: 0; }
+.sw-name { font-family: 'Lilita One', sans-serif; font-size: 19px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sw-worn { font-size: 13px; color: var(--cream); background: var(--teal); border: 2px solid var(--ink); border-radius: 8px; padding: 0 6px; }
+.sw-desc { font-size: 14px; font-weight: 600; line-height: 1.25; }
+.sw-state, .sw-next { font-size: 14px; font-weight: 800; margin-top: 2px; color: var(--wood-dark); }
+.sw-state.lock { color: var(--rust); }
+.sw-state.top { color: var(--teal); }
+.sw-next b { color: var(--teal); }
+.sw-next { display: flex; align-items: center; gap: 4px; }
+.sw-now, .sw-then { width: 30px; height: 30px; flex: none; }
+.sw-then { filter: drop-shadow(0 0 3px rgba(255, 214, 110, 0.9)); }
+.sw-arrow { font-weight: 900; color: var(--teal); }
+.sh-stages { display: inline-flex; align-items: flex-end; gap: 8px; }
+.sh-stages img { height: 140px; width: auto; }
+.sh-stages img:last-child { filter: drop-shadow(0 0 6px rgba(255, 214, 110, 0.9)); }
+.sw-acts { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 4px; max-width: 190px; }
+.sw-acts .sh-why { font-size: 12px; line-height: 1.2; }
+
+/* ------------------------------------------------------------------------------------------- */
+/* Loadout strip before a level (in the level card and on the endless page).                  */
+/* ------------------------------------------------------------------------------------------- */
+.loadout { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
+.lo-strip { display: flex; gap: 6px; justify-content: center; }
+.lo-tile {
+  position: relative; width: 58px; height: 58px; min-width: 48px; min-height: 48px; padding: 0; border-radius: 12px;
+  --b: #fffaf0; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center;
+}
+.lo-tile img { width: 100%; height: 100%; }
+.lo-tile.on { --b: #ffe8a8; outline: 3px solid var(--mustard); outline-offset: 1px; }
+.lo-tile.locked { --b: #cfc7b8; }
+.lo-role {
+  position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%); font-size: 10px; line-height: 1; padding: 1px 4px; white-space: nowrap;
+  color: var(--cream); background: rgba(43, 33, 24, 0.85); border-radius: 5px; text-shadow: none;
+}
+.lo-empty { font-size: 26px; color: var(--wood); }
+.lo-lock { font-size: 18px; }
+.lo-choice { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 6px; border-radius: 10px; background: rgba(138, 90, 51, 0.12); }
+.lo-pick {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 2px 10px 2px 4px; font-size: 14px;
+  --b: #fffaf0; border: 2px solid var(--ink); border-radius: 10px;
+}
+.lo-pick img { width: 40px; height: 40px; }
+.lo-pick, .lo-tile { color: var(--ink); text-shadow: none; }
+.lo-pick .pips i { width: 7px; height: 7px; border-width: 1.5px; }
+.lo-pick.on { --b: #dff3ec; outline: 3px solid var(--teal); }
+.lo-pick.none { padding: 2px 12px; }
+.lo-hint { font-size: 13px; font-weight: 800; color: var(--wood-dark); }
+
+/* Level card: the five cheese and the challenges; the map stations show the cheese won. */
+ul.cm-card-cheese { list-style: none; margin: 2px 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; font-weight: 800; font-size: 14px; }
+ul.cm-card-cheese li { display: flex; gap: 5px; align-items: baseline; opacity: 0.75; }
+ul.cm-card-cheese li.got { opacity: 1; color: var(--teal); }
+ul.cm-card-cheese li:nth-child(n + 4) { grid-column: 1 / -1; }
+.cm-ck { flex: none; width: 1.2em; text-align: center; }
+.cm-got {
+  position: absolute; top: calc(100% + 2px); left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 11px; line-height: 1; padding: 1px 4px; border-radius: 6px;
+  color: var(--ink); text-shadow: none; background: rgba(255, 246, 223, 0.9); border: 1.5px solid var(--ink);
+}
+.cm-got.full { background: var(--mustard); }
+.cm-head .wallet { font-size: 20px; min-height: 40px; }
+
+@media (prefers-reduced-motion: reduce) { .sh-spot { animation: none; } }
+
+/* Phones in landscape: the shop fills the screen, the wallet and the lists get smaller. */
+@media (max-height: 520px) {
+  #ui .overlay:has(> .shop) { padding: max(4px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); }
+  .panel.shop { width: 100%; height: 100%; padding: 6px 10px; gap: 5px; border-width: 3px; border-radius: 14px; outline: none; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.8), 0 4px 0 var(--wood-dark); }
+  .sh-top { gap: 8px; }
+  .sh-top h2 { font-size: 22px; -webkit-text-stroke-width: 3px; }
+  .wallet { font-size: 17px; gap: 10px; padding: 2px 10px; min-height: 36px; border-width: 2px; }
+  .sh-body { gap: 8px; }
+  .sh-keep { border-width: 3px; border-radius: 12px; }
+  .sh-spot { width: 50px; height: 50px; font-size: 11px; border-width: 2.5px; }
+  .sh-spot-name { font-size: 10px; padding: 1px 4px; }
+  .sh-badge { width: 19px; height: 19px; font-size: 11px; top: -5px; right: -5px; }
+  .sh-title { font-size: 19px; gap: 6px; margin-bottom: 0; }
+  .sh-lead { font-size: 12.5px; margin: 2px 0; line-height: 1.3; }
+  .sh-why { font-size: 11.5px; }
+  .sh-change { padding: 2px 7px; border-radius: 8px; }
+  .pips i { width: 9px; height: 9px; border-width: 1.5px; }
+  .sw-list { gap: 5px; margin-top: 3px; }
+  .sw-row { padding: 3px 6px; gap: 6px; border-width: 2px; border-radius: 10px; }
+  .sw-pic { width: 46px; height: 46px; }
+  .sw-name { font-size: 15px; gap: 5px; }
+  .sw-desc { font-size: 11.5px; }
+  .sw-state, .sw-next { font-size: 11.5px; }
+  .sw-acts { max-width: 150px; gap: 3px; }
+  .sw-now, .sw-then { width: 24px; height: 24px; }
+  .sh-stages img { height: 74px; }
+  .sw-acts button.small, .sh-buy button.small { font-size: 13px; padding: 2px 8px; }
+  .cm-head .wallet { font-size: 15px; min-height: 32px; }
+  .loadout { gap: 4px; margin: 2px 0; }
+  .lo-strip { gap: 4px; }
+  .lo-tile { width: 48px; height: 48px; border-width: 2px; border-radius: 10px; }
+  .lo-role { font-size: 8.5px; }
+  .lo-choice { gap: 4px; padding: 4px; }
+  .lo-pick { font-size: 12px; min-height: 44px; }
+  .lo-pick img { width: 34px; height: 34px; }
+  ul.cm-card-cheese { font-size: 11.5px; }
+  .cm-got { font-size: 9.5px; }
+}

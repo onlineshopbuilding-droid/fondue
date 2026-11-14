@@ -13,8 +13,28 @@ const svgUri = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURICom
 /** A prop drawing as an address an <img> can show. */
 export const artUri = (name: string) => svgUri(PROPS[name].svg);
 
-/** A weapon's picture at tier 1 as an address an <img> can show. */
-export const weaponUri = (id: string) => svgUri(weaponArt(id, 1).svg);
+const weaponCache = new Map<string, string>();
+
+/** A weapon's picture at a tier (1 to 7) as an address an <img> can show. */
+export function weaponUri(id: string, tier = 1): string {
+  const key = `${id}:${tier}`;
+  let uri = weaponCache.get(key);
+  if (!uri) { uri = svgUri(weaponArt(id, tier).svg); weaponCache.set(key, uri); }
+  return uri;
+}
+
+const propCache = new Map<string, string>();
+
+/** A prop drawing as an address, cached (the keep stages are large). Empty if the prop is unknown. */
+export function propUri(name: string): string {
+  let uri = propCache.get(name);
+  if (uri === undefined) { uri = PROPS[name] ? svgUri(PROPS[name].svg) : ''; propCache.set(name, uri); }
+  return uri;
+}
+
+/** Tier pips: one filled dot per tier reached, out of `max`. */
+export const pipsHtml = (tier: number, max: number) =>
+  `<span class="pips" aria-label="Tier ${tier} of ${max}">${Array.from({ length: max }, (_, i) => `<i class="${i < tier ? 'on' : ''}${i === max - 1 ? ' top' : ''}"></i>`).join('')}</span>`;
 
 const rigCache = new Map<string, string>();
 

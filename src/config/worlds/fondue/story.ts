@@ -28,7 +28,7 @@ export const TUTORIAL_HINTS: {
   grab: "Grab a mouse knight and fling it up!",
   fling: "Swipe up fast and let go!",
   wellDone: "Splendid! The cheese is safe. Keep going!",
-  cauldronMarket: "Throw mice in my cauldron: more cheese!",
+  cauldronMarket: "Throw mice in my cauldron: double gold!",
   cauldronThrow: "Fling mice into the cauldron behind the castle.",
   lobbyWelcome: "Welcome inside my castle, dear helper!",
 };
@@ -331,6 +331,8 @@ export const KING_LOBBY_LINES: { minLevel: number; maxLevel: number; text: strin
   { minLevel: 0, maxLevel: 100, text: "Do not touch the big wheel by the fire. It knows me." },
   { minLevel: 0, maxLevel: 100, text: "You fling mice beautifully. Has anyone ever told you that?" },
   { minLevel: 0, maxLevel: 100, text: "Gold is lovely, but have you ever smelled melted cheese at dawn?" },
+  { minLevel: 1, maxLevel: 30, text: "Gold burning a hole in your pocket? The Keep Shop is right by the door." },
+  { minLevel: 2, maxLevel: 100, text: "Five cheese in every level. I count them all, twice." },
   { minLevel: 0, maxLevel: 100, text: "A king needs three things: a crown, a castle and a very big pot." },
   { minLevel: 0, maxLevel: 100, text: "If you drop your bread in the pot, you owe me a song." },
   { minLevel: 0, maxLevel: 100, text: "I counted the cheese this morning. Then I counted it again. Twice." },
@@ -345,7 +347,7 @@ export const KING_LOBBY_LINES: { minLevel: number; maxLevel: number; text: strin
   { minLevel: 3, maxLevel: 25, text: "Those kegs go boom. Shake them loose before they reach my door." },
   { minLevel: 7, maxLevel: 30, text: "The goats are on their side now? Goats used to like me." },
   { minLevel: 10, maxLevel: 40, text: "I found my old spell book again. No reason. Just tidying." },
-  { minLevel: 10, maxLevel: 100, text: "Every day you hold the gate, the pot gets fuller. Glorious." },
+  { minLevel: 10, maxLevel: 100, text: "Every level you hold the gate, the pot gets fuller. Glorious." },
   { minLevel: 12, maxLevel: 35, text: "Bouncing mice. Next they will fly. Ha! Imagine that." },
   // Canyon and marsh: the mice get organised
   { minLevel: 15, maxLevel: 45, text: "The canyon echoes so nicely. Fondue! Fondue! Fondue! Lovely." },
