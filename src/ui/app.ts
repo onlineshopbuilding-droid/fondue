@@ -31,6 +31,7 @@ import { SCREENS } from './screens';
 import type { PendingRun, ScreenContext } from './screens/context';
 import { ScreenManager, type ScreenId } from './screens/screen';
 import { mainScreen } from './screens/main';
+import { shopAfterWin } from '../modes/tutorial';
 import { Lobby } from './lobby/lobby';
 import { TuningPanel } from './tuningPanel';
 
@@ -482,6 +483,11 @@ export class App implements ScreenContext, CoopRoomHost {
   /** Continue on the win screen. */
   afterRun() {
     if (!this.result || !this.resultRules) { this.leaveToMenu(); return; }
+    // After the first win of level 1 the King leads into the shop for the first upgrade (D4).
+    if (this.session?.role === 'solo' && this.result.won && shopAfterWin(this.profile, this.resultRules.world, this.resultRules.level)) {
+      this.leaveToMenu('armoury');
+      return;
+    }
     this.follow(modeOf(this.resultRules.mode).next(this.result, this.resultRules, this.profile));
   }
 

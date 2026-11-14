@@ -6,7 +6,7 @@
 import { CURRENCIES } from '../../config/currencies';
 import { HANDS } from '../../config/hand';
 import { CASTLE_TIERS, STATIONS, STATION_IDS, type StationId } from '../../config/keep';
-import { SLOTS, SLOT_COUNT } from '../../config/slots';
+import { SLOTS, SLOT_COUNT, slotOfRole } from '../../config/slots';
 import { TIER_CAP_BY_LEVEL, TIER_MAX } from '../../config/tiers';
 import { weaponById, type WeaponDef } from '../../config/weapons';
 import { weaponUnlockLevel } from '../../config/worlds/fondue/unlocks';
@@ -15,7 +15,11 @@ import {
   buy, equip, quote, slotIntro, slotOpen, slotRole, unlockLevelOf, weaponsForRole, type Price, type Quote, type Target,
 } from '../../modes';
 import { BACK_BUTTON, esc, pipsHtml, propUri, weaponUri } from '../html';
+import { finishFirstUpgrade, firstUpgradeDue } from '../../modes/tutorial';
+import { FIRST_UPGRADE } from '../../config/tutorial';
+import { FIRST_UPGRADE_LINES } from '../../config/worlds/fondue/story';
 import type { ScreenContext } from './context';
+import { kingSaysHtml } from './won';
 import type { Screen } from './screen';
 
 /** A spot of the keep: one of the five slots, the castle (the gate), the hand or a station. */
@@ -33,6 +37,24 @@ const SIDE_SPOTS: Record<'hand' | StationId, { x: number; y: number }> = {
 const GATE_SPOT = { x: 148, y: 560 };
 
 let selected: SpotId = 'slot0';
+/** The guided first upgrade (D4): it opened the damage slot once; the King praises the purchase until the shop is left. */
+let guideStarted = false;
+let guidePraise = false;
+const GLOW = 'box-shadow:0 0 0 4px #ffd34d,0 0 22px 8px rgba(255,211,77,0.85)';
+
+/** The tutorial's hook: the King's line on top of the panel, the glowing wheel spot and its upgrade button. */
+function guideHtml(ctx: ScreenContext, panel: string): { king: string; panel: string; due: boolean } {
+  const due = firstUpgradeDue(ctx.profile, ctx.world);
+  if (guidePraise) return { king: kingSaysHtml([FIRST_UPGRADE_LINES.done], 'shopGuide'), panel, due };
+  if (!due) return { king: '', panel, due };
+  const onWheel = selected === `slot${slotOfRole('damage')}`;
+  const button = `data-a="buy" data-kind="weapon" data-id="${FIRST_UPGRADE.weapon}"`;
+  return {
+    king: kingSaysHtml([onWheel ? FIRST_UPGRADE_LINES.buy : FIRST_UPGRADE_LINES.pickSlot], 'shopGuide'),
+    panel: onWheel ? panel.replace(button, `${button} id="guideBuy" style="${GLOW}"`) : panel,
+    due,
+  };
+}
 
 const pct = (v: number, from: number, size: number) => `${(((v - from) / size) * 100).toFixed(2)}%`;
 const isSpot = (s: string): s is SpotId => s === 'castle' || s === 'hand' || (STATION_IDS as string[]).includes(s) || /^slot[0-4]$/.test(s);
@@ -268,6 +290,10 @@ export const keepScreen: Screen = {
   render(ctx, arg) {
     if (arg && isSpot(arg)) selected = arg;
     if (slotOf(selected) >= SLOT_COUNT) selected = 'slot0';
+    if (!guideStarted && firstUpgradeDue(ctx.profile, ctx.world)) { guideStarted = true; selected = `slot${slotOfRole('damage')}`; }
+    const guide = guideHtml(ctx, panelFor(ctx, selected));
+    const wheelSpot = `id="spot-slot${slotOfRole('damage')}"`;
+    const spotsHtml = spots(ctx).map(spotButton).join('');
     return `<div class="panel shop" id="shop">
       <div class="sh-top">
         <div class="sh-back">${BACK_BUTTON}</div>
@@ -277,10 +303,10 @@ export const keepScreen: Screen = {
       <div class="sh-body">
         <div class="sh-keep" id="shopKeep">
           ${keepPicture(ctx)}
-          ${spots(ctx).map(spotButton).join('')}
+          ${guide.due ? spotsHtml.replace(wheelSpot, `${wheelSpot} data-guide="1"`).replace(/(data-guide="1"[^>]*style=")/, `$1${GLOW};`) : spotsHtml}
         </div>
         <div class="sh-side" id="shopSide" data-keep-scroll data-spot="${selected}">
-          ${panelFor(ctx, selected)}
+          ${guide.king}${guide.panel}
         </div>
       </div>
     </div>`;
@@ -303,10 +329,13 @@ export const keepScreen: Screen = {
       case 'buy': {
         const target = targetOf(el);
         if (!target) return;
+        const guided = firstUpgradeDue(p, ctx.world);
         const q = buy(p, target, ctx.world);
         if (q.allowed) {
           ctx.audio.play('buy');
           ctx.toast(q.action === 'unlock' ? `${q.name} unlocked!` : `${q.name}: tier ${q.toTier}!`);
+          // The first purchase ends the tutorial's guide, whatever was bought.
+          if (guided && finishFirstUpgrade(p)) guidePraise = true;
         }
         ctx.show('armoury');
         break;
@@ -324,7 +353,7 @@ export const keepScreen: Screen = {
         ctx.show('armoury');
         break;
       }
-      case 'main': ctx.show('main'); break;
+      case 'main': guidePraise = false; ctx.show('main'); break;
     }
   },
 };
