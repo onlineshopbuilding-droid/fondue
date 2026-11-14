@@ -111,11 +111,14 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.meta().tuning.shake), (v) => v === 1.7, GAME_WAIT);
 
     // Each player kills one raider; the money is shared. The targets are placed on purpose: how a
-    // crowd spreads depends on the speed of the machine.
+    // crowd spreads depends on the speed of the machine. The wave clock stands still meanwhile: with
+    // the queue emptied, the wave's pause (and the empty field after a kill) would otherwise start
+    // the next wave and its raiders mid-throw, and how much game time passes between two steps of
+    // this test depends on the machine.
     const place = (x: number) => host.evaluate((px) => {
       const sim = (window as any).__fondue.session.sim;
       sim.setTuning({ ...sim.tuning, walkSpeed: 0.05 });
-      sim.s.spawnQueue = [];
+      sim.freezeWaves();
       sim.s.enemies = [];
       return sim.spawnEnemy('grunt', px).id as number;
     }, x);
@@ -165,7 +168,7 @@ for (const [label, query] of [['no added latency', ''], ['simulated latency', '&
     // Waves follow one another without a market or a Ready step in between: once the last raider of
     // a wave is gone, the next wave comes by itself, on both screens.
     const wave = await waveOf(host);
-    await host.evaluate(() => { const st = (window as any).__fondue.session.sim.s; st.spawnQueue = []; st.spawned = 0; st.enemies = []; });
+    await host.evaluate(() => { const st = (window as any).__fondue.session.sim.s; st.wavesFrozen = false; st.spawnQueue = []; st.spawned = 0; st.enemies = []; });
     await waitGame(host, () => waveOf(host), (w) => w === wave + 1, 6);
     await waitFor(() => waveOf(guest), (w) => w === wave + 1, GAME_WAIT);
     expect((await gameState(host))!.phase).toBe('battle');

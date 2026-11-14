@@ -12,8 +12,15 @@ test.describe.configure({ timeout: CI ? 600_000 : 240_000 });
 
 const BASE = '/?menu=1&fresh=1&net=loopback';
 const NET = '&lat=60&jit=25&loss=0.02';
-/** How long the guest records. */
+/** How long the guest records at least. */
 const MEASURE_MS = 8000;
+/**
+ * The host sends one snapshot per frame at most, so a software-drawn machine (2 to 3 frames a second
+ * on CI) sends far fewer per real second. The guest then records until it has enough samples, up to this long.
+ */
+const MEASURE_MAX_MS = CI ? 60_000 : 20_000;
+const MIN_ARRIVALS = 20;
+const MIN_STEPS = 50;
 
 async function openEndless(page: Page) {
   await page.evaluate(() => {
@@ -76,8 +83,22 @@ for (const [label, query] of [['no added latency', ''], ['lat 60 ms, jitter 25 m
     });
     await waitFor(() => guest.evaluate(() => (window as any).__fondue.session.view()?.enemies.length ?? 0), (n) => n >= 3, GAME_WAIT);
 
+    // The host counts its own frames, game steps and the snapshots it sends meanwhile.
+    await host.evaluate(() => {
+      const s = (window as any).__fondue.session;
+      const rec = { frames: 0, steps: 0, sent: 0, on: true };
+      (window as any).__lagHost = rec;
+      const send = s.link.send.bind(s.link);
+      s.link.send = (m: any) => { if (rec.on && m.k === 's') rec.sent++; send(m); };
+      const update = s.update.bind(s);
+      s.update = (ms: number) => {
+        const before = s.stepCounter as number;
+        update(ms);
+        if (rec.on) { rec.frames++; rec.steps += (s.stepCounter as number) - before; }
+      };
+    });
     // The guest records its own frames and the snapshots it hears.
-    const raw = await guest.evaluate(async (ms) => {
+    const raw = await guest.evaluate(async ({ ms, maxMs, minArrivals, minSteps }) => {
       const s = (window as any).__fondue.session;
       const link = s.link;
       const arrivals: number[] = [];
@@ -113,11 +134,19 @@ for (const [label, query] of [['no added latency', ''], ['lat 60 ms, jitter 25 m
         }
         prev = now;
       };
-      await new Promise((res) => setTimeout(res, ms));
+      const t0 = performance.now();
+      const enough = () => performance.now() - t0 >= ms && arrivals.length > minArrivals && steps.length > minSteps;
+      while (!enough() && performance.now() - t0 < maxMs) await new Promise((res) => setTimeout(res, 100));
+      const elapsed = performance.now() - t0;
       s.update = update;
       link.onMessage = inner;
-      return { arrivals, bytes, frames, steps, speeds, dts };
-    }, MEASURE_MS);
+      return { arrivals, bytes, frames, steps, speeds, dts, elapsed };
+    }, { ms: MEASURE_MS, maxMs: MEASURE_MAX_MS, minArrivals: MIN_ARRIVALS, minSteps: MIN_STEPS });
+    const sent = await host.evaluate(() => {
+      const rec = (window as any).__lagHost;
+      rec.on = false;
+      return { frames: rec.frames as number, steps: rec.steps as number, sent: rec.sent as number };
+    });
     const gaps = raw.arrivals.slice(1).map((t, i) => t - raw.arrivals[i]);
     // A frame's step against the step a raider at its median speed would make in that frame.
     const median = pct(raw.speeds, 0.5);
@@ -125,8 +154,12 @@ for (const [label, query] of [['no added latency', ''], ['lat 60 ms, jitter 25 m
     const stalls = raw.steps.filter((d) => d === 0).length / Math.max(1, raw.steps.length);
     const result = {
       label,
+      measureMs: Math.round(raw.elapsed),
       snapshots: raw.arrivals.length,
-      snapshotHz: r(raw.arrivals.length / (MEASURE_MS / 1000)),
+      snapshotHz: r(raw.arrivals.length / (raw.elapsed / 1000)),
+      hostFrames: sent.frames,
+      hostSteps: sent.steps,
+      hostSent: sent.sent,
       snapshotBytesMean: Math.round(mean(raw.bytes)),
       snapshotBytesMax: Math.max(0, ...raw.bytes),
       gapMeanMs: r(mean(gaps)),
@@ -158,8 +191,15 @@ for (const [label, query] of [['no added latency', ''], ['lat 60 ms, jitter 25 m
     const right = await handX();
     expect(right - left).toBeGreaterThan(100);
 
-    expect(raw.arrivals.length).toBeGreaterThan(20);
-    expect(raw.steps.length).toBeGreaterThan(50);
+    expect(raw.arrivals.length).toBeGreaterThan(MIN_ARRIVALS);
+    expect(raw.steps.length).toBeGreaterThan(MIN_STEPS);
+    // Measured in host frames, not in real time: the host sends a snapshot every frame that ran two
+    // game steps since the last one (30 Hz at most), so at least half of min(frames, steps / 2), even
+    // when frames alternate between one and two steps ...
+    expect(sent.sent).toBeGreaterThanOrEqual(Math.floor(0.5 * Math.min(sent.frames, sent.steps / 2)) - 2);
+    // ... and the guest hears nearly all of them (the host counted a little longer; a retransmit
+    // may still be on its way when the guest stops).
+    expect(raw.arrivals.length).toBeGreaterThanOrEqual(Math.floor(0.85 * sent.sent) - 3);
     expect(errors).toEqual([]);
     await context.close();
   });
