@@ -214,3 +214,30 @@ Mit `?fresh=1` startet die Seite mit einem leeren Profil, das nur im Speicher le
 
 ## E-062 – Level 2 bis 9 haben fünf Tage
 Der Auftrag verlangt 5 bis 15 Tage je Level. Nur Level 1 bleibt als geführtes Lern-Level bei zwei Tagen, die Level 2 bis 9 haben jetzt fünf Tage statt drei oder vier (`dayCountOf` in `src/config/worlds/fondue/campaign.ts`). Die Level ab 10 haben 5 bis 10 Tage. Warum: Erst ab fünf Tagen lohnt sich ein Kauf im Markt innerhalb eines Levels.
+
+## E-063 – v0.3: Arbeitsweg B, Leitung an Opus übergeben (14.11.2026)
+Der Auftrag v0.3 sah Claude Fable als Leitung vor. Tims Fable-Wochenkontingent stand beim Start schon bei 85 %, deshalb hat Tim angewiesen, sparsam zu sein. Agent-Teams wurden nicht genutzt (Arbeitsweg B): Claude Opus 5.5 übernimmt die Leitung im Sinne des Auftrags und vergibt Pakete an Subagents mit ausdrücklichem Modell (Bauen: Opus, Prüfen: Sonnet). Die Fable-Sitzung wird nur am Ende oder bei einem echten Blocker geweckt.
+
+## E-064 – Name der Sonderwährung: „Raider Crests“
+Im Spiel heißen die Räuberwappen „Raider Crests“, im Code `crests`. Kurz, verständlich, passt zur Ritter-Räuberarmee.
+
+## E-065 – Der Shop ersetzt die Armoury
+Der dauerhafte Shop an der Burg ersetzt die bisherige Waffenkammer. Die Lobby-Station heißt „Shop“ und öffnet die Burg von außen (`src/ui/screens/keep*.ts`). Zwei Orte für dieselbe Sache würden verwirren.
+
+## E-066 – Verdientes Gold bleibt auch nach einer Niederlage
+Gold aus einem verlorenen Level wird trotzdem gutgeschrieben. Wer feststeckt, soll durch Wiederholen stärker werden können (A3); Käse gibt es nur beim Sieg.
+
+## E-067 – Stufen-Deckel je Kampagnen-Abschnitt gegen Überrollen mit Endlos-Gold
+Die höchste kaufbare Stufe von Waffen, Burg und Hand hängt vom Kampagnen-Fortschritt ab (`src/config/tiers.ts`, `tierCap` in `src/modes/unlocks.ts`). Endlos-Gold hilft beim Feststecken, kann aber nicht über den aktuellen Abschnitt hinaus ausbauen. Stufe 7 braucht zusätzlich Wappen vom Adlerhaken.
+
+## E-068 – Waffen, Slots und Freischaltungen
+25 Waffen, fünf je Slot (Zuordnung `docs/v0.3/BAUPLAN.md` Abschnitt 7). Keine alte Waffe wurde entfernt: Dragon Bellows wechselt zu Damage, Alphorn zu Gate, Ember Beacon zu Support, Storm Bell und Roof Bolter werden passiv. Slots öffnen nach Vorrunde (Damage), Level 2 (Slow), 4 (Gate), 7 (Support), 11 (Passive); Endlos öffnet mit dem fünften Slot. Kessel ab Level 16 für 12 Käse (doppeltes Gold), Adlerhaken ab Level 70 für 28 Käse. Freischalt-Level und Käse-Preise je Waffe stehen in `src/config/weapons.ts`; Summe aller Käse-Preise genau 500 (Test).
+
+## E-069 – Koop: jeder bekommt das ganze Gold, Kill bringt 60 %
+Im Koop schreibt jeder Spieler das gesamte in der Runde verdiente Gold in sein eigenes Profil; dafür zahlt ein Kill im Koop 60 % (`COOP` in `src/config/waves.ts`). Käse und Fortschritt bekommt nur der Host. Koop-Faktor der Gegnerzahl Startwert 1,8, mit Bots angepasst (`docs/balance.md`).
+
+## E-070 – Fortsetzen am Beginn der aktuellen Welle
+Ein unterbrochenes Solo-Kampagnen-Level geht am Beginn der Welle weiter, in der die App geschlossen wurde (Torleben, Gold und Statistik von damals). Koop, Endlos und Entwickler-Läufe werden nicht fortgesetzt.
+
+## E-071 – Wiederholte Level bringen Gold, Boss-Level schalten nichts extra frei
+Wiederholte Level zahlen normales Gold (im Vorgespräch gesetzt, von Tim noch zu bestätigen). Boss-Level schalten nichts Eigenes frei; sie sind das Tor zum nächsten Abschnitt mit höherem Stufen-Deckel.
