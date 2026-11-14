@@ -5,7 +5,7 @@
 import type { Art } from '../types';
 import { INK, RUST, MUSTL, CREAM, WHITE, ink, c, p, n, hl, art, litRect } from '../draw';
 import { tone } from '../shade';
-import { rand, fx, SHADE_DEFS, shade, moss } from './kit';
+import { rand, fx, SHADE_DEFS, shade, moss, rock } from './kit';
 
 // ---------------------------------------------------------------------------------------------
 // Ground at the wall foot, behind the raiders: the keep grows out of each landscape.
@@ -66,11 +66,31 @@ function paving(f: string, line: string, R: () => number): string {
   return `<g opacity=".85">${b}</g>`;
 }
 
+/**
+ * Issue 1: the keep grows out of the ground. Taller tufts climb the plinth's foot, the spur right
+ * of the gate sinks into a skirt of rubble, and loose stones lie about where wall and road meet.
+ * Everything stays inside the picture (art x < 296) and low, behind the raiders.
+ */
+function rubble(s: GroundStyle, R: () => number): string {
+  const stone = tone(s.cobble, -0.18);
+  const hi = tone(s.cobble, 0.35);
+  let rocks = '';
+  for (const [x, y, rx, ry] of [[270, 660, 8, 5], [286, 664, 5, 3.4], [256, 666, 6, 3.6], [244, 668, 4, 2.6], [160, 668, 4, 2.4], [196, 670, 3.4, 2.2], [120, 664, 6, 3.6], [6, 650, 7, 4.4]] as const) {
+    rocks += rock(x, y, rx, ry, tone(stone, (R() - 0.5) * 0.2), hi, R);
+  }
+  const tall = (s.blade ?? 13) * 1.7;
+  return (
+    `<g stroke="${s.line}" stroke-width="2.2">${rocks}</g>` +
+    blades(2, 140, (x) => 640 + Math.sin(x * 0.07) * 3, R, tall, s.grass, s.grassD, s.line) +
+    blades(252, 292, (x) => 658 + (x - 252) * 0.12, R, tall * 0.7, s.grass, s.grassD, s.line)
+  );
+}
+
 function keepGround(s: GroundStyle, seed: number): string {
   const R = rand(seed);
   const bankL = 'M-24 646Q2 634 30 640T86 636T150 648L154 690H-24Z';
   // Right of the gate the spur stands in the road: only a low drift of dirt and a few tufts.
-  const bankR = 'M234 662V648Q244 640 256 646Q266 652 270 659Q256 664 234 662Z';
+  const bankR = 'M222 668Q226 654 238 646Q248 638 260 644Q274 650 284 656Q294 662 286 667Q262 673 222 668Z';
   const edgeL = (x: number) => 641 + Math.sin(x * 0.11) * 3 + (x > 120 ? (x - 120) * 0.2 : 0);
   return (
     // Contact shadow where the plinth disappears into the ground.
@@ -88,6 +108,7 @@ function keepGround(s: GroundStyle, seed: number): string {
     paving(tone(s.cobble, -0.12), tone(s.road, -0.55), R) +
     blades(-20, 148, edgeL, R, s.blade ?? 13, s.grass, s.grassD, s.line) +
     blades(238, 262, (x) => 650 + (x - 238) * 0.06, R, (s.blade ?? 13) * 0.6, s.grass, s.grassD, s.line) +
+    rubble(s, R) +
     s.extra
   );
 }

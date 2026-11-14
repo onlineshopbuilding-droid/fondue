@@ -48,6 +48,9 @@ const STAGES: Stage[] = [
   { stone: ASHLAR, footing: 0, cap: '#bfb9a6', roof: RUST, roofLine: RUSTD, band: 'none', frame: '#bfb9a6', flags: [TEAL, RUST], wallTop: 386, endTop: 268, jointTop: 184, crown: false },
   { stone: SLATE, footing: 0, cap: '#9aa2af', roof: TEALD, roofLine: '#163f42', band: 'none', frame: '#bcc3cd', flags: [RUST, TEAL], wallTop: 374, endTop: 238, jointTop: 128, crown: true },
   { stone: MARBLE, footing: 0, cap: '#f6f1e6', roof: TEAL, roofLine: TEALD, band: 'gold', frame: MUST, flags: [RUST, TEAL], wallTop: 368, endTop: 222, jointTop: 124, crown: true },
+  // Tiers 6 and 7: the same marble, with gilded roofs like the keep's.
+  { stone: MARBLE, footing: 0, cap: '#f6f1e6', roof: MUST, roofLine: GOLDD, band: 'gold', frame: MUST, flags: [TEAL, RUST], wallTop: 362, endTop: 214, jointTop: 118, crown: true },
+  { stone: MARBLE, footing: 0, cap: '#f6f1e6', roof: MUST, roofLine: GOLDD, band: 'gold', frame: MUST, flags: [TEAL, RUST], wallTop: 356, endTop: 206, jointTop: 112, crown: true },
 ];
 
 /** Where the parts stand (west art x). */

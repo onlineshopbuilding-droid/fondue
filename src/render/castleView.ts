@@ -10,6 +10,7 @@ import type { Meta } from '../sim/types';
 import { keepStagesReady, propKey, TEX_SCALE, wantKeepStages, wantWeaponTiers, weaponKey, weaponTiersReady } from './textures';
 import type { GameView } from './viewport';
 import { WEST_X } from '../art/castle/westWing';
+import { castleArtIndex, clampCastleTier } from '../art/castle/tiers';
 
 const FINGER_CSS = 27;
 const RING_RADIUS = 40;
@@ -32,6 +33,39 @@ interface Mount {
   kick: number;
   weapon: string | null;
 }
+
+/**
+ * The castle tier (1 to 7) a run shows. v0.3 keeps it in the profile as `castleTier` (1-based);
+ * older runs carry the 0-based `gateTier`. Whatever arrives is clamped to the tiers the art has.
+ */
+export function castleTierOf(meta: Meta): number {
+  const l = (meta as unknown as { loadout?: { castleTier?: unknown; gateTier?: unknown } }).loadout ?? {};
+  const k = (meta as unknown as { keep?: { castleTier?: unknown } }).keep;
+  if (typeof l.castleTier === 'number') return clampCastleTier(l.castleTier);
+  if (typeof k?.castleTier === 'number') return clampCastleTier(k.castleTier);
+  if (typeof l.gateTier === 'number') return clampCastleTier(l.gateTier + 1);
+  return 1;
+}
+
+/**
+ * Evening light on the keep (issue 1): towards dusk the stone takes on the warm glow of the
+ * landscape's sky, strongest when the sun is low (`night` around 0.35) and gone again at night,
+ * when the plain night tint makes it darker and bluish.
+ */
+const DUSK_GLOW: Record<Landscape, number> = { meadow: 0xffc28a, canyon: 0xffa66e, marsh: 0xf2c48e, snowpine: 0xffc6b4 };
+const DUSK_STRENGTH = 0.5;
+
+export function keepLight(tint: number, night: number, land: Landscape): number {
+  const k = Math.max(0, 1 - Math.abs(night - 0.35) / 0.35) * DUSK_STRENGTH;
+  if (k <= 0) return tint;
+  const t = Phaser.Display.Color.IntegerToColor(tint);
+  const w = Phaser.Display.Color.IntegerToColor(DUSK_GLOW[land] ?? DUSK_GLOW.meadow);
+  const ch = (a: number, b: number) => Math.round((a * (255 + (b - 255) * k)) / 255);
+  return Phaser.Display.Color.GetColor(ch(t.red, w.red), ch(t.green, w.green), ch(t.blue, w.blue));
+}
+
+/** The keep's shadow on the road grows as the sun sinks behind the keep's left and fades at night. */
+const SHADOW_STRETCH = 0.4;
 
 const shade = (tint: number, k: number) => {
   const c = Phaser.Display.Color.IntegerToColor(tint);
@@ -62,6 +96,8 @@ export class CastleView {
   private thornReach = 0;
   private view!: GameView;
   private tierName = '';
+  /** Dev and test hook: shows this castle tier (1 to 7) whatever the run has bought; null = the run's own. */
+  previewTier: number | null = null;
 
   constructor(scene: Phaser.Scene) {
     this.shadow = scene.add.image(-40, 668, propKey('keepShadow')).setOrigin(0, 1).setScale(1 / TEX_SCALE).setDepth(7);
@@ -133,9 +169,10 @@ export class CastleView {
    * `land` is the landscape on screen (Background.shown), which lags behind the day while it loads;
    * `market` how far the market view has come in (0 to 1), which brings the west wing into sight.
    */
-  update(view: ViewState, meta: Meta, land: Landscape, tint: number, night: number, dt: number, time: number, market = 0) {
+  update(view: ViewState, meta: Meta, land: Landscape, sky: number, night: number, dt: number, time: number, market = 0) {
+    const tint = keepLight(sky, night, land);
     // Stages beyond the first are prepared in the background after boot; until then stage 0 stands in.
-    const built = meta.loadout.gateTier;
+    const built = castleArtIndex(this.previewTier ?? castleTierOf(meta));
     if (built > 0 && !keepStagesReady()) wantKeepStages();
     const tier = built > 0 && !keepStagesReady() ? 0 : built;
     const name = `${tier}:${land}`;
@@ -163,10 +200,11 @@ export class CastleView {
     this.ground.setTint(tint);
     this.foot.setTint(tint);
     this.glow.setAlpha(Math.min(1, night * 1.6));
-    this.shadow.setAlpha(1 - night * 0.45);
+    const low = Math.min(1, night * 2);
+    this.shadow.setScale((1 + low * SHADOW_STRETCH) / TEX_SCALE, 1 / TEX_SCALE).setAlpha(1 - night * 0.6);
 
     // Gates are made at boot, so the bought gate shows at once.
-    this.gate.setTexture(propKey(`gate${Math.max(0, Math.min(4, built))}`));
+    this.gate.setTexture(propKey(`gate${built}`));
     const frac = view.gateMax > 0 ? view.gateHp / view.gateMax : 1;
     const stage = frac < 0.25 ? 3 : frac < 0.5 ? 2 : frac < 0.75 ? 1 : 0;
     this.cracks.setVisible(stage > 0);
