@@ -22,7 +22,7 @@ export const FLAG_DEFS: FlagDef[] = [
   {
     id: 'secondHand',
     label: 'Second hand on the laptop',
-    hint: 'Simulates the second hand (C9) with mouse and keyboard, for testing without a phone. Like every switch, it makes runs developer runs.',
+    hint: 'Right mouse button = second hand (C9): alone, or pressed while the left button holds, to grab two raiders. Like every switch, it makes runs developer runs.',
     options: [{ value: 'off', label: 'Off' }, { value: 'on', label: 'On' }],
     value: 'off',
   },
