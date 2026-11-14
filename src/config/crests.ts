@@ -36,8 +36,8 @@ export const CRESTS: CrestRules = {
   // at a 25° heading. v0.3 asks for an aimed throw (C6).
   hookRadius: 34,
   minSpeed: 450,
-  assistRadius: 70,
-  headingCos: 0.97,
+  assistRadius: 40,
+  headingCos: 0.985,
   tryRadius: 160,
 };
 
