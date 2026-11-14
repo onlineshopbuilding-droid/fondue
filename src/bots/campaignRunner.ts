@@ -2,9 +2,9 @@
 // A lost level is tried again with a fresh bot stream; the level itself plays out the same every time.
 import { WORLD } from '../config/field';
 import { levelOf, worldById } from '../config/worlds';
-import { CAMPAIGN, syncUnlocks } from '../modes';
+import { CAMPAIGN, applyLevelCheese, cheeseMask, openSlots, syncUnlocks } from '../modes';
 import { MemoryProfileStore, Profile } from '../profile';
-import { spendStars, type ArmouryBuy } from './armoury';
+import { spendProgress, type ArmouryBuy } from './armoury';
 import { runGame, type GameResult } from './harness';
 import { skillOf, type BotSkill } from './skills';
 
@@ -42,8 +42,9 @@ export interface LevelRun {
   gold: number;
   offerings: number;
   /** Stars paid for this level, and the balance after spending in the armoury. */
-  starsEarned: number;
-  starsLeft: number;
+  cheeseEarned: number;
+  cheeseLeft: number;
+  goldLeft: number;
   armoury: ArmouryBuy[];
   /** What the profile owns after this level. */
   handTier: number;
@@ -79,7 +80,7 @@ export class CampaignRunner {
     const profile = await Profile.load(new MemoryProfileStore());
     syncUnlocks(profile, world);
     // Levels skipped at the front count as won, with their stars, so the profile is where it would be.
-    for (let l = 1; l < from; l++) { this.markWon(profile, world, l); spendStars(profile, skills[0], world); }
+    for (let l = 1; l < from; l++) { this.markWon(profile, world, l); spendProgress(profile, skills[0], world); }
     const t0 = Date.now();
     const levels: LevelRun[] = [];
     let stoppedAt: number | null = null;
@@ -89,30 +90,31 @@ export class CampaignRunner {
       const lt0 = Date.now();
       const dayPerTry: number[] = [];
       let game: GameResult | null = null;
-      let starsEarned = 0;
+      let cheeseEarned = 0;
       let won = false;
       let stuck: string | null = null;
       for (let attempt = 0; attempt < maxTries && !won; attempt++) {
         // The co-op helper brings its own hand; here it grows with the host, as two friends who play together would.
-        const hand = profile.data.handTier;
+        const hand = profile.data.keep.handTier;
         const setup = CAMPAIGN.buildRun(profile, { world, level }, { names, fieldW: o.fieldW ?? WORLD.width, handTiers: names.map(() => hand) });
         game = runGame(setup, skills, { botSeed: seed * 100003 + level * 1009 + attempt * 7919 });
         dayPerTry.push(game.day);
         if (game.stuck && !stuck) stuck = game.stuckInfo;
         if (game.result) {
           const reward = CAMPAIGN.reward(game.result, setup.rules, profile, 'solo');
-          starsEarned += reward.stars;
+          cheeseEarned += reward.cheese;
         }
         won = game.won;
       }
       const forced = !won && !!o.forceThrough;
-      if (forced) starsEarned += this.markWon(profile, world, level);
-      const armoury = won || forced ? spendStars(profile, skills[0], world) : [];
+      if (forced) cheeseEarned += this.markWon(profile, world, level);
+      const armoury = won || forced ? spendProgress(profile, skills[0], world) : [];
       const g = game!;
       const r: LevelRun = {
         level, boss: !!def.boss, days: def.days.length, tries: dayPerTry.length, won, forced, dayPerTry,
-        gatePct: g.gatePct, gold: g.goldEnd, offerings: g.offeringsEnd, starsEarned, starsLeft: profile.data.stars, armoury,
-        handTier: profile.data.handTier, weaponTiers: { ...profile.data.weaponTiers }, slots: [...profile.data.unlockedSlots].sort(),
+        gatePct: g.gatePct, gold: g.goldEnd, offerings: g.offeringsEnd, cheeseEarned, cheeseLeft: profile.data.wallet.cheese, goldLeft: profile.data.wallet.gold, armoury,
+        handTier: profile.data.keep.handTier, weaponTiers: Object.fromEntries(Object.entries(profile.data.keep.weapons).map(([id, w]) => [id, w.tier])),
+        slots: openSlots(profile, world).flatMap((open, i) => (open ? [i] : [])),
         keep: g.loadout, bought: g.bought, stuck, seconds: (Date.now() - lt0) / 1000,
       };
       levels.push(r);
@@ -122,12 +124,12 @@ export class CampaignRunner {
     return { skills: skills.map((s) => s.name), levels, stoppedAt, seconds: (Date.now() - t0) / 1000 };
   }
 
-  /** Counts a level as won without playing it: progress, its stars and its unlocks. Returns the stars. */
+  /** Counts a level as won without playing it: progress, its win cheese and its unlocks. Returns the new cheese. */
   private markWon(profile: Profile, world: string, level: number): number {
     const def = levelOf(world, level);
     if (!def || !profile.markLevelDone(world, level)) return 0;
-    profile.addStars(def.stars);
+    const cheese = applyLevelCheese(profile, world, level, cheeseMask({ won: true, gateShare: 0 }));
     syncUnlocks(profile, world);
-    return def.stars;
+    return cheese;
   }
 }

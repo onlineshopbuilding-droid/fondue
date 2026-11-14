@@ -3,7 +3,7 @@
 // place's window here. Gold, offerings, the hand, the day's result and the Ready button sit around it.
 // Prices and what can be bought come from `quote`, on host and guest alike.
 import { weaponArt } from '../../art/weapons';
-import { GATES, STATIONS, type StationId } from '../../config/keep';
+import { CASTLE_TIERS as GATES, STATIONS, type StationId } from '../../config/keep';
 import { HANDS } from '../../config/hand';
 import { SLOTS } from '../../config/slots';
 import { levelOf } from '../../config/worlds';
@@ -147,7 +147,7 @@ class ShopScreen implements Screen {
     const l = meta.loadout;
     const inSlot = l.slotWeapon[i];
     const campaign = !meta.rules.tierUpgrades;
-    const list = weaponsForSlot(slot.type).filter((w) => meta.rules.weapons[w.id]?.offered);
+    const list = weaponsForSlot(slot.role).filter((w) => meta.rules.weapons[w.id]?.offered);
     list.sort((a, b) => (a.id === inSlot ? -1 : b.id === inSlot ? 1 : 0));
     const rows = list.map((w) => {
       const tier = this.tierOf(meta, w);

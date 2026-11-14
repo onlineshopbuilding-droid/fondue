@@ -167,7 +167,7 @@ function render(rep: Report): string {
     out.push('', '### Besitz am Ende', '', '| Zeile | Hand | Waffenstufen | Sterne übrig |', '|---|---|---|---|');
     for (const r of c.rows) {
       const l = r.levels[r.levels.length - 1];
-      if (l) out.push(`| ${r.label} | ${l.handTier} | ${Object.entries(l.weaponTiers).map(([w, t]) => `${w} ${t}`).join(', ') || '–'} | ${l.starsLeft} |`);
+      if (l) out.push(`| ${r.label} | ${l.handTier} | ${Object.entries(l.weaponTiers).map(([w, t]) => `${w} ${t}`).join(', ') || '–'} | ${l.cheeseLeft} |`);
     }
     const stuck = c.rows.flatMap((r) => r.levels.filter((l) => l.stuck).map((l) => `- ${r.label}, Level ${l.level}: ${l.stuck}`));
     if (stuck.length) out.push('', '### Hängende Läufe', '', ...stuck);

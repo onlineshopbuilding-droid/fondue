@@ -32,7 +32,7 @@ function endless(ctx: ScreenContext): string {
   const back = ctx.session?.role === 'host'
     ? '<button class="secondary" data-a="back" id="backAfterRun">Back to room</button>'
     : '<button class="alt" data-a="quit">Quit to menu</button>';
-  const stars = ctx.reward && ctx.reward.stars > 0 ? `<span>Stars earned</span><b id="runStars">★ ${ctx.reward.stars}</b>` : '';
+  const stars = ctx.reward && ctx.reward.cheese > 0 ? `<span>Cheese earned</span><b id="runStars">🧀 ${ctx.reward.cheese}</b>` : '';
   return `<div class="panel narrow"><h2>The gate has fallen</h2>
       <div class="stats">
         <span>Fell on day</span><b>${r.day}</b>

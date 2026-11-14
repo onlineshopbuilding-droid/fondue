@@ -8,7 +8,7 @@ export const scoresScreen: Screen = {
   id: 'scores',
   render(ctx) {
     const list = ctx.profile.scores(ctx.world);
-    const rows = list.map((e, i) => `<tr><td>${i + 1}</td><td>${esc(e.names)}</td><td>${e.coop ? 'Co-op' : 'Solo'}</td><td>${DIFFICULTIES[e.difficulty]?.label ?? ''}</td><td>${e.day}</td><td>${e.score}</td></tr>`).join('');
+    const rows = list.map((e, i) => `<tr><td>${i + 1}</td><td>${esc(e.names)}</td><td>${e.coop ? 'Co-op' : 'Solo'}</td><td>${DIFFICULTIES[e.difficulty]?.label ?? ''}</td><td>${e.wave}</td><td>${e.score}</td></tr>`).join('');
     const back = ctx.session?.view()?.phase === 'gameover' ? '<button class="secondary" data-a="backGameOver">Back</button>' : BACK_BUTTON;
     return `<div class="panel"><h2>Scores</h2>
       <table class="scores"><thead><tr><th>#</th><th>Name</th><th>Mode</th><th>Difficulty</th><th>Day</th><th>Score</th></tr></thead>

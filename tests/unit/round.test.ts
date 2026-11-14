@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FLAG_DEFS, cleanFlags, defaultFlags } from '../../src/config/flags';
 import { QUICK_STARTS } from '../../src/config/quickstart';
-import { GATES, PERCH } from '../../src/config/keep';
+import { CASTLE_TIERS as GATES, PERCH } from '../../src/config/keep';
 import { SLOTS } from '../../src/config/slots';
 import { DAY } from '../../src/config/waves';
 import { MAX_TIER, weaponById } from '../../src/config/weapons';
@@ -296,8 +296,8 @@ describe('weapons on the keep', () => {
   });
 
   it('slotAt picks the nearest weapon you own and nothing you do not', () => {
-    const tower = SLOTS.findIndex((s) => s.type === 'tower');
-    const shrine = SLOTS.findIndex((s) => s.type === 'shrine');
+    const tower = SLOTS.findIndex((s) => s.role === 'passive');
+    const shrine = SLOTS.findIndex((s) => s.role === 'support');
     const owned = (s: number) => s === tower;
     const { x, y } = SLOTS[tower];
     expect(slotAt(x + 4, y, 60, owned)).toBe(tower);
@@ -315,7 +315,7 @@ describe('weapons on the keep', () => {
 
 describe('keep upgrades', () => {
   it('every gate has a keep of its own', () => {
-    expect(GATES).toHaveLength(5);
+    expect(GATES).toHaveLength(7);
     GATES.forEach((_, i) => {
       expect(PROPS[`keep${i}`]).toBeDefined();
       expect(PROPS[`keepGlow${i}`]).toBeDefined();
@@ -354,7 +354,7 @@ describe('quick start', () => {
         if (id === null) return;
         const def = weaponById(id);
         expect(def, id).toBeDefined();
-        expect(def!.slotType, id).toBe(SLOTS[slot].type);
+        expect(def!.slot, id).toBe(SLOTS[slot].role);
         expect(q.tiers[id], id).toBeGreaterThanOrEqual(1);
         expect(q.tiers[id], id).toBeLessThanOrEqual(MAX_TIER);
       });

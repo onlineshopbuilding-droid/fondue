@@ -1,8 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { ENEMIES } from '../../src/config/enemies';
-import { STARS } from '../../src/config/stars';
 import { COOP } from '../../src/config/waves';
-import { DEFAULT_WORLD, levelOf } from '../../src/config/worlds';
 import {
   CI, GAME_WAIT, closePopups, collectErrors, endDay, equip, gameState, pointer, station, waitFor, waitForGame, waitGame, waitPhase, waitScreen,
 } from './helpers';
@@ -206,14 +204,14 @@ test('co-op campaign: host and guest win level 1 together, each gets a reward', 
   await endDay(host);
   await waitScreen(host, 'won');
   await waitScreen(guest, 'won');
-  const level = levelOf(DEFAULT_WORLD, 1)!;
-  await expect(host.locator('#wonStars')).toContainText(String(level.stars));
-  await expect(guest.locator('#wonStars')).toContainText(String(Math.ceil(level.stars * STARS.guestShare)));
+  // Cheese goes to the host only: the win cheese of level 1 (F2 adds gate and challenge cheese).
+  await expect(host.locator('#wonStars')).toContainText('1');
+  await expect(guest.locator('#wonStars')).toContainText('0');
   await expect(guest.locator('.panel')).toContainText('The host decides');
-  const progress = (p: Page) => p.evaluate(() => { const a = (window as any).__fondue; return [a.profile.highestLevelDone(a.world), a.profile.data.stars]; });
-  expect(await progress(host)).toEqual([1, level.stars]);
-  // The helper keeps no level progress of their own, only the stars.
-  expect(await progress(guest)).toEqual([0, Math.ceil(level.stars * STARS.guestShare)]);
+  const progress = (p: Page) => p.evaluate(() => { const a = (window as any).__fondue; return [a.profile.highestLevelDone(a.world), a.profile.data.wallet.cheese]; });
+  expect(await progress(host)).toEqual([1, 1]);
+  // The helper keeps no level progress and no cheese of their own.
+  expect(await progress(guest)).toEqual([0, 0]);
   // Continue brings both back into the room, with the next level planned.
   await host.click('#continue');
   await waitScreen(host, 'host');

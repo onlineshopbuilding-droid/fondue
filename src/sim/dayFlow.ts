@@ -2,7 +2,7 @@
 import type { EnemyType } from '../config/enemies';
 import { ECONOMY } from '../config/economy';
 import { DT, fieldEntry } from '../config/field';
-import { GATES } from '../config/keep';
+import { CASTLE_TIERS } from '../config/keep';
 import { DAY } from '../config/waves';
 import { daySeed } from './plan';
 import { Rng } from './rng';
@@ -65,7 +65,7 @@ export class DayFlow {
     s.dayT = 0;
     s.phase = 'banner';
     s.phaseT = DAY.bannerSeconds;
-    s.gateMax = GATES[this.ctx.loadout.gateTier].hp;
+    s.gateMax = CASTLE_TIERS[this.ctx.loadout.gateTier].hp;
     s.gateHp = s.gateHp <= 0 ? s.gateMax : Math.min(s.gateMax, s.gateHp + s.gateMax * ECONOMY.gateRefill);
     s.enemies = [];
     s.projectiles = [];

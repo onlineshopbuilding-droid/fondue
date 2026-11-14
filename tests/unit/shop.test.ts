@@ -3,9 +3,10 @@
  * Brought back from the old shop tests of sim.test.ts, which checked the same rules on the old upgrade list.
  */
 import { describe, expect, it } from 'vitest';
-import { GATES, STATIONS } from '../../src/config/keep';
+import { CASTLE_TIERS as GATES, STATIONS } from '../../src/config/keep';
 import { SLOTS } from '../../src/config/slots';
-import { upgradePrice, weaponById } from '../../src/config/weapons';
+import { MAX_TIER, weaponById } from '../../src/config/weapons';
+import { runUpgradeGold, runWeaponGold } from '../../src/sim/shop';
 import type { Sim } from '../../src/sim/sim';
 import { battleSim, eventsOf, runUntil, skipToMarket, slotFor } from './helpers';
 
@@ -29,7 +30,7 @@ describe('market', () => {
   it('charges gold and offerings and puts the weapon into its slot', () => {
     const def = weaponById('wheel')!;
     const slot = slotFor('wheel');
-    const sim = market(def.buyGold + 100, def.buyOfferings + 3);
+    const sim = market(runWeaponGold(def) + 100, 3);
     const ev = buy(sim, `weapon:${slot}:wheel`);
     expect(eventsOf(ev, 'buy')).toHaveLength(1);
     expect(sim.loadout.slotWeapon[slot]).toBe('wheel');
@@ -41,7 +42,7 @@ describe('market', () => {
   it('refuses what is owned, locked or too dear, and then takes nothing', () => {
     const def = weaponById('wheel')!;
     const slot = slotFor('wheel');
-    const sim = market(def.buyGold, 1000);
+    const sim = market(runWeaponGold(def), 1000);
     buy(sim, `weapon:${slot}:wheel`);
     expect(sim.s.gold).toBe(0);
     // Owned: the same weapon in the same slot again.
@@ -52,16 +53,15 @@ describe('market', () => {
     expect(eventsOf(buy(sim, 'gate'), 'denied')).toHaveLength(1);
     expect(sim.loadout.gateTier).toBe(0);
     // Locked: a weapon in a slot of the wrong type.
-    const wrong = SLOTS.findIndex((x) => x.type !== def.slotType);
+    const wrong = SLOTS.findIndex((x) => x.role !== def.slot);
     expect(sim.quote(`weapon:${wrong}:wheel`).reason).toBe('locked');
     expect(sim.s.offerings).toBe(1000);
   });
 
-  it('refuses when the offerings are short, even with gold enough', () => {
+  it('weapons cost no offerings any more: gold alone buys them', () => {
     const def = weaponById('bellows')!;
-    expect(def.buyOfferings).toBeGreaterThan(0);
-    const sim = market(1e6, def.buyOfferings - 1);
-    expect(sim.quote(`weapon:${slotFor('bellows')}:bellows`).reason).toBe('offerings');
+    const sim = market(1e6, 0);
+    expect(sim.quote(`weapon:${slotFor('bellows')}:bellows`)).toMatchObject({ reason: 'ok', offerings: 0, gold: runWeaponGold(def) });
   });
 
   it('sells nothing during the fight', () => {
@@ -95,11 +95,11 @@ describe('market', () => {
     const slot = slotFor('wheel');
     expect(sim.quote('upgrade:wheel').reason).toBe('locked');
     buy(sim, `weapon:${slot}:wheel`);
-    for (let tier = 2; tier <= 5; tier++) {
+    for (let tier = 2; tier <= MAX_TIER; tier++) {
       const gold = sim.s.gold;
       buy(sim, 'upgrade:wheel');
       expect(sim.loadout.weaponTier.wheel).toBe(tier);
-      expect(gold - sim.s.gold).toBe(upgradePrice(weaponById('wheel')!, tier).gold);
+      expect(gold - sim.s.gold).toBe(runUpgradeGold(weaponById('wheel')!, tier));
     }
     expect(sim.quote('upgrade:wheel').reason).toBe('max');
   });
@@ -107,11 +107,11 @@ describe('market', () => {
   it('swapping weapons in a slot: a weapon bought before goes back in for free and keeps its tier', () => {
     const sim = market(1e7, 1000);
     const slot = slotFor('wheel');
-    expect(weaponById('cheese')!.slotType).toBe(weaponById('wheel')!.slotType);
+    expect(weaponById('forks')!.slot).toBe(weaponById('wheel')!.slot);
     buy(sim, `weapon:${slot}:wheel`);
     buy(sim, 'upgrade:wheel');
-    buy(sim, `weapon:${slot}:cheese`);
-    expect(sim.loadout.slotWeapon[slot]).toBe('cheese');
+    buy(sim, `weapon:${slot}:forks`);
+    expect(sim.loadout.slotWeapon[slot]).toBe('forks');
     const gold = sim.s.gold;
     expect(sim.quote(`weapon:${slot}:wheel`).gold).toBe(0);
     buy(sim, `weapon:${slot}:wheel`);

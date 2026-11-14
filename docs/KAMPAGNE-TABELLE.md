@@ -60,7 +60,7 @@ Stand: 100 Level, 662 Tage, 10 Boss-Level, 388 Sterne für alle ersten Siege zus
 | Crowcaller | 52 |
 | Yeti | 61 |
 
-Von Anfang an da: Station Great Cauldron.
+Von Anfang an da: Slot 1 (Damage), Waffe Rolling Wheel.
 
 ### Alle Level
 
@@ -68,86 +68,86 @@ Räuber je Tag: Gesamtzahl für Tag 1 · Tag 2 · …, allein gespielt. Stärke:
 
 | Level | Name | Landschaft | Tage | Räuber je Tag | Neue Räuber | Besonderheit | Boss | Stärke | Sterne | Sieg schaltet frei |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 ✎ | Pot Helmets | Wiese | 2 | 24 · 27 | Pothelm |  |  | 1 | 4 | Slot 1 (Wall Foot), Waffe Rolling Wheel |
-| 2 | Downhill Wheel | Wiese | 5 | 26 · 31 · 37 · 42 · 48 |  |  |  | 1,05 | 4 | Tor bis Iron-Bound Gate |
+| 1 ✎ | Pot Helmets | Wiese | 2 | 24 · 27 | Pothelm |  |  | 1 | 4 |  |
+| 2 | Downhill Wheel | Wiese | 5 | 26 · 31 · 37 · 42 · 48 |  |  |  | 1,05 | 4 | Slot 2 (Slow), Waffe Sticky Fondue |
 | 3 | Kegs on the Road | Wiese | 5 | 27 · 34 · 41 · 48 · 55 | Keg Hauler |  |  | 1,1 | 4 |  |
-| 4 | Crumbs at the Gate | Wiese | 5 | 28 · 36 · 44 · 53 · 61 |  |  |  | 1,15 | 3 |  |
-| 5 | Summer Siege | Wiese | 5 | 29 · 38 · 48 · 57 · 66 |  |  |  | 1,2 | 4 | Waffe Sticky Fondue |
+| 4 | Crumbs at the Gate | Wiese | 5 | 28 · 36 · 44 · 53 · 61 |  |  |  | 1,15 | 4 | Slot 3 (Gate), Waffe Gate Mortar |
+| 5 | Summer Siege | Wiese | 5 | 29 · 38 · 48 · 57 · 66 |  |  |  | 1,2 | 3 |  |
 | 6 | Sticky Situation | Wiese | 5 | 30 · 40 · 51 · 61 · 72 |  |  |  | 1,25 | 3 |  |
-| 7 | Hoofbeats | Wiese | 5 | 31 · 42 · 54 · 65 · 77 | Goat Rider |  |  | 1,3 | 4 |  |
-| 8 | Meadow Muddle | Wiese | 5 | 32 · 44 · 57 · 69 · 81 |  |  |  | 1,35 | 4 | Tor bis Gilded Gate |
-| 9 | The Stampede | Wiese | 5 | 33 · 46 · 59 · 73 · 86 |  | Riders only (nur Goat Rider) |  | 1,4 | 4 | Slot 2 (Wall), Waffe Stomper |
+| 7 | Hoofbeats | Wiese | 5 | 31 · 42 · 54 · 65 · 77 | Goat Rider |  |  | 1,3 | 4 | Slot 4 (Support), Waffe Golden Fondue |
+| 8 | Meadow Muddle | Wiese | 5 | 32 · 44 · 57 · 69 · 81 |  |  |  | 1,35 | 3 |  |
+| 9 | The Stampede | Wiese | 5 | 33 · 46 · 59 · 73 · 86 |  | Riders only (nur Goat Rider) |  | 1,4 | 4 |  |
 | 10 | Bigpot's Charge | Wiese | 8 | 33 · 48 · 62 · 76 · 90 · 94 · 97 · 181 |  |  | Sir Hubert Bigpot (Riesen: 1× Pothelm) | 1,62 | 8 |  |
-| 11 | Thinking Caps | Wiese | 6 | 34 · 49 · 64 · 80 · 95 · 98 |  |  |  | 1,5 | 3 |  |
-| 12 | Boing | Wiese | 6 | 35 · 51 · 67 · 83 · 99 · 102 | Pogo Bandit |  |  | 1,55 | 4 | Waffe Alphorn |
+| 11 | Thinking Caps | Wiese | 6 | 34 · 49 · 64 · 80 · 95 · 98 |  |  |  | 1,5 | 4 | Slot 5 (Passive), Waffe Marmot Sentry |
+| 12 | Boing | Wiese | 6 | 35 · 51 · 67 · 83 · 99 · 102 | Pogo Bandit |  |  | 1,55 | 4 |  |
 | 13 | Up the Pass | Schlucht | 7 | 36 · 53 · 69 · 86 · 103 · 107 · 110 |  |  |  | 1,6 | 3 |  |
-| 14 | Pogo Party | Schlucht | 5 | 36 · 54 · 72 · 90 · 107 |  | Hoppers only (nur Pogo Bandit) |  | 1,65 | 4 | Hand-Stufe 2 |
-| 15 | Canyon Echoes | Schlucht | 7 | 37 · 56 · 74 · 93 · 111 · 115 · 118 |  |  |  | 1,7 | 4 | Waffe Fondue Forks |
-| 16 | Forks Out | Schlucht | 7 | 38 · 57 · 76 · 96 · 115 · 119 · 122 |  |  |  | 1,75 | 3 |  |
-| 17 | Amber Bubbles | Schlucht | 7 | 38 · 59 · 79 · 99 · 119 · 122 · 126 | Hexer |  |  | 1,8 | 4 |  |
+| 14 | Pogo Party | Schlucht | 5 | 36 · 54 · 72 · 90 · 107 |  | Hoppers only (nur Pogo Bandit) |  | 1,65 | 4 | Waffe Fondue Forks |
+| 15 | Canyon Echoes | Schlucht | 7 | 37 · 56 · 74 · 93 · 111 · 115 · 118 |  |  |  | 1,7 | 3 |  |
+| 16 | Forks Out | Schlucht | 7 | 38 · 57 · 76 · 96 · 115 · 119 · 122 |  |  |  | 1,75 | 4 | Station Great Cauldron |
+| 17 | Amber Bubbles | Schlucht | 7 | 38 · 59 · 79 · 99 · 119 · 122 · 126 | Hexer |  |  | 1,8 | 4 | Waffe Frost Horn |
 | 18 | Moonless Pass | Schlucht | 6 | 39 · 60 · 81 · 102 · 123 · 126 |  | Night raid (Nacht) |  | 1,85 | 4 |  |
-| 19 | Falling Leaves | Schlucht | 6 | 40 · 61 · 83 · 105 · 127 · 130 |  |  |  | 1,9 | 4 | Slot 3 (Gate Arm), Waffe Gate Mortar |
-| 20 | The Big Keg | Schlucht | 6 | 40 · 63 · 85 · 108 · 130 · 241 |  |  | Old Barrelbelly (Riesen: 1× Keg Hauler) | 2,18 | 8 |  |
-| 21 | Banners Up | Schlucht | 7 | 41 · 64 · 87 · 111 · 134 · 137 · 141 |  |  |  | 2 | 4 | Tor bis Runic Gate |
+| 19 | Falling Leaves | Schlucht | 6 | 40 · 61 · 83 · 105 · 127 · 130 |  |  |  | 1,9 | 3 |  |
+| 20 | The Big Keg | Schlucht | 6 | 40 · 63 · 85 · 108 · 130 · 241 |  |  | Old Barrelbelly (Riesen: 1× Keg Hauler) | 2,18 | 8 | Waffe Hedgehog Gate |
+| 21 | Banners Up | Schlucht | 7 | 41 · 64 · 87 · 111 · 134 · 137 · 141 |  |  |  | 2 | 3 |  |
 | 22 | Keg Rain | Schlucht | 5 | 42 · 66 · 90 · 114 · 138 |  | Keg parade (viele Keg Hauler) |  | 2,05 | 4 |  |
-| 23 | Pebble Storm | Schlucht | 6 | 42 · 67 · 92 · 116 · 141 · 144 | Slinger |  |  | 2,1 | 4 | Waffe Frost Horn |
+| 23 | Pebble Storm | Schlucht | 6 | 42 · 67 · 92 · 116 · 141 · 144 | Slinger |  |  | 2,1 | 4 | Waffe Ember Beacon |
 | 24 | Chilly Toes | Schlucht | 5 | 43 · 68 · 94 · 119 · 145 |  |  |  | 2,15 | 3 |  |
 | 25 | Last of the Canyon | Schlucht | 5 | 44 · 70 · 96 · 122 · 148 |  |  |  | 2,2 | 3 |  |
-| 26 | Into the Marsh | Sumpf | 7 | 44 · 71 · 98 · 125 · 151 · 155 · 158 |  |  |  | 2,25 | 3 |  |
-| 27 | Night Croak | Sumpf | 5 | 45 · 72 · 100 · 127 · 155 |  | Night raid (Nacht) |  | 2,3 | 4 | Waffe Cuckoo Clock |
+| 26 | Into the Marsh | Sumpf | 7 | 44 · 71 · 98 · 125 · 151 · 155 · 158 |  |  |  | 2,25 | 4 | Waffe Roof Bolter |
+| 27 | Night Croak | Sumpf | 5 | 45 · 72 · 100 · 127 · 155 |  | Night raid (Nacht) |  | 2,3 | 4 |  |
 | 28 | Cuckoo! | Sumpf | 7 | 45 · 74 · 102 · 130 · 158 · 162 · 165 |  |  |  | 2,35 | 3 |  |
-| 29 | Wheels in the Mud | Sumpf | 7 | 46 · 75 · 104 · 133 · 162 · 165 · 168 | Siege Cart |  |  | 2,4 | 4 | Slot 4 (Shrine), Waffe Comet |
+| 29 | Wheels in the Mud | Sumpf | 7 | 46 · 75 · 104 · 133 · 162 · 165 · 168 | Siege Cart |  |  | 2,4 | 4 | Waffe Stomper |
 | 30 | Horns at Dawn | Sumpf | 8 | 46 · 76 · 106 · 135 · 165 · 168 · 172 · 329 |  |  | Countess Hornhoof (Riesen: 1× Goat Rider) | 2,74 | 8 |  |
 | 31 | A Scout Squeaks | Sumpf | 5 | 47 · 77 · 108 · 138 · 168 |  |  |  | 2,5 | 3 |  |
-| 32 | Soggy Boots | Sumpf | 5 | 48 · 79 · 110 · 140 · 171 |  |  |  | 2,55 | 4 | Station Eagle Perch |
+| 32 | Soggy Boots | Sumpf | 5 | 48 · 79 · 110 · 140 · 171 |  |  |  | 2,55 | 4 | Waffe Cuckoo Clock |
 | 33 | Eagle Eyes | Sumpf | 7 | 48 · 80 · 111 · 143 · 175 · 178 · 181 |  |  |  | 2,6 | 3 |  |
-| 34 | The Heavy Day | Sumpf | 6 | 49 · 81 · 113 · 146 · 178 · 181 |  | Heavy day (viele Siege Cart) |  | 2,65 | 4 | Waffe Dragon Bellows |
-| 35 | Dragon Breath | Sumpf | 6 | 49 · 82 · 115 · 148 · 181 · 184 |  |  |  | 2,7 | 3 |  |
+| 34 | The Heavy Day | Sumpf | 6 | 49 · 81 · 113 · 146 · 178 · 181 |  | Heavy day (viele Siege Cart) |  | 2,65 | 4 |  |
+| 35 | Dragon Breath | Sumpf | 6 | 49 · 82 · 115 · 148 · 181 · 184 |  |  |  | 2,7 | 4 | Waffe Alphorn |
 | 36 | Marsh Gas Balloons | Sumpf | 5 | 50 · 83 · 117 · 151 · 184 | Balloonist |  |  | 2,75 | 4 |  |
 | 37 | Close Call | Sumpf | 6 | 50 · 85 · 119 · 153 · 187 · 191 |  |  |  | 2,8 | 3 |  |
-| 38 | Air Raid | Sumpf | 5 | 51 · 86 · 121 · 156 · 190 |  | Night raid (Nacht) |  | 2,85 | 4 |  |
-| 39 | First Snow | Schneewald | 5 | 52 · 87 · 123 · 158 · 194 |  |  |  | 2,9 | 4 | Slot 5 (Tower Roof), Waffe Roof Bolter |
+| 38 | Air Raid | Sumpf | 5 | 51 · 86 · 121 · 156 · 190 |  | Night raid (Nacht) |  | 2,85 | 4 | Waffe Mending Horn |
+| 39 | First Snow | Schneewald | 5 | 52 · 87 · 123 · 158 · 194 |  |  |  | 2,9 | 3 |  |
 | 40 | The Great Bubble | Schneewald | 8 | 52 · 88 · 124 · 160 · 197 · 200 · 203 · 372 |  |  | Granny Bubblewick (Riesen: 1× Hexer) | 3,3 | 8 |  |
-| 41 | Counting Slowly | Schneewald | 5 | 53 · 89 · 126 · 163 · 200 |  |  |  | 3 | 3 |  |
-| 42 | A White Flag | Schneewald | 7 | 53 · 91 · 128 · 165 · 203 · 206 · 209 |  |  |  | 3,05 | 4 | Tor bis Adamant Gate |
+| 41 | Counting Slowly | Schneewald | 5 | 53 · 89 · 126 · 163 · 200 |  |  |  | 3 | 4 | Waffe Storm Bell |
+| 42 | A White Flag | Schneewald | 7 | 53 · 91 · 128 · 165 · 203 · 206 · 209 |  |  |  | 3,05 | 3 |  |
 | 43 | Sledge Charge | Schneewald | 5 | 54 · 92 · 130 · 168 · 206 |  | Air raid (nur Balloonist, Pothelm) |  | 3,1 | 4 |  |
-| 44 | Shadows in the Pines | Schneewald | 7 | 54 · 93 · 131 · 170 · 209 · 212 · 215 | Shade |  |  | 3,15 | 4 | Waffe Storm Bell |
+| 44 | Shadows in the Pines | Schneewald | 7 | 54 · 93 · 131 · 170 · 209 · 212 · 215 | Shade |  |  | 3,15 | 4 | Waffe Comet |
 | 45 | Thunder Peal | Schneewald | 7 | 55 · 94 · 133 · 172 · 212 · 215 · 218 |  |  |  | 3,2 | 3 |  |
 | 46 | Midnight Nibbles | Schneewald | 7 | 55 · 95 · 135 · 175 · 215 · 218 · 221 |  |  |  | 3,25 | 3 |  |
-| 47 | Darkest Night | Schneewald | 6 | 56 · 96 · 137 · 177 · 218 · 221 |  | Night of shades (Nacht) |  | 3,3 | 4 | Hand-Stufe 3 |
-| 48 | Snowed In | Schneewald | 6 | 56 · 97 · 138 · 179 · 221 · 224 |  |  |  | 3,35 | 3 |  |
-| 49 | Rumbling Ground | Schneewald | 7 | 57 · 98 · 140 · 182 · 223 · 227 · 230 |  |  |  | 3,4 | 4 | Waffe Marmot Sentry |
+| 47 | Darkest Night | Schneewald | 6 | 56 · 96 · 137 · 177 · 218 · 221 |  | Night of shades (Nacht) |  | 3,3 | 4 |  |
+| 48 | Snowed In | Schneewald | 6 | 56 · 97 · 138 · 179 · 221 · 224 |  |  |  | 3,35 | 4 | Waffe Snowdrift Cannon |
+| 49 | Rumbling Ground | Schneewald | 7 | 57 · 98 · 140 · 182 · 223 · 227 · 230 |  |  |  | 3,4 | 3 |  |
 | 50 | Caravan of Carts | Schneewald | 9 | 57 · 100 · 142 · 184 · 226 · 230 · 233 · 236 · 437 |  |  | The Rumble Caravan | 3,86 | 8 |  |
 | 51 | Thaw | Schlucht | 6 | 58 · 101 · 144 · 186 · 229 · 233 |  |  |  | 3,5 | 3 |  |
-| 52 | Black Feathers | Schlucht | 8 | 58 · 102 · 145 · 189 · 232 · 235 · 239 · 242 | Crowcaller |  |  | 3,55 | 4 |  |
+| 52 | Black Feathers | Schlucht | 8 | 58 · 102 · 145 · 189 · 232 · 235 · 239 · 242 | Crowcaller |  |  | 3,55 | 4 | Waffe Cheese Cascade |
 | 53 | The Letter, Opened | Schlucht | 6 | 59 · 103 · 147 · 191 · 235 · 238 |  |  |  | 3,6 | 3 |  |
-| 54 | Spoon Thieves | Schlucht | 6 | 59 · 104 · 149 · 193 · 238 · 241 |  |  |  | 3,65 | 4 | Waffe Hedgehog Gate |
+| 54 | Spoon Thieves | Schlucht | 6 | 59 · 104 · 149 · 193 · 238 · 241 |  |  |  | 3,65 | 3 |  |
 | 55 | Spiky Welcome | Schlucht | 6 | 60 · 105 · 150 · 195 · 241 · 244 |  |  |  | 3,7 | 3 |  |
-| 56 | Day of Crows | Schlucht | 7 | 60 · 106 · 152 · 198 · 243 · 247 · 250 |  | Day of crows (viele Crowcaller) |  | 3,75 | 4 |  |
+| 56 | Day of Crows | Schlucht | 7 | 60 · 106 · 152 · 198 · 243 · 247 · 250 |  | Day of crows (viele Crowcaller) |  | 3,75 | 4 | Waffe Iron Grip |
 | 57 | Lost Catapult | Schlucht | 7 | 61 · 107 · 154 · 200 · 246 · 250 · 253 |  |  |  | 3,8 | 3 |  |
 | 58 | Royal Sock | Schlucht | 8 | 61 · 108 · 155 · 202 · 249 · 252 · 256 · 259 |  |  |  | 3,85 | 3 |  |
-| 59 | Calling the Mountains | Schlucht | 6 | 62 · 109 · 157 · 204 · 252 · 255 |  |  |  | 3,9 | 4 | Waffe Ember Beacon |
-| 60 | Sky Admiral | Schlucht | 8 | 62 · 110 · 158 · 207 · 255 · 258 · 261 · 488 |  |  | Admiral Puffington (Riesen: 1× Balloonist) | 4,42 | 8 |  |
+| 59 | Calling the Mountains | Schlucht | 6 | 62 · 109 · 157 · 204 · 252 · 255 |  |  |  | 3,9 | 3 |  |
+| 60 | Sky Admiral | Schlucht | 8 | 62 · 110 · 158 · 207 · 255 · 258 · 261 · 488 |  |  | Admiral Puffington (Riesen: 1× Balloonist) | 4,42 | 8 | Waffe Pinecone Catapult |
 | 61 | Giant Footprints | Schlucht | 8 | 63 · 111 · 160 · 209 · 257 · 261 · 264 · 267 | Yeti |  |  | 4 | 4 |  |
 | 62 | Heavy Lifting | Schlucht | 8 | 63 · 112 · 162 · 211 · 260 · 263 · 267 · 270 |  |  |  | 4,05 | 3 |  |
 | 63 | Green Marsh | Sumpf | 6 | 64 · 114 · 163 · 213 · 263 · 266 |  |  |  | 4,1 | 3 |  |
-| 64 | Crossed-Out Reply | Sumpf | 7 | 64 · 115 · 165 · 215 · 266 · 269 · 272 |  |  |  | 4,15 | 3 |  |
+| 64 | Crossed-Out Reply | Sumpf | 7 | 64 · 115 · 165 · 215 · 266 · 269 · 272 |  |  |  | 4,15 | 4 | Waffe Dragon Bellows |
 | 65 | The Sniffing Yeti | Sumpf | 6 | 65 · 116 · 166 · 217 · 268 · 272 |  |  |  | 4,2 | 3 |  |
 | 66 | Swamp Lanterns | Sumpf | 8 | 65 · 117 · 168 · 220 · 271 · 274 · 278 · 281 |  | Night raid (Nacht) |  | 4,25 | 4 |  |
 | 67 | A Spoonful Offered | Sumpf | 7 | 66 · 118 · 170 · 222 · 274 · 277 · 280 |  |  |  | 4,3 | 3 |  |
-| 68 | Promises | Sumpf | 6 | 66 · 119 · 171 · 224 · 276 · 280 |  |  |  | 4,35 | 3 |  |
-| 69 | Big Sister | Sumpf | 6 | 67 · 120 · 173 · 226 · 279 · 282 |  |  |  | 4,4 | 4 | Waffe Golden Fondue |
-| 70 | Twice the Fur | Sumpf | 9 | 67 · 121 · 174 · 228 · 282 · 285 · 288 · 292 · 533 |  |  | Flurry and Flake | 4,98 | 8 |  |
+| 68 | Promises | Sumpf | 6 | 66 · 119 · 171 · 224 · 276 · 280 |  |  |  | 4,35 | 4 | Waffe Cowbell Toll |
+| 69 | Big Sister | Sumpf | 6 | 67 · 120 · 173 · 226 · 279 · 282 |  |  |  | 4,4 | 3 |  |
+| 70 | Twice the Fur | Sumpf | 9 | 67 · 121 · 174 · 228 · 282 · 285 · 288 · 292 · 533 |  |  | Flurry and Flake | 4,98 | 8 | Station Eagle Perch |
 | 71 | Campfire Songs | Sumpf | 8 | 68 · 122 · 176 · 230 · 284 · 288 · 291 · 294 |  |  |  | 4,5 | 3 |  |
-| 72 | The Spyglass | Sumpf | 8 | 68 · 123 · 177 · 232 · 287 · 290 · 294 · 297 |  |  |  | 4,55 | 3 |  |
+| 72 | The Spyglass | Sumpf | 8 | 68 · 123 · 177 · 232 · 287 · 290 · 294 · 297 |  |  |  | 4,55 | 4 | Waffe Battering Log |
 | 73 | Hop and Gallop | Sumpf | 8 | 68 · 124 · 179 · 234 · 290 · 293 · 296 · 300 |  | Hop and gallop (nur Pogo Bandit, Goat Rider) |  | 4,6 | 4 |  |
 | 74 | Reed Rafts | Sumpf | 6 | 69 · 125 · 181 · 236 · 292 · 296 |  |  |  | 4,65 | 3 |  |
 | 75 | Leaving the Marsh | Sumpf | 8 | 69 · 126 · 182 · 238 · 295 · 298 · 302 · 305 |  |  |  | 4,7 | 3 |  |
-| 76 | Home Meadow | Wiese | 7 | 70 · 127 · 184 · 241 · 297 · 301 · 304 |  |  |  | 4,75 | 3 |  |
+| 76 | Home Meadow | Wiese | 7 | 70 · 127 · 184 · 241 · 297 · 301 · 304 |  |  |  | 4,75 | 4 | Waffe Helping Hand |
 | 77 | Hay Bales | Wiese | 7 | 70 · 128 · 185 · 243 · 300 · 303 · 307 |  |  |  | 4,8 | 3 |  |
 | 78 | A Crumb Dropped | Wiese | 6 | 71 · 129 · 187 · 245 · 303 · 306 |  |  |  | 4,85 | 3 |  |
 | 79 | Whisker Whispers | Wiese | 8 | 71 · 130 · 188 · 247 · 305 · 309 · 312 · 315 |  |  |  | 4,9 | 3 |  |
-| 80 | Night of Whispers | Wiese | 7 | 72 · 131 · 190 · 249 · 308 · 311 · 566 |  | Midnight (Nacht) | Whisper Whitewhisker (Riesen: 1× Shade) | 5,54 | 8 |  |
+| 80 | Night of Whispers | Wiese | 7 | 72 · 131 · 190 · 249 · 308 · 311 · 566 |  | Midnight (Nacht) | Whisper Whitewhisker (Riesen: 1× Shade) | 5,54 | 8 | Waffe Hornet Hive |
 | 81 | A Year of War | Wiese | 7 | 72 · 132 · 191 · 251 · 310 · 314 · 317 |  |  |  | 5 | 3 |  |
 | 82 | Strange Silence | Wiese | 7 | 73 · 133 · 193 · 253 · 313 · 316 · 320 |  |  |  | 5,05 | 3 |  |
 | 83 | The Tunnel | Wiese | 7 | 73 · 134 · 194 · 255 · 315 · 319 · 322 |  |  |  | 5,1 | 3 |  |

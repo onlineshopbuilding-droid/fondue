@@ -56,7 +56,7 @@ export function campaignData(s: CampaignSources, worldId = s.worlds.DEFAULT_WORL
     enemyNames: Object.fromEntries(Object.entries(s.enemies.ENEMIES).map(([id, e]) => [id, e.name])),
     weaponNames: Object.fromEntries(s.weapons.WEAPONS.map((w) => [w.id, w.name])),
     stationNames: Object.fromEntries(Object.entries(s.keep.STATIONS).map(([id, st]) => [id, st.name])),
-    gateNames: s.keep.GATES.map((g) => g.name),
+    gateNames: s.keep.CASTLE_TIERS.map((g) => g.name),
     slotNames: s.slots.SLOTS.map((sl) => sl.name),
   };
 }

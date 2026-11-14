@@ -8,7 +8,8 @@
  */
 import type { EnemyType } from '../../enemies';
 import { DAY, type Landscape } from '../../waves';
-import { STARS } from '../../stars';
+// F2: remove with `stars` in LevelDef (stars are gone in v0.3; levels pay cheese).
+const STARS = { level: { normal: 3, special: 4, boss: 8 } };
 import type { BossDef, DayDef, LevelDef, TwistDef } from '../types';
 import { BOSSES, LEVEL_NAMES, LEVEL_STORY, TUTORIAL_HINTS } from './story';
 import { UNLOCKS } from './unlocks';

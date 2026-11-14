@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
-import { GATES, STATIONS } from '../../src/config/keep';
+import { CASTLE_TIERS as GATES, STATIONS } from '../../src/config/keep';
 import { weaponById } from '../../src/config/weapons';
+import { runWeaponGold } from '../../src/sim/shop';
 import { IPHONE, LAPTOP, gameState, openGame, startEndless, tapMarket, toMarket, waitFor, waitPhase, type Device } from './helpers';
 
 /** The market at the keep between two days: a tap on a place of the keep opens what can be built there. */
@@ -35,7 +36,7 @@ for (const d of [LAPTOP, IPHONE]) {
     await page.screenshot({ path: `mobile-screenshots/market-slot-${d.name}.png` });
     await press(page, d, 'button[data-buy="weapon:0:wheel"]');
     await waitFor(() => meta(page), (m) => m.loadout.slotWeapon[0] === 'wheel', 5000);
-    expect((await gameState(page))!.gold).toBe(gold0 - weaponById('wheel')!.buyGold);
+    expect((await gameState(page))!.gold).toBe(gold0 - runWeaponGold(weaponById('wheel')!));
     // The window now shows the wheel as the slot's weapon, with its next tier for sale (endless).
     await expect(page.locator('#marketWindow .m-row.owned')).toContainText(weaponById('wheel')!.name);
     await expect(page.locator('#marketWindow .m-row.owned button[data-buy="upgrade:wheel"]')).toBeEnabled();

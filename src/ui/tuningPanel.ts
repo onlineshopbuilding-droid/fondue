@@ -164,7 +164,7 @@ export class TuningPanel {
           <div class="dev-label">Profile</div>
           <div class="note-dev" id="devProfile">${this.host.profileSummary()}</div>
           <div class="row dev-options">
-            <button class="small secondary" data-act="stars" id="devStars">+${STAR_GIFT} stars</button>
+            <button class="small secondary" data-act="stars" id="devStars">+${STAR_GIFT} cheese</button>
             <button class="small secondary" data-act="unlockAll" id="devUnlockAll">Unlock everything</button>
             <button class="small secondary" data-act="replayTutorial" id="devTutorial">Replay tutorial</button>
           </div>

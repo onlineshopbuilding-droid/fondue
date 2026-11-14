@@ -286,7 +286,7 @@ export class CoopRoom {
   startCoopAsHost() {
     if (!this.lobbyLink) return;
     const names = [this.app.playerName(), this.guestName];
-    const setup = this.app.coopSetup(this.plan, names, [this.app.profile.data.handTier, this.guestHand]);
+    const setup = this.app.coopSetup(this.plan, names, [this.app.profile.data.keep.handTier, this.guestHand]);
     const session = new HostSession(setup, true);
     const link = this.lobbyLink;
     this.attachToSession(session, link);
@@ -346,7 +346,7 @@ export class CoopRoom {
       if (token !== this.token) { link.close(); return; }
       this.joining = false;
       this.listenAsGuest(link, code);
-      link.send({ k: 'hello', ver: BUILD, name: this.app.playerName(), handTier: this.app.profile.data.handTier });
+      link.send({ k: 'hello', ver: BUILD, name: this.app.playerName(), handTier: this.app.profile.data.keep.handTier });
     } catch (err) {
       this.joining = false;
       if (token !== this.token) return;
@@ -364,7 +364,7 @@ export class CoopRoom {
 
   /** The guest's hand may have grown since the last run; the host needs it for the next one. */
   private sendHand(link: Transport) {
-    link.send({ k: 'hand', handTier: this.app.profile.data.handTier });
+    link.send({ k: 'hand', handTier: this.app.profile.data.keep.handTier });
   }
 
   private planText(): string {

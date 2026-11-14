@@ -1,7 +1,7 @@
 import { test, type Browser, type Page } from '@playwright/test';
 import { LAND_NAMES } from '../../src/art/registry';
 import { perchX, WORLD } from '../../src/config/field';
-import { GATES } from '../../src/config/keep';
+import { CASTLE_TIERS as GATES } from '../../src/config/keep';
 import { openGame, startEndless, type Device } from './helpers';
 
 /**

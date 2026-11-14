@@ -1,10 +1,10 @@
 // The campaign map: a path through the landscapes with every level as a station. It opens centred on
 // the current level and scrolls sideways with the finger (wheel or drag with a mouse). Tapping a
 // station opens a small card with the level's facts and a Play button; locked stations say what to win first.
-import { STARS } from '../../config/stars';
+import { CHEESE, cheeseCount } from '../../config/currencies';
 import { levelOf, worldById } from '../../config/worlds';
 import type { LevelDef } from '../../config/worlds/types';
-import { CAMPAIGN, unlocksOfLevel } from '../../modes';
+import { CAMPAIGN, levelCheese, unlocksOfLevel } from '../../modes';
 import { MAP_SYMBOLS, STEP, bandsOf, endsHtml, landName, landscapeHtml, mapWidth, pathSvg, stationX, stationY } from '../campaignArt';
 import { BACK_BUTTON, esc, navRow } from '../html';
 import type { ScreenContext } from './context';
@@ -49,10 +49,8 @@ function cardHtml(ctx: ScreenContext, id: number): string {
   const open = CAMPAIGN.canPlay(p, ctx.world, id);
   const days = l.days.length;
   const facts = [`${days} ${days === 1 ? 'day' : 'days'}`, landName(l.landscape), l.twist?.label ?? ''].filter(Boolean).map(esc).join(' · ');
-  const replay = Math.floor(l.stars * STARS.replayShare);
-  const stars = done
-    ? `<span class="star">★</span> ${l.stars} won${replay > 0 ? ` · replay pays <span class="star">★</span> ${replay}` : ' · replays pay no stars'}`
-    : `<span class="star">★</span> ${l.stars} for the first win`;
+  const got = cheeseCount(levelCheese(p, ctx.world, id));
+  const stars = `<span class="star">🧀</span> ${got}/${CHEESE.perLevel} cheese${done ? ' · replays pay gold' : ''}`;
   const unlocks = unlocksOfLevel(ctx.world, id);
   let unlockLine = '';
   if (unlocks.length > 0) {
@@ -132,7 +130,7 @@ export const campaignScreen: Screen = {
           <div class="cm-progress-text"><span id="levelsWon">${won}</span>/${levels.length} won</div>
           <div class="cm-bar"><div class="cm-bar-fill" style="width:${((won / levels.length) * 100).toFixed(1)}%"></div></div>
         </div>
-        <div class="cm-stars"><span class="star">★</span><span id="stars">${p.data.stars}</span></div>
+        <div class="cm-stars"><span class="star">🧀</span><span id="stars">${p.data.wallet.cheese}</span></div>
       </div>
       <div class="cm-scroll" id="mapScroll" data-keep-scroll>
         <div class="cm-world" id="levelList" style="width:${w}px">

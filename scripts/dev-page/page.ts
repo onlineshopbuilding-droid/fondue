@@ -12,7 +12,7 @@ import { GAME_NAME } from '../../src/config/game';
 import { HAND_RULES, HANDS } from '../../src/config/hand';
 import * as keep from '../../src/config/keep';
 import * as slots from '../../src/config/slots';
-import { STARS, weaponTierPrice } from '../../src/config/stars';
+import { CREST_COST, TIER_CAP_BY_LEVEL, WEAPON_TIER_GOLD } from '../../src/config/tiers';
 import { DIFFICULTIES, type Difficulty } from '../../src/config/waves';
 import * as weapons from '../../src/config/weapons';
 import { MAX_TIER, upgradePrice, WEAPONS, type WeaponDef } from '../../src/config/weapons';
@@ -210,7 +210,7 @@ function weaponSection(unlocks: CampaignData, art: Record<string, string>): stri
       const stats = Object.entries(tier).filter(([k]) => k !== 'cooldown' && k !== 'note')
         .map(([k, v]) => `${k} ${typeof v === 'number' ? num(v) : typeof v === 'boolean' ? (v ? 'ja' : 'nein') : esc(String(v))}`).join(' · ');
       const price = i === 0 ? `${w.buyGold} Gold${w.buyOfferings ? ` + ${w.buyOfferings} Offerings` : ''}` : (() => { const p = upgradePrice(w, i + 1); return `${p.gold} Gold${p.offerings ? ` + ${p.offerings} Offerings` : ''}`; })();
-      return [String(i + 1), `${num(Number(tier.cooldown))} s`, `<span class="small">${stats}</span>`, esc(String(tier.note)), price, i === 0 ? (STARS.weaponUnlock ? `${STARS.weaponUnlock} ★` : 'frei') : `${weaponTierPrice(i + 1)} ★`];
+      return [String(i + 1), `${num(Number(tier.cooldown))} s`, `<span class="small">${stats}</span>`, esc(String(tier.note)), price, i === 0 ? 'Käse' : `${WEAPON_TIER_GOLD[i] ?? 0} Gold × Preisfaktor${i === 6 ? ` + ${CREST_COST} Wappen` : ''}`];
     });
     const lvl = unlockLevel(w.id);
     const img = art[w.id] ? `<img class="wart" alt="" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(art[w.id])}">` : '';
@@ -240,26 +240,22 @@ function unlockSection(d: CampaignData): string {
   const starsBy: number[] = [0];
   for (const l of d.levels) { stars += l.stars; starsBy[l.id] = stars; }
   const rows = [...d.unlocks].sort((a, b) => a.level - b.level).map((u) => [u.level === 0 ? 'Start' : String(u.level), esc(unlockText(u, d)), u.level === 0 ? '0' : String(starsBy[u.level] ?? '')]);
-  const enabled = WEAPONS.filter((w) => w.enabled).length;
-  const tierSum = STARS.weaponTier.reduce((a, b) => a + b, 0);
-  const handSum = HANDS.reduce((a, h) => a + h.stars, 0);
-  const cost = enabled * (tierSum + STARS.weaponUnlock) + handSum;
   const pace = d.levels.filter((l) => l.id % 10 === 0).map((l) => [String(l.id), String(starsBy[l.id])]);
-  const hands = HANDS.map((h, i) => [String(i + 1), num(h.strength), `${h.stars} ★`, `${h.gold} Gold + ${h.offerings} Offerings`, esc(h.note)]);
-  const gates = keep.GATES.map((g, i) => [String(i), esc(g.name), String(g.hp), `${g.gold} Gold${g.offerings ? ` + ${g.offerings} Offerings` : ''}`]);
-  return `<section id="freischalten"><h2>Freischaltungen und Sterne</h2>
-<p>Die Freischalt-Tabelle steht in <code>src/config/worlds/fondue/unlocks.ts</code>: Der Sieg im genannten Level schaltet frei. Die Spalte rechts zeigt, wie viele Sterne man bis dahin höchstens gesammelt hat.</p>
-${table(['Level', 'Freischaltung', 'Sterne bis dahin'], rows)}
-<h3>Stern-Wirtschaft</h3>
+  const hands = HANDS.map((h, i) => [String(i + 1), num(h.strength), `${h.gold} Gold${h.crests ? ` + ${h.crests} Wappen` : ''}`, esc(h.note)]);
+  const gates = keep.CASTLE_TIERS.map((g, i) => [String(i + 1), esc(g.name), String(g.hp), `${g.gold} Gold${g.crests ? ` + ${g.crests} Wappen` : ''}`]);
+  const caps = TIER_CAP_BY_LEVEL.map((c) => `ab Sieg in Level ${c.afterLevel}: Stufe ${c.cap}`).join(' · ');
+  return `<section id="freischalten"><h2>Freischaltungen, Käse, Gold und Wappen</h2>
+<p>Slots öffnen nach Siegen (Tabelle <code>src/config/worlds/fondue/unlocks.ts</code>), Waffen und Stationen werden ab ihrem Level mit Käse freigeschaltet. Die Spalte rechts ist ein Überbleibsel der alten Sterne und fällt mit F2 weg.</p>
+${table(['Level', 'Freischaltung', 'alt: Sterne bis dahin'], rows)}
+<h3>Wirtschaft v0.3</h3>
 <ul>
-<li>Erster Sieg: ${STARS.level.normal} ★ normal, ${STARS.level.special} ★ für Level mit etwas Neuem oder einer Besonderheit, ${STARS.level.boss} ★ für Boss-Level. Zusammen ${stars} ★.</li>
-<li>Wiederholung: ${pct(STARS.replayShare)} der Sterne. Koop-Gast: ${pct(STARS.guestShare)}, einmal je Level, aufgerundet.</li>
-<li>Waffenstufen 2 bis 5 kosten ${STARS.weaponTier.slice(1).join(' / ')} ★ (zusammen ${tierSum} ★ je Waffe); das erste Freischalten kostet ${STARS.weaponUnlock ? `${STARS.weaponUnlock} ★` : 'nichts'}.</li>
-<li>Alles auf höchster Stufe (${enabled} Waffen und die Hand): ${cost} ★, die Kampagne bringt ${stars} ★, dazu Endlos-Meilensteine.</li>
+<li>Käse: bis zu 5 je Level, jeder nur einmal, 500 insgesamt; alles, was Käse kostet, kostet zusammen 500.</li>
+<li>Gold: Waffenstufen 2 bis 7 kosten ${WEAPON_TIER_GOLD.slice(1).join(' / ')} Gold × Preisfaktor der Waffe; Stufe 7 zusätzlich ${CREST_COST} Wappen.</li>
+<li>Stufen-Deckel: ${caps}; Stufe 7 erst mit dem Eagle Perch.</li>
 <li>Yeti: zwei Hände heben ihn gemeinsam ab einer Stärke von zusammen ${num(HAND_RULES.yetiLift)}.</li>
 </ul>
 <div class="two">${table(['nach Level', 'Sterne bis dahin'], pace)}
-${table(['Hand', 'Stärke', 'Arsenal', 'Endlos-Lauf', 'Beschreibung'], hands)}</div>
+${table(['Hand', 'Stärke', 'Preis', 'Beschreibung'], hands)}</div>
 <h3>Tore</h3>
 ${table(['Stufe', 'Tor', 'Leben', 'Preis im Level'], gates)}</section>`;
 }

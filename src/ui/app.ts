@@ -13,7 +13,7 @@ import { TUNING_DEFAULT, type Tuning } from '../config/tuning';
 import { WEAPONS, weaponById } from '../config/weapons';
 import { DEFAULT_WORLD, levelOf, worldById } from '../config/worlds';
 import { HostSession, type Session } from '../game/session';
-import { CAMPAIGN, ENDLESS, MODES, TUTORIAL, modeOf, syncUnlocks, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from '../modes';
+import { CAMPAIGN, ENDLESS, MODES, TUTORIAL, cheatCheese, modeOf, syncUnlocks, unlockLevelOf, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from '../modes';
 import type { ViewState } from '../net/snapshot';
 import type { RoomPlan } from '../net/protocol';
 import { normalizeRoomCode, type Transport } from '../net/transport';
@@ -138,8 +138,8 @@ export class App implements ScreenContext, CoopRoomHost {
       startDay: () => this.startDay,
       setStartDay: (day) => { this.startDay = day; if (this.screen === 'play' || this.screen === 'host') this.show(this.screen); },
       startQuickEndless: () => this.startEndless(),
-      profileSummary: () => `★ ${this.profile.data.stars} · levels won: ${this.profile.highestLevelDone(this.world)} · hand tier ${this.profile.data.handTier}${this.temporaryProfile ? ' · test profile' : ''}`,
-      addStars: (n) => { this.profile.addStars(n); this.redrawMenus(); },
+      profileSummary: () => `🧀 ${this.profile.data.wallet.cheese} · gold ${this.profile.data.wallet.gold} · crests ${this.profile.data.wallet.crests} · levels won: ${this.profile.highestLevelDone(this.world)} · hand tier ${this.profile.data.keep.handTier}${this.profile.data.cheats.used ? ' · cheats used' : ''}${this.temporaryProfile ? ' · test profile' : ''}`,
+      addStars: (n) => { cheatCheese(this.profile, n); this.redrawMenus(); },
       unlockEverything: () => { this.unlockEverything(); this.redrawMenus(); },
       replayTutorial: () => { this.profile.resetTutorial(); this.startTutorial(); },
       resetProfile: () => {
@@ -157,7 +157,7 @@ export class App implements ScreenContext, CoopRoomHost {
       levelDays: (level) => levelOf(this.world, level)?.days.length ?? 1,
       weaponTier: (id) => this.profile.weaponTier(id),
       setWeaponTier: (id, tier) => { this.profile.setWeaponTier(id, tier); this.redrawMenus(); },
-      handTier: () => this.profile.data.handTier,
+      handTier: () => this.profile.data.keep.handTier,
       setHandTier: (tier) => { this.profile.setHandTier(tier); this.redrawMenus(); },
       showEnemyPopup: (type) => this.popup.show([type]),
       ratings: () => this.profile.data.devRatings,
@@ -167,6 +167,11 @@ export class App implements ScreenContext, CoopRoomHost {
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
     window.addEventListener('pagehide', () => this.session?.dispose());
+    // Saving must survive closing the tab and switching away from the home-screen app.
+    const flush = () => this.profile?.flushSync();
+    window.addEventListener('pagehide', flush);
+    window.addEventListener('beforeunload', flush);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
     this.bindLogoLongPress();
     const rotate = document.createElement('div');
     rotate.id = 'rotate';
@@ -187,9 +192,15 @@ export class App implements ScreenContext, CoopRoomHost {
 
   /** Developer tool: every weapon, slot and offering site, as if the campaign were far along. */
   private unlockEverything() {
-    for (const w of WEAPONS) if (w.enabled) this.profile.unlockWeapon(w.id);
-    for (let i = 0; i < SLOT_COUNT; i++) this.profile.unlockSlot(i);
-    for (const s of STATION_IDS) this.profile.unlockStation(s);
+    // Slots follow from won levels, so the levels that open them are marked as won.
+    for (let i = 0; i < SLOT_COUNT; i++) for (let l = 1; l <= (unlockLevelOf(this.world, 'slot', i) ?? 0); l++) this.profile.markLevelDone(this.world, l);
+    this.profile.edit((d) => {
+      for (const w of WEAPONS) if (w.enabled && !Object.hasOwn(d.keep.weapons, w.id)) d.keep.weapons[w.id] = { tier: 1 };
+      for (const s of STATION_IDS) d.keep.stations[s] = Math.max(1, d.keep.stations[s]);
+    });
+    this.profile.noteCheat('unlock everything');
+    syncUnlocks(this.profile, this.world);
+    this.profile.flushSync();
     this.toast('Everything unlocked');
   }
 
@@ -238,6 +249,8 @@ export class App implements ScreenContext, CoopRoomHost {
     this.profile = loaded.profile;
     this.temporaryProfile = loaded.temporary;
     syncUnlocks(this.profile, this.world);
+    // A full or blocked storage: keep playing from memory and say so once.
+    this.profile.onChange(() => setTimeout(() => { const n = this.profile.takeSaveNotice(); if (n) this.toast(n, 'tip', 5000); }, 400));
     (window as unknown as Record<string, unknown>).__fondue = this;
     this.wireUp();
     if (this.params.get('relay')) this.profile.updateSettings({ relayAddress: this.params.get('relay')! });
@@ -295,7 +308,7 @@ export class App implements ScreenContext, CoopRoomHost {
 
   /** A new player meets the tutorial before anything else, unless the page asks for the menu (tests). */
   private tutorialDue(): boolean {
-    return !this.profile.data.tutorialDone && !['1', 'html'].includes(this.params.get('menu') ?? '');
+    return !this.profile.data.seen.tutorial && !['1', 'html'].includes(this.params.get('menu') ?? '');
   }
 
   /** Follows window resizes and phone rotation. */
@@ -597,7 +610,7 @@ export class App implements ScreenContext, CoopRoomHost {
     // "Try again" starts a continued level from its first day.
     const again: RunChoice = choice.resume ? { world: choice.world, level: choice.resume.rules.level ?? 1 } : choice;
     this.lastPick = { mode: mode.id, choice: again };
-    const setup = this.buildSetup(mode, choice, [this.playerName()], [this.profile.data.handTier]);
+    const setup = this.buildSetup(mode, choice, [this.playerName()], [this.profile.data.keep.handTier]);
     this.useSession(new HostSession(setup, false));
   }
 
@@ -605,7 +618,7 @@ export class App implements ScreenContext, CoopRoomHost {
     this.coop.closeRoom();
     this.lastPick = null;
     const setup = TUTORIAL.buildRun(this.profile, { world: this.world }, {
-      names: [this.playerName()], fieldW: fieldForAspect(innerWidth / innerHeight), handTiers: [this.profile.data.handTier],
+      names: [this.playerName()], fieldW: fieldForAspect(innerWidth / innerHeight), handTiers: [this.profile.data.keep.handTier],
     });
     this.useSession(new HostSession(setup, false));
   }
