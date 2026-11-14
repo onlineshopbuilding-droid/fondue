@@ -25,7 +25,7 @@ async function killOne(page: Page) {
   const e = (await waitFor(() => gameState(page), (s) => s!.enemies.length === 1, 3000))!.enemies[0];
   const at = await page.evaluate(([x, y]) => (window as any).__fondue.scene.worldToCss(x, y), [e.x, e.y - 44]);
   await drag(page, [at.x, at.y], [at.x - 30, 90], 9, 8);
-  await waitFor(() => gameState(page), (v) => v!.gold >= 10, 8000);
+  await waitGame(page, () => gameState(page), (v) => v!.gold >= 10, 8);
 }
 
 test('lobby: every station opens its page and Back returns to the hall', async ({ page }) => {
@@ -292,12 +292,12 @@ test('a realistic flick kills, a slow drop does not', async ({ page }) => {
   await waitFor(() => gameState(page), (s) => s!.enemies.some((q: any) => q.st === 'held'), 3000);
   await page.waitForTimeout(300);
   await page.mouse.up();
-  await waitFor(() => gameState(page), (s) => s!.enemies.find((q: any) => q.id === a.id)?.st !== 'air', 5000);
+  await waitGame(page, () => gameState(page), (s) => s!.enemies.find((q: any) => q.id === a.id)?.st !== 'air', 5);
   expect((await gameState(page))!.gold).toBe(0);
   const live = (await gameState(page))!.enemies.find((q: any) => q.id === b.id)!;
   const pb = await toCss(live.x, live.y - 44);
   await drag(page, [pb.x, pb.y], [pb.x - 30, 90], 9, 8);
-  await waitFor(() => gameState(page), (v) => v!.gold >= 10, 8000);
+  await waitGame(page, () => gameState(page), (v) => v!.gold >= 10, 8);
 });
 
 test('developer menu: jump to a level and wave; a developer win keeps nothing and unlocks nothing', async ({ page }) => {

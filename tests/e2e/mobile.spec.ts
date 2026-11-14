@@ -132,7 +132,7 @@ for (const d of PHONE_DEVICES) {
     await waitFor(() => gameState(page), (v) => v!.enemies[0].st === 'held', 3000);
     await p.glide(e.x, e.y - 44, e.x, 60, 10, 8);
     await p.up();
-    await waitFor(() => gameState(page), (v) => v!.gold >= 10, 8000);
+    await waitGame(page, () => gameState(page), (v) => v!.gold >= 10, 8);
 
     // The pause button works by touch.
     const pause = await page.evaluate(() => (window as any).__fondue.scene.pauseCss());

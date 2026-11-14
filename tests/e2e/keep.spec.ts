@@ -139,8 +139,8 @@ for (const d of DEVICES) {
     await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'cooking', 4000, 30);
     expect((await gameState(page))!.potBusy).toBeGreaterThan(0);
     await page.screenshot({ path: `mobile-screenshots/cauldron-${d.name}.png` });
-    await waitFor(() => killsBy(page, 'cauldron'), (n) => n === cooked + 1, 15000);
-    await waitFor(() => gameState(page), (s) => s!.potBusy === 0, 15000);
+    await waitGame(page, () => killsBy(page, 'cauldron'), (n) => n === cooked + 1, 15);
+    await waitGame(page, () => gameState(page), (s) => s!.potBusy === 0, 15);
 
     // The eagle hook hangs at the top right and takes one raider at a time.
     await clearField(page);
@@ -186,7 +186,7 @@ for (const d of DEVICES) {
     await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'hooked', 4000, 30);
     await page.screenshot({ path: `mobile-screenshots/hook-${d.name}.png` });
     // The game clock falls behind real time on a software renderer, so the meal gets a long limit.
-    await waitFor(() => killsBy(page, 'eagle'), (n) => n === eaten + 1, 30000);
+    await waitGame(page, () => killsBy(page, 'eagle'), (n) => n === eaten + 1, 30);
     expect(errors).toEqual([]);
     await context.close();
   });
