@@ -25,3 +25,17 @@ Zeiten per `date` (Ortszeit des Laptops, WEST).
 - `round.test.ts`: sieben Burgstufen statt fünf Tore.
 - Tag-, Sonnenuntergangs-, Offering-, Ready- und Markt-Tests in `sim`, `round`, `runEnd`, `modes`, `levels`, `flow`, `mobile`, `coop`: werden zu Wellen-, Burg- und Gold-Tests (F2).
 - `tests/e2e/coop.spec.ts`, `flow.spec.ts`: prüfen Käse statt Sterne.
+
+## Nach dem Limit (14.11.2026)
+
+- **06:25–07:00** Abgebrochene Pakete fortgesetzt und committet: Hände und Stationen (zweite Hand, gezielter Adlerhaken, Kessel-Stufen), Tutorial und Slot-Einführungen, Koop-Ruckeln (Puffer auf der Host-Uhr, Messwerte in `MESSUNGEN-KOOP.md`), Balance mit Fortschrittslogik der Bots (`docs/balance.md`).
+- **07:00–07:40** Nacharbeiten (Sieg-Bildschirm ohne Scrollen auf Handys, Slot-Text an einer Stelle, Snapshot mit bis zu vier Haltern, Reste von Tagen/Markt/Sternen/Offerings entfernt) und Dokumente G4 (AGENTS.md, GDD, HANDBUCH, ARCHITEKTUR).
+- **07:40–09:15** Etappe 5, unabhängige Prüfung (Sonnet): 575/575 Unit-Tests, E2E gegen den Build 85 grün / 3 rot (veralteter Adlerhaken-Test), 30 von 34 Abnahme-Einträgen erledigt (`PRUEFUNG.md`).
+- **09:15–09:35** Befunde behoben: Adlerhaken-Test durch Test des echten Wurfs ersetzt, Waffen-Tipp je Feuerart, Shop-Hänger (ständig neu gezeichnete Bilder) behoben, späte Boss-Level stärker.
+- **09:38** Kommentar mit Bildern in Issue #1, `BERICHT.md` und `TESTEN.md`, Pull Request #12 v0.3-dev → main geöffnet (`Fixes #1`, nicht gemergt).
+- **10:10** Nachprüfung (Sonnet): `npm test` 577/577, E2E gegen den Build 88 grün / 0 rot / 4 übersprungen (`look.spec`, nur mit `ALL_SCREENS`), Balance alle Ziele erfüllt, alle sechs Adressen 200, `/next/` ohne `fondue.profile`. `abnahme.json`: 34 erledigt.
+- **10:15** `main` in `v0.3-dev` gemergt (Konflikt nur in Doku), PR #12 wieder mergebar; `/next/` neu ausgeliefert.
+
+### Weitere ersetzte Tests
+- `tests/e2e/keep.spec.ts` (Adlerhaken): „hinauftragen und loslassen“ wird zu „nur loslassen zählt nicht, ein echter Wurf schon“ (C6, gezielter Haken).
+- `marketCamera.test.ts` wird zu `camera.test.ts` (Markt-Kamera entfällt); `dayEnd`-Tests werden zu Tests des Schalters für die zweite Hand.

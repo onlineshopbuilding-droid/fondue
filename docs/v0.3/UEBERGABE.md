@@ -1,6 +1,7 @@
 # Übergabe v0.3 (immer aktuell halten)
 
-- **Stand (06:25):** Etappen 0–2 fertig, Etappe 3 großteils fertig (Waffen, Grafik, Burg, Shop, Entwickler-Werkzeuge, Hände/Stationen committet). Unterbrochen durch das Nutzungslimit (05:50): Tutorial (P-Tutorial), Koop-Ruckeln (P-Coop), Balance (P-Balance); ihre Änderungen liegen uncommittet im Hauptordner.
+- **Stand (10:15):** Etappen 0 bis 6 fertig. `abnahme.json`: 34 von 34 erledigt mit Beleg. Pull Request #12 (v0.3-dev → main, `Fixes #1`) ist offen und wird **nicht** von der KI gemergt; darüber entscheiden Tim oder Lenny. `/fondue/next/` zeigt den finalen Stand.
 - **Leitung:** Claude Opus 5.5 (Arbeitsweg B, E-063). Subagents immer mit Modell: bauer = opus, pruefer = sonnet.
-- **Nächster Schritt:** abgebrochene Pakete fortsetzen und committen, dann Etappe 4 (Balance, Wappen-Grind), Etappe 5 (unabhängige Prüfung durch pruefer), Etappe 6 (PR v0.3-dev → main mit `Fixes #1`, nicht mergen; BERICHT.md, TESTEN.md), `/next/` mit `gh workflow run deploy.yml --ref main` neu ausliefern.
-- **Achtung:** `docs/screenshots/*.png` außerhalb von `v0.3/` nie committen. Committen nur mit `git commit -m … -- <pfade>` (geteilte Staging-Area).
+- **Was offen ist:** nur auf echten Geräten Prüfbares (Mehrfach-Touch in Safari/Chrome, Speichern in der Home-Bildschirm-App, Koop übers Internet, Bildrate) und Spielgefühl (schnelle Gegner, Leerlauf am Stufen-Deckel, welche zweite Hand). Siehe `BERICHT.md`, „Offen oder ungeprüft“.
+- **Nächster Schritt:** Tim und Lenny testen nach `TESTEN.md` und geben über die Entwickler-Übersicht Rückmeldung (`[Entscheidungen]`-Issues). Danach v0.4 (Fahrplan in `BERICHT.md`).
+- **Achtung:** `docs/screenshots/*.png` außerhalb von `v0.3/` nie committen. Browser-Tests gegen den Build: `npm run build`, dann `npx playwright test --config tests/playwright.dist.config.ts`.
