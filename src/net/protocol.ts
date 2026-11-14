@@ -19,9 +19,10 @@ export type ClientCommand = Command extends infer C ? (C extends { p: number } ?
 
 export type NetMessage =
   // Handshake
-  | { k: 'hello'; ver: string; name: string; handTier: number }
+  // `addr` is the page address (origin and path) the player opened; older builds do not send it.
+  | { k: 'hello'; ver: string; name: string; handTier: number; addr?: string }
   | { k: 'welcome'; names: string[]; inGame: boolean; plan: RoomPlan }
-  | { k: 'reject'; reason: 'version' | 'full'; hostVer: string }
+  | { k: 'reject'; reason: 'version' | 'full'; hostVer: string; hostAddr?: string }
   // Lobby
   | { k: 'lobby'; names: string[]; plan: RoomPlan }
   // The guest's hand may have grown between two runs in the same room.

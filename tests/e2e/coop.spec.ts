@@ -322,7 +322,28 @@ test('a guest of another version is refused with a clear message', async ({ brow
   await guest.goto(`${BASE}&fakever=old&join=${code}`);
   await waitForGame(guest);
   await guest.click('#doJoin');
-  await expect(guest.locator('#status')).toContainText('version', { timeout: 8000 });
+  // Both sides are told, with both versions, and what to do.
+  await expect(guest.locator('#status')).toContainText('The host runs v', { timeout: 8000 });
+  await expect(guest.locator('#status')).toContainText('you run old');
+  await expect(guest.locator('#status')).toContainText('Both of you need to reload');
+  await expect(host.locator('#status')).toContainText('could not join', { timeout: 8000 });
+  await expect(host.locator('#status')).toContainText('Your friend runs old at the same address');
+  await context.close();
+});
+
+test('a guest who opened another address of the game is told to open the host address', async ({ browser }) => {
+  const context = await browser.newContext();
+  const host = await context.newPage();
+  const guest = await context.newPage();
+  const code = await openRoom(host, '', 'endless');
+  // /index.html is the same server but another address, as /fondue/classic/ is for the live game.
+  await guest.goto(`/index.html?menu=1&fresh=1&net=loopback&fakever=4-v0.2-abc1234&join=${code}`);
+  await waitForGame(guest);
+  await guest.click('#doJoin');
+  await expect(guest.locator('#status')).toContainText('you run v0.2 (build abc1234)', { timeout: 8000 });
+  await expect(guest.locator('#status')).toContainText('Both of you need to open');
+  await expect(host.locator('#status')).toContainText('Your friend runs v0.2 (build abc1234) at another address');
+  await expect(host.locator('#status')).toContainText('/index.html');
   await context.close();
 });
 
@@ -338,5 +359,54 @@ test('an invite link opens Join with the code filled in, Back on the left and Jo
   expect(back.x).toBeLessThan(join.x);
   // A friend's link goes straight to the room: no tutorial in between.
   expect(await page.evaluate(() => (window as any).__fondue.session)).toBeNull();
+  await context.close();
+});
+
+test('co-op endless pays the guest the round\'s gold into the guest\'s own profile', async ({ browser }) => {
+  const { host, guest, errors, context } = await setupCoop(browser, '');
+  const before = { host: await wallet(host), guest: await wallet(guest) };
+  await waitPhase(host, 'battle');
+  await closePopups(host);
+  await host.evaluate(() => {
+    const sim = (window as any).__fondue.session.sim;
+    sim.freezeWaves();
+    sim.s.enemies = [];
+    const e = sim.spawnEnemy('grunt', 900);
+    e.st = 'stun';
+    e.t = 60;
+  });
+  const e = (await waitFor(() => gameState(host), (v) => v!.enemies.length === 1 && v!.enemies[0].st === 'stun', GAME_WAIT))!.enemies[0];
+  const runGold = (await gameState(host))!.gold;
+  await fling(host, false, e);
+  await waitGame(host, () => gameState(host), (v) => v!.gold > runGold && v!.enemies.length === 0, 10);
+  // The gate falls: the endless run is over.
+  await host.evaluate(() => { (window as any).__fondue.session.sim.s.gateHp = 0; });
+  await waitScreen(host, 'gameover');
+  await waitScreen(guest, 'gameover');
+  const earned = await host.evaluate(() => (window as any).__fondue.session.meta().result.stats.goldEarned as number);
+  expect(earned).toBeGreaterThan(0);
+  const after = { host: await wallet(host), guest: await wallet(guest) };
+  expect(after.host.gold - before.host.gold).toBe(earned);
+  expect(after.guest.gold - before.guest.gold).toBe(earned);
+  expect(after.guest.cheese).toBe(before.guest.cheese);
+  expect(errors()).toEqual([]);
+  await context.close();
+});
+
+test('a host without the fifth slot cannot open an endless room', async ({ browser }) => {
+  const context = await browser.newContext();
+  const host = await context.newPage();
+  await host.goto(BASE);
+  await waitForGame(host);
+  await host.evaluate(() => (window as any).__fondue.profile.edit((d: any) => { d.seen.tutorial = true; }));
+  await station(host, 'coop');
+  await host.fill('#name', 'Tim');
+  await host.click('button[data-a="openRoom"]');
+  await expect(host.locator('#roomCode')).toHaveText(/[A-Z2-9]{5}/);
+  await expect(host.locator('#planCampaign')).toBeVisible();
+  expect(await host.locator('#planEndless').count()).toBe(0);
+  // Not even by a stray change of the plan (difficulty field, an old link): the room stays on the campaign.
+  const mode = await host.evaluate(() => { const c = (window as any).__fondue.coop; c.setPlan({ mode: 'endless', difficulty: 'hard' }); return c.plan.mode as string; });
+  expect(mode).toBe('campaign');
   await context.close();
 });

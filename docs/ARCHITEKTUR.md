@@ -316,6 +316,27 @@ Schütteln wird auf dem Gerät erkannt (`src/input/shake.ts`, reine Funktion üb
 
 Ehrlich: Das Datenmodell (Namen, Hände, Raum-Fenster) ist für mehr als zwei Spieler als Liste angelegt. Der Netzcode kennt heute genau einen Gast.
 
+### Glättung beim Gast
+
+Der Host schickt höchstens einen Snapshot pro eigenem Frame (alle 2 Ticks, also 30 pro Sekunde; ein langsamer Frame schickt nur den neuesten Stand). Der Gast legt jeden Snapshot auf die Uhr des Hosts (`tick`), nicht auf den Zeitpunkt der Ankunft: `PlayoutBuffer` in `src/net/interp.ts`. Er zeichnet einen kleinen Abstand hinter dem Host, der sich selbst einstellt (Snapshot-Abstand + 90-%-Jitter + 10 ms, zwischen 50 und 250 ms). Kommt ein Snapshot zu spät, laufen die Figuren höchstens 100 ms geradeaus weiter und bleiben dann stehen. Pause und eingefrorene Seite erkennt der Puffer am stehenden Tick und misst danach neu; das Bild läuft nie rückwärts. Ereignisse (Treffer, Klang) hört der Gast um denselben Abstand später, damit sie zum Bild passen. Die eigene Hand zeichnet der Gast sofort an der Fingerstelle. Messwerte: `docs/v0.3/MESSUNGEN-KOOP.md`.
+
+### Version und Adresse
+
+`hello` trägt die Version (`BUILD` = Protokoll, Spielversion, Build-Hash) und die Adresse (`ADDRESS` = Origin + Pfad). Passt die Version nicht, schickt der Host `reject` mit seiner Version und Adresse, und beide sehen eine Meldung mit beiden Versionen und was zu tun ist (`mismatchText` in `src/ui/coop/room.ts`): bei gleicher Adresse neu laden, sonst die Adresse des Hosts öffnen.
+
+### Verbindung austauschbar (Relay und Matchmaking später)
+
+Das Spiel kennt nur die Schnittstellen aus `src/net/transport.ts`. Welche Verbindung gilt, entscheidet allein `pickTransport` in `src/net/choose.ts`. Ein gemieteter Server kommt später als weiterer Eintrag dort dazu; Raum, Sitzungen und Spiel bleiben, wie sie sind. Heute ist kein Server eingerichtet.
+
+| Teil | Aufgabe |
+|---|---|
+| `Transport` | Eine Verbindung Host ↔ Gast: `send(msg)`, `onMessage`, `onClose`, `close()`, optional `congested()` (dann lässt der Host Snapshots aus). Nachrichten kommen vollständig und in Reihenfolge an. |
+| `TransportKind.host(code, onGuest, onError)` | Öffnet einen Raum unter einem Code und meldet jeden Gast als eigenen `Transport`. |
+| `TransportKind.join(code)` | Tritt einem Raum bei; lehnt mit lesbarer Meldung ab. |
+| `withLatency` | Legt für Tests Verzögerung, Jitter und Nachsendungen über jede Verbindung (`?lat=&jit=&loss=`). |
+
+Heutige Umsetzungen: PeerJS direkt (`peer.ts`, Standard), Relay über WebSocket (`relay.ts` mit `server/relay`, wenn in den Einstellungen eine Relay-Adresse steht), Loopback zwischen zwei Tabs (`loopback.ts`, `?net=loopback`). Ein eigener Relay-Server muss nur das Verhalten von `server/relay` liefern: WebSocket mit `?room=CODE&role=host|guest`, Nachrichten als JSON-Text unverändert weiterreichen, Systemnachrichten `{sys: 'guest' | 'guest-left'}` an den Host und `{sys: 'ready' | 'no-host' | 'host-left'}` an den Gast. Matchmaking (Raum ohne Code finden) wäre eine Funktion, die einen Code liefert und dann `host` oder `join` aufruft; die Versionsprüfung bleibt im `hello` und braucht den Server nicht.
+
 ## 11. Was wohin wandert
 
 | Heute | Danach |
