@@ -220,14 +220,14 @@ test('a realistic flick kills, a slow drop does not', async ({ page }) => {
   await waitFor(() => gameState(page), (v) => v!.gold >= 10, 8000);
 });
 
-test('developer menu: jump to a level and day; a developer win pays no stars and unlocks nothing', async ({ page }) => {
+test('developer menu: jump to a level and day; a developer win pays no cheese and unlocks nothing', async ({ page }) => {
   await page.goto('/?menu=1');
   await waitForGame(page);
   await station(page, 'options');
   await page.click('#devMenuButton');
   await expect(page.locator('#tuning')).toBeVisible();
   await page.click('#devStars');
-  expect(await page.evaluate(() => (window as any).__fondue.profile.data.stars)).toBe(50);
+  expect(await page.evaluate(() => (window as any).__fondue.profile.data.wallet.cheese)).toBe(50);
   // The last day of level 3: winning it wins the level.
   const lastDay = levelOf(DEFAULT_WORLD, 3)!.days.length;
   expect(lastDay).toBeGreaterThan(1);
@@ -243,9 +243,9 @@ test('developer menu: jump to a level and day; a developer win pays no stars and
   await endDay(page);
   // The end of the day plays in game time.
   await waitGame(page, () => screenOf(page), (sc) => sc === 'won', 20);
-  await expect(page.locator('.panel')).toContainText('Developer run: no stars.');
+  await expect(page.locator('.panel')).toContainText('Developer run: no cheese.');
   await expect(page.locator('#unlocks')).toHaveCount(0);
-  expect(await page.evaluate(() => (window as any).__fondue.profile.data.stars)).toBe(50);
+  expect(await page.evaluate(() => (window as any).__fondue.profile.data.wallet.cheese)).toBe(50);
   expect(await page.evaluate(() => (window as any).__fondue.profile.highestLevelDone((window as any).__fondue.world))).toBe(0);
   await page.click('#continue');
   await waitForLobby(page);
@@ -300,12 +300,12 @@ test('developer menu: quick endless start stays off the scores; profile tools un
 
   await page.keyboard.press('F1');
   await page.click('#devUnlockAll');
-  const unlocked = await page.evaluate(() => { const p = (window as any).__fondue.profile; return [p.hasWeapon('bolter'), p.hasSlot(4), p.hasStation('perch')]; });
+  const unlocked = await page.evaluate(() => { const p = (window as any).__fondue.profile; const a = (window as any).__fondue; return [p.hasWeapon('bolter'), p.highestLevelDone(a.world) >= 11, p.hasStation('perch')]; });
   expect(unlocked).toEqual([true, true, true]);
   await page.click('#devStars');
   await page.click('#devResetProfile');
   await page.click('#tuning button[data-act="resetConfirm"]');
-  const after = await page.evaluate(() => { const p = (window as any).__fondue.profile; return [p.data.stars, p.hasWeapon('bolter')]; });
+  const after = await page.evaluate(() => { const p = (window as any).__fondue.profile; return [p.data.wallet.cheese, p.hasWeapon('bolter')]; });
   expect(after).toEqual([0, false]);
   await page.click('#devTutorial');
   await waitFor(() => page.evaluate(() => (window as any).__fondue.session?.meta()?.rules.mode), (m) => m === 'tutorial', GAME_WAIT);
