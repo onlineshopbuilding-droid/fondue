@@ -137,7 +137,9 @@ function keepPicture(ctx: ScreenContext): string {
     image('cauldronBack', SIDE_SPOTS.cauldron.x, SIDE_SPOTS.cauldron.y, 'centre', 96) + image('cauldronFront', SIDE_SPOTS.cauldron.x, SIDE_SPOTS.cauldron.y, 'centre', 96),
     image('perchHook', SIDE_SPOTS.perch.x, SIDE_SPOTS.perch.y, 'centre', 70),
   ].join('');
-  return `<svg class="sh-svg" viewBox="${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+  // What the picture shows, so a redraw that changes nothing here keeps the drawn picture (screen.ts).
+  const sig = [stage, ...SLOTS.map((_, i) => (k.loadout[i] && slotOpen(p, ctx.world, i) ? `${k.loadout[i]}:${p.weaponTier(k.loadout[i]!) || 1}` : ''))].join('|');
+  return `<svg id="shopPic" data-keep-node="${esc(sig)}" class="sh-svg" viewBox="${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
       <rect x="${VIEW.x}" y="628" width="${VIEW.w}" height="70" fill="#7c9a4a"/>
       <path d="M185 628 L${VIEW.x + VIEW.w} 620 L${VIEW.x + VIEW.w} 660 L185 666 Z" fill="#c9a46a" opacity="0.8"/>
       ${image('keepGround_meadow', -40, 670, 'bottomLeft')}

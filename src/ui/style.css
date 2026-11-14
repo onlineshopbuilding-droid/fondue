@@ -737,16 +737,25 @@ ul.cm-card-unlocks { list-style: none; margin: 2px 0; padding: 0; font-family: '
   border: 4px solid var(--ink); border-radius: 16px; overflow: hidden;
   background: linear-gradient(180deg, #8fc6e8 0%, #c6e4f2 55%, #e9f3e0 100%);
 }
-.sh-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* Own layer: the keep's big pictures are drawn once, not again whenever a spot above them changes
+   (with software drawing that took seconds per frame and froze the page in the Keep Shop). */
+.sh-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; will-change: transform; }
 .sh-spot {
   position: absolute; transform: translate(-50%, -50%); width: 60px; height: 60px; min-width: 48px; min-height: 48px; padding: 0;
   border-radius: 50%; --b: transparent; background: rgba(255, 246, 223, 0.12); border: 3px dashed rgba(255, 246, 223, 0.95);
-  box-shadow: 0 0 0 2px rgba(43, 33, 24, 0.7), 0 0 12px rgba(255, 236, 160, 0.7);
+  box-shadow: 0 0 0 2px rgba(43, 33, 24, 0.7), 0 0 6px rgba(255, 236, 160, 0.4);
   color: var(--cream); font-size: 13px; text-shadow: 0 1.5px 0 var(--ink), 0 0 3px var(--ink);
-  display: flex; align-items: flex-end; justify-content: center; animation: sh-breathe 2.4s ease-in-out infinite;
+  display: flex; align-items: flex-end; justify-content: center;
 }
+/* The breathing glow fades a ready-made shadow in and out (opacity runs without repainting). */
+.sh-spot::after {
+  content: ''; position: absolute; inset: -3px; border-radius: 50%; pointer-events: none;
+  box-shadow: 0 0 16px 3px rgba(255, 236, 160, 0.9); opacity: 0.3; will-change: opacity;
+  animation: sh-breathe 2.4s ease-in-out infinite;
+}
+.sh-spot.sel::after { display: none; }
 .sh-spot:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.94); }
-.sh-spot.sel { border: 4px solid var(--mustard); background: rgba(233, 180, 76, 0.22); box-shadow: 0 0 0 3px var(--ink), 0 0 18px 4px rgba(255, 214, 110, 0.95); animation: none; }
+.sh-spot.sel { border: 4px solid var(--mustard); background: rgba(233, 180, 76, 0.22); box-shadow: 0 0 0 3px var(--ink), 0 0 18px 4px rgba(255, 214, 110, 0.95); }
 .sh-spot-name {
   position: absolute; top: calc(100% - 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
   font-size: 13px; line-height: 1; padding: 2px 6px; border-radius: 7px; background: rgba(43, 33, 24, 0.78); border: 1.5px solid var(--ink);
@@ -758,7 +767,7 @@ ul.cm-card-unlocks { list-style: none; margin: 2px 0; padding: 0; font-family: '
 }
 .sh-badge.plus { background: var(--mustard); font-size: 18px; }
 .sh-badge.new { background: var(--mustard); }
-@keyframes sh-breathe { 0%, 100% { box-shadow: 0 0 0 2px rgba(43, 33, 24, 0.7), 0 0 6px rgba(255, 236, 160, 0.4); } 50% { box-shadow: 0 0 0 2px rgba(43, 33, 24, 0.7), 0 0 16px 3px rgba(255, 236, 160, 0.9); } }
+@keyframes sh-breathe { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
 .sh-side { flex: 1 1 0; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 4px 6px 0; }
 .sh-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; font-size: 26px; color: var(--plum); }
@@ -849,7 +858,7 @@ ul.cm-card-cheese li:nth-child(n + 4) { grid-column: 1 / -1; }
 /* Close and Play stay in reach even when a long card scrolls. */
 .cm-card .row.navrow { position: sticky; bottom: -12px; padding-bottom: 4px; background: var(--parchment); z-index: 1; }
 
-@media (prefers-reduced-motion: reduce) { .sh-spot { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sh-spot::after { animation: none; } }
 
 /* Phones in landscape: the shop fills the screen, the wallet and the lists get smaller. */
 @media (max-height: 520px) {

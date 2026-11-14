@@ -10,6 +10,17 @@ export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt
 
 const svgUri = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
+/**
+ * A drawing as a short object address where the browser has them (a data address otherwise). The
+ * Keep Shop redraws its markup on every tap; with data addresses that markup was over half a
+ * megabyte and every picture was looked up by its whole text again. Only for pictures shown on the
+ * page itself: a drawing inside another SVG image may only use data addresses (rigUri's parts).
+ */
+const pageUri = (svg: string): string => {
+  if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof Blob === 'undefined') return svgUri(svg);
+  return URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+};
+
 /** A prop drawing as an address an <img> can show. */
 export const artUri = (name: string) => svgUri(PROPS[name].svg);
 
@@ -19,7 +30,7 @@ const weaponCache = new Map<string, string>();
 export function weaponUri(id: string, tier = 1): string {
   const key = `${id}:${tier}`;
   let uri = weaponCache.get(key);
-  if (!uri) { uri = svgUri(weaponArt(id, tier).svg); weaponCache.set(key, uri); }
+  if (!uri) { uri = pageUri(weaponArt(id, tier).svg); weaponCache.set(key, uri); }
   return uri;
 }
 
@@ -28,7 +39,7 @@ const propCache = new Map<string, string>();
 /** A prop drawing as an address, cached (the keep stages are large). Empty if the prop is unknown. */
 export function propUri(name: string): string {
   let uri = propCache.get(name);
-  if (uri === undefined) { uri = PROPS[name] ? svgUri(PROPS[name].svg) : ''; propCache.set(name, uri); }
+  if (uri === undefined) { uri = PROPS[name] ? pageUri(PROPS[name].svg) : ''; propCache.set(name, uri); }
   return uri;
 }
 

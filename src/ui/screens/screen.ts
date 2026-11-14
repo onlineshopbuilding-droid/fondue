@@ -105,7 +105,15 @@ export class ScreenManager {
     const kept = samePage
       ? [...overlay.querySelectorAll<HTMLElement>('[data-keep-scroll][id]')].map((el) => ({ id: el.id, left: el.scrollLeft, top: el.scrollTop }))
       : [];
+    // Heavy pictures (the keep in the Keep Shop) carry data-keep-node="<signature>" and an id. On a
+    // redraw with the same signature the old node stays: its large images are not decoded and painted
+    // again, which took seconds per tap on software-rendered pages.
+    const reuse = samePage ? [...overlay.querySelectorAll('[data-keep-node][id]')] : [];
     overlay.innerHTML = html;
+    for (const old of reuse) {
+      const now = overlay.querySelector(`#${old.id}`);
+      if (now && now.getAttribute('data-keep-node') === old.getAttribute('data-keep-node')) now.replaceWith(old);
+    }
     for (const k of kept) {
       const el = overlay.querySelector<HTMLElement>(`#${k.id}`);
       if (el) { el.scrollLeft = k.left; el.scrollTop = k.top; }
