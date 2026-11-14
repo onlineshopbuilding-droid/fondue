@@ -1,7 +1,7 @@
 // Brings stored profiles of any version to the current shape.
 // A future version jump is one more function in MIGRATION_STEPS. Save data of earlier game versions
 // (other storage keys) is never read: v0.3 starts with fresh progress.
-import { PROFILE_VERSION, freshProfile, type ProfileData } from './schema';
+import { PROFILE_FORMAT, PROFILE_VERSION, freshProfile, type ProfileData } from './schema';
 import { isRecord, sanitizeProfile, type RawRecord } from './sanitize';
 
 /** Turns the raw data of one version into the raw data of the next one. */
@@ -40,6 +40,8 @@ function runSteps(data: RawRecord, steps: MigrationStep[]): RawRecord {
  */
 export function migrate(raw: unknown, steps: MigrationStep[] = MIGRATION_STEPS): ProfileData {
   if (!isRecord(raw)) return freshProfile();
+  // Something else under our key (not a Fondue profile): start fresh rather than guess.
+  if (raw.format !== undefined && raw.format !== PROFILE_FORMAT) return freshProfile();
   const data = storedVersion(raw) > PROFILE_VERSION ? raw : runSteps(raw, steps);
   return sanitizeProfile(data);
 }

@@ -1,11 +1,11 @@
 /**
- * Campaign mode: one level from the world's table, with the weapons, tiers and hand of the profile.
- * Winning pays stars once, unlocks what the table says, and moves the campaign on.
+ * Campaign mode: one level from the world's table, played with the permanent keep of the profile
+ * (castle, worn weapons and their tiers, stations, hand). Winning pays the level's cheese once
+ * (each of the five only once) and moves the campaign on.
  * Co-op is "the host's campaign with a helper": the guest brings only a hand.
  */
 import { CAMPAIGN_SCALING } from '../config/campaignScaling';
 import { SLOT_COUNT } from '../config/slots';
-import { STARS } from '../config/stars';
 import { TUNING_DEFAULT } from '../config/tuning';
 import { COOP } from '../config/waves';
 import { WEAPONS } from '../config/weapons';
@@ -15,7 +15,8 @@ import type { Profile } from '../profile';
 import { FixedPlanner, type DaySpec } from '../sim/plan';
 import { freshStart, type RunResult, type RunRules, type RunSetup, type Scaling, type WeaponRule } from '../sim/rules';
 import { newRunId, noReward, type GameMode, type NextStep, type Reward, type Role, type RunChoice, type RunEnv } from './mode';
-import { maxGateTier, syncUnlocks, unlocksOfLevel } from './unlocks';
+import { applyLevelCheese, cheeseMask, levelEnded } from './progress';
+import { openSlots, syncUnlocks, unlocksOfLevel } from './unlocks';
 
 /** The numbers live in src/config/campaignScaling.ts; re-exported here for older imports. */
 export { CAMPAIGN_SCALING };
@@ -62,20 +63,31 @@ export class CampaignMode implements GameMode {
     }
     const level = levelOf(choice.world, choice.level ?? 1)!;
     const players = env.names.length;
+    const keep = profile.data.keep;
+    const open = openSlots(profile, choice.world);
     const weapons: Record<string, WeaponRule> = {};
     for (const w of WEAPONS) weapons[w.id] = { offered: w.enabled && profile.hasWeapon(w.id), fixedTier: profile.weaponTier(w.id) };
+    const slotWeapon = keep.loadout.map((id, i) => (open[i] && id !== null && profile.hasWeapon(id) ? id : null));
+    const weaponTier: Record<string, number> = {};
+    for (const id of slotWeapon) if (id !== null) weaponTier[id] = profile.weaponTier(id);
     const rules: RunRules = {
       runId: newRunId(`campaign-${level.id}`), mode: this.id, world: choice.world, level: level.id, difficulty: null,
       lastDay: level.days.length, players,
       scaling: campaignScaling(level),
-      slotsOpen: Array.from({ length: SLOT_COUNT }, (_, i) => profile.hasSlot(i)),
+      slotsOpen: Array.from({ length: SLOT_COUNT }, (_, i) => open[i] ?? false),
       weapons,
       stationsOffered: worldById(choice.world).stations.filter((s) => profile.hasStation(s)),
-      maxGateTier: maxGateTier(profile, choice.world),
+      maxGateTier: keep.castleTier - 1,
       handStart: env.names.map((_, i) => env.handTiers[i] ?? 1),
       handBuyable: false, tierUpgrades: false, hasMarket: true, gateCannotFall: false, marketOnly: level.marketOnly,
     };
-    const start = { ...freshStart(rules), gold: level.startGold, day: Math.min(choice.day ?? 1, level.days.length) };
+    const fresh = freshStart(rules);
+    // The permanent keep stands from the first second (F2 removes the in-run market around it).
+    const loadout = {
+      ...fresh.loadout, gateTier: keep.castleTier - 1, slotWeapon, weaponTier,
+      stations: { cauldron: keep.stations.cauldron > 0, perch: keep.stations.perch > 0 },
+    };
+    const start = { ...fresh, loadout, gold: level.startGold, day: Math.min(choice.day ?? 1, level.days.length) };
     return {
       seed: levelSeed(choice.world, level.id), names: env.names, tuning: env.tuning ?? TUNING_DEFAULT, flags: env.flags,
       fieldW: env.fieldW, rules, start, planner: this.planner(level), devRun: !!env.devRun || (choice.day ?? 1) > 1,
@@ -97,18 +109,17 @@ export class CampaignMode implements GameMode {
     if (!level || result.devRun || !result.won || !profile.claimRun(result.runId)) return noReward();
 
     if (role === 'guest') {
-      // The helper is paid once per level and keeps no level progress of their own.
-      const stars = profile.claimGuestStars(world, level.id) ? Math.ceil(level.stars * STARS.guestShare) : 0;
-      if (stars > 0) profile.addStars(stars);
-      return { counted: true, stars, firstWin: false, unlocks: [], story: level.story, score: null, nextLevel: null };
+      // The helper keeps no level progress and no cheese of their own (F2 pays them the run's gold).
+      return { counted: true, cheese: 0, firstWin: false, unlocks: [], story: level.story, score: null, nextLevel: null };
     }
     const firstWin = profile.markLevelDone(world, level.id);
-    const stars = firstWin ? level.stars : Math.floor(level.stars * STARS.replayShare);
-    if (stars > 0) profile.addStars(stars);
+    // F2: gate share and challenges come from the wave run; until then a win pays the win cheese.
+    const cheese = applyLevelCheese(profile, world, level.id, cheeseMask({ won: true, gateShare: 0 }));
     syncUnlocks(profile, world);
+    levelEnded(profile);
     const last = worldById(world).campaign.length;
     return {
-      counted: true, stars, firstWin, unlocks: firstWin ? unlocksOfLevel(world, level.id) : [], story: level.story, score: null,
+      counted: true, cheese, firstWin, unlocks: firstWin ? unlocksOfLevel(world, level.id) : [], story: level.story, score: null,
       nextLevel: level.id < last ? level.id + 1 : null,
     };
   }

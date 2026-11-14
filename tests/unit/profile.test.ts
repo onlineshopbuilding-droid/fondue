@@ -5,6 +5,7 @@ import {
   MemoryProfileStore, PROFILE_KEY, PROFILE_VERSION, Profile,
   type ProfileStore, type ScoreEntry,
 } from '../../src/profile';
+import { addCrests, addGold } from '../../src/modes/progress';
 
 const LEGACY_SETTINGS = JSON.stringify({
   name: 'Tim',
@@ -18,7 +19,7 @@ const LEGACY_SETTINGS = JSON.stringify({
 });
 
 function score(points: number, extra: Partial<ScoreEntry> = {}): ScoreEntry {
-  return { names: 'Tim', coop: false, day: 3, score: points, kills: 10, difficulty: 'medium', date: '2026-11-11', ...extra };
+  return { names: 'Tim', coop: false, wave: 3, score: points, kills: 10, difficulty: 'medium', date: '2026-11-11', ...extra };
 }
 
 const LEGACY_SCORES = JSON.stringify([score(500), score(900, { coop: true, names: 'Tim & Lenny' })]);
@@ -39,11 +40,12 @@ describe('Profile: loading and saving', () => {
     expect(data.version).toBe(PROFILE_VERSION);
     expect(data.profileId.length).toBeGreaterThan(8);
     expect(data.name).toBe('');
-    expect(data.stars).toBe(0);
-    expect(data.starsEarned).toBe(0);
-    expect(data.unlockedWeapons).toEqual([]);
-    expect(data.handTier).toBe(1);
-    expect(data.tutorialDone).toBe(false);
+    expect(data.format).toBe('fondue-profile');
+    expect(data.wallet).toEqual({ cheese: 0, gold: 0, crests: 0 });
+    expect(data.earned).toEqual({ cheese: 0, gold: 0, crests: 0 });
+    expect(data.keep).toEqual({ castleTier: 1, handTier: 1, stations: { cauldron: 0, perch: 0 }, weapons: {}, loadout: [null, null, null, null, null] });
+    expect(data.seen).toEqual({ tutorial: false, enemies: [], tips: [], slotIntros: [], v3Notice: false });
+    expect(data.cheats).toEqual({ used: false, log: [] });
     expect(data.worlds).toEqual({});
     expect(data.pendingRun).toBeNull();
     expect(data.settings.tuning).toEqual(TUNING_DEFAULT);
@@ -55,8 +57,7 @@ describe('Profile: loading and saving', () => {
     const store = new MemoryProfileStore();
     const first = await Profile.load(store);
     first.setName('Lenny');
-    first.addStars(7);
-    first.unlockWeapon('crossbow');
+    addGold(first, 7);
     first.setWeaponTier('crossbow', 3);
     first.markLevelDone('fondue', 2);
     first.setPendingRun({ level: 3, seed: 42 });
@@ -75,13 +76,13 @@ describe('Profile: loading and saving', () => {
     const profile = await Profile.load(store);
     const before = store.writeCount;
     profile.setName('Tim');
-    profile.addStars(3);
-    profile.unlockSlot(1);
+    addGold(profile, 3);
+    profile.markSlotIntroSeen(1);
     profile.markTutorialDone();
     expect(store.writeCount).toBe(before);
     await profile.flush();
     expect(store.writeCount).toBe(before + 1);
-    expect(storedProfile(store).stars).toBe(3);
+    expect(storedProfile(store).wallet.gold).toBe(3);
   });
 
   it('saves a change that arrives while a write is running', async () => {
@@ -101,7 +102,7 @@ describe('Profile: loading and saving', () => {
       const profile = await Profile.load(new MemoryProfileStore());
       const created = profile.data.updatedAt;
       vi.setSystemTime(new Date('2026-01-02T00:00:00Z'));
-      profile.addStars(1);
+      addGold(profile, 1);
       expect(profile.data.updatedAt).not.toBe(created);
       expect(profile.data.updatedAt).toBe('2026-01-02T00:00:00.000Z');
       expect(profile.data.createdAt).toBe(created);
@@ -113,12 +114,12 @@ describe('Profile: loading and saving', () => {
   it('tells listeners about changes until they unsubscribe', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
     const seen: number[] = [];
-    const stop = profile.onChange((data) => seen.push(data.stars));
+    const stop = profile.onChange((data) => seen.push(data.wallet.gold));
     profile.onChange(() => { throw new Error('a broken listener'); });
-    profile.addStars(2);
-    profile.addStars(3);
+    addGold(profile, 2);
+    addGold(profile, 3);
     stop();
-    profile.addStars(4);
+    addGold(profile, 4);
     expect(seen).toEqual([2, 5]);
   });
 });
@@ -162,11 +163,11 @@ describe('Profile: save data of earlier game versions', () => {
     const store = new RecordingStore(OLD);
     const profile = await Profile.load(store);
     expect(profile.data.name).toBe('');
-    expect(profile.data.stars).toBe(0);
+    expect(profile.data.wallet.gold).toBe(0);
     expect(profile.data.worlds).toEqual({});
 
     profile.setName('Someone else');
-    profile.addStars(5);
+    addGold(profile, 5);
     profile.addScore('fondue', score(5000));
     profile.updateSettings({ difficulty: 'easy', muted: true });
     await profile.flush();
@@ -200,7 +201,7 @@ describe('Profile: damaged storage', () => {
     async (_label, text) => {
       const store = new MemoryProfileStore({ [PROFILE_KEY]: text });
       const profile = await Profile.load(store);
-      expect(profile.data.stars).toBe(0);
+      expect(profile.data.wallet.gold).toBe(0);
       expect(profile.data.name).toBe('');
       const keys = brokenKeys(store);
       expect(keys).toHaveLength(1);
@@ -213,16 +214,16 @@ describe('Profile: damaged storage', () => {
     const store = new MemoryProfileStore({}, { failWrites: true });
     const profile = await Profile.load(store);
     expect(profile.lastError).toBeInstanceOf(Error);
-    profile.addStars(5);
+    addGold(profile, 5);
     await expect(profile.flush()).resolves.toBeUndefined();
-    expect(profile.data.stars).toBe(5);
+    expect(profile.data.wallet.gold).toBe(5);
     expect(store.entries.has(PROFILE_KEY)).toBe(false);
 
     store.failWrites = false;
-    profile.addStars(1);
+    addGold(profile, 1);
     await profile.flush();
     expect(profile.lastError).toBeNull();
-    expect(storedProfile(store).stars).toBe(6);
+    expect(storedProfile(store).wallet.gold).toBe(6);
   });
 
   it('survives a store that throws on every call', async () => {
@@ -253,73 +254,44 @@ describe('Profile: damaged storage', () => {
   });
 });
 
-describe('Profile: stars, unlocks and tiers', () => {
-  it('adds and spends stars', async () => {
+describe('Profile: currencies and tiers', () => {
+  it('adds gold and crests to the wallet and to the total ever earned', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
-    profile.addStars(10);
-    expect(profile.spendStars(4)).toBe(true);
-    expect(profile.data.stars).toBe(6);
-    expect(profile.data.starsEarned).toBe(10);
+    expect(addGold(profile, 10)).toBe(10);
+    expect(addCrests(profile, 3)).toBe(3);
+    expect(profile.data.wallet).toEqual({ cheese: 0, gold: 10, crests: 3 });
+    expect(profile.data.earned).toEqual({ cheese: 0, gold: 10, crests: 3 });
   });
 
-  it('refuses to spend more stars than there are', async () => {
+  it('ignores amounts that are no positive number', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
-    profile.addStars(3);
-    expect(profile.spendStars(4)).toBe(false);
-    expect(profile.data.stars).toBe(3);
-    expect(profile.spendStars(3)).toBe(true);
-    expect(profile.spendStars(1)).toBe(false);
-    expect(profile.data.stars).toBe(0);
-  });
-
-  it('ignores amounts that are no positive whole number', async () => {
-    const profile = await Profile.load(new MemoryProfileStore());
-    profile.addStars(5);
-    for (const bad of [-2, 0, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
-      profile.addStars(bad);
-      expect(profile.spendStars(bad)).toBe(false);
+    addGold(profile, 5);
+    for (const bad of [-2, 0, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(addGold(profile, bad)).toBe(0);
+      expect(addCrests(profile, bad)).toBe(0);
     }
-    expect(profile.data.stars).toBe(5);
-    expect(profile.data.starsEarned).toBe(5);
+    expect(profile.data.wallet.gold).toBe(5);
+    expect(profile.data.earned.gold).toBe(5);
   });
 
-  it('unlocks weapons, slots and stations only once', async () => {
+  it('keeps weapon and hand tiers inside 1..7, and marks such cheats', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
-    expect(profile.hasWeapon('crossbow')).toBe(false);
-    expect(profile.unlockWeapon('crossbow')).toBe(true);
-    expect(profile.unlockWeapon('crossbow')).toBe(false);
-    expect(profile.hasWeapon('crossbow')).toBe(true);
-
-    expect(profile.hasSlot(2)).toBe(false);
-    expect(profile.unlockSlot(2)).toBe(true);
-    expect(profile.unlockSlot(2)).toBe(false);
-    expect(profile.hasSlot(2)).toBe(true);
-
-    expect(profile.hasStation('market')).toBe(false);
-    expect(profile.unlockStation('market')).toBe(true);
-    expect(profile.unlockStation('market')).toBe(false);
-    expect(profile.hasStation('market')).toBe(true);
-
-    expect(profile.data.unlockedWeapons).toEqual(['crossbow']);
-    expect(profile.data.unlockedSlots).toEqual([2]);
-    expect(profile.data.unlockedStations).toEqual(['market']);
-  });
-
-  it('keeps weapon and hand tiers inside their limits', async () => {
-    const profile = await Profile.load(new MemoryProfileStore());
-    expect(profile.weaponTier('never-upgraded')).toBe(1);
+    expect(profile.weaponTier('never-owned')).toBe(1);
+    expect(profile.hasWeapon('never-owned')).toBe(false);
     profile.setWeaponTier('crossbow', 4);
     expect(profile.weaponTier('crossbow')).toBe(4);
     profile.setWeaponTier('crossbow', 99);
-    expect(profile.weaponTier('crossbow')).toBe(5);
+    expect(profile.weaponTier('crossbow')).toBe(7);
     profile.setWeaponTier('crossbow', -1);
     expect(profile.weaponTier('crossbow')).toBe(1);
     profile.setHandTier(2);
-    expect(profile.data.handTier).toBe(2);
-    profile.setHandTier(7);
-    expect(profile.data.handTier).toBe(3);
+    expect(profile.data.keep.handTier).toBe(2);
+    profile.setHandTier(9);
+    expect(profile.data.keep.handTier).toBe(7);
     profile.setHandTier(0);
-    expect(profile.data.handTier).toBe(1);
+    expect(profile.data.keep.handTier).toBe(1);
+    expect(profile.data.cheats.used).toBe(true);
+    expect(profile.data.cheats.log.length).toBeGreaterThan(0);
   });
 
   it('merges settings and cleans wrong values', async () => {
@@ -353,14 +325,12 @@ describe('Profile: progress', () => {
   it('creates a world on demand', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
     const world = profile.world('glacier');
-    expect(world).toEqual({ levelsDone: [], guestStarLevels: [], storyRead: [], endlessMilestones: {}, scores: [] });
+    expect(world).toEqual({ levelsDone: [], cheese: {}, storyRead: [], scores: [], endlessBest: {} });
     expect(profile.world('glacier')).toBe(world);
   });
 
   it('pays every one-time reward only once', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
-    expect(profile.claimGuestStars('fondue', 4)).toBe(true);
-    expect(profile.claimGuestStars('fondue', 4)).toBe(false);
     expect(profile.claimRun('run-a')).toBe(true);
     expect(profile.claimRun('run-a')).toBe(false);
     expect(profile.markEnemySeen('raider')).toBe(true);
@@ -369,11 +339,14 @@ describe('Profile: progress', () => {
     expect(profile.markTipSeen('shake')).toBe(false);
     expect(profile.markStoryRead('fondue', 'page-1')).toBe(true);
     expect(profile.markStoryRead('fondue', 'page-1')).toBe(false);
-    expect(profile.claimEndlessMilestone('fondue', 'hard', 10)).toBe(true);
-    expect(profile.claimEndlessMilestone('fondue', 'hard', 10)).toBe(false);
-    expect(profile.claimEndlessMilestone('fondue', 'easy', 10)).toBe(true);
-    expect(profile.claimEndlessMilestone('glacier', 'hard', 10)).toBe(true);
-    expect(profile.world('fondue').endlessMilestones).toEqual({ hard: [10], easy: [10] });
+    expect(profile.markSlotIntroSeen(3)).toBe(true);
+    expect(profile.markSlotIntroSeen(3)).toBe(false);
+    expect(profile.markV3NoticeSeen()).toBe(true);
+    expect(profile.markV3NoticeSeen()).toBe(false);
+    expect(profile.noteEndlessBest('fondue', 'hard', 10)).toBe(true);
+    expect(profile.noteEndlessBest('fondue', 'hard', 8)).toBe(false);
+    expect(profile.noteEndlessBest('fondue', 'easy', 4)).toBe(true);
+    expect(profile.world('fondue').endlessBest).toEqual({ hard: 10, easy: 4 });
   });
 
   it('does not write again when a one-time method changes nothing', async () => {
@@ -383,8 +356,8 @@ describe('Profile: progress', () => {
     await profile.flush();
     const writes = store.writeCount;
     profile.claimRun('run-a');
-    profile.unlockWeapon('crossbow');
-    profile.unlockWeapon('crossbow');
+    profile.markEnemySeen('grunt');
+    profile.markEnemySeen('grunt');
     await profile.flush();
     expect(store.writeCount).toBe(writes + 1);
   });
@@ -414,9 +387,9 @@ describe('Profile: progress', () => {
   it('switches the tutorial on and off', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
     profile.markTutorialDone();
-    expect(profile.data.tutorialDone).toBe(true);
+    expect(profile.data.seen.tutorial).toBe(true);
     profile.resetTutorial();
-    expect(profile.data.tutorialDone).toBe(false);
+    expect(profile.data.seen.tutorial).toBe(false);
   });
 
   it('keeps and clears an interrupted level', async () => {
@@ -447,13 +420,13 @@ describe('Profile: reset, export and import', () => {
     const profile = await Profile.load(store);
     const oldId = profile.data.profileId;
     profile.setName('Tim');
-    profile.addStars(9);
+    addGold(profile, 9);
     profile.markLevelDone('fondue', 1);
     profile.reset();
     await profile.flush();
     expect(profile.data.profileId).not.toBe(oldId);
     expect(profile.data.name).toBe('');
-    expect(profile.data.stars).toBe(0);
+    expect(profile.data.wallet.gold).toBe(0);
     expect(profile.data.worlds).toEqual({});
     expect(storedProfile(store)).toEqual(profile.data);
   });
@@ -461,13 +434,13 @@ describe('Profile: reset, export and import', () => {
   it('replaces everything on import and keeps nothing of the old state', async () => {
     const source = await Profile.load(new MemoryProfileStore());
     source.setName('Jörg 🧀');
-    source.addStars(12);
+    addGold(source, 12);
     source.markLevelDone('fondue', 4);
     const code = source.exportCode();
 
     const store = new MemoryProfileStore();
     const target = await Profile.load(store);
-    target.unlockWeapon('only-here');
+    target.setWeaponTier('only-here', 2);
     target.markLevelDone('glacier', 9);
     target.importCode(code);
     await target.flush();

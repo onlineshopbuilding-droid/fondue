@@ -8,6 +8,7 @@ import { DEFAULT_WORLD } from '../config/worlds';
 import type { Profile } from '../profile';
 import { FixedPlanner } from '../sim/plan';
 import { freshStart, type RunResult, type RunRules, type RunSetup } from '../sim/rules';
+import { completeTutorial } from './progress';
 import { newRunId, noReward, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from './mode';
 
 /** The prelude's numbers live in src/config/tutorial.ts; re-exported here for older imports. */
@@ -31,9 +32,9 @@ export class TutorialMode implements GameMode {
     };
   }
 
-  /** The prelude pays nothing; it is only remembered as seen. */
-  reward(_result: RunResult, _rules: RunRules, profile: Profile): Reward {
-    profile.markTutorialDone();
+  /** The prelude pays nothing but the free Rolling Wheel; it is remembered as seen. */
+  reward(_result: RunResult, rules: RunRules, profile: Profile): Reward {
+    completeTutorial(profile, rules.world || DEFAULT_WORLD);
     return noReward();
   }
 

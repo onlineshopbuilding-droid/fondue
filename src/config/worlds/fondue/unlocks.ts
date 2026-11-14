@@ -1,45 +1,56 @@
 /**
- * The unlock table of world 1: what winning a level makes available for good.
- * One line per unlock. Change a level number here and the map, the armoury and the rules follow.
+ * The unlock table of world 1: from which won level each weapon slot opens, with King Fridolin's
+ * one-line introduction, and the list of everything that becomes available per level.
  *
- * Columns: level = winning this level unlocks it; kind = what it is;
- *   slot: number of the weapon slot (0 wall foot, 1 wall, 2 gate arm, 3 shrine, 4 tower roof)
- *   weapon: id from src/config/weapons.ts
- *   station: 'cauldron' or 'perch'
- *   gate: highest gate tier that can be built in a level (0 oak ... 4 adamant)
- *   hand: hand tier that can then be bought with stars in the armoury
- * Level 0 means: there from the very start.
+ * Weapons say themselves from which level they can be bought (`unlockLevel` in src/config/weapons.ts),
+ * stations too (`unlockLevel` in src/config/keep.ts), and slots in src/config/slots.ts when that
+ * file has them; the values below are the fallback for slots. The tier cap per campaign section
+ * lives in src/config/tiers.ts. Level 0 means: there from the very start (after the tutorial).
  */
+import { STATIONS, STATION_IDS } from '../../keep';
+import { SLOTS } from '../../slots';
+import { WEAPONS } from '../../weapons';
 import type { UnlockDef } from '../types';
 
-export const UNLOCKS: UnlockDef[] = [
-  { level: 0, kind: 'station', station: 'cauldron' },
-  { level: 1, kind: 'slot', slot: 0 },
-  { level: 1, kind: 'weapon', weapon: 'wheel' },
-  { level: 2, kind: 'gate', tier: 1 },
-  { level: 5, kind: 'weapon', weapon: 'cheese' },
-  { level: 8, kind: 'gate', tier: 2 },
-  { level: 9, kind: 'slot', slot: 1 },
-  { level: 9, kind: 'weapon', weapon: 'stomper' },
-  { level: 12, kind: 'weapon', weapon: 'alphorn' },
-  { level: 14, kind: 'hand', tier: 2 },
-  { level: 15, kind: 'weapon', weapon: 'forks' },
-  { level: 19, kind: 'slot', slot: 2 },
-  { level: 19, kind: 'weapon', weapon: 'mortar' },
-  { level: 21, kind: 'gate', tier: 3 },
-  { level: 23, kind: 'weapon', weapon: 'frost' },
-  { level: 27, kind: 'weapon', weapon: 'cuckoo' },
-  { level: 29, kind: 'slot', slot: 3 },
-  { level: 29, kind: 'weapon', weapon: 'comet' },
-  { level: 32, kind: 'station', station: 'perch' },
-  { level: 34, kind: 'weapon', weapon: 'bellows' },
-  { level: 39, kind: 'slot', slot: 4 },
-  { level: 39, kind: 'weapon', weapon: 'bolter' },
-  { level: 42, kind: 'gate', tier: 4 },
-  { level: 44, kind: 'weapon', weapon: 'bell' },
-  { level: 47, kind: 'hand', tier: 3 },
-  { level: 49, kind: 'weapon', weapon: 'sentry' },
-  { level: 54, kind: 'weapon', weapon: 'thorns' },
-  { level: 59, kind: 'weapon', weapon: 'beacon' },
-  { level: 69, kind: 'weapon', weapon: 'midas' },
+export interface SlotUnlockDef { level: number; intro: string }
+
+/** Index = slot (0 damage, 1 slow, 2 gate, 3 support, 4 passive). */
+export const SLOT_UNLOCKS: SlotUnlockDef[] = [
+  { level: 0, intro: 'This is your Damage slot. Whatever sits here rolls, stabs and smashes down the road.' },
+  { level: 2, intro: 'This is your Slow slot. Sticky, frosty or ticking: it holds the raiders back.' },
+  { level: 4, intro: 'This is your Gate slot. Right above the gate, it guards the last few steps.' },
+  { level: 7, intro: 'This is your Support slot. It helps you and your hand instead of hitting.' },
+  { level: 11, intro: 'This is your Passive slot. It works all by itself, no tap needed.' },
 ];
+
+/** Reads an optional number field of a config entry another package may not have added yet. */
+const numberField = (entry: object, key: string): number | null => {
+  const value = (entry as Record<string, unknown>)[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+};
+const stringField = (entry: object, key: string): string | null => {
+  const value = (entry as Record<string, unknown>)[key];
+  return typeof value === 'string' ? value : null;
+};
+
+/** Won level that opens a slot. */
+export const slotUnlockLevel = (slot: number): number =>
+  (SLOTS[slot] && numberField(SLOTS[slot], 'unlockLevel')) ?? SLOT_UNLOCKS[slot]?.level ?? 0;
+
+/** The king's introduction of a slot. */
+export const slotIntro = (slot: number): string =>
+  (SLOTS[slot] && stringField(SLOTS[slot], 'intro')) ?? SLOT_UNLOCKS[slot]?.intro ?? '';
+
+/** Won level from which a weapon can be unlocked with cheese; null if it never can. */
+export const weaponUnlockLevel = (id: string): number | null => {
+  const def = WEAPONS.find((w) => w.id === id);
+  if (!def || !def.enabled) return null;
+  return numberField(def, 'unlockLevel') ?? 0;
+};
+
+/** Everything that becomes available per won level, for the map, the win screen and the tables. */
+export const UNLOCKS: UnlockDef[] = [
+  ...SLOTS.map((_, slot): UnlockDef => ({ level: slotUnlockLevel(slot), kind: 'slot', slot })),
+  ...WEAPONS.filter((w) => w.enabled).map((w): UnlockDef => ({ level: weaponUnlockLevel(w.id) ?? 0, kind: 'weapon', weapon: w.id })),
+  ...STATION_IDS.map((station): UnlockDef => ({ level: STATIONS[station].unlockLevel, kind: 'station', station })),
+].sort((a, b) => a.level - b.level);

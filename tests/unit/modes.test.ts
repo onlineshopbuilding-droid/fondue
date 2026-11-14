@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { SLOT_COUNT } from '../../src/config/slots';
 import { activeWeapons } from '../../src/config/weapons';
 import { levelOf, worldById } from '../../src/config/worlds';
-import { CAMPAIGN, ENDLESS, TUTORIAL, type RunEnv } from '../../src/modes';
+import { CAMPAIGN, ENDLESS, TUTORIAL, completeTutorial, type RunEnv } from '../../src/modes';
 import type { Profile } from '../../src/profile';
 import { emptyStats, type RunResult, type RunRules } from '../../src/sim/rules';
 import { newProfile } from './helpers';
@@ -47,19 +47,21 @@ describe('tutorial mode', () => {
     const setup = TUTORIAL.buildRun(p, { world: W }, env());
     const reward = TUTORIAL.reward(result(setup.rules, true), setup.rules, p);
     expect(reward.counted).toBe(false);
-    expect(reward.stars).toBe(0);
-    expect(p.data.stars).toBe(0);
-    expect(p.data.tutorialDone).toBe(true);
+    expect(reward.cheese).toBe(0);
+    expect(p.data.wallet.cheese).toBe(0);
+    expect(p.data.seen.tutorial).toBe(true);
+    // C4: after the prelude the profile owns exactly the Rolling Wheel, worn in the damage slot.
+    expect(Object.keys(p.data.keep.weapons)).toEqual(['wheel']);
+    expect(p.data.keep.loadout[0]).toBe('wheel');
     expect(TUTORIAL.next(result(setup.rules, true), setup.rules)).toEqual({ to: 'level', world: W, level: 1 });
   });
 });
 
 describe('campaign mode: building a run', () => {
-  it('ends on the level\'s last day and offers only what the profile owns, at its lasting tier', async () => {
+  it('ends on the level\'s last day and starts with the permanent keep at its lasting tiers', async () => {
     const p = await newProfile();
-    p.unlockWeapon('wheel');
+    completeTutorial(p, W);
     p.setWeaponTier('wheel', 3);
-    p.unlockSlot(0);
     const level = levelOf(W, 5)!;
     const setup = CAMPAIGN.buildRun(p, { world: W, level: 5 }, env(['A'], [2]));
     expect(setup.rules.lastDay).toBe(level.days.length);
@@ -69,9 +71,10 @@ describe('campaign mode: building a run', () => {
     expect(setup.rules.tierUpgrades).toBe(false);
     expect(setup.rules.handBuyable).toBe(false);
     expect(setup.rules.handStart).toEqual([2]);
+    expect(setup.start.loadout.slotWeapon[0]).toBe('wheel');
+    expect(setup.start.loadout.weaponTier.wheel).toBe(3);
     expect(setup.start.day).toBe(1);
     expect(setup.start.gold).toBe(level.startGold);
-    expect(setup.start.loadout.slotWeapon.every((w) => w === null)).toBe(true);
     expect(setup.devRun).toBe(false);
   });
 
@@ -103,15 +106,16 @@ describe('campaign mode: building a run', () => {
 });
 
 describe('campaign mode: reward', () => {
-  it('the first win pays the level\'s stars, marks it done, brings its unlocks and offers the next level', async () => {
+  it('the first win pays the win cheese, marks it done, brings its unlocks and offers the next level', async () => {
     const p = await newProfile();
     const setup = CAMPAIGN.buildRun(p, { world: W, level: 1 }, env());
     const reward = CAMPAIGN.reward(result(setup.rules, true), setup.rules, p, 'solo');
     const level = levelOf(W, 1)!;
     expect(reward.counted).toBe(true);
     expect(reward.firstWin).toBe(true);
-    expect(reward.stars).toBe(level.stars);
-    expect(p.data.stars).toBe(level.stars);
+    expect(level).toBeDefined();
+    expect(reward.cheese).toBe(1);
+    expect(p.data.wallet.cheese).toBe(1);
     expect(p.isLevelDone(W, 1)).toBe(true);
     expect(reward.nextLevel).toBe(2);
     expect(reward.unlocks).toEqual(worldById(W).unlocks.filter((u) => u.level === 1));
@@ -122,20 +126,20 @@ describe('campaign mode: reward', () => {
     const setup = CAMPAIGN.buildRun(p, { world: W, level: 1 }, env());
     const r = result(setup.rules, true);
     CAMPAIGN.reward(r, setup.rules, p, 'solo');
-    const stars = p.data.stars;
+    const cheese = p.data.wallet.cheese;
     const again = CAMPAIGN.reward(r, setup.rules, p, 'solo');
     expect(again.counted).toBe(false);
-    expect(p.data.stars).toBe(stars);
+    expect(p.data.wallet.cheese).toBe(cheese);
   });
 
-  it('winning a level again pays nothing, so replaying is no farm', async () => {
+  it('winning a level again pays no cheese a second time', async () => {
     const p = await profileAt(1);
-    const stars = p.data.stars;
+    const cheese = p.data.wallet.cheese;
     const setup = CAMPAIGN.buildRun(p, { world: W, level: 1 }, env());
     const reward = CAMPAIGN.reward(result(setup.rules, true), setup.rules, p, 'solo');
     expect(reward.firstWin).toBe(false);
-    expect(reward.stars).toBe(0);
-    expect(p.data.stars).toBe(stars);
+    expect(reward.cheese).toBe(0);
+    expect(p.data.wallet.cheese).toBe(cheese);
   });
 
   it('a lost run and a developer run pay nothing', async () => {
@@ -144,24 +148,19 @@ describe('campaign mode: reward', () => {
     expect(CAMPAIGN.reward(result(lost.rules, false), lost.rules, p, 'solo').counted).toBe(false);
     const dev = CAMPAIGN.buildRun(p, { world: W, level: 1 }, env());
     expect(CAMPAIGN.reward(result(dev.rules, true, { devRun: true }), dev.rules, p, 'solo').counted).toBe(false);
-    expect(p.data.stars).toBe(0);
+    expect(p.data.wallet.cheese).toBe(0);
     expect(p.isLevelDone(W, 1)).toBe(false);
   });
 
-  it('a co-op guest gets a share of the stars once per level and no level progress', async () => {
+  it('a co-op guest gets no cheese and no level progress (cheese and progress belong to the host)', async () => {
     const host = await newProfile();
     const guest = await newProfile();
-    const level = levelOf(W, 10)!;
     const setup = CAMPAIGN.buildRun(host, { world: W, level: 10 }, env(['A', 'B']));
     const first = CAMPAIGN.reward(result(setup.rules, true), setup.rules, guest, 'guest');
     expect(first.counted).toBe(true);
-    expect(first.stars).toBeGreaterThan(0);
-    expect(first.stars).toBeLessThan(level.stars);
-    expect(guest.data.stars).toBe(first.stars);
+    expect(first.cheese).toBe(0);
+    expect(guest.data.wallet.cheese).toBe(0);
     expect(guest.highestLevelDone(W)).toBe(0);
-    const again = CAMPAIGN.buildRun(host, { world: W, level: 10 }, env(['A', 'B']));
-    expect(CAMPAIGN.reward(result(again.rules, true), again.rules, guest, 'guest').stars).toBe(0);
-    expect(guest.data.stars).toBe(first.stars);
   });
 
   it('the last level offers no next level, and every campaign run goes back to the lobby', async () => {
@@ -202,7 +201,7 @@ describe('endless mode', () => {
     expect(ENDLESS.buildRun(p, { world: W, devDay: 500 }, env()).start.day).toBe(99);
   });
 
-  it('pays each milestone once and adds the run to the score list', async () => {
+  it('pays no cheese, remembers the best wave and adds the run to the score list', async () => {
     const p = await newProfile();
     const run = (daysCleared: number) => {
       const setup = ENDLESS.buildRun(p, { world: W, difficulty: 'medium' }, env());
@@ -211,9 +210,11 @@ describe('endless mode', () => {
     };
     const first = run(5);
     expect(first.counted).toBe(true);
-    expect(first.stars).toBeGreaterThan(0);
-    expect(run(5).stars).toBe(0);
-    expect(run(10).stars).toBeGreaterThan(0);
+    expect(first.cheese).toBe(0);
+    expect(run(5).cheese).toBe(0);
+    run(10);
+    expect(p.data.wallet.cheese).toBe(0);
+    expect(p.data.worlds[W].endlessBest.medium).toBe(11);
     expect(p.scores(W)).toHaveLength(3);
     expect(p.scores(W)[0].mode).toBe('endless');
   });
@@ -223,7 +224,7 @@ describe('endless mode', () => {
     const setup = ENDLESS.buildRun(p, { world: W }, env());
     const reward = ENDLESS.reward(result(setup.rules, false, { devRun: true, stats: { ...emptyStats(), daysCleared: 30 } }), setup.rules, p, 'solo');
     expect(reward.counted).toBe(false);
-    expect(p.data.stars).toBe(0);
+    expect(p.data.wallet.cheese).toBe(0);
     expect(p.scores(W)).toHaveLength(0);
     expect(ENDLESS.next()).toEqual({ to: 'lobby' });
   });

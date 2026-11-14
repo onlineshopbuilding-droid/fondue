@@ -45,7 +45,8 @@ export interface RunEnv {
 export interface Reward {
   /** False when nothing was paid: a developer run, or a run already paid out. */
   counted: boolean;
-  stars: number;
+  /** Cheese newly earned in this run (each of a level's five only once). */
+  cheese: number;
   /** This level was won for the first time. */
   firstWin: boolean;
   unlocks: UnlockDef[];
@@ -56,7 +57,7 @@ export interface Reward {
   nextLevel: number | null;
 }
 
-export const noReward = (): Reward => ({ counted: false, stars: 0, firstWin: false, unlocks: [], story: '', score: null, nextLevel: null });
+export const noReward = (): Reward => ({ counted: false, cheese: 0, firstWin: false, unlocks: [], story: '', score: null, nextLevel: null });
 
 /** Where the game goes after a run. */
 export type NextStep =
