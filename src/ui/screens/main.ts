@@ -12,7 +12,7 @@ import type { PendingRun } from './context';
 import type { Screen } from './screen';
 
 /** Why endless is still closed, for the menu and the lobby. */
-export const ENDLESS_LOCKED = 'Endless opens with your fifth slot. Keep winning campaign levels!';
+export const ENDLESS_LOCKED = 'Endless opens with your fifth slot.';
 
 /** The wave an interrupted level continues at. */
 export function pendingWave(p: PendingRun): number {

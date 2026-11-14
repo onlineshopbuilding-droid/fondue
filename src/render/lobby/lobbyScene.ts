@@ -22,8 +22,6 @@ export interface LobbyState {
   pending: { level: number; wave: number } | null;
   /** Endless mode is open. */
   endless: boolean;
-  /** Short hint under the closed Endless pot. */
-  endlessHint: string;
 }
 
 export interface LobbyHooks {
@@ -104,7 +102,7 @@ export class LobbyScene extends Phaser.Scene {
       const pill = this.add.graphics().setDepth(7);
       const label = this.text(def.lx, def.ly, def.label, def.quiet ? 22 : 30, CREAM).setDepth(8);
       if (def.quiet) label.setAlpha(0.85);
-      const sub = def.id === 'continueLevel' || def.id === 'play' ? this.text(def.lx, def.ly + 30, '', 20, CREAM).setDepth(8) : null;
+      const sub = def.id === 'continueLevel' ? this.text(def.lx, def.ly + 30, '', 20, CREAM).setDepth(8) : null;
       this.stations.set(def.id, { def, img, label, sub, pill });
     }
 
@@ -211,12 +209,11 @@ export class LobbyScene extends Phaser.Scene {
     });
     for (const v of this.stations.values()) {
       const on = v.def.id === 'continueLevel' ? !!s.pending : true;
-      // The pot is always there; while endless is still closed it says so and a tap brings the King's hint.
+      // The pot is always there; while endless is still closed its sign shows a lock and a tap brings the King's hint.
       const closed = v.def.id === 'play' && !s.endless;
       v.label.setVisible(on).setText(closed ? `${v.def.label} 🔒` : v.def.label).setAlpha(closed ? 0.8 : v.def.quiet ? 0.85 : 1);
-      v.sub?.setVisible(on && (v.def.id === 'continueLevel' || closed));
+      v.sub?.setVisible(on);
       if (v.sub && v.def.id === 'continueLevel' && s.pending) v.sub.setText(`Level ${s.pending.level}, wave ${s.pending.wave}`);
-      if (v.sub && v.def.id === 'play') v.sub.setText(closed ? s.endlessHint : '');
       v.pill.clear();
       if (!on) continue;
       const bw = v.label.width + 26;

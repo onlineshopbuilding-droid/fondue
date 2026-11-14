@@ -89,7 +89,6 @@ export class Lobby {
       weapons: WEAPONS.filter((w) => w.enabled && p.hasWeapon(w.id)).map((w) => w.id),
       pending: pending ? { level: pending.rules.level ?? 1, wave: pendingWave(pending) } : null,
       endless: ENDLESS.isAvailable(p, this.host.world),
-      endlessHint: `Opens after level ${unlockLevelOf(this.host.world, 'slot', SLOT_COUNT - 1) ?? '?'}`,
     };
   }
 
@@ -122,7 +121,11 @@ export class Lobby {
     if (!STATIONS.some((s) => s.id === id)) return;
     this.click();
     if (id === 'storybook') { this.openBook(); return; }
-    if (id === 'play' && !ENDLESS.isAvailable(this.host.profile, this.host.world)) { this.say(ENDLESS_LOCKED); return; }
+    if (id === 'play' && !ENDLESS.isAvailable(this.host.profile, this.host.world)) {
+      const level = unlockLevelOf(this.host.world, 'slot', SLOT_COUNT - 1);
+      this.say(level === null ? ENDLESS_LOCKED : `${ENDLESS_LOCKED} Win level ${level}!`);
+      return;
+    }
     this.host.lobbyAction(id);
   }
 
