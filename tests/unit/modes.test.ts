@@ -28,7 +28,7 @@ async function profileAt(level: number): Promise<Profile> {
 }
 
 describe('tutorial mode', () => {
-  it('builds a one-wave prelude for one player: no slots, a gate that cannot fall', async () => {
+  it('builds a one-wave prelude for one player: only the damage slot with the free Rolling Wheel (C4), a gate that cannot fall', async () => {
     const p = await newProfile();
     const setup = TUTORIAL.buildRun(p, { world: W }, env(['A', 'B']));
     expect(setup.rules.mode).toBe('tutorial');
@@ -36,8 +36,8 @@ describe('tutorial mode', () => {
     expect(setup.rules.players).toBe(1);
     expect(setup.names).toEqual(['A']);
     expect(setup.rules.gateCannotFall).toBe(true);
-    expect(setup.rules.slotsOpen.every((open) => !open)).toBe(true);
-    expect(setup.start.loadout.slotWeapon.every((w) => w === null)).toBe(true);
+    expect(setup.rules.slotsOpen).toEqual([true, false, false, false, false]);
+    expect(setup.start.loadout.slotWeapon).toEqual(['wheel', null, null, null, null]);
   });
 
   it('pays nothing, marks the tutorial as done and leads into level 1', async () => {

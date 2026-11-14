@@ -1,7 +1,8 @@
 /**
  * The timing of the first minutes, without any drawing: when the King walks in and what he says,
- * when the prelude freezes for the gesture, when the first throw counts, and the one-time hint for
- * throwing into the pot on day 2 of level 1. `tutorialView.ts` draws what these classes decide.
+ * when the prelude freezes for the gesture, when the first throw counts, the Rolling Wheel lesson
+ * that follows it, and the one-time King hint a level can give in a wave (with an arrow to the pot).
+ * `tutorialView.ts` draws what these classes decide.
  */
 import { WORLD } from '../config/field';
 import { GUIDE, POT_HINT } from '../config/tutorial';
@@ -10,14 +11,14 @@ import type { SimEvent } from '../sim/types';
 /** The timing numbers live in src/config/tutorial.ts; re-exported here for the tests and older imports. */
 export { GUIDE, POT_HINT };
 
-export type GuideStage = 'intro' | 'show' | 'try' | 'praise' | 'done';
+export type GuideStage = 'intro' | 'show' | 'try' | 'praise' | 'wheel' | 'wheelDone' | 'done';
 
 /** What the guide needs to know of a raider. */
 export interface GuideEnemy { id: number; x: number; y: number; st: string; heldBy: number[]; hidden: boolean }
 
 export interface GuideFrame {
   dt: number;
-  /** The fight is on (not the day banner, not the end). */
+  /** The fight is on (not the level banner, not the end). */
   battle: boolean;
   enemies: GuideEnemy[];
   /** Simulation events of this frame. */
@@ -45,10 +46,20 @@ export function threwThisFrame(events: SimEvent[], me: number): boolean {
     (e.e === 'death' && e.p === me && e.cause === 'impact'));
 }
 
+/** True when my tap fired the weapon in this slot in this frame. */
+export function firedSlot(events: SimEvent[], me: number, slot: number): boolean {
+  return events.some((e) => e.e === 'fire' && e.p === me && e.slot === slot);
+}
+
+/** The King's lines of the prelude besides the intro: the praise of the throw and the wheel lesson. */
+export interface PreludeTexts { grab: string; fling: string; wheel?: string; wheelDone?: string }
+
 /**
  * The prelude: the King walks in and says his lines while the first raiders come, then the picture
  * freezes and a hand shows the gesture on one raider. The player's own grab lets the world run
- * again; the first real throw ends the lesson, and the King praises it and walks off.
+ * again; the first real throw ends that lesson and the King praises it. Then he shows the Rolling
+ * Wheel on the wall (C4, D4): a pointer waits for the tap on it, he praises the roll and walks off.
+ * Without wheel texts the lesson ends with the praise of the throw.
  */
 export class PreludeGuide {
   stage: GuideStage = 'intro';
@@ -58,7 +69,10 @@ export class PreludeGuide {
   target = -1;
   private waited = 0;
 
-  constructor(private readonly lines: readonly string[], private readonly praise: string, private readonly hints: { grab: string; fling: string }) {}
+  constructor(
+    private readonly lines: readonly string[], private readonly praise: string, private readonly hints: PreludeTexts,
+    private readonly wheelSlot = 0,
+  ) {}
 
   /** The simulation should stand still: the gesture is on show. */
   get hold(): boolean { return this.stage === 'show'; }
@@ -68,7 +82,7 @@ export class PreludeGuide {
   update(f: GuideFrame) {
     if (this.stage === 'done') return;
     if (!f.battle) {
-      // The day ended (or has not begun): nothing to teach any more once it has begun.
+      // The fight ended (or has not begun): nothing to teach any more once it has begun.
       if (this.stage !== 'intro') this.go('done');
       return;
     }
@@ -95,7 +109,15 @@ export class PreludeGuide {
         break;
       }
       case 'praise':
-        if (this.t >= GUIDE.praiseSeconds + GUIDE.walk) this.go('done');
+        if (this.hints.wheel) { if (this.t >= GUIDE.praiseSeconds) this.go('wheel'); }
+        else if (this.t >= GUIDE.praiseSeconds + GUIDE.walk) this.go('done');
+        break;
+      case 'wheel':
+        if (firedSlot(f.events, f.me, this.wheelSlot)) { this.go('wheelDone'); return; }
+        if (this.t >= GUIDE.wheelMaxSeconds) this.go('done');
+        break;
+      case 'wheelDone':
+        if (this.t >= GUIDE.wheelPraiseSeconds + GUIDE.walk) this.go('done');
         break;
     }
   }
@@ -124,6 +146,8 @@ export class PreludeGuide {
       return this.lines[i] ?? null;
     }
     if (this.stage === 'praise' && this.t < GUIDE.praiseSeconds) return this.praise;
+    if (this.stage === 'wheel') return this.hints.wheel ?? null;
+    if (this.stage === 'wheelDone' && this.t < GUIDE.wheelPraiseSeconds) return this.hints.wheelDone ?? null;
     return null;
   }
 
@@ -131,8 +155,10 @@ export class PreludeGuide {
   kingIn(): number {
     switch (this.stage) {
       case 'intro': return kingSlide(this.t, Infinity);
-      case 'show': case 'try': return 1;
-      case 'praise': return kingSlide(this.t + GUIDE.walk, GUIDE.praiseSeconds + GUIDE.walk);
+      case 'show': case 'try': case 'wheel': return 1;
+      // With a wheel lesson to come, the King stays after the praise.
+      case 'praise': return this.hints.wheel ? 1 : kingSlide(this.t + GUIDE.walk, GUIDE.praiseSeconds + GUIDE.walk);
+      case 'wheelDone': return kingSlide(this.t + GUIDE.walk, GUIDE.wheelPraiseSeconds + GUIDE.walk);
       default: return 0;
     }
   }
@@ -143,6 +169,9 @@ export class PreludeGuide {
     if (this.stage === 'try') return this.hints.fling;
     return null;
   }
+
+  /** The pointer at the wheel is on show. */
+  get pointWheel(): boolean { return this.stage === 'wheel'; }
 }
 
 /** The raider closest to the gate that walks on screen, free and visible; -1 if there is none. */
@@ -158,8 +187,9 @@ export function pickTarget(enemies: GuideEnemy[], fieldW: number): number {
 }
 
 /**
- * Day 2 of level 1: the King says how the pot works, and an arrow shows the way from a raider to
- * the pot until the first raider lands in it or some seconds have passed. Shown once per day.
+ * A King hint of a level wave (`hints` of the level): the King says how the pot works, and an arrow
+ * shows the way from a raider to the pot until the first raider lands in it or some seconds have
+ * passed. Shown once per such wave.
  */
 export class PotHint {
   t = 0;

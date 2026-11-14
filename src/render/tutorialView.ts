@@ -1,15 +1,18 @@
 /**
  * Draws the first minutes of the game on the battlefield: the King with his speech bubble, the
  * frozen gesture lesson of the prelude (a soft dim, a hand that grabs a raider and flings it up),
- * and the arrow to the pot on day 2 of level 1. The timing comes from `tutorialGuide.ts`.
+ * the pointer at the Rolling Wheel after the first throw, and the arrow to the pot when a level wave
+ * has a King hint. The timing comes from `tutorialGuide.ts`.
  */
 import Phaser from 'phaser';
 import { KING_ART } from '../art/king';
 import { ENEMIES } from '../config/enemies';
 import { WORLD } from '../config/field';
+import { SLOTS } from '../config/slots';
 import { levelOf } from '../config/worlds';
 import { PRELUDE_LINES, TUTORIAL_HINTS } from '../config/worlds/fondue/story';
 import { HostSession, type Session } from '../game/session';
+import { PRELUDE_WHEEL_SLOT } from '../modes/tutorial';
 import type { ViewEnemy, ViewState } from '../net/snapshot';
 import type { Meta, SimEvent } from '../sim/types';
 import type { CamRect } from './marketCamera';
@@ -66,7 +69,7 @@ export class TutorialView {
   private prelude: PreludeGuide | null = null;
   private pot: PotHint | null = null;
   private runId = '';
-  private potDay = -1;
+  private potWave = -1;
   private dimK = 0;
   private loopT = 0;
   private kingT = 0;
@@ -98,7 +101,7 @@ export class TutorialView {
     this.prelude = null;
     this.pot = null;
     this.runId = '';
-    this.potDay = -1;
+    this.potWave = -1;
     this.dimK = 0;
     this.holding = false;
     this.hideAll();
@@ -109,7 +112,7 @@ export class TutorialView {
     this.gfx.clear();
   }
 
-  /** Test hook: the stage of the prelude lesson, or the pot hint, or ''. */
+  /** Test hook: the stage of the prelude lesson ('intro', 'show', 'try', 'praise', 'wheel', 'wheelDone'), 'pot' for a level hint, or ''. */
   stage(): string {
     if (this.prelude && this.prelude.stage !== 'done') return this.prelude.stage;
     if (this.pot && !this.pot.over) return 'pot';
@@ -122,14 +125,14 @@ export class TutorialView {
     if (!meta) { this.hideAll(); return; }
     if (meta.rules.runId !== this.runId) {
       this.runId = meta.rules.runId;
-      this.prelude = meta.rules.mode === 'tutorial' ? new PreludeGuide(PRELUDE_LINES, TUTORIAL_HINTS.wellDone, TUTORIAL_HINTS) : null;
+      this.prelude = meta.rules.mode === 'tutorial' ? new PreludeGuide(PRELUDE_LINES, TUTORIAL_HINTS.wellDone, TUTORIAL_HINTS, PRELUDE_WHEEL_SLOT) : null;
       this.pot = null;
-      this.potDay = -1;
+      this.potWave = -1;
     }
     this.watchPotHint(view, meta);
     const battle = view.phase === 'battle';
     const enemies: GuideEnemy[] = view.enemies;
-    // The King already walks in while the (hidden) day banner runs.
+    // The King already walks in while the (hidden) level banner runs.
     this.prelude?.update({ dt, battle: battle || view.phase === 'banner', enemies, events, me: s.me, fieldW: meta.fieldW });
     if (this.pot && battle) this.pot.update(dt, events);
     this.setHold(s, !!this.prelude?.hold);
@@ -139,16 +142,17 @@ export class TutorialView {
     this.gfx.clear();
     this.drawKing(dt, cam);
     this.drawGesture(view, dt, cam);
+    this.drawWheelPointer(cam);
     this.drawPotArrow(view, s.me);
   }
 
   /** A level hint belongs to the wave it names; it shows once per such wave. */
   private watchPotHint(view: ViewState, meta: Meta) {
-    if (meta.rules.level === null || view.phase !== 'battle' || this.potDay === view.wave) return;
+    if (meta.rules.level === null || view.phase !== 'battle' || this.potWave === view.wave) return;
     const lv = levelOf(meta.rules.world, meta.rules.level);
     const hint = lv?.hints.find((h) => h.wave === view.wave);
     if (!hint) return;
-    this.potDay = view.wave;
+    this.potWave = view.wave;
     this.pot = new PotHint(hint.text);
   }
 
@@ -176,7 +180,7 @@ export class TutorialView {
     this.king.setTexture(propKey(talking ? 'kingTalk' : 'king'));
     this.king.setVisible(true).setPosition(x, KING_FOOT + bob).setRotation(tilt).setScale(scale / TEX_SCALE);
     if (!line) { this.bubble.setVisible(false); this.shownLine = ''; return; }
-    // On the pot's day the bubble floats above the pot, so that it does not hide it.
+    // During a pot hint the bubble floats above the pot, so that it does not hide it.
     const head = KING_FOOT - 160 * scale;
     this.drawBubble(line, x, p === this.pot ? Math.min(head, WORLD.cauldron.rimY - 60) : head, cam);
   }
@@ -297,7 +301,38 @@ export class TutorialView {
 
   // ---------------------------------------------------------------------------------------------
 
-  /** Day 2: a dotted arc from the raider in my hand (or the nearest one) into the pot. */
+  /** The wheel lesson: a pulsing ring around the wheel on the wall and an arrow that bobs toward it. */
+  private drawWheelPointer(cam: CamRect) {
+    if (!this.prelude?.pointWheel) return;
+    const slot = SLOTS[PRELUDE_WHEEL_SLOT];
+    const t = this.prelude.t;
+    const a = Math.min(1, t / 0.4);
+    const pulse = (t * 1.6) % 1;
+    const gfx = this.gfx;
+    const r = 62 * this.dot();
+    gfx.lineStyle(7, INK, 0.5 * a);
+    gfx.strokeCircle(slot.x, slot.y, r);
+    gfx.lineStyle(4, PAPER, a);
+    gfx.strokeCircle(slot.x, slot.y, r);
+    gfx.lineStyle(4, PAPER, a * (1 - pulse));
+    gfx.strokeCircle(slot.x, slot.y, r + pulse * 40 * this.dot());
+    // The arrow comes from up right and points down left at the wheel; it stays inside the view.
+    const bob = Math.sin(t * 6) * 10 * this.dot();
+    const d = r + 18 * this.dot() + bob;
+    const ang = Math.PI * 0.75;
+    const tipX = Math.max(cam.x + 30, slot.x - Math.cos(ang) * d * 0.7);
+    const tipY = slot.y - Math.sin(ang) * d * 0.7;
+    const len = 70 * this.dot();
+    const tailX = tipX + Math.cos(-Math.PI / 4) * len;
+    const tailY = tipY - Math.sin(Math.PI / 4) * len;
+    gfx.lineStyle(14 * this.dot(), INK, 0.55 * a);
+    gfx.lineBetween(tailX, tailY, tipX + 6, tipY - 6);
+    gfx.lineStyle(8 * this.dot(), PAPER, a);
+    gfx.lineBetween(tailX, tailY, tipX + 6, tipY - 6);
+    arrowHead(gfx, tipX, tipY, Math.atan2(tipY - tailY, tipX - tailX), 30 * this.dot(), a);
+  }
+
+  /** A level hint: a dotted arc from the raider in my hand (or the nearest one) into the pot. */
   private drawPotArrow(view: ViewState, me: number) {
     const hint = this.pot;
     if (!hint || !hint.arrow || view.phase !== 'battle') return;
