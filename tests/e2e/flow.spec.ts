@@ -4,14 +4,29 @@ import { DEFAULT_WORLD, levelOf } from '../../src/config/worlds';
 import { ENEMY_POPUPS } from '../../src/config/worlds/fondue/story';
 import { HELP_SLIDES } from '../../src/ui/content';
 import {
-  DEVICES, breakGate, clearField, drag, endDay, gameState, spawn, startSolo, station, tapStation, waitFor, waitForGame, waitForLobby,
-  openGame, screenOf, waitGame, waitPhase, waitScreen, GAME_WAIT,
+  DEVICES, breakGate, clearField, drag, endLevel, gameState, nextWave, spawn, startSolo, station, tapStation, unlockEndless, waitFor,
+  waitForGame, waitForLobby, openGame, screenOf, waitGame, waitPhase, waitScreen, GAME_WAIT,
 } from './helpers';
 
-/** Menus, the course of a day and the developer tools, on the laptop with the mouse. */
+/** Menus, the course of a run in waves and the developer tools, on the laptop with the mouse. */
 
 const sim = (s: string) => `window.__fondue.session.sim.s.${s}`;
 const headline = (page: Page) => page.locator('.panel h2');
+/** The start of the line that says why endless is still locked (src/ui/screens/main.ts, ENDLESS_LOCKED; that file cannot load outside the app). */
+const ENDLESS_LOCKED = /^Endless opens with your fifth slot/;
+const wallet = (page: Page) => page.evaluate(() => ({ ...(window as any).__fondue.profile.data.wallet }) as { cheese: number; gold: number; crests: number });
+/** Nothing of the old in-run market may show up: no results screen, no market, no buy buttons. */
+const BUY_UI = '#toShop, #ready, #market, #marketWindow, #marketHint, [data-buy]';
+
+/** Kills one raider with a real flick for its gold (the field is cleared first; tuning stays, so the run still counts). */
+async function killOne(page: Page) {
+  await clearField(page, null);
+  await spawn(page, 'grunt', 760);
+  const e = (await waitFor(() => gameState(page), (s) => s!.enemies.length === 1, 3000))!.enemies[0];
+  const at = await page.evaluate(([x, y]) => (window as any).__fondue.scene.worldToCss(x, y), [e.x, e.y - 44]);
+  await drag(page, [at.x, at.y], [at.x - 30, 90], 9, 8);
+  await waitFor(() => gameState(page), (v) => v!.gold >= 10, 8000);
+}
 
 test('lobby: every station opens its page and Back returns to the hall', async ({ page }) => {
   const errors: string[] = [];
@@ -23,7 +38,12 @@ test('lobby: every station opens its page and Back returns to the hall', async (
   // Nothing to continue on a fresh profile, so the door has no sign; everything else is there.
   expect(ids.sort()).toEqual(['armoury', 'campaign', 'coop', 'credits', 'help', 'options', 'play', 'scores', 'storybook'].sort());
   await page.screenshot({ path: 'mobile-screenshots/lobby.png' });
-  const pages: [string, string][] = [['options', 'Options'], ['scores', 'Scores'], ['credits', 'Credits'], ['armoury', 'Armoury'], ['coop', 'Co-op'], ['play', 'Endless']];
+  // Endless is still locked on a fresh profile: the pot only makes the King say why.
+  await tapStation(page, 'play', false);
+  await waitFor(() => page.evaluate(() => (window as any).__fondue.lobby.lastLine as string), (l) => ENDLESS_LOCKED.test(l), 5000);
+  expect(await screenOf(page)).toBe('main');
+  await unlockEndless(page);
+  const pages: [string, string][] = [['options', 'Options'], ['scores', 'Scores'], ['credits', 'Credits'], ['armoury', 'Keep Shop'], ['coop', 'Co-op'], ['play', 'Endless']];
   for (const [id, title] of pages) {
     await tapStation(page, id, false);
     await expect(headline(page)).toHaveText(title);
@@ -80,33 +100,36 @@ test('the plain menu (?menu=html) has a button for every station and shows the b
   await page.goto('/?menu=html');
   await waitForGame(page);
   await expect(page.locator('.version')).toContainText(`v${GAME_VERSION} · build`);
-  for (const a of ['campaign', 'play', 'coop', 'armoury', 'options', 'scores', 'help', 'credits']) await expect(page.locator(`button[data-a="${a}"]`)).toBeVisible();
+  for (const a of ['campaign', 'coop', 'armoury', 'options', 'scores', 'help', 'credits']) await expect(page.locator(`button[data-a="${a}"]`)).toBeVisible();
   expect(await page.evaluate(() => (window as any).__fondue.lobby.visible)).toBe(false);
+  // Endless is locked on a fresh profile and says why; with the progress it opens.
+  await expect(page.locator('.menu-main button', { hasText: 'Endless' })).toBeDisabled();
+  expect(await page.locator('.menu-main button', { hasText: 'Endless' }).getAttribute('title')).toMatch(ENDLESS_LOCKED);
+  await unlockEndless(page);
+  await page.reload();
+  await waitForGame(page);
   await page.click('button[data-a="play"]');
   await page.click('#startEndless');
   await waitPhase(page, 'battle');
 });
 
-test('endless: a day, its results, the market at the keep, the next day, and the new weapon fires', async ({ page }) => {
-  await startSolo(page, '?menu=1&seed=11');
-  expect((await gameState(page))!.dayT).toBeLessThan(5);
-  await page.evaluate(`${sim('gold')} = 5000; ${sim('offerings')} = 40;`);
-  await endDay(page);
-  await waitPhase(page, 'intermission');
-  await page.waitForSelector('#toShop');
-  await expect(headline(page)).toHaveText('Day 1 results');
-  await page.screenshot({ path: 'docs/screenshots/results.png' });
-  await page.click('#toShop');
-  await waitScreen(page, 'shop');
-  await expect(page.locator('#marketHint')).toBeVisible();
-  await page.evaluate(() => (window as any).__fondue.scene.tapMarketSpot('slot:0'));
-  await expect(page.locator('#marketWindow')).toHaveAttribute('data-slot', '0');
-  await page.click('button[data-buy="weapon:0:wheel"]');
-  await waitFor(() => page.evaluate(() => (window as any).__fondue.session.meta().loadout.slotWeapon[0]), (w) => w === 'wheel', 5000);
-  await page.screenshot({ path: 'docs/screenshots/market.png' });
-  await page.click('#ready');
-  await waitFor(() => gameState(page), (s) => s?.day === 2 && s.phase === 'banner', GAME_WAIT);
+test('endless: waves follow each other with no screen and nothing to buy; the worn weapon fires; the gold of the run is kept', async ({ page }) => {
+  await page.goto('/?menu=1&seed=11');
+  await waitForGame(page);
+  await waitForLobby(page);
+  await unlockEndless(page);
+  await page.evaluate(() => { const p = (window as any).__fondue.profile; p.edit((d: any) => { d.keep.weapons.wheel = { tier: 1 }; }); p.flushSync(); });
+  expect((await wallet(page)).gold).toBe(0);
+  // The weapon is worn before the run, on the endless page: tap the slot, then the weapon.
+  await station(page, 'play');
+  await page.click('#lo-0');
+  await page.click('.lo-pick[data-id="wheel"]');
+  await expect(page.locator('#lo-0 img')).toHaveCount(1);
+  await page.click('#startEndless');
   await waitPhase(page, 'battle');
+  const first = (await gameState(page))!;
+  expect([first.mode, first.wave]).toEqual(['endless', 1]);
+  expect(await page.evaluate(() => (window as any).__fondue.session.meta().loadout.slotWeapon[0])).toBe('wheel');
 
   // The weapon fires by its number key and by a click on it.
   const cd = () => page.evaluate(() => (window as any).__fondue.session.view().cooldowns[0] as number);
@@ -118,6 +141,62 @@ test('endless: a day, its results, the market at the keep, the next day, and the
   await page.mouse.click(pos.x, pos.y);
   await waitFor(cd, (c) => c > 0, 3000);
   await page.screenshot({ path: 'docs/screenshots/wheel.png' });
+
+  // A raider flung to its death pays gold, and the HUD shows the gold of the run.
+  await killOne(page);
+  const gold = (await gameState(page))!.gold;
+  await waitFor(() => page.evaluate(() => (window as any).__fondue.scene.hud.gold.text as string), (t) => t === String(gold), 5000);
+
+  // The wave is cleared: the next one follows on the battlefield, without any screen in between.
+  await nextWave(page);
+  await waitGame(page, async () => {
+    const st = await gameState(page);
+    const shown = await page.evaluate((sel) => ({ overlay: document.querySelectorAll('.overlay').length, buy: document.querySelectorAll(sel).length }), BUY_UI);
+    expect(st!.screen, 'no screen between waves').toBe('none');
+    expect(shown, 'no window and no market between waves').toEqual({ overlay: 0, buy: 0 });
+    expect(['banner', 'battle']).toContain(st!.phase);
+    return st;
+  }, (st) => !!st && st.wave === 2, 20);
+  expect(await page.evaluate(() => typeof (window as any).__fondue.scene.tapMarketSpot)).toBe('undefined');
+  await page.screenshot({ path: 'docs/screenshots/battle.png' });
+
+  // The run ends when the gate falls; the gold earned is in the profile.
+  const earned = await page.evaluate(() => (window as any).__fondue.session.sim.s.stats.goldEarned as number);
+  expect(earned).toBeGreaterThanOrEqual(10);
+  await breakGate(page);
+  await waitScreen(page, 'gameover');
+  await expect(page.locator('#finalWave')).toHaveText('2');
+  await expect(page.locator('#runGold')).toHaveText(String(earned));
+  expect((await wallet(page)).gold).toBe(earned);
+  await page.click('button[data-a="quit"]');
+  await waitForLobby(page);
+  await expect(page.locator('#lobbyGold')).toHaveText(earned.toLocaleString('en-US'));
+});
+
+test('campaign level: no market in the level; the won screen lists the cheese and the gold kept', async ({ page }) => {
+  await page.goto('/?menu=1&seed=17');
+  await waitForGame(page);
+  await station(page, 'campaign');
+  await page.click('.cm-st[data-level="1"]');
+  await page.click('#playLevel');
+  await waitPhase(page, 'battle');
+  const s = (await gameState(page))!;
+  expect([s.mode, s.level, s.wave]).toEqual(['campaign', 1, 1]);
+  await killOne(page);
+  expect(await page.locator(BUY_UI).count()).toBe(0);
+  const earned = await page.evaluate(() => (window as any).__fondue.session.sim.s.stats.goldEarned as number);
+  await endLevel(page);
+  await waitGame(page, () => screenOf(page), (sc) => sc === 'won', 20);
+  await expect(headline(page)).toHaveText('Level 1 won!');
+  await expect(page.locator('#wonLevel')).toHaveText(levelOf(DEFAULT_WORLD, 1)!.name);
+  await expect(page.locator('#cheeseList li')).toHaveCount(5);
+  await expect(page.locator('#cheeseList li.cheese-new').first()).toBeVisible();
+  await expect(page.locator('#runGold')).toHaveText(String(earned));
+  const w = await wallet(page);
+  expect(w.gold).toBe(earned);
+  expect(w.cheese).toBe(await page.locator('#cheeseList li.cheese-new').count());
+  await page.screenshot({ path: 'mobile-screenshots/level-won.png' });
+  await page.click('#continue');
 });
 
 test('endless: the gate falls, the run ends with its score, scores and back, then play again', async ({ page }) => {
@@ -127,6 +206,7 @@ test('endless: the gate falls, the run ends with its score, scores and back, the
   await page.screenshot({ path: 'docs/screenshots/defeat.png' });
   await page.waitForSelector('#restart', { timeout: GAME_WAIT });
   await expect(headline(page)).toHaveText('The gate has fallen');
+  await expect(page.locator('#finalWave')).toHaveText('1');
   await expect(page.locator('#finalScore')).toHaveText(/^\d+$/);
   await page.screenshot({ path: 'docs/screenshots/gameover.png' });
   await page.click('button[data-a="scores2"]');
@@ -135,7 +215,7 @@ test('endless: the gate falls, the run ends with its score, scores and back, the
   await page.click('button[data-a="backGameOver"]');
   await expect(page.locator('#restart')).toBeVisible();
   await page.click('#restart');
-  await waitFor(() => gameState(page), (s) => s?.phase === 'battle' && s.day === 1 && s.gateHp === s.gateMax, GAME_WAIT);
+  await waitFor(() => gameState(page), (s) => s?.phase === 'battle' && s.wave === 1 && s.gateHp === s.gateMax, GAME_WAIT);
   await breakGate(page);
   await page.waitForSelector('#restart', { timeout: GAME_WAIT });
   await page.click('button[data-a="quit"]');
@@ -152,11 +232,11 @@ test('tuning panel changes values, exports and imports, and the values stay', as
   await page.locator('#tuning input[data-key="gravity"]').fill('2000');
   expect(await page.evaluate(() => (window as any).__fondue.session.meta().tuning.gravity)).toBe(2000);
   await page.click('#tuning button[data-act="export"]');
-  const json = await page.locator('#tuning textarea').inputValue();
+  const json = await page.locator('#tuning textarea[data-json]').inputValue();
   expect(JSON.parse(json).gravity).toBe(2000);
   await page.click('#tuning button[data-preset="Arcade"]');
   expect(await page.evaluate(() => (window as any).__fondue.session.meta().tuning.knockOthers)).toBe(true);
-  await page.locator('#tuning textarea').fill(JSON.stringify({ gravity: 3100 }));
+  await page.locator('#tuning textarea[data-json]').fill(JSON.stringify({ gravity: 3100 }));
   await page.click('#tuning button[data-act="import"]');
   expect(await page.evaluate(() => (window as any).__fondue.session.meta().tuning.gravity)).toBe(3100);
   await page.reload();
@@ -220,7 +300,7 @@ test('a realistic flick kills, a slow drop does not', async ({ page }) => {
   await waitFor(() => gameState(page), (v) => v!.gold >= 10, 8000);
 });
 
-test('developer menu: jump to a level and day; a developer win pays no cheese and unlocks nothing', async ({ page }) => {
+test('developer menu: jump to a level and wave; a developer win keeps nothing and unlocks nothing', async ({ page }) => {
   await page.goto('/?menu=1');
   await waitForGame(page);
   await station(page, 'options');
@@ -228,24 +308,27 @@ test('developer menu: jump to a level and day; a developer win pays no cheese an
   await expect(page.locator('#tuning')).toBeVisible();
   await page.click('#devStars');
   expect(await page.evaluate(() => (window as any).__fondue.profile.data.wallet.cheese)).toBe(50);
-  // The last day of level 3: winning it wins the level.
-  const lastDay = levelOf(DEFAULT_WORLD, 3)!.days.length;
-  expect(lastDay).toBeGreaterThan(1);
+  // The last wave of level 3: winning it wins the level.
+  const lastWave = levelOf(DEFAULT_WORLD, 3)!.waves.length;
+  expect(lastWave).toBeGreaterThan(1);
   await page.fill('#devLevel', '3');
-  await page.fill('#devDay', String(lastDay));
+  // The developer menu still calls the field Day; it picks the wave.
+  await page.fill('#devDay', String(lastWave));
   await page.click('#devJump');
   const s = await waitPhase(page, ['banner', 'battle']);
   expect(s!.mode).toBe('campaign');
   expect(s!.level).toBe(3);
-  expect(s!.day).toBe(lastDay);
+  expect(s!.wave).toBe(lastWave);
   expect(await page.evaluate(() => (window as any).__fondue.session.meta().devRun)).toBe(true);
   await waitPhase(page, 'battle');
-  await endDay(page);
-  // The end of the day plays in game time.
+  await page.evaluate(() => { (window as any).__fondue.session.sim.s.stats.goldEarned = 55; });
+  await endLevel(page);
+  // The end of the level plays in game time.
   await waitGame(page, () => screenOf(page), (sc) => sc === 'won', 20);
-  await expect(page.locator('.panel')).toContainText('Developer run: no cheese.');
+  await expect(page.locator('.panel')).toContainText('Developer run: nothing is kept.');
   await expect(page.locator('#unlocks')).toHaveCount(0);
-  expect(await page.evaluate(() => (window as any).__fondue.profile.data.wallet.cheese)).toBe(50);
+  await expect(page.locator('#runGold')).toHaveText('0');
+  expect(await wallet(page)).toEqual({ cheese: 50, gold: 0, crests: 0 });
   expect(await page.evaluate(() => (window as any).__fondue.profile.highestLevelDone((window as any).__fondue.world))).toBe(0);
   await page.click('#continue');
   await waitForLobby(page);
@@ -285,7 +368,7 @@ test('developer menu: quick endless start stays off the scores; profile tools un
   await page.keyboard.press('F1');
   await page.click('#tuning button[data-startday="10"]');
   await page.click('#devQuickSolo');
-  await waitFor(() => gameState(page), (s) => s?.day === 10, GAME_WAIT);
+  await waitFor(() => gameState(page), (s) => s?.wave === 10, GAME_WAIT);
   const meta = await page.evaluate(() => (window as any).__fondue.session.meta());
   expect(meta.devRun).toBe(true);
   expect(meta.loadout.gateTier).toBeGreaterThanOrEqual(1);

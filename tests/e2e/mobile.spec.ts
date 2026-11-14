@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
-  IPHONE, PHONE_DEVICES, breakGate, clearField, collectErrors, endDay, gameState, openGame, pointer, spawn, startEndless,
-  tapMarket, tapStation, waitFor, waitForGame, waitForLobby, waitPhase, waitScreen, GAME_WAIT,
+  IPHONE, PHONE_DEVICES, breakGate, clearField, collectErrors, gameState, nextWave, openGame, pointer, spawn, startEndless,
+  tapStation, unlockEndless, waitFor, waitForGame, waitForLobby, waitGame, waitPhase, waitScreen, GAME_WAIT,
 } from './helpers';
 
 /**
@@ -57,6 +57,8 @@ for (const d of PHONE_DEVICES) {
       expect(s.x + s.r / 2, s.id).toBeLessThanOrEqual(d.width);
       expect(s.y, s.id).toBeLessThanOrEqual(d.height);
     }
+    // Endless opens after the campaign's first levels; this profile has them, so its page can be checked too.
+    await unlockEndless(page);
     const pages: [string, boolean][] = [['options', false], ['help', true], ['scores', false], ['credits', false], ['armoury', false], ['play', true], ['coop', true]];
     for (const [id, noScroll] of pages) {
       await tapStation(page, id, true);
@@ -90,8 +92,10 @@ for (const d of PHONE_DEVICES) {
     await context.close();
   });
 
-  test(`${d.name}: a day by finger: the battle fills the screen, pause, results, the market, game over`, async ({ browser }) => {
+  test(`${d.name}: a run by finger: the battle fills the screen, pause, the next wave without a screen, game over`, async ({ browser }) => {
     const { context, page, errors } = await openGame(browser, d, '?menu=1&seed=7');
+    await waitForLobby(page);
+    await unlockEndless(page);
     await tapStation(page, 'play', true);
     await page.tap('#startEndless');
     await page.waitForSelector('.toast.tip', { timeout: GAME_WAIT });
@@ -138,26 +142,23 @@ for (const d of PHONE_DEVICES) {
     await page.tap('button[data-a="resume"]');
     await page.waitForSelector('.overlay', { state: 'detached' });
 
-    // Results, then the market at the keep.
-    await page.evaluate(() => { const s = (window as any).__fondue.session.sim.s; s.gold = 60000; s.offerings = 300; });
-    await endDay(page);
-    await waitPhase(page, 'intermission');
-    await page.waitForSelector('#toShop');
-    await check(page, d.name, 'results', true);
-    await page.tap('#toShop');
-    await waitScreen(page, 'shop');
-    await waitFor(() => page.evaluate(() => (window as any).__fondue.scene.marketProgress() as number), (k) => k >= 1, 15000);
-    await check(page, d.name, 'market', true, '#market');
-    await tapMarket(page, 'slot:1', true);
-    await expect(page.locator('#marketWindow')).toHaveAttribute('data-slot', '1');
-    await check(page, d.name, 'market-window', false, '#market');
-    const ready = await page.locator('#ready').boundingBox();
-    expect(ready!.y + ready!.height, 'Ready stays on screen').toBeLessThanOrEqual(d.height);
-    await page.tap('#ready');
-    await waitFor(() => gameState(page), (s) => s?.day === 2, GAME_WAIT);
+    // The HUD shows the gold of the run.
+    const gold = (await gameState(page))!.gold;
+    await waitFor(() => page.evaluate(() => (window as any).__fondue.scene.hud.gold.text as string), (t) => t === String(gold), 5000);
+
+    // The wave is cleared: the next one follows on the battlefield, with no screen and nothing to buy in between.
+    await nextWave(page);
+    await waitGame(page, async () => {
+      const st = await gameState(page);
+      const shown = await page.evaluate(() => ({ overlay: document.querySelectorAll('.overlay').length, buy: document.querySelectorAll('#toShop, #ready, #market, #marketWindow, [data-buy]').length }));
+      expect(st!.screen, `${d.name}: no screen between waves`).toBe('none');
+      expect(shown, `${d.name}: no window and no market between waves`).toEqual({ overlay: 0, buy: 0 });
+      return st;
+    }, (st) => !!st && st.wave === 2, 20);
     await breakGate(page);
     // The fall of the gate plays in game time, which runs slower than the clock on GitHub's machines.
     await page.waitForSelector('#restart', { timeout: GAME_WAIT });
+    await expect(page.locator('#finalWave')).toHaveText('2');
     await check(page, d.name, 'gameover', false);
     expect(errors).toEqual([]);
     await context.close();
@@ -171,7 +172,7 @@ test('developer menu on a phone: from Options by finger, and it starts a game', 
   await expect(page.locator('#tuning')).toBeVisible();
   await page.tap('#tuning button[data-startday="10"]');
   await page.tap('#devQuickSolo');
-  await waitFor(() => gameState(page), (s) => s?.day === 10, GAME_WAIT);
+  await waitFor(() => gameState(page), (s) => s?.wave === 10, GAME_WAIT);
   await expect(page.locator('#tuning')).toHaveCount(0);
   expect(errors).toEqual([]);
   await context.close();

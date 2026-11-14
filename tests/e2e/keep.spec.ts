@@ -1,11 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import { WORLD, perchX } from '../../src/config/field';
 import { SLOT_COUNT } from '../../src/config/slots';
+import { firesOnItsOwn, weaponById } from '../../src/config/weapons';
 import { DEVICES, clearField, equip, gameState, openGame, pointer, spawn, startEndless, waitFor, waitGame, type Device } from './helpers';
 
 /** Everything about the keep in a fight, by mouse and by finger, on the three devices. */
 
 const view = (page: Page) => page.evaluate(() => (window as any).__fondue.session.view());
+/** Raiders the run has lost to a cause so far (the cauldron and the eagle are causes of their own). */
+const killsBy = (page: Page, cause: string) => page.evaluate((c) => ((window as any).__fondue.session.sim.s.stats.killsByCause[c] ?? 0) as number, cause);
 const slotCss = (page: Page, i: number) => page.evaluate((n) => (window as any).__fondue.scene.slotCss(n) as { x: number; y: number }, i);
 
 async function fight(browser: Parameters<typeof openGame>[0], d: Device) {
@@ -78,7 +81,12 @@ for (const d of DEVICES) {
     const p = await pointer(page, d.touch);
     await p.down(e.x + 4, e.y - 44);
     await waitGame(page, () => gameState(page), (s) => s!.enemies[0]?.st === 'held', 3);
-    expect((await view(page)).cooldowns.every((c: number) => c === 0)).toBe(true);
+    // A weapon of the passive slot fires by itself once reloaded; every tap weapon must still be ready.
+    const slots = await page.evaluate(() => (window as any).__fondue.session.meta().loadout.slotWeapon as (string | null)[]);
+    const tapSlots = slots.map((id, i) => ({ id, i })).filter(({ id }) => { const w = id ? weaponById(id) : undefined; return !!w && !firesOnItsOwn(w); });
+    expect(tapSlots.length).toBeGreaterThanOrEqual(4);
+    const cds = (await view(page)).cooldowns as number[];
+    expect(tapSlots.every(({ i }) => cds[i] === 0), `no tap weapon fired on the grab: ${JSON.stringify(cds)}`).toBe(true);
     await p.glide(e.x + 4, e.y - 44, e.x + 30, 90);
     await p.up();
     // Its flight and fall take game time, which runs slower than real time where frames are slow.
@@ -117,11 +125,12 @@ for (const d of DEVICES) {
     await page.screenshot({ path: `mobile-screenshots/keg-loose-${d.name}.png` });
     await p.up();
 
-    // The cauldron stands behind the keep: a raider let go above it melts into an offering.
+    // The cauldron stands behind the keep: a raider let go above it is cooked and counts as the cauldron's kill.
     await clearField(page);
     await spawn(page, 'grunt', 620);
     const g = (await waitFor(() => gameState(page), (s) => s!.enemies.length === 1, 3000))!.enemies[0];
-    const offerings = (await gameState(page))!.offerings;
+    const cooked = await killsBy(page, 'cauldron');
+    const eaten = await killsBy(page, 'eagle');
     await p.down(g.x, g.y - 44);
     await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'held', 3000);
     // Carried over the pot and let go there, without a throw.
@@ -130,7 +139,7 @@ for (const d of DEVICES) {
     await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'cooking', 4000, 30);
     expect((await gameState(page))!.potBusy).toBeGreaterThan(0);
     await page.screenshot({ path: `mobile-screenshots/cauldron-${d.name}.png` });
-    await waitFor(() => gameState(page), (s) => s!.offerings === offerings + 1, 15000);
+    await waitFor(() => killsBy(page, 'cauldron'), (n) => n === cooked + 1, 15000);
     await waitFor(() => gameState(page), (s) => s!.potBusy === 0, 15000);
 
     // The eagle hook hangs at the top right and takes one raider at a time.
@@ -149,7 +158,7 @@ for (const d of DEVICES) {
     await waitFor(() => gameState(page), (s) => s!.enemies[0]?.st === 'hooked', 4000, 30);
     await page.screenshot({ path: `mobile-screenshots/hook-${d.name}.png` });
     // The game clock falls behind real time on a software renderer, so the meal gets a long limit.
-    await waitFor(() => gameState(page), (s) => s!.offerings === offerings + 2, 30000);
+    await waitFor(() => killsBy(page, 'eagle'), (n) => n === eaten + 1, 30000);
     expect(errors).toEqual([]);
     await context.close();
   });

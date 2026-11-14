@@ -38,8 +38,10 @@ async function pose(page: Page, tier: number, land: string, share: number, night
     s.spawnQueue = [];
     s.enemies = [];
     s.projectiles = [];
-    s.meta.today = { ...s.meta.today, landscape: l, night: n };
-    s.dayT = s.meta.today.seconds * (k as number);
+    // The sky follows the waves: in endless one cycle of eight waves runs from day to night.
+    sim.freezeWaves();
+    s.wave = Math.floor((k as number) * 8) + 1;
+    s.meta.wave = { ...s.meta.wave, landscape: l, night: n };
     const loadout = s.meta.loadout;
     loadout.gateTier = tierN;
     loadout.slotWeapon = [...(full as typeof FULL).slotWeapon];

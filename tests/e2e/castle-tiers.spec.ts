@@ -25,11 +25,10 @@ async function stage(page: Page, land: string, share: number, night: boolean) {
     s.enemies = [];
     s.projectiles = [];
     const meta = s.meta;
-    // Day and landscape: v0.2 keeps them in `today`; tolerate a run that has none.
-    if (meta.today) {
-      meta.today = { ...meta.today, landscape: l, night: n };
-      if (typeof s.dayT === 'number' && meta.today.seconds) s.dayT = meta.today.seconds * (k as number);
-    }
+    // Landscape and light come with the wave: in endless one cycle of eight waves runs from day to night.
+    sim.freezeWaves();
+    s.wave = Math.floor((k as number) * 8) + 1;
+    meta.wave = { ...meta.wave, landscape: l, night: n };
     try {
       const lo = meta.loadout;
       for (const [i, id] of Object.entries(slots as Record<string, string>)) {
