@@ -10,6 +10,7 @@ import {
 } from '../../src/sim/weapons/overrides';
 
 const wheel = weaponById('wheel')!;
+const wheelTier = (t: number): Record<string, unknown> => wheel.tiers[t - 1] as unknown as Record<string, unknown>;
 
 afterEach(() => resetWeaponOverrides());
 
@@ -29,7 +30,7 @@ describe('weapon overrides', () => {
   it('a changed value reaches the effective tier, others stay', () => {
     expect(setWeaponOverride('wheel', 2, 'cooldown', 3)).toBe(true);
     expect(effectiveTier(wheel, 2).cooldown).toBe(3);
-    expect(effectiveTier(wheel, 2).damage).toBe(wheel.tiers[1].damage);
+    expect(effectiveTier(wheel, 2).damage).toBe(wheelTier(2).damage);
     expect(effectiveTier(wheel, 1)).toBe(wheel.tiers[0]);
     expect(overrideCount()).toBe(1);
   });
@@ -44,7 +45,7 @@ describe('weapon overrides', () => {
 
   it('setting the default value back removes the change; reset clears all', () => {
     setWeaponOverride('wheel', 1, 'damage', 999);
-    setWeaponOverride('wheel', 1, 'damage', wheel.tiers[0].damage);
+    setWeaponOverride('wheel', 1, 'damage', wheelTier(1).damage as number);
     expect(hasWeaponOverrides()).toBe(false);
     setWeaponOverride('wheel', 1, 'damage', 999);
     setWeaponOverride('wheel', 3, 'damage', 999);
