@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultFlags } from '../../src/config/flags';
 import { TUNING_DEFAULT } from '../../src/config/tuning';
 import {
-  LocalProfileStore, MIGRATION_STEPS, PROFILE_VERSION, exportCode, freshProfile, importCode, importLegacy, migrate,
+  LocalProfileStore, MIGRATION_STEPS, PROFILE_KEY, PROFILE_VERSION, STORAGE_PREFIX, exportCode, freshProfile, importCode, migrate,
   type MigrationStep, type ProfileData,
 } from '../../src/profile';
 
@@ -231,25 +231,11 @@ describe('migrate', () => {
   });
 });
 
-describe('importLegacy', () => {
-  it('returns nothing for missing or unreadable data', () => {
-    expect(importLegacy(null, null)).toEqual({});
-    expect(importLegacy('not json', '{"a":1}')).toEqual({});
-    expect(importLegacy('[1]', '[]')).toEqual({});
-  });
-
-  it('reads the name, cleaned settings and sorted scores', () => {
-    const legacy = importLegacy(
-      JSON.stringify({ name: 'Lenny', difficulty: 'easy', musicVolume: 'loud', tuning: { maxThrow: 3000 }, flags: { dayEnd: 'retreat' } }),
-      JSON.stringify([{ names: 'Lenny', coop: false, day: 2, score: 10, kills: 4, difficulty: 'easy', date: 'd' }, { score: 70 }, 'junk']),
-    );
-    expect(legacy.name).toBe('Lenny');
-    expect(legacy.settings?.difficulty).toBe('easy');
-    expect(legacy.settings?.musicVolume).toBe(0.5);
-    expect(legacy.settings?.tuning).toEqual({ ...TUNING_DEFAULT, maxThrow: 3000 });
-    expect(legacy.settings?.flags).toEqual({ ...defaultFlags(), dayEnd: 'retreat' });
-    expect(legacy.worlds?.fondue.scores.map((entry) => entry.score)).toEqual([70, 10]);
-    expect(legacy.worlds?.fondue.levelsDone).toEqual([]);
+describe('storage keys', () => {
+  it('every key of v0.3 starts with fondue.v3.', () => {
+    expect(STORAGE_PREFIX).toBe('fondue.v3.');
+    expect(PROFILE_KEY).toBe('fondue.v3.profile');
+    expect(PROFILE_KEY.startsWith(STORAGE_PREFIX)).toBe(true);
   });
 });
 
@@ -321,9 +307,9 @@ describe('LocalProfileStore', () => {
   it('does not throw where no localStorage exists', async () => {
     expect(typeof localStorage).toBe('undefined');
     const store = new LocalProfileStore();
-    await expect(store.read('fondue.profile')).resolves.toBeNull();
-    await expect(store.write('fondue.profile', '{}')).rejects.toBeInstanceOf(Error);
-    await expect(store.remove('fondue.profile')).resolves.toBeUndefined();
+    await expect(store.read(PROFILE_KEY)).resolves.toBeNull();
+    await expect(store.write(PROFILE_KEY, '{}')).rejects.toBeInstanceOf(Error);
+    await expect(store.remove(PROFILE_KEY)).resolves.toBeUndefined();
   });
 
   it('reads, writes and removes through localStorage, and survives its errors', async () => {

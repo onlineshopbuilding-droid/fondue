@@ -6,13 +6,13 @@ import type { Difficulty } from '../config/waves';
 
 export const PROFILE_VERSION = 1;
 
-/** Storage key of the profile. */
-export const PROFILE_KEY = 'fondue.profile';
-/** Keys of the old game version. They are read once and never written or removed. */
-export const LEGACY_SETTINGS_KEY = 'fondue.settings.v1';
-export const LEGACY_SCORES_KEY = 'fondue.scores.v1';
-/** The world the old leaderboard belongs to. */
-export const LEGACY_WORLD_ID = 'fondue';
+/**
+ * Prefix of every storage key of v0.3. All builds on the site (/fondue/, /fondue/next/, /fondue/classic/)
+ * share one browser storage, so v0.3 never reads or writes a key outside this prefix.
+ */
+export const STORAGE_PREFIX = 'fondue.v3.';
+/** Storage key of the profile. A damaged profile is set aside under `${PROFILE_KEY}.broken.<time>`. */
+export const PROFILE_KEY = `${STORAGE_PREFIX}profile`;
 
 export const WEAPON_TIER_MIN = 1;
 export const WEAPON_TIER_MAX = 5;

@@ -3,10 +3,10 @@
 import type { Flags } from '../config/flags';
 import type { Tuning } from '../config/tuning';
 import { exportCode, importCode } from './codec';
-import { importLegacy, migrate } from './migrations';
+import { migrate } from './migrations';
 import { asTier, isRecord, sanitizeRating, sanitizeSettings } from './sanitize';
 import {
-  CLAIMED_RUNS_LIMIT, HAND_TIER_MAX, HAND_TIER_MIN, LEGACY_SCORES_KEY, LEGACY_SETTINGS_KEY, PROFILE_KEY, SCORES_LIMIT,
+  CLAIMED_RUNS_LIMIT, HAND_TIER_MAX, HAND_TIER_MIN, PROFILE_KEY, SCORES_LIMIT,
   WEAPON_TIER_MAX, WEAPON_TIER_MIN, freshProfile, freshRating, freshWorld,
   type DevRating, type ProfileData, type ProfileSettings, type ScoreEntry, type WorldProgress,
 } from './schema';
@@ -39,13 +39,6 @@ async function readQuietly(store: ProfileStore, key: string): Promise<string | n
   }
 }
 
-/** A new profile that starts with the name, settings and leaderboard of the old game version, if there are any. */
-async function freshWithLegacy(store: ProfileStore): Promise<ProfileData> {
-  const settingsRaw = await readQuietly(store, LEGACY_SETTINGS_KEY);
-  const scoresRaw = await readQuietly(store, LEGACY_SCORES_KEY);
-  return { ...freshProfile(), ...importLegacy(settingsRaw, scoresRaw) };
-}
-
 /** The stored object, or null if the text is no JSON or no object. */
 function parseStored(text: string): Record<string, unknown> | null {
   try {
@@ -72,15 +65,15 @@ export class Profile {
   }
 
   /**
-   * Reads the profile from the store. Without a stored profile, the old game version's data is
-   * taken over once. A damaged profile is set aside under its own key and replaced. Never throws.
+   * Reads the profile from the store. Without a stored profile, it starts fresh; keys of earlier
+   * game versions are never read. A damaged profile is set aside under its own key and replaced. Never throws.
    */
   static async load(store: ProfileStore): Promise<Profile> {
     const text = await readQuietly(store, PROFILE_KEY);
     const stored = text === null ? null : parseStored(text);
     if (stored) return new Profile(store, migrate(stored));
 
-    const profile = new Profile(store, await freshWithLegacy(store));
+    const profile = new Profile(store, freshProfile());
     if (text !== null) await profile.setAside(text);
     profile.scheduleSave();
     await profile.flush();

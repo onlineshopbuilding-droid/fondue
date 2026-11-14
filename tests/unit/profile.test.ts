@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { defaultFlags } from '../../src/config/flags';
 import { TUNING_DEFAULT } from '../../src/config/tuning';
 import {
-  LEGACY_SCORES_KEY, LEGACY_SETTINGS_KEY, MemoryProfileStore, PROFILE_KEY, PROFILE_VERSION, Profile,
+  MemoryProfileStore, PROFILE_KEY, PROFILE_VERSION, Profile,
   type ProfileStore, type ScoreEntry,
 } from '../../src/profile';
 
@@ -123,54 +123,74 @@ describe('Profile: loading and saving', () => {
   });
 });
 
-describe('Profile: data of the old game version', () => {
-  it('takes over name, settings, partial tuning and the leaderboard', async () => {
-    const store = new MemoryProfileStore({ [LEGACY_SETTINGS_KEY]: LEGACY_SETTINGS, [LEGACY_SCORES_KEY]: LEGACY_SCORES });
-    const profile = await Profile.load(store);
-    const { name, settings } = profile.data;
-    expect(name).toBe('Tim');
-    expect(settings.difficulty).toBe('hard');
-    expect(settings.musicVolume).toBe(0.2);
-    expect(settings.sfxVolume).toBe(0.4);
-    expect(settings.muted).toBe(true);
-    expect(settings.relayAddress).toBe('wss://relay.example');
-    expect(settings.tuning).toEqual({ ...TUNING_DEFAULT, gravity: 2000, knockOthers: true });
-    expect(settings.flags).toEqual({ ...defaultFlags(), dayEnd: 'retreat' });
-    expect(profile.scores('fondue').map((entry) => entry.score)).toEqual([900, 500]);
-    expect(profile.scores('fondue')[0].names).toBe('Tim & Lenny');
-  });
+/** A store that writes down every key it is asked to read, write or remove. */
+class RecordingStore extends MemoryProfileStore {
+  readonly reads: string[] = [];
+  readonly writes: string[] = [];
+  readonly removes: string[] = [];
 
-  it('leaves the old keys exactly as they were', async () => {
-    const store = new MemoryProfileStore({ [LEGACY_SETTINGS_KEY]: LEGACY_SETTINGS, [LEGACY_SCORES_KEY]: LEGACY_SCORES });
-    const profile = await Profile.load(store);
-    profile.setName('Someone else');
-    profile.addScore('fondue', score(5000));
-    profile.reset();
-    await profile.flush();
-    expect(store.entries.get(LEGACY_SETTINGS_KEY)).toBe(LEGACY_SETTINGS);
-    expect(store.entries.get(LEGACY_SCORES_KEY)).toBe(LEGACY_SCORES);
-  });
+  override async read(key: string): Promise<string | null> {
+    this.reads.push(key);
+    return super.read(key);
+  }
 
-  it('takes the old data over only while no profile exists', async () => {
-    const store = new MemoryProfileStore({ [LEGACY_SETTINGS_KEY]: LEGACY_SETTINGS, [LEGACY_SCORES_KEY]: LEGACY_SCORES });
-    const first = await Profile.load(store);
-    first.setName('Renamed');
-    await first.flush();
+  override async write(key: string, value: string): Promise<void> {
+    this.writes.push(key);
+    return super.write(key, value);
+  }
 
-    store.entries.set(LEGACY_SETTINGS_KEY, JSON.stringify({ name: 'Classic player', difficulty: 'easy' }));
-    store.entries.set(LEGACY_SCORES_KEY, JSON.stringify([score(99999)]));
-    const second = await Profile.load(store);
-    expect(second.data.name).toBe('Renamed');
-    expect(second.data.settings.difficulty).toBe('hard');
-    expect(second.scores('fondue').map((entry) => entry.score)).toEqual([900, 500]);
-    expect(second.data.profileId).toBe(first.data.profileId);
-  });
+  override async remove(key: string): Promise<void> {
+    this.removes.push(key);
+    return super.remove(key);
+  }
 
-  it('ignores unreadable old data', async () => {
-    const store = new MemoryProfileStore({ [LEGACY_SETTINGS_KEY]: '{oops', [LEGACY_SCORES_KEY]: '"no list"' });
+  touched(): string[] {
+    return [...this.reads, ...this.writes, ...this.removes];
+  }
+}
+
+describe('Profile: save data of earlier game versions', () => {
+  // v0.2 (/fondue/) and classic (/fondue/classic/) share one browser storage with v0.3 (/fondue/next/).
+  const OLD_PROFILE = JSON.stringify({ version: 1, name: 'Tim', stars: 120, unlockedWeapons: ['crossbow'], handTier: 3 });
+  const OLD: Record<string, string> = {
+    'fondue.profile': OLD_PROFILE,
+    'fondue.settings.v1': LEGACY_SETTINGS,
+    'fondue.scores.v1': LEGACY_SCORES,
+  };
+
+  it('never reads them and leaves them byte for byte unchanged after load, change and save', async () => {
+    const store = new RecordingStore(OLD);
     const profile = await Profile.load(store);
     expect(profile.data.name).toBe('');
+    expect(profile.data.stars).toBe(0);
     expect(profile.data.worlds).toEqual({});
+
+    profile.setName('Someone else');
+    profile.addStars(5);
+    profile.addScore('fondue', score(5000));
+    profile.updateSettings({ difficulty: 'easy', muted: true });
+    await profile.flush();
+    profile.reset();
+    await profile.flush();
+
+    // Loading once more must not reach the old keys either.
+    const again = await Profile.load(store);
+    expect(again.data.profileId).toBe(profile.data.profileId);
+
+    for (const [key, value] of Object.entries(OLD)) expect(store.entries.get(key)).toBe(value);
+    expect(store.reads).toContain(PROFILE_KEY);
+    expect(store.writes).toContain(PROFILE_KEY);
+    for (const key of store.touched()) expect(key.startsWith('fondue.v3.')).toBe(true);
+    for (const key of Object.keys(OLD)) expect(store.touched()).not.toContain(key);
+  });
+
+  it('sets a damaged v0.3 profile aside under a fondue.v3. key, still without touching old keys', async () => {
+    const store = new RecordingStore({ ...OLD, [PROFILE_KEY]: '{oops' });
+    const profile = await Profile.load(store);
+    expect(profile.data.name).toBe('');
+    for (const [key, value] of Object.entries(OLD)) expect(store.entries.get(key)).toBe(value);
+    for (const key of store.touched()) expect(key.startsWith('fondue.v3.')).toBe(true);
+    expect(brokenKeys(store)).toHaveLength(1);
   });
 });
 
@@ -178,10 +198,10 @@ describe('Profile: damaged storage', () => {
   it.each([['broken JSON', '{"stars": 12, "name": '], ['a list', '[1,2,3]'], ['a bare value', '"hello"'], ['empty text', '']])(
     'sets %s aside and starts fresh',
     async (_label, text) => {
-      const store = new MemoryProfileStore({ [PROFILE_KEY]: text, [LEGACY_SETTINGS_KEY]: LEGACY_SETTINGS });
+      const store = new MemoryProfileStore({ [PROFILE_KEY]: text });
       const profile = await Profile.load(store);
       expect(profile.data.stars).toBe(0);
-      expect(profile.data.name).toBe('Tim');
+      expect(profile.data.name).toBe('');
       const keys = brokenKeys(store);
       expect(keys).toHaveLength(1);
       expect(store.entries.get(keys[0])).toBe(text);
