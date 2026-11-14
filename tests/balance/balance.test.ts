@@ -11,7 +11,8 @@ import { SLOTS } from '../../src/config/slots';
 import type { SpendStyle } from '../../src/bots/armoury';
 import { CampaignRunner, type CampaignOptions, type CampaignRun } from '../../src/bots/campaignRunner';
 import { mean, median, quantile, runGame } from '../../src/bots/harness';
-import { ENDLESS, slotRole, weaponRole } from '../../src/modes';
+import { CAMPAIGN, ENDLESS, buy, slotRole, weaponRole } from '../../src/modes';
+import { CREST_COST } from '../../src/config/tiers';
 import { MemoryProfileStore, Profile } from '../../src/profile';
 
 /** Which part to run: 'endless', 'campaign' or both (endless needs the campaign's keeps, so it runs the Mid campaign too). */
@@ -32,10 +33,12 @@ const MD = 'docs/balance-latest.md';
 const JSON_FILE = 'docs/balance-latest.json';
 /** Keeps for the endless rows: the Mid player's profile after these levels. */
 const KEEP_LEVELS = [20, 60];
+/** A4: the crest grind is measured with the Mid player's keep after this level (Eagle Perch owned), replaying the next level. */
+const GRIND_KEEP = 75;
 
 interface CampaignRowDef { label: string; skills: string[]; style: SpendStyle; farm: CampaignOptions['farm']; farmDifficulty?: Difficulty }
 const CAMPAIGN_ROWS: CampaignRowDef[] = [
-  { label: 'Poor solo', skills: ['poor'], style: { personality: 1, upgrades: true }, farm: 'stuck', farmDifficulty: 'easy' },
+  { label: 'Poor solo', skills: ['poor'], style: { personality: 3, upgrades: true }, farm: 'stuck', farmDifficulty: 'easy' },
   { label: 'Mid solo', skills: ['mid'], style: { personality: 1, upgrades: true }, farm: 'stuck' },
   { label: 'Mid solo B', skills: ['mid'], style: { personality: 2, upgrades: true }, farm: 'stuck' },
   { label: 'Mid solo C', skills: ['mid'], style: { personality: 6, upgrades: true }, farm: 'stuck' },
@@ -89,8 +92,16 @@ interface EndlessRow {
   quietMax: number; quietOver: number;
 }
 
+interface GrindRow {
+  label: string; skill: string; mode: string; runs: number;
+  /** Rounds until the crests of a first tier-7 step: median, P10, P90, and players who did not get there within the limit. */
+  median: number; p10: number; p90: number; notReached: number; limit: number;
+  crestsPerRound: number; hitRate: number | null; roundSeconds: number;
+}
+
 interface Report {
   date: string;
+  grind?: { keepLevel: number; crestCost: number; rows: GrindRow[] };
   campaign?: { from: number; to: number; maxTries: number; rows: CampaignSummary[] };
   endless?: { runs: number; maxWave: number; rows: EndlessRow[] };
 }
@@ -102,7 +113,7 @@ async function campaign(rowDefs: CampaignRowDef[], keeps: Record<number, unknown
   for (const row of rowDefs) {
     const run = await new CampaignRunner({
       skills: row.skills, from: LEVELS.from, to: LEVELS.to, maxTries: MAX_TRIES, forceThrough: true, seed: 1, fieldW: FIELD_W,
-      style: row.style, farm: row.farm, farmDifficulty: row.farmDifficulty, snapshots: row.label === 'Mid solo' ? KEEP_LEVELS : [],
+      style: row.style, farm: row.farm, farmDifficulty: row.farmDifficulty, snapshots: row.label === 'Mid solo' ? [...KEEP_LEVELS, GRIND_KEEP] : [],
       onLevel: (l) => { if (l.level % 25 === 0 || l.level === LEVELS.to) console.log(`campaign ${row.label}: level ${l.level}, ${l.tries} tries${l.forced ? ' (forced)' : ''}`); },
     }).run();
     if (row.label === 'Mid solo') Object.assign(keeps, run.snapshots);
@@ -162,6 +173,52 @@ async function endless(keeps: Record<number, unknown>): Promise<EndlessRow[]> {
   return rows;
 }
 
+/** A4: rounds with the Eagle Perch until the crests of one tier-7 step are together. */
+async function grind(keeps: Record<number, unknown>): Promise<GrindRow[]> {
+  const data = keeps[GRIND_KEEP];
+  if (!data) return [];
+  const LIMIT = 80;
+  const level = GRIND_KEEP + 1;
+  const defs = [
+    { label: `Mid, Kampagne (Level ${level} wiederholt)`, skill: 'mid', mode: 'campaign' },
+    { label: `Great, Kampagne (Level ${level} wiederholt)`, skill: 'great', mode: 'campaign' },
+    { label: 'Mid, Endlos medium bis Welle 20', skill: 'mid', mode: 'endless' },
+    { label: 'Great, Endlos medium bis Welle 20', skill: 'great', mode: 'endless' },
+  ];
+  const rows: GrindRow[] = [];
+  for (const def of defs) {
+    const profile = await Profile.load(new MemoryProfileStore());
+    profile.replace(data);
+    // The perch opens at level 70; a player who has not bought it yet would do so for this.
+    if (!profile.hasStation('perch')) { profile.edit((d) => { d.wallet.cheese += 100; }); buy(profile, { kind: 'station', id: 'perch' }, 'fondue'); }
+    const hand = profile.data.keep.handTier;
+    const rounds: number[] = [];
+    let crests = 0; let tries = 0; let hits = 0; let secs = 0; let played = 0;
+    for (let i = 0; i < RUNS; i++) {
+      let got = 0; let r = 0;
+      while (got < CREST_COST && r < LIMIT) {
+        r++;
+        const seed = 5000 + i * 101 + r * 7;
+        const setup = def.mode === 'campaign'
+          ? CAMPAIGN.buildRun(profile, { world: 'fondue', level }, { names: ['A'], fieldW: FIELD_W, handTiers: [hand] })
+          : ENDLESS.buildRun(profile, { world: 'fondue', difficulty: 'medium' }, { names: ['A'], fieldW: FIELD_W, handTiers: [hand], seed });
+        const g = runGame(setup, [def.skill], { botSeed: seed * 13 + 3, maxWaves: def.mode === 'endless' ? 20 : undefined, targetSeconds: levelOf('fondue', level)!.targetSeconds });
+        got += g.crestsEnd; crests += g.crestsEnd; secs += g.seconds; played++;
+        tries += g.result?.stats.perchTries ?? 0; hits += g.result?.stats.perchHits ?? 0;
+      }
+      rounds.push(got >= CREST_COST ? r : LIMIT + 1);
+    }
+    const row: GrindRow = {
+      label: def.label, skill: def.skill, mode: def.mode, runs: RUNS,
+      median: median(rounds), p10: quantile(rounds, 0.1), p90: quantile(rounds, 0.9), notReached: rounds.filter((r) => r > LIMIT).length, limit: LIMIT,
+      crestsPerRound: +(crests / Math.max(1, played)).toFixed(2), hitRate: tries ? +(hits / tries).toFixed(2) : null, roundSeconds: Math.round(secs / Math.max(1, played)),
+    };
+    rows.push(row);
+    console.log(`grind ${row.label}: median ${row.median} rounds, ${row.crestsPerRound} crests per round`);
+  }
+  return rows;
+}
+
 const ok = (b: boolean) => (b ? 'erfüllt' : '**nicht erfüllt**');
 
 function goals(rep: Report): string[] {
@@ -196,7 +253,11 @@ function goals(rep: Report): string[] {
     const e = rep.endless.rows.filter((r) => r.skill === 'mid' && r.players === 1);
     out.push(`| E1 Gold je Minute | ${e.map((r) => `${r.label}: ${r.goldPerMinute}`).join('; ')} | steigt mit der Schwierigkeit | ${ok(KEEP_LEVELS.every((k) => { const g = ['easy', 'medium', 'hard'].map((d) => e.find((r) => r.keep === k && r.difficulty === d)?.goldPerMinute ?? 0); return g[0] < g[1] && g[1] < g[2]; }))} |`);
   }
-  out.push('| A4 Wappen-Grind | siehe Abschnitt „A4 Wappen-Grind“ in docs/balance.md | Median 20–30 Runden | noch nicht gemessen |', '');
+  const g = rep.grind?.rows.find((r) => r.skill === 'mid' && r.mode === 'campaign');
+  if (g && rep.grind) {
+    const all = rep.grind.rows.map((r) => `${r.label} ${r.median}`).join('; ');
+    out.push(`| A4 Wappen-Grind | Runden bis ${rep.grind.crestCost} Wappen, Median: ${all} | Median 20–30 Runden (Mid, Kampagne) | ${ok(g.median >= 20 && g.median <= 30)} |`, '');
+  } else out.push('| A4 Wappen-Grind | nicht gemessen | Median 20–30 Runden | – |', '');
   return out;
 }
 
@@ -268,6 +329,13 @@ function render(rep: Report): string {
     if (stuck.length) out.push('', '### Hängende Läufe', '', ...stuck);
     out.push('');
   }
+  if (rep.grind) {
+    const gr = rep.grind;
+    out.push('## Wappen-Grind (A4)', '', `Mit der Burg des Mid-Bots nach Level ${gr.keepLevel} (Adlerhaken gekauft): Runden, bis die ${gr.crestCost} Wappen für eine Stufe 7 zusammen sind. Je Zeile ${gr.rows[0]?.runs ?? 0} Spieler; wer nach ${gr.rows[0]?.limit ?? 80} Runden nicht so weit ist, zählt mit einer Runde mehr. Trefferquote = Treffer am Haken je Wurf, der nah am Haken vorbeifliegt.`, '');
+    out.push('| Zeile | Median Runden | P10–P90 | nicht erreicht | Wappen je Runde | Trefferquote | Dauer einer Runde |', '|---|---|---|---|---|---|---|');
+    for (const r of gr.rows) out.push(`| ${r.label} | ${r.median} | ${r.p10}–${r.p90} | ${r.notReached} | ${r.crestsPerRound} | ${r.hitRate === null ? '–' : `${Math.round(r.hitRate * 100)} %`} | ${r.roundSeconds} s |`);
+    out.push('');
+  }
   if (rep.endless) {
     const e = rep.endless;
     out.push('## Endlos', '', `${e.runs} Läufe je Zeile mit der Burg, die der Mid-Bot in der Kampagne nach Level 20 beziehungsweise 60 hatte. Abbruch nach Welle ${e.maxWave}. Gold je Minute = Gold eines Laufs durch seine Dauer.`, '');
@@ -287,11 +355,13 @@ it('balance report', async () => {
   rep.date = new Date().toISOString().slice(0, 16).replace('T', ' ');
   const keeps: Record<number, unknown> = {};
   const wanted = CAMPAIGN_ROWS.filter((r) => !ROW_FILTER || ROW_FILTER.split(',').some((f) => r.label.includes(f)));
+  if (rep.grind && rep.grind.rows.some((r) => !('roundSeconds' in r))) delete rep.grind;
   if (PART === 'all' || PART === 'campaign') {
     rep.campaign = { from: LEVELS.from, to: LEVELS.to, maxTries: MAX_TRIES, rows: await campaign(wanted, keeps) };
-  } else {
-    await campaign(CAMPAIGN_ROWS.filter((r) => r.label === 'Mid solo'), keeps);
   }
+  // Endless and the crest grind play with the Mid player's keeps.
+  if (PART !== 'campaign' && !keeps[GRIND_KEEP]) await campaign(CAMPAIGN_ROWS.filter((r) => r.label === 'Mid solo'), keeps);
+  if (PART === 'all' || PART === 'grind') rep.grind = { keepLevel: GRIND_KEEP, crestCost: CREST_COST, rows: await grind(keeps) };
   if (PART === 'all' || PART === 'endless') rep.endless = { runs: RUNS, maxWave: MAX_WAVE, rows: await endless(keeps) };
   const md = render(rep);
   writeFileSync(MD, `${md}\n`);

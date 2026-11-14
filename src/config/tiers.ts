@@ -13,7 +13,7 @@ export const TIER_MAX = 7;
 export const WEAPON_TIER_GOLD = [0, 300, 900, 3000, 9000, 24000, 50000];
 
 /** Raider Crests every step up to tier 7 needs on top of its gold (weapon, castle and hand alike). */
-export const CREST_COST = 40;
+export const CREST_COST = 50;
 
 /**
  * Highest tier that can be bought for weapons, castle and hand, by campaign progress.

@@ -5,6 +5,7 @@
  * HANDS columns: strength = compared with a raider's mass; gold, crests = price of the step up to
  * this tier (tier 1 is free); note = shown to players.
  */
+import { CREST_COST } from './tiers';
 export interface HandTier { strength: number; gold: number; crests: number; note: string }
 
 export const HANDS: HandTier[] = [
@@ -14,7 +15,7 @@ export const HANDS: HandTier[] = [
   { strength: 2, gold: 3500, crests: 0, note: 'Lifts a Yeti alone.' },
   { strength: 2.4, gold: 8000, crests: 0, note: 'Yetis fly a fair way.' },
   { strength: 2.8, gold: 16000, crests: 0, note: 'Nothing on the road is too heavy.' },
-  { strength: 3.3, gold: 30000, crests: 40, note: 'A second hand joins the first.' },
+  { strength: 3.3, gold: 30000, crests: CREST_COST, note: 'A second hand joins the first.' },
 ];
 
 export const MAX_HAND_TIER = HANDS.length;

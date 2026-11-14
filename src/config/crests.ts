@@ -31,7 +31,7 @@ export const CRESTS: CrestRules = {
   /** A boss (an oversized raider) always leaves this many. */
   boss: 5,
   /** Most crests one run can bring. */
-  perRun: 4,
+  perRun: 2,
   // v0.2 caught throws within 66 px (104 px when let go at the hook) and bent throws within 170 px
   // at a 25° heading. v0.3 asks for an aimed throw (C6).
   hookRadius: 34,

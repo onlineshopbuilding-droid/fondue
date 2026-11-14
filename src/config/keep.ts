@@ -7,6 +7,7 @@
  * STATIONS columns: name; unlockLevel = becomes buyable once this level is won; cheesePrice = the
  * unlock (gives tier 1); tiers = gold for each further step and what it changes; desc.
  */
+import { CREST_COST } from './tiers';
 export interface CastleTierDef { name: string; hp: number; gold: number; crests: number; desc: string }
 
 export const CASTLE_TIERS: CastleTierDef[] = [
@@ -16,7 +17,7 @@ export const CASTLE_TIERS: CastleTierDef[] = [
   { name: 'Bannered Keep', hp: 2800, gold: 4000, crests: 0, desc: 'Flags on every tower, and thicker walls.' },
   { name: 'Gilded Keep', hp: 4000, gold: 10000, crests: 0, desc: 'Heavy, shiny and stubborn.' },
   { name: 'Runic Fortress', hp: 5600, gold: 24000, crests: 0, desc: 'Old runes glow when the gate is struck.' },
-  { name: 'Alpine Citadel', hp: 7800, gold: 50000, crests: 40, desc: 'The pride of the mountains. Nothing has ever dented it.' },
+  { name: 'Alpine Citadel', hp: 7800, gold: 50000, crests: CREST_COST, desc: 'The pride of the mountains. Nothing has ever dented it.' },
 ];
 
 export type StationId = 'cauldron' | 'perch';
