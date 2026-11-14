@@ -8,7 +8,7 @@
  * CHALLENGE_TEMPLATES columns: id; needs = what must be available (see `available`); stat = which
  * count of the run is compared (see src/modes/challenges.ts); amount(level, have) = how many are
  * asked (have = raiders of the needed type in the level, or 0); text(n, param) = the game text.
- * A later package refines the texts; the system stays.
+ * Texts are short, say exactly what counts and use "tap", never "click".
  */
 import { ENEMIES, type EnemyType } from '../../enemies';
 import { STATIONS } from '../../keep';
@@ -58,7 +58,7 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
     id: 'throwKills',
     make: (_level, counts) => {
       const n = Math.min(60, shareOf(total(counts), 0.35, 3));
-      return { template: 'throwKills', params: { n }, text: `Defeat ${n} raiders by throwing them` };
+      return { template: 'throwKills', params: { n }, text: `Defeat ${n} raiders with a throw` };
     },
   },
   {
@@ -76,7 +76,7 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
       const type = types[Math.floor(pick(level, salt) * types.length)];
       // Every raider must fall to win, so the challenge asks for the hand: thrown to death.
       const n = Math.min(12, shareOf(counts[type] ?? 0, 0.4, 1));
-      return { template: 'killType', params: { n, type }, text: `Defeat ${n} ${n === 1 ? ENEMIES[type].name : plural(type)} by throwing` };
+      return { template: 'killType', params: { n, type }, text: `Defeat ${n} ${n === 1 ? ENEMIES[type].name : plural(type)} with a throw` };
     },
   },
   {
@@ -121,7 +121,7 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
     make: (level) => {
       if (!stationUsableIn(level, 'perch')) return null;
       const n = Math.min(4, 1 + Math.floor((level - STATIONS.perch.unlockLevel) / 10));
-      return { template: 'eagle', params: { n }, text: `Give ${n} ${n === 1 ? 'raider' : 'raiders'} to the eagle` };
+      return { template: 'eagle', params: { n }, text: `Fling ${n} ${n === 1 ? 'raider' : 'raiders'} onto the Eagle Perch` };
     },
   },
 ];
