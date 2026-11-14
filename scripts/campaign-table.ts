@@ -2,7 +2,7 @@
  * Writes the readable table of all campaign levels into docs/KAMPAGNE-TABELLE.md, between the two
  * KAMPAGNE markers. The numbers come from the real level data (src/config/worlds), so the document
  * can never say something else than the game does.
- * Run it after changing the campaign, the unlocks or the stars: `node scripts/campaign-table.ts`.
+ * Run it after changing the campaign, the waves, the challenges or the unlocks: `node scripts/campaign-table.ts`.
  * A unit test (tests/unit/campaignTable.test.ts) fails while the document is out of date.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -50,7 +50,7 @@ export function campaignData(s: CampaignSources, worldId = s.worlds.DEFAULT_WORL
   return {
     levels,
     unlocks: world.unlocks,
-    curve: { ...s.campaign.CURVE },
+    curve: Object.fromEntries(Object.entries(s.campaign.CURVE).filter(([, v]) => typeof v === 'number')) as Record<string, number>,
     firstLevel: { ...s.campaign.FIRST_LEVEL },
     overrides,
     enemyNames: Object.fromEntries(Object.entries(s.enemies.ENEMIES).map(([id, e]) => [id, e.name])),
@@ -71,9 +71,15 @@ export const num = (v: number, digits = 2): string => {
 
 const cell = (s: string): string => s.replace(/\|/g, '\\|');
 
-export function dayTotal(counts: Partial<Record<EnemyType, number>>): number {
+/** Raiders of one wave (or any count table). */
+export function waveTotal(counts: Partial<Record<EnemyType, number>>): number {
   return Object.values(counts).reduce((a: number, b) => a + (b ?? 0), 0);
 }
+/** Older name, kept for the developer page. */
+export const dayTotal = waveTotal;
+
+/** Planned length as "m:ss". */
+export const duration = (seconds: number): string => `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}`;
 
 export function unlockText(u: UnlockDef, d: CampaignData): string {
   switch (u.kind) {
@@ -98,31 +104,43 @@ export function twistText(t: TwistDef | null, d: CampaignData): string {
 
 export function bossText(level: LevelDef, d: CampaignData): string {
   if (!level.boss) return '';
-  const big = level.days[level.days.length - 1]?.big ?? {};
+  const big = level.waves.find((w) => w.boss)?.big ?? {};
   const giants = Object.entries(big).filter(([, n]) => (n ?? 0) > 0).map(([t, n]) => `${n}× ${d.enemyNames[t] ?? t}`);
   return giants.length ? `${level.boss.name} (Riesen: ${giants.join(', ')})` : level.boss.name;
 }
 
 const CURVE_DE: Record<string, string> = {
-  baseCount: 'Räuber an Tag 1 von Level 1',
-  countPerLevel: 'Zusätzliche Räuber je Level (Faktor vor der Potenz)',
-  countPower: 'Potenz der Level-Zunahme (unter 1: frühe Level wachsen schneller)',
-  countPerDay: 'Anteil mehr Räuber je weiterem Tag',
-  levelShareDay1: 'Anteil der Level-Zunahme an Tag 1',
-  levelSharePerDay: 'Zunahme dieses Anteils je weiterem Tag',
-  levelShareMax: 'Höchster Anteil',
+  baseCount: 'v0.2-Kurve: Räuber an Tag 1 von Level 1',
+  countPerLevel: 'v0.2-Kurve: zusätzliche Räuber je Level (Faktor vor der Potenz)',
+  countPower: 'v0.2-Kurve: Potenz der Level-Zunahme',
+  countPerDay: 'v0.2-Kurve: Anteil mehr Räuber je weiterem Tag',
+  levelShareDay1: 'v0.2-Kurve: Anteil der Level-Zunahme an Tag 1',
+  levelSharePerDay: 'v0.2-Kurve: Zunahme dieses Anteils je Tag',
+  levelShareMax: 'v0.2-Kurve: höchster Anteil',
+  countShare: 'v0.3: Anteil der v0.2-Räuberzahl je Level (B4)',
   powerPerLevel: 'Stärke der Räuber: Zunahme je Level (Level 1 = 1)',
-  bossDayCount: 'Boss-Level: Faktor für die Räuberzahl am letzten Tag',
   bossPower: 'Boss-Level: Faktor für die Stärke',
+  secondsFirst: 'Geplante Länge von Level 1 (s)',
+  secondsPerEarlyLevel: 'Level 2 bis 5: Sekunden mehr je Level',
+  secondsAt20: 'Geplante Länge um Level 20 (s)',
+  secondsMiddleMin: 'Mitte: kürzeste geplante Länge (s)',
+  secondsMiddleMax: 'Mitte: längste geplante Länge (s)',
+  secondsBossMin: 'Boss-Level: kürzeste Länge (s)',
+  secondsBossMax: 'Boss-Level: längste Länge (s)',
+  secondsSpecialMin: 'Sonderlevel: kürzeste Länge (s)',
+  secondsSpecialMax: 'Sonderlevel: längste Länge (s)',
+  secondsPerWave: 'Sekunden je Welle im Mittel (bestimmt die Wellenzahl)',
+  plannedShare: 'Anteil der Länge, der aus Ankunft und Pausen besteht',
+  lastWave: 'Größe der letzten Welle (relativ)',
 };
 
 /** The Markdown part between the markers. */
 export function campaignTable(d: CampaignData): string {
   const out: string[] = [];
-  const stars = d.levels.reduce((a, l) => a + l.stars, 0);
-  const days = d.levels.reduce((a, l) => a + l.days.length, 0);
+  const waves = d.levels.reduce((a, l) => a + l.waves.length, 0);
   const bosses = d.levels.filter((l) => l.boss).length;
-  out.push(`Stand: ${d.levels.length} Level, ${days} Tage, ${bosses} Boss-Level, ${stars} Sterne für alle ersten Siege zusammen.`);
+  const seconds = d.levels.reduce((a, l) => a + l.targetSeconds, 0);
+  out.push(`Stand: ${d.levels.length} Level, ${waves} Wellen, ${bosses} Boss-Level, geplant zusammen ${Math.round(seconds / 60)} Minuten. Jedes Level bringt bis zu 5 Käse (Sieg, Tor über 50 %, Tor über 90 %, zwei Challenges).`);
 
   out.push('', '### Die Kurve (`CURVE`)', '', '| Wert | Bedeutung | Zahl |', '|---|---|---|');
   for (const [k, v] of Object.entries(d.curve)) out.push(`| \`${k}\` | ${CURVE_DE[k] ?? ''} | ${num(v)} |`);
@@ -134,15 +152,17 @@ export function campaignTable(d: CampaignData): string {
   if (start.length) out.push('', `Von Anfang an da: ${start.join(', ')}.`);
 
   out.push('', '### Alle Level', '');
-  out.push('Räuber je Tag: Gesamtzahl für Tag 1 · Tag 2 · …, allein gespielt. Stärke: Faktor auf Lebenspunkte (schwächer auch auf Torschaden und Tempo). ✎ = von Hand geändert (siehe unten).', '');
-  out.push('| Level | Name | Landschaft | Tage | Räuber je Tag | Neue Räuber | Besonderheit | Boss | Stärke | Sterne | Sieg schaltet frei |');
-  out.push('|---|---|---|---|---|---|---|---|---|---|---|');
+  out.push('Dauer: geplante Länge (m:ss). Räuber: alle Wellen zusammen, allein gespielt; dahinter die größte Welle. Stärke: Faktor auf Lebenspunkte (schwächer auch auf Torschaden und Tempo). ✎ = von Hand geändert (siehe unten).', '');
+  out.push('| Level | Name | Landschaft | Dauer | Wellen | Räuber (größte Welle) | Neue Räuber | Besonderheit | Boss | Stärke | Challenges | Sieg schaltet frei |');
+  out.push('|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const l of d.levels) {
     const unlocks = d.unlocks.filter((u) => u.level === l.id).map((u) => unlockText(u, d)).join(', ');
     const fresh = l.newEnemies.map((t) => d.enemyNames[t] ?? t).join(', ');
-    const perDay = l.days.map((day) => String(dayTotal(day.counts))).join(' · ');
+    const sizes = l.waves.map((w) => waveTotal(w.counts));
+    const total = sizes.reduce((a, b) => a + b, 0);
+    const challenges = l.challenges.map((c) => c.text).join('; ');
     const mark = d.overrides[l.id] ? ' ✎' : '';
-    out.push(`| ${l.id}${mark} | ${cell(l.name)} | ${LANDSCAPE_DE[l.landscape] ?? l.landscape} | ${l.days.length} | ${perDay} | ${cell(fresh)} | ${cell(twistText(l.twist, d))} | ${cell(bossText(l, d))} | ${num(l.power)} | ${l.stars} | ${cell(unlocks)} |`);
+    out.push(`| ${l.id}${mark} | ${cell(l.name)} | ${LANDSCAPE_DE[l.landscape] ?? l.landscape} | ${duration(l.targetSeconds)} | ${l.waves.length} | ${total} (${Math.max(...sizes)}) | ${cell(fresh)} | ${cell(twistText(l.twist, d))} | ${cell(bossText(l, d))} | ${num(l.power)} | ${cell(challenges)} | ${cell(unlocks)} |`);
   }
 
   out.push('', '### Von Hand geändert (`LEVEL_OVERRIDES`)', '');

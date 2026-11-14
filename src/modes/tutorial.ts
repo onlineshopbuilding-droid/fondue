@@ -1,6 +1,6 @@
 /**
  * The prelude a new player is dropped into before any menu: a handful of Pothelms, a gate that
- * cannot fall, no market. It only teaches the grab and the fling; level 1 of the campaign follows.
+ * cannot fall, one wave. It only teaches the grab and the fling; level 1 of the campaign follows.
  */
 import { PRELUDE } from '../config/tutorial';
 import { TUNING_DEFAULT } from '../config/tuning';
@@ -21,14 +21,13 @@ export class TutorialMode implements GameMode {
 
   buildRun(_profile: Profile, choice: RunChoice, env: RunEnv): RunSetup {
     const rules: RunRules = {
-      runId: newRunId('tutorial'), mode: this.id, world: choice.world, level: null, difficulty: null, lastDay: 1, players: 1,
+      runId: newRunId('tutorial'), mode: this.id, world: choice.world, level: null, difficulty: null, lastWave: 1, players: 1,
       scaling: { count: 1, speed: PRELUDE.speed, damage: PRELUDE.damage, hp: 1, gold: 1, damageGrowth: 0, speedGrowth: 0, hpGrowth: 0 },
-      slotsOpen: [false, false, false, false, false], weapons: {}, stationsOffered: [], maxGateTier: 0,
-      handStart: [1], handBuyable: false, tierUpgrades: false, hasMarket: false, gateCannotFall: true, marketOnly: null,
+      maxAlive: PRELUDE.pothelms, slotsOpen: [false, false, false, false, false], gateCannotFall: true,
     };
     return {
       seed: PRELUDE.seed, names: env.names.slice(0, 1), tuning: TUNING_DEFAULT, fieldW: env.fieldW, rules, start: freshStart(rules),
-      planner: new FixedPlanner([{ counts: { grunt: PRELUDE.pothelms }, seconds: PRELUDE.seconds }], 'meadow'),
+      planner: new FixedPlanner([{ counts: { grunt: PRELUDE.pothelms }, spawnSeconds: PRELUDE.seconds, packs: 3, pauseAfter: 0 }], 'meadow'),
     };
   }
 

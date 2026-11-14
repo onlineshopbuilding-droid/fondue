@@ -1,18 +1,17 @@
 // What every part of the simulation shares: state, seeded random numbers, events and the links between the parts.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { HANDS } from '../config/hand';
-import { WORLD, fieldSpeedFactor, fieldWall } from '../config/field';
+import { FIELD, WORLD, fieldEntry, fieldSpeedFactor, fieldWall } from '../config/field';
 import type { WeaponDef } from '../config/weapons';
 import { weaponById } from '../config/weapons';
 import type { Combat } from './combat';
-import type { DayFlow } from './dayFlow';
+import type { WaveFlow } from './waveFlow';
 import type { EnemyBehaviour } from './enemies';
 import type { Flight } from './flight';
 import type { Hands } from './hands';
-import type { DayPlanner } from './plan';
+import type { WavePlanner } from './plan';
 import type { Projectiles } from './projectiles';
 import type { Rng } from './rng';
-import type { Shop } from './shop';
 import type { Spawner } from './spawner';
 import type { RunStats } from './stats';
 import type { Stations } from './stations';
@@ -29,20 +28,19 @@ export const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.mi
 export class SimContext {
   events: SimEvent[] = [];
 
-  day!: DayFlow;
+  waves!: WaveFlow;
   spawner!: Spawner;
   hands!: Hands;
   stations!: Stations;
   weapons!: WeaponSystem;
   combat!: Combat;
-  shop!: Shop;
   enemies!: EnemyBehaviour;
   flight!: Flight;
   projectiles!: Projectiles;
   zones!: Zones;
   stats!: RunStats;
 
-  constructor(readonly s: SimState, readonly rng: Rng, readonly planner: DayPlanner) {}
+  constructor(readonly s: SimState, readonly rng: Rng, readonly planner: WavePlanner) {}
 
   get tuning() { return this.s.meta.tuning; }
   get rules() { return this.s.meta.rules; }
@@ -72,14 +70,17 @@ export class SimContext {
   /** Right-hand wall of the field. */
   get wall() { return fieldWall(this.s.meta.fieldW); }
 
+  /** Where raiders step onto the field: its right end, or the visible right edge when that is nearer (B3). */
+  get entryX() { return Math.min(fieldEntry(this.s.meta.fieldW), this.s.meta.viewRight + FIELD.entryMargin); }
+
   groundOf(e: Enemy): number { return WORLD.groundY + e.lane; }
 
-  /** Growth factor of a per-day value on the current day. */
-  growth(perDay: number): number { return 1 + (this.s.day - 1) * perDay; }
+  /** Growth factor of a per-wave value in the current wave. */
+  growth(perWave: number): number { return 1 + (this.s.wave - 1) * perWave; }
 
-  /** A scaling factor of the run, held back on the first days when the rules ease in. */
+  /** A scaling factor of the run, held back in the first waves when the rules ease in. */
   eased(factor: number): number {
-    const share = this.rules.scaling.easeIn?.[this.s.day - 1] ?? 1;
+    const share = this.rules.scaling.easeIn?.[this.s.wave - 1] ?? 1;
     return 1 + (factor - 1) * share;
   }
 

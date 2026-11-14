@@ -5,7 +5,7 @@ import type { ScreenContext } from './context';
 /** Every screen the game knows; `none` means the battlefield is uncovered. Add new screens here. */
 export type ScreenId =
   | 'none' | 'main' | 'play' | 'coop' | 'campaign' | 'armoury' | 'host' | 'join' | 'options' | 'help' | 'scores' | 'credits'
-  | 'results' | 'shop' | 'gameover' | 'won' | 'pause' | 'lostHost' | 'lostGuest';
+  | 'gameover' | 'won' | 'pause' | 'lostHost' | 'lostGuest';
 
 export interface Screen {
   readonly id: Exclude<ScreenId, 'none'>;

@@ -142,13 +142,13 @@ export class TutorialView {
     this.drawPotArrow(view, s.me);
   }
 
-  /** The pot hint belongs to the day whose level hint says so; it shows once per such day. */
+  /** A level hint belongs to the wave it names; it shows once per such wave. */
   private watchPotHint(view: ViewState, meta: Meta) {
-    if (meta.rules.level === null || view.phase !== 'battle' || this.potDay === view.day) return;
+    if (meta.rules.level === null || view.phase !== 'battle' || this.potDay === view.wave) return;
     const lv = levelOf(meta.rules.world, meta.rules.level);
-    const hint = lv?.hints.find((h) => h.when === 'battle' && h.day === view.day);
+    const hint = lv?.hints.find((h) => h.wave === view.wave);
     if (!hint) return;
-    this.potDay = view.day;
+    this.potDay = view.wave;
     this.pot = new PotHint(hint.text);
   }
 

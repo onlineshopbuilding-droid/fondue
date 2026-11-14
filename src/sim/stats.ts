@@ -1,6 +1,6 @@
 /**
- * Keeps count during a run: kills by cause and type, offerings, kegs, weapon shots, gate damage.
- * Rewards and later challenges are rules on these numbers, so the simulation only counts.
+ * Keeps count during a run: kills by cause and type, kegs, weapon shots, gate damage, crests, waves.
+ * Rewards and challenges are rules on these numbers, so the simulation only counts.
  */
 import type { EnemyType } from '../config/enemies';
 import type { SimContext } from './context';
@@ -16,14 +16,17 @@ export class RunStats {
     d.kills++;
     d.killsByCause[cause] = (d.killsByCause[cause] ?? 0) + 1;
     d.killsByType[type] = (d.killsByType[type] ?? 0) + 1;
-    if (cause === 'cauldron' || cause === 'eagle') d.offerings++;
+    if (cause === 'impact') d.throwKillsByType[type] = (d.throwKillsByType[type] ?? 0) + 1;
     if (byKeg) d.kegBlastKills++;
   }
 
   gold(amount: number) { this.d.goldEarned += amount; }
+  crests(amount: number) { this.d.crestsEarned += amount; }
   kegShaken() { this.d.kegsShaken++; }
+  /** A keg went up among the raiders (shaken loose, thrown back, or carried by a raider who died). */
+  kegBlast() { this.d.kegBlasts++; }
   weaponFired(id: string) { this.d.weaponShots[id] = (this.d.weaponShots[id] ?? 0) + 1; }
   gateDamaged(amount: number) { this.d.gateDamage += amount; }
   thrown() { this.d.throws++; }
-  dayCleared() { this.d.daysCleared++; }
+  waveCleared() { this.d.wavesCleared++; }
 }

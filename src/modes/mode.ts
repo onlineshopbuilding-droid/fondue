@@ -14,16 +14,13 @@ export interface RunChoice {
   world: string;
   level?: number;
   difficulty?: Difficulty;
-  /** Developer quick start: begin an endless run on this later day. */
+  /** Developer quick start: begin an endless run at this later wave (one of QUICK_STARTS). */
   quickStart?: number;
-  /**
-   * Developer menu: begin an endless run on any day up to QUICK_START_MAX_DAY, with the belongings of
-   * the latest quick start before it. Unlike `quickStart`, any day is taken.
-   */
+  /** Developer menu: begin an endless run at any wave up to QUICK_START_MAX_DAY. Unlike `quickStart`, any wave is taken. */
   devDay?: number;
-  /** Developer jump: begin a level on this day with fitting belongings. */
-  day?: number;
-  /** A stored day start of an interrupted level. */
+  /** Developer jump: begin a level at this wave. */
+  wave?: number;
+  /** A stored wave start of an interrupted level. */
   resume?: { rules: RunRules; start: RunStart; seed: number };
 }
 
@@ -31,6 +28,8 @@ export interface RunChoice {
 export interface RunEnv {
   names: string[];
   fieldW: number;
+  /** Right edge of the host's visible field in world units (B3); missing = the field's end. */
+  viewRight?: number;
   /** Hand tier of every player: the host's from its profile, the guest's as it told the host. */
   handTiers: number[];
   /** Developer values. When set, the run does not count. */
@@ -47,6 +46,13 @@ export interface Reward {
   counted: boolean;
   /** Cheese newly earned in this run (each of a level's five only once). */
   cheese: number;
+  /** Bits of the level's cheese mask set by this run (CHEESE.bits in currencies.ts). */
+  cheeseBits: number;
+  /** The level's two challenges: met in this run? */
+  challenges: [boolean, boolean];
+  /** Gold and Raider Crests credited to the profile for this run (kept also when the run was lost). */
+  gold: number;
+  crests: number;
   /** This level was won for the first time. */
   firstWin: boolean;
   unlocks: UnlockDef[];
@@ -57,7 +63,9 @@ export interface Reward {
   nextLevel: number | null;
 }
 
-export const noReward = (): Reward => ({ counted: false, cheese: 0, firstWin: false, unlocks: [], story: '', score: null, nextLevel: null });
+export const noReward = (): Reward => ({
+  counted: false, cheese: 0, cheeseBits: 0, challenges: [false, false], gold: 0, crests: 0, firstWin: false, unlocks: [], story: '', score: null, nextLevel: null,
+});
 
 /** Where the game goes after a run. */
 export type NextStep =
@@ -70,7 +78,7 @@ export interface GameMode {
   readonly id: string;
   /** Can this mode be started with this profile? (Endless may open only after some levels.) */
   isAvailable(profile: Profile, world: string): boolean;
-  /** Builds the run: rules, day planner, starting values. */
+  /** Builds the run: rules, wave planner, starting values. */
   buildRun(profile: Profile, choice: RunChoice, env: RunEnv): RunSetup;
   /** Pays out the reward into the profile of this device. Safe to call twice: the second call pays nothing. */
   reward(result: RunResult, rules: RunRules, profile: Profile, role: Role): Reward;

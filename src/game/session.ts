@@ -5,7 +5,7 @@ import { DT, WORLD, fieldWall } from '../config/field';
 import type { ClientCommand, NetMessage } from '../net/protocol';
 import { decodeSnapshot, encodeSnapshot, interpolateViews, type ViewEnemy, type ViewState } from '../net/snapshot';
 import type { Transport } from '../net/transport';
-import { followFactor, handStrength, launchVelocity, liftFlat, massOfType, springStep, throwFactor } from '../sim/physics';
+import { followFactor, grabBonus, handStrength, launchVelocity, liftFlat, massOfType, springStep, throwFactor } from '../sim/physics';
 import type { RunSetup } from '../sim/rules';
 import { Sim } from '../sim/sim';
 import type { Command, Meta, SimEvent } from '../sim/types';
@@ -174,8 +174,6 @@ export class HostSession implements Session {
   send(c: ClientCommand) {
     this.sim.command({ ...c, p: 0 } as Command);
     this.collect();
-    // Purchases and ready flags should reach the guest without waiting for the next snapshot.
-    if (this.link && this.sim.s.phase === 'intermission') this.broadcast();
   }
 
   setHand(x: number, y: number) { this.sim.setHand(0, x, y); }
@@ -430,7 +428,7 @@ export class GuestSession implements Session {
       const dy = y < top ? top - y : y > e.y ? y - e.y : 0;
       const d = Math.hypot(dx, dy);
       const score = d + Math.abs(x - e.x) * 0.02; // same preference as the host
-      if (d <= pad && score < bestD) { bestD = score; best = e; }
+      if (d <= pad + grabBonus(e.type, e.st) && score < bestD) { bestD = score; best = e; }
     }
     return best;
   }

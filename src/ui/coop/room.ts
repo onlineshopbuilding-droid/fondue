@@ -278,8 +278,8 @@ export class CoopRoom {
     link.onMessage = (m) => {
       if (m.k !== 'hand') { inner(m); return; }
       this.guestHand = m.handTier;
-      // Endless hands grow with gold during the run; only a campaign hand comes from the profile.
-      if (!session.sim.rules.handBuyable) session.sim.setHandTier(1, m.handTier);
+      // The guest brings the hand of their own profile (E2).
+      session.sim.setHandTier(1, m.handTier);
     };
   }
 

@@ -4,7 +4,8 @@ import { WORLD } from '../config/field';
 import { STATION_IDS } from '../config/keep';
 import { SLOTS, SLOT_COUNT } from '../config/slots';
 import { unlockLevelOf } from '../modes/unlocks';
-import { quote } from '../sim/shop';
+// F2: the in-run market is gone (src/sim/shop.ts deleted); this view is no longer drawn. P-Shop decides its future.
+const quote = (..._args: unknown[]): { reason: string } => ({ reason: 'locked' });
 import type { Meta } from '../sim/types';
 
 const FONT = 'Lilita One';
@@ -76,7 +77,7 @@ export class MarketView {
     const rules = meta.rules;
     const l = meta.loadout;
     const pulse = 1 + Math.sin(time * 0.006) * 0.07;
-    const sold = (prefix: string) => rules.marketOnly === null || rules.marketOnly.some((it) => it.startsWith(prefix));
+    const sold = (_prefix: string) => false;
     const spots: MarketSpot[] = [];
 
     for (let i = 0; i < SLOT_COUNT; i++) {
@@ -97,7 +98,7 @@ export class MarketView {
         if (can) this.plus(x, y, 15 * pulse, a);
         continue;
       }
-      if (rules.tierUpgrades && quote(rules, l, gold, offerings, `upgrade:${weapon}`).reason === 'ok') this.arrow(x + 30, y - 30, a * (0.8 + 0.2 * Math.sin(time * 0.008)));
+      if (quote(rules, l, gold, offerings, `upgrade:${weapon}`).reason === 'ok') this.arrow(x + 30, y - 30, a * (0.8 + 0.2 * Math.sin(time * 0.008)));
     }
 
     // The gate's own button: a round wooden plate with a hammer, "Gate" below it.

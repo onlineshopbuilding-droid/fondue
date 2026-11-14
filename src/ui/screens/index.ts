@@ -14,13 +14,11 @@ import { mainScreen } from './main';
 import { optionsScreen } from './options';
 import { pauseScreen } from './pause';
 import { playScreen } from './play';
-import { resultsScreen } from './results';
 import { scoresScreen } from './scores';
 import type { Screen } from './screen';
-import { shopScreen } from './shop';
 import { wonScreen } from './won';
 
 export const SCREENS: readonly Screen[] = [
   mainScreen, playScreen, coopScreen, campaignScreen, armouryScreen, hostScreen, joinScreen, optionsScreen, helpScreen,
-  scoresScreen, creditsScreen, resultsScreen, shopScreen, gameoverScreen, wonScreen, pauseScreen, lostHostScreen, lostGuestScreen,
+  scoresScreen, creditsScreen, gameoverScreen, wonScreen, pauseScreen, lostHostScreen, lostGuestScreen,
 ];

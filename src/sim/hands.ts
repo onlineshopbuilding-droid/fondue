@@ -2,7 +2,7 @@
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD } from '../config/field';
 import { HAND_RULES } from '../config/hand';
-import { followFactor, launchVelocity, liftFlat, springStep, throwFactor } from './physics';
+import { followFactor, grabBonus, launchVelocity, liftFlat, springStep, throwFactor } from './physics';
 import type { Enemy, Projectile } from './types';
 import { clamp, type SimContext } from './context';
 
@@ -66,7 +66,7 @@ export class Hands {
       if (e.dead || e.hidden || e.st === 'hooked' || e.st === 'cooking' || e.st === 'flee') continue;
       if (e.heldBy.length > 0 && !(e.type === 'yeti' && !e.heldBy.includes(p))) continue;
       const d = this.grabDistance(e, x, y);
-      if (d > pad) continue;
+      if (d > pad + grabBonus(e.type, e.st)) continue;
       // Prefer the enemy the pointer is actually inside, then the closest centre.
       const score = d + Math.abs(x - e.x) * 0.02;
       if (score < bestD) { bestD = score; best = e; }

@@ -1,5 +1,6 @@
-// How many raiders a day brings and how that grows: the difficulties, the day formula, the co-op factors and the landscape cycle.
-// The campaign's levels take their raider counts from the world's level table; these numbers drive endless and the day timing.
+// How a level runs as a chain of waves: banner, pauses, the "never long without a raider" rule, the
+// endless wave formula, the difficulties, the co-op factors and the landscape cycle of endless.
+// The campaign's levels take their waves from the world's level table (worlds/fondue/campaign.ts).
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface DifficultyDef {
@@ -11,56 +12,68 @@ export interface DifficultyDef {
   speed: number;
   /** Multiplies damage to the gate. */
   damage: number;
-  /** Multiplies gold from kills. */
+  /** Multiplies gold from kills. Endless is the place to earn gold, and harder pays more (E1). */
   gold: number;
 }
 
 export const DIFFICULTIES: Record<Difficulty, DifficultyDef> = {
-  easy: { label: 'Easy', count: 0.8, speed: 0.92, damage: 0.8, gold: 1 },
+  easy: { label: 'Easy', count: 0.8, speed: 0.92, damage: 0.8, gold: 0.8 },
   medium: { label: 'Medium', count: 1, speed: 1, damage: 1, gold: 1 },
-  hard: { label: 'Hard', count: 1.3, speed: 1.12, damage: 1.35, gold: 0.9 },
-};
-
-/** One day of fighting. */
-export const DAY = {
-  /** Length of the fight in seconds. */
-  seconds: 50,
-  /** Seconds the day banner shows before the fight, and the win or defeat banner after it. */
-  bannerSeconds: 2.6,
-  endBannerSeconds: 2.6,
-  /** Enemies per day: base + perDay * (day - 1), slower growth after softCapDay. */
-  base: 40,
-  perDay: 7,
-  softCapDay: 18,
-  perDayAfterCap: 18,
-  /**
-   * Share of a day's raiders that arrive in packs, how many packs (plus one more every packsPerDays
-   * days), and over how many seconds each pack arrives.
-   */
-  packShare: 0.55,
-  packs: 3,
-  packsPerDays: 6,
-  packSpread: 3,
-  /** Hard limit of living enemies; spawns wait while it is reached. */
-  maxAlive: 200,
-  /** Per-day growth after day 1: gate damage, walk speed, and hit points against weapons. */
-  damageGrowth: 0.2,
-  speedGrowth: 0.03,
-  hpGrowth: 0.09,
-  /** Share of the day over which spawning ramps from sparse to dense. */
-  rampPower: 0.8,
+  hard: { label: 'Hard', count: 1.3, speed: 1.12, damage: 1.35, gold: 1.3 },
 };
 
 /**
- * Extra enemies in co-op. The factor applies from day 1 and eases to lateFactor between easeFrom
- * and easeTo, because the second pair of hands matters less once weapons do most of the work.
- * earlyAdjust is added on days 1, 2, ... (raiders before scaling): two weak players must survive day 1 too.
- * Columns: countFactor = raiders times this from day 1; lateFactor = the factor after easeTo; easeFrom, easeTo = days
- * of the change; goldFactor = gold per kill times this in co-op; campaignFactor = see its own comment.
+ * The wave rhythm of every run (B1, B2, B3).
+ * bannerSeconds: the level banner at the start; raiders already walk under it.
+ * firstWaveDelay: seconds from the level start to the first arrival of wave 1.
+ * pauseMin/pauseMax: breathing room after a wave has fully arrived (the level table picks inside it).
+ * clearDelay: once nobody is alive, the next arrival comes after at most this many seconds, so a
+ *   level is never more than about 2 s without a living raider (B2 allows 5 s).
+ * endBannerSeconds: the defeat banner before the result.
+ * maxAliveMin/maxAliveMax: most raiders alive at once, early level and late level (B4: 12 to 30).
  */
-export const COOP = { countFactor: 2.3, lateFactor: 2.1, easeFrom: 22, easeTo: 36, earlyAdjust: [-8, -6, -3, 0], goldFactor: 0.5, /** Raiders of a campaign level times this when two play. */ campaignFactor: 1.7 };
+export const WAVES = {
+  bannerSeconds: 1.2,
+  firstWaveDelay: 0.3,
+  pauseMin: 2,
+  pauseMax: 4,
+  clearDelay: 1.5,
+  endBannerSeconds: 2.6,
+  maxAliveMin: 12,
+  maxAliveMax: 30,
+  /** B2 test limit: the longest stretch without a living raider. */
+  maxQuietSeconds: 5,
+};
 
-/** Landscape cycle of endless: the order of the landscapes, changing every DAYS_PER_LANDSCAPE days. */
+/**
+ * Endless: waves without end. Raiders of wave n: base + perWave * (n - 1), slower growth after
+ * softCapWave; spawnSeconds is how long a wave takes to arrive; growth values are added per wave.
+ * maxAlive grows from WAVES.maxAliveMin by maxAlivePerWave up to WAVES.maxAliveMax.
+ */
+export const ENDLESS_WAVES = {
+  base: 6,
+  perWave: 1.1,
+  softCapWave: 30,
+  perWaveAfterCap: 2.2,
+  spawnSeconds: 9,
+  pause: 3,
+  /** Every fourth wave is a spike: this many times the raiders. */
+  spikeEvery: 4,
+  spikeFactor: 1.7,
+  damageGrowth: 0.035,
+  speedGrowth: 0.004,
+  hpGrowth: 0.016,
+  maxAlivePerWave: 0.6,
+};
+
+/**
+ * Co-op. countFactor: raiders times this when two play (B4: fewer, faster raiders, so a second hand
+ * matters more than before; start 1.8, tuned by bots so that two do not win more often than one).
+ * goldPerKill: share of a kill's gold in co-op; both players are paid the whole gold of the round (E-066).
+ */
+export const COOP = { countFactor: 1.8, goldPerKill: 0.6 };
+
+/** Landscape cycle of endless: the order of the landscapes, changing every WAVES_PER_LANDSCAPE waves. */
 export const LANDSCAPES = ['meadow', 'canyon', 'marsh', 'snowpine'] as const;
 export type Landscape = (typeof LANDSCAPES)[number];
-export const DAYS_PER_LANDSCAPE = 3;
+export const WAVES_PER_LANDSCAPE = 8;

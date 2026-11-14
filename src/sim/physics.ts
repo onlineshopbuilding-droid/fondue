@@ -2,7 +2,7 @@
  * The throw and hold maths that host and guest must compute identically (handbook, trap 4).
  * Pure functions: `Hands` and `Flight` use them for the real game, `GuestSession` for its prediction.
  */
-import { BEHAVIOUR, ENEMIES, type EnemyType } from '../config/enemies';
+import { BEHAVIOUR, ENEMIES, GRAB_SPEED_BONUS, type EnemyType } from '../config/enemies';
 import { HANDS, HAND_RULES } from '../config/hand';
 import type { Tuning } from '../config/tuning';
 
@@ -12,6 +12,16 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 export function massOfType(type: EnemyType, big: boolean, crow: boolean): number {
   if (crow) return BEHAVIOUR.crowMass;
   return ENEMIES[type].mass * (big ? BEHAVIOUR.big.mass : 1);
+}
+
+/**
+ * Extra grab reach for a raider on the move (B4): fast raiders are hard to hit with a finger, so
+ * their grab area grows with their walk speed. Only while walking or hopping.
+ */
+export function grabBonus(type: EnemyType, state: string): number {
+  if (state !== 'walk' && state !== 'hop') return 0;
+  const g = GRAB_SPEED_BONUS;
+  return clamp((ENEMIES[type].speed - g.from) * g.perSpeed, 0, g.max);
 }
 
 export const handStrength = (tier: number): number => HANDS[clamp(Math.round(tier), 1, HANDS.length) - 1].strength;

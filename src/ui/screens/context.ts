@@ -10,7 +10,7 @@ import type { ScreenId } from './screen';
 
 /** An interrupted campaign level, as the app keeps it in the profile. */
 export interface PendingRun {
-  v: 1;
+  v: 2;
   rules: RunRules;
   seed: number;
   start: RunStart;

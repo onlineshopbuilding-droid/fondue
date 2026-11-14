@@ -180,12 +180,6 @@ export class GameScene extends Phaser.Scene {
       onDown: (x, y) => {
         this.audio.resume();
         const s = this.session;
-        // The market at the keep: a tap on one of its places opens that place's window, nothing else.
-        if (s && s.view()?.phase === 'intermission') {
-          const spot = this.market.hit(x, y);
-          if (spot) { this.audio.play('uiClick'); this.hooks.onKeepTap(spot); }
-          return true;
-        }
         if (!s || this.hooks.isInputBlocked()) return true;
         const sx = x - this.view.offsetX;
         const sy = y - this.view.offsetY;
@@ -275,10 +269,10 @@ export class GameScene extends Phaser.Scene {
       this.hooks?.onFrame(null);
       return;
     }
-    // The camera glides to the market at the keep between days and back for the fight.
-    this.marketK = stepMarket(this.marketK, s.view()?.phase === 'intermission', realDt);
+    // There is no market during a level any more: the camera stays on the fight (marketK stays 0).
+    this.marketK = stepMarket(this.marketK, false, realDt);
     this.cam = diveRect(camAt(this.view, this.marketK), this.lobbyDive);
-    // The bars are screen furniture of the fight; the market shows gold and offerings itself.
+    // The bars are screen furniture of the fight.
     // While the camera comes out of the keep (lobby) they would be drawn zoomed, so they wait.
     this.hud.setVisible(this.marketK === 0 && this.lobbyDive === 0);
     this.banner.setVisible(this.marketK === 0 && this.lobbyDive === 0);
@@ -305,8 +299,11 @@ export class GameScene extends Phaser.Scene {
       this.renderHands(view, s);
       this.hud.update(view, meta, realDt);
       if (meta) {
-        this.bg.setLandscape(meta.today.landscape);
-        this.bg.update(view.dayT, meta.today.seconds, meta.today.night, this.tracker.x, realDt);
+        this.bg.setLandscape(meta.wave.landscape);
+        // The sky follows the level wave by wave (endless: a cycle of eight waves).
+        const last = meta.rules.lastWave;
+        const u = last ? (view.wave - 1) / last : ((view.wave - 1) % 8) / 8;
+        this.bg.update(u * 100, 100, meta.wave.night, this.tracker.x, realDt);
       }
       this.renderKeep(view, meta, realDt, now);
       this.updatePhase(view, meta);
@@ -364,7 +361,6 @@ export class GameScene extends Phaser.Scene {
     const hook = hookAt(this.view, meta.fieldW, k);
     this.castle.update(view, meta, this.bg.shown, this.bg.tint, this.bg.night, dt, time, k);
     this.stations.update(view, meta, this.bg.tint, dt, time, hook, k);
-    this.market.update(meta, view.gold, view.offerings, k, hook, this.castle.hitRadius(), time);
   }
 
   private renderProjectiles(list: ViewProjectile[]) {
@@ -460,7 +456,7 @@ export class GameScene extends Phaser.Scene {
       const x = isMe ? this.tracker.x : h.x;
       const y = isMe ? this.tracker.y : h.y;
       const blocked = isMe && this.hooks.isInputBlocked();
-      const visible = h.connected && !blocked && (view.phase !== 'intermission' && view.phase !== 'gameover' && view.phase !== 'runWon');
+      const visible = h.connected && !blocked && (view.phase !== 'gameover' && view.phase !== 'runWon');
       // On a touch screen the player sees their own finger; only a mouse needs a hand as pointer.
       // The co-op partner's hand always shows: it is the only sign of where they grab.
       const drawn = visible && !(isMe && this.tracker.touch);
@@ -476,21 +472,35 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updatePhase(view: ViewState, meta: Meta | null) {
-    if (view.day !== this.lastDay) this.lastDay = view.day;
+    // The prelude is no official round: no signboard, it just begins.
+    if (view.wave !== this.lastDay) {
+      const first = this.lastDay <= 0 || view.phase === 'banner';
+      this.lastDay = view.wave;
+      if (!this.isPrelude() && !first) {
+        const line = this.waveBanner(view.wave, meta);
+        if (line) this.showBanner(line, 2);
+      }
+    }
     if (view.phase === this.lastPhase) return;
     this.lastPhase = view.phase;
-    // The prelude is no official round: no signboard, it just begins.
     if (this.isPrelude()) return;
-    if (view.phase === 'banner') this.showBanner(this.dayBanner(view.day, meta), 2.4);
+    if (view.phase === 'banner') this.showBanner(this.levelBanner(meta), 1.2);
   }
 
-  /** The line on the signboard when a day begins: the boss of the day, a night, or the plain call. */
-  private dayBanner(day: number, meta: Meta | null): string {
-    const today = meta?.today;
-    const last = meta?.rules.lastDay ?? null;
-    const name = today?.night ? `NIGHT ${day}` : last !== null && day === last ? 'LAST DAY' : `DAY ${day}`;
-    if (today?.boss) return `${name} — ${today.boss.toUpperCase()}!`;
+  /** The signboard at the start of a level: its number, a night, or a boss. */
+  private levelBanner(meta: Meta | null): string {
+    const level = meta?.rules.level ?? null;
+    const name = level !== null ? `LEVEL ${level}` : 'ENDLESS';
+    if (meta?.wave.night) return `${name} — NIGHT RAID!`;
     return `${name} — HOLD THE GATE!`;
+  }
+
+  /** A signboard for a wave that matters: the boss wave and the last wave. Null for ordinary waves. */
+  private waveBanner(wave: number, meta: Meta | null): string | null {
+    if (meta?.wave.boss) return `${meta.wave.boss.toUpperCase()}!`;
+    const last = meta?.rules.lastWave ?? null;
+    if (last !== null && wave === last) return 'LAST WAVE!';
+    return null;
   }
 
   private isPrelude(): boolean { return this.session?.meta()?.rules.mode === 'tutorial'; }
@@ -736,9 +746,8 @@ export class GameScene extends Phaser.Scene {
         this.fx.floatText(ev.x, ev.y - 90, 'Cheese!');
         this.fx.fadingProp('cheese', ev.x, ev.y - 34, 0.5, 1);
         break;
-      case 'nightfall':
-        this.showBanner('NIGHT FALLS!', 2.2);
-        this.sfx('dayStart', 0.6);
+      case 'crest':
+        this.fx.floatText(ev.x, ev.y - 90, `+${ev.amount} Crest${ev.amount > 1 ? 's' : ''}`);
         break;
       case 'crow':
         this.sfx('crow');
@@ -756,14 +765,9 @@ export class GameScene extends Phaser.Scene {
         this.fx.sparks(ev.x, ev.y, 7);
         this.shakeCam(3);
         break;
-      case 'dayStart':
-        this.sfx('dayStart');
-        break;
-      case 'victory':
-        // The prelude ends quietly; level 1 follows at once.
-        if (this.isPrelude()) break;
-        this.showBanner('THE GATE HOLDS!', 2.2);
-        this.sfx('victory');
+      case 'waveStart':
+        // The sound of a new wave (its asset still carries the old name).
+        if (ev.wave > 1) this.sfx('dayStart', 0.5);
         break;
       case 'runWon':
         if (this.isPrelude()) break;
@@ -778,10 +782,6 @@ export class GameScene extends Phaser.Scene {
         this.showBanner('THE GATE HAS FALLEN!', 3);
         this.sfx('defeat');
         this.shakeCam(24);
-        break;
-      case 'buy':
-        this.sfx('buy');
-        this.hooks.onBuyNotice(`${s.meta()?.names[ev.p] ?? 'Someone'} bought ${ev.name}`);
         break;
       case 'denied':
         if (ev.p === s.me) this.sfx('uiDenied');
@@ -821,9 +821,10 @@ export class GameScene extends Phaser.Scene {
     this.fx.coin(ev.x, ev.y, purse.x, purse.y);
     if (ev.gold > 0) this.fx.floatText(ev.x, ev.y - 60, `+${ev.gold}`);
     this.sfx('coin', 0.45);
-    if (ev.cause === 'cauldron' || ev.cause === 'eagle') {
-      const pot = this.hud.offeringTarget();
-      this.fx.offering(ev.x, ev.y, pot.x, pot.y);
+    if (ev.cause === 'eagle') {
+      // The crest flies to the counter. The effect and sound keep their old asset names.
+      const crest = this.hud.crestTarget();
+      this.fx.offering(ev.x, ev.y, crest.x, crest.y);
       this.sfx('offering');
     }
   }

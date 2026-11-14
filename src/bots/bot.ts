@@ -1,4 +1,5 @@
-// A scripted player for headless balance runs: one hand that grabs, throws, shakes, taps weapons and shops.
+// A scripted player for headless balance runs: one hand that grabs, throws, shakes and taps weapons.
+// It only fights; nothing is bought during a run (shopping between runs lives in armoury.ts).
 // It uses only the commands a person's input turns into, sees only what a person sees, and takes time for everything.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD, perchX } from '../config/field';
@@ -9,7 +10,6 @@ import { weaponById } from '../config/weapons';
 import { handStrength, massOfType, throwFactor } from '../sim/physics';
 import type { Sim } from '../sim/sim';
 import type { Enemy } from '../sim/types';
-import { BotShopper } from './shopper';
 import type { BotSkill } from './skills';
 
 interface Step { t: number; run: () => void }
@@ -38,26 +38,13 @@ export class Bot {
   private glide: Glide | null = null;
   private nextDecision = 0;
   private nextWeaponLook = 0;
-  private shopped = -1;
   private potFreeAt = 0;
   private perchFreeAt = 0;
-  readonly shopper: BotShopper;
 
-  constructor(private p: number, private skill: BotSkill, private rand: () => number) {
-    this.shopper = new BotShopper(p, skill, rand);
-  }
+  constructor(private p: number, private skill: BotSkill, private rand: () => number) {}
 
   tick(sim: Sim) {
     const s = sim.s;
-    if (s.phase === 'intermission') {
-      this.clear();
-      if (this.shopped !== s.day) {
-        this.shopped = s.day;
-        this.shopper.shop(sim);
-        sim.command({ k: 'ready', p: this.p, ready: true });
-      }
-      return;
-    }
     if (s.phase !== 'battle' || s.paused) {
       this.clear();
       return;

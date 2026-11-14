@@ -12,7 +12,7 @@ export interface RoomPlan {
 }
 
 /** Bump when messages change in a breaking way. Combined with the build hash in the version check. */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 /** Commands without the player index; the host adds who sent it. */
 export type ClientCommand = Command extends infer C ? (C extends { p: number } ? Omit<C, 'p'> : never) : never;

@@ -1,4 +1,4 @@
-// The bar at the top of the screen during a fight: gold, offerings and the gate's health.
+// The bar at the top of the screen during a fight: gold and Raider Crests of this run, the waves and the gate's health.
 import Phaser from 'phaser';
 import { WORLD } from '../config/field';
 import type { ViewState } from '../net/snapshot';
@@ -84,9 +84,9 @@ function socket(g: Phaser.GameObjects.Graphics, x: number, y: number, r: number)
  */
 export class Hud {
   private readonly goldPos = { x: 58, y: 34 };
-  private readonly offeringPos = { x: 214, y: 34 };
+  private readonly crestPos = { x: 214, y: 34 };
   private gold: Phaser.GameObjects.Text;
-  private offerings: Phaser.GameObjects.Text;
+  private crests: Phaser.GameObjects.Text;
   private gateBar: Phaser.GameObjects.Graphics;
   private gateText: Phaser.GameObjects.Text;
   private dayText: Phaser.GameObjects.Text;
@@ -117,12 +117,13 @@ export class Hud {
     // Nearly solid: the flags on the top of a big keep pass behind this plate.
     plank(leftPlate, 18, 8, 318, 52, 0.94);
     socket(leftPlate, this.goldPos.x, this.goldPos.y - 1, 19);
-    socket(leftPlate, this.offeringPos.x, this.offeringPos.y - 1, 19);
+    socket(leftPlate, this.crestPos.x, this.crestPos.y - 1, 19);
     const coin = scene.add.image(this.goldPos.x, this.goldPos.y, propKey('coin')).setScale(1.2 / TEX_SCALE);
     this.gold = scene.add.text(this.goldPos.x + 24, this.goldPos.y, '0', small).setOrigin(0, 0.5);
-    const offering = scene.add.image(this.offeringPos.x, this.offeringPos.y, propKey('offering')).setScale(1.2 / TEX_SCALE);
-    this.offerings = scene.add.text(this.offeringPos.x + 24, this.offeringPos.y, '0', small).setOrigin(0, 0.5);
-    this.left.add([leftPlate, this.rush, coin, this.gold, offering, this.offerings]);
+    // Raider Crests of this run. The art keeps its old asset name ('offering') until a crest icon is drawn.
+    const crest = scene.add.image(this.crestPos.x, this.crestPos.y, propKey('offering')).setScale(1.2 / TEX_SCALE);
+    this.crests = scene.add.text(this.crestPos.x + 24, this.crestPos.y, '0', small).setOrigin(0, 0.5);
+    this.left.add([leftPlate, this.rush, coin, this.gold, crest, this.crests]);
 
     const rightPlate = scene.add.graphics();
     // Solid: the chain of the eagle hook runs behind this plate.
@@ -157,7 +158,7 @@ export class Hud {
 
   /** Where coins fly to, in world coordinates. */
   goldTarget() { return this.toWorld(this.left, this.goldPos); }
-  offeringTarget() { return this.toWorld(this.left, this.offeringPos); }
+  crestTarget() { return this.toWorld(this.left, this.crestPos); }
 
   private toWorld(box: Phaser.GameObjects.Container, p: { x: number; y: number }) {
     return { x: box.x + p.x * box.scaleX + this.view.offsetX, y: box.y + p.y * box.scaleY + this.view.offsetY };
@@ -186,7 +187,7 @@ export class Hud {
     this.gold.setText(String(Math.round(this.shown)));
     this.bump = Math.max(0, this.bump - dt * 6);
     this.gold.setScale(1 + this.bump * 0.12);
-    this.offerings.setText(String(v.offerings));
+    this.crests.setText(String(v.crests));
 
     const frac = v.gateMax > 0 ? v.gateHp / v.gateMax : 0;
     // Both bars are redrawn only when what they show has changed.
@@ -198,20 +199,23 @@ export class Hud {
       this.dayLine = line;
       this.dayText.setText(line).setFontSize(line.length > 18 ? 22 : 26);
     }
-    const seconds = meta?.today.seconds ?? 0;
-    const u = seconds > 0 ? Math.min(1, v.dayT / seconds) : 0;
-    const key = Math.round(u * 400) + (v.nightfall ? 1000 : 0);
-    if (key !== this.drawnDay) { this.drawnDay = key; this.drawDayTrack(u, v.nightfall); }
+    // The track shows how far the level is: waves done of all waves (endless: the current wave).
+    const last = meta?.rules.lastWave ?? null;
+    const u = last ? Math.min(1, Math.max(0, (v.wave - 1) / last)) : 0;
+    const night = meta?.wave.night ?? false;
+    const key = Math.round(u * 400) + (night ? 1000 : 0);
+    if (key !== this.drawnDay) { this.drawnDay = key; this.drawDayTrack(u, night); }
     this.drawRush(v.goldRushT);
   }
 
-  /** "LEVEL 7 · DAY 2/5" in the campaign, "DAY 12" without an end; the count of raiders left after nightfall. */
+  /** "LEVEL 7 · WAVE 2/12" in the campaign, "WAVE 12" without an end; in the last wave the raiders left. */
   private dayLabel(v: ViewState, meta: Meta | null): string {
     const level = meta?.rules.level ?? null;
-    const last = meta?.rules.lastDay ?? null;
-    const day = last !== null ? `${v.day}/${last}` : `${v.day}`;
-    if (v.nightfall) return level !== null ? `LEVEL ${level} · NIGHT ${day}: ${v.enemies.length} LEFT` : `NIGHT ${v.day}: ${v.enemies.length} LEFT`;
-    return level !== null ? `LEVEL ${level} · DAY ${day}` : `DAY ${day}`;
+    const last = meta?.rules.lastWave ?? null;
+    const wave = last !== null ? `${v.wave}/${last}` : `${v.wave}`;
+    if (level === null) return `WAVE ${wave}`;
+    if (last !== null && v.wave >= last) return `LEVEL ${level} · LAST WAVE: ${v.enemies.length} LEFT`;
+    return `LEVEL ${level} · WAVE ${wave}`;
   }
 
   /** While the Golden Fondue pays extra: a pulsing golden ring round the coin that runs down. */
@@ -267,7 +271,7 @@ export class Hud {
     }
   }
 
-  /** Day progress: a groove the sun travels along; at nightfall it has set and a moon stands at the end. */
+  /** Level progress: a groove the sun travels along wave by wave; in a night level a moon travels instead. */
   private drawDayTrack(u: number, night: boolean) {
     const s = this.sun;
     s.clear();
