@@ -6,6 +6,7 @@ import type { SimContext } from '../context';
 import type { DelayedShot, Enemy } from '../types';
 import type { Shot } from './behaviour';
 import { BEHAVIOURS } from './behaviours';
+import { effectiveTier, hasWeaponOverrides } from './overrides';
 
 /**
  * The weapons on the keep: one per slot, fired by a tap, reloading afterwards. Passive weapons
@@ -18,9 +19,9 @@ export class WeaponSystem {
 
   slotPosition(slot: number) { return SLOTS[slot]; }
 
-  /** The numbers of a weapon at the tier it has in this run. */
+  /** The numbers of a weapon at the tier it has in this run, with the developer editor's changes (overrides.ts). */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private tierData(def: WeaponDef): any { return def.tiers[Math.max(1, Math.min(def.tiers.length, this.ctx.tierOf(def.id))) - 1]; }
+  private tierData(def: WeaponDef): any { return effectiveTier(def, this.ctx.tierOf(def.id)); }
 
   private shot(slot: number, p: number): Shot { return { slot, p, x: SLOTS[slot].x, y: SLOTS[slot].y }; }
 
@@ -55,11 +56,13 @@ export class WeaponSystem {
   private runDelayed(d: DelayedShot) {
     const def = weaponById(d.weapon);
     if (!def) return;
-    BEHAVIOURS[def.kind].followUp?.(this.ctx, def.tiers[d.tier - 1], d);
+    BEHAVIOURS[def.kind].followUp?.(this.ctx, effectiveTier(def, d.tier), d);
   }
 
   tick() {
     const s = this.ctx.s;
+    // Changed weapon values (developer editor) make this a developer run: no lasting progress.
+    if (!s.meta.devRun && hasWeaponOverrides()) { s.meta.devRun = true; this.ctx.touchMeta(); }
     for (let slot = 0; slot < SLOT_COUNT; slot++) {
       if (s.cooldowns[slot] > 0) {
         s.cooldowns[slot] -= DT;

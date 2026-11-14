@@ -19,7 +19,20 @@ export const FLAG_DEFS: FlagDef[] = [
     options: [{ value: 'fight', label: 'Fight on' }, { value: 'retreat', label: 'Retreat' }],
     value: 'fight',
   },
+  {
+    id: 'secondHand',
+    label: 'Second hand on the laptop',
+    hint: 'Simulates the second hand (C9) with mouse and keyboard, for testing without a phone. Like every switch, it makes runs developer runs.',
+    options: [{ value: 'off', label: 'Off' }, { value: 'on', label: 'On' }],
+    value: 'off',
+  },
 ];
+
+/** Switch id of the simulated second hand (F2/C9). The hand code reads `flags[SECOND_HAND_FLAG] === 'on'`. */
+export const SECOND_HAND_FLAG = 'secondHand';
+
+/** True when the developer switch simulates a second hand on the laptop. */
+export const secondHandSimulated = (flags: Readonly<Partial<Flags>> | null | undefined): boolean => flags?.[SECOND_HAND_FLAG] === 'on';
 
 export type Flags = Record<string, string>;
 
