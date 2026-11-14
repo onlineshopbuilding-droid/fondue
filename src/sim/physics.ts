@@ -26,6 +26,18 @@ export function grabBonus(type: EnemyType, state: string): number {
 
 export const handStrength = (tier: number): number => HANDS[clamp(Math.round(tier), 1, HANDS.length) - 1].strength;
 
+/**
+ * Hands are numbered so that host and guest agree: player p's own hand is p, their second hand
+ * (C9) is p + players. `which` is 0 for the first hand, 1 for the second.
+ */
+export const handIndex = (player: number, which: number, players: number): number => (which > 0 ? player + players : player);
+/** The player a hand belongs to. */
+export const playerOfHand = (hand: number, players: number): number => hand % Math.max(1, players);
+/** True for a player's second hand. */
+export const isSecondHand = (hand: number, players: number): boolean => hand >= players;
+/** A hand tier that brings the second hand for good. */
+export const hasPermanentSecondHand = (tier: number): boolean => tier >= HAND_RULES.secondHandTier;
+
 /** Share of the swipe speed that reaches a raider of this mass: 1 for light ones, less for heavy ones. */
 export function throwFactor(mass: number, strength: number): number {
   return clamp(Math.pow(strength / mass, HAND_RULES.power), HAND_RULES.minThrow, 1);

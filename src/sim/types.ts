@@ -58,6 +58,8 @@ export interface Enemy {
   tugLimit: number;
   /** An oversized raider of a boss wave: more hit points, harder strikes, much heavier. */
   big: boolean;
+  /** This throw has already been counted as a try at the Eagle Perch (hit rate, see `Stations`). */
+  perchTry?: boolean;
 }
 
 export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell' | 'frostShell' | 'fireShell'
@@ -302,10 +304,15 @@ export type SimEvent =
   | { e: 'denied'; p: number }
   | { e: 'weaponReady'; slot: number };
 
-/** Everything players can ask the simulation to do. Nothing is bought during a run. */
+/**
+ * Everything players can ask the simulation to do. Nothing is bought during a run.
+ * `hand` is 1 for the player's second hand (C9); without it the first hand acts.
+ */
 export type Command =
-  | { k: 'press'; p: number; x: number; y: number }
-  | { k: 'release'; p: number; x: number; y: number; vx: number; vy: number }
+  | { k: 'press'; p: number; x: number; y: number; hand?: number }
+  | { k: 'release'; p: number; x: number; y: number; vx: number; vy: number; hand?: number }
+  /** The second hand follows its finger (the first hand moves through `Sim.setHand` and the 'h' message). */
+  | { k: 'move'; p: number; x: number; y: number; hand?: number }
   | { k: 'fireSlot'; p: number; slot: number }
-  | { k: 'shake'; p: number }
+  | { k: 'shake'; p: number; hand?: number }
   | { k: 'pause'; p: number; paused: boolean };

@@ -22,6 +22,9 @@ export class RunStats {
 
   gold(amount: number) { this.d.goldEarned += amount; }
   crests(amount: number) { this.d.crestsEarned += amount; }
+  /** A throw came near the Eagle Perch; `hit` when it landed on the hook. */
+  perchTry() { this.d.perchTries = (this.d.perchTries ?? 0) + 1; }
+  perchHit() { this.d.perchHits = (this.d.perchHits ?? 0) + 1; }
   kegShaken() { this.d.kegsShaken++; }
   /** A keg went up among the raiders (shaken loose, thrown back, or carried by a raider who died). */
   kegBlast() { this.d.kegBlasts++; }

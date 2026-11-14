@@ -36,9 +36,9 @@ export const STATIONS: Record<StationId, StationDef> = {
   cauldron: {
     name: 'Great Cauldron', unlockLevel: 16, cheesePrice: 12,
     tiers: [
-      { gold: 0, note: 'Melts a raider in 3 seconds.' },
-      { gold: 2500, note: 'Melts a raider in 2 seconds.' },
-      { gold: 8000, note: 'Melts a raider in 1.2 seconds.' },
+      { gold: 0, note: 'Melts a raider in 2.4 seconds.' },
+      { gold: 2500, note: 'Melts a raider in 1.6 seconds.' },
+      { gold: 8000, note: 'Melts a raider in 1 second.' },
     ],
     desc: 'Throw a raider into the pot behind the keep: it pays double gold.',
   },
@@ -52,7 +52,7 @@ export const STATIONS: Record<StationId, StationDef> = {
 export const STATION_IDS = Object.keys(STATIONS) as StationId[];
 
 /** Melting time of the Great Cauldron per tier, in seconds (index = tier - 1). */
-export const CAULDRON_SECONDS = [3, 2, 1.2];
+export const CAULDRON_SECONDS = [2.4, 1.6, 1];
 
 /** The eagle's hook: how long the catch hangs, and how much of that is the eagle eating. */
 export const PERCH = { hangSeconds: 1.1, eatSeconds: 0.65, /** Feet below the hook, in body heights: it hangs by the collar. */ hangDrop: 1.02 };

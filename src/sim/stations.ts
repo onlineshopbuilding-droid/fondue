@@ -1,9 +1,33 @@
 // Part of the simulation: the Great Cauldron and the Eagle Perch, and the steering that lands a throw there.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD, perchX } from '../config/field';
-import { PERCH } from '../config/keep';
+import { CRESTS } from '../config/crests';
+import { CAULDRON_SECONDS, PERCH } from '../config/keep';
+import { TUNING_DEFAULT, type Tuning } from '../config/tuning';
+import type { RunStatsData } from './rules';
 import type { Enemy } from './types';
 import type { SimContext } from './context';
+
+/**
+ * Melting time of the Great Cauldron at a tier (C5): the tier table, scaled by the developer
+ * slider `cauldronSeconds` (1 at its default).
+ */
+export function meltSeconds(tier: number, tuning: Pick<Tuning, 'cauldronSeconds'>): number {
+  const base = CAULDRON_SECONDS[Math.max(1, Math.min(CAULDRON_SECONDS.length, Math.round(tier || 1))) - 1];
+  return base * (tuning.cauldronSeconds / TUNING_DEFAULT.cauldronSeconds);
+}
+
+/**
+ * Share of throws at the Eagle Perch that landed on the hook (C6), 0 to 1, or null without a try.
+ * Balance bots read this from the run statistics.
+ */
+export function perchHitRate(stats: Pick<RunStatsData, 'perchTries' | 'perchHits'>): number | null {
+  const tries = stats.perchTries ?? 0;
+  return tries > 0 ? Math.min(1, (stats.perchHits ?? 0) / tries) : null;
+}
+
+/** Raiders the eagle takes: everything a hand can throw. The Yeti and bosses leave the most crests. */
+const perchable = (e: Enemy) => e.type !== 'siegeCart';
 
 /**
  * The two stations: the Great Cauldron behind the road and the Eagle Perch.
@@ -12,16 +36,25 @@ import type { SimContext } from './context';
 export class Stations {
   constructor(private ctx: SimContext) {}
 
-  tryPerch(e: Enemy, radius: number = WORLD.perch.snapRadius): boolean {
+  /** Distance from a raider's collar to the hook. */
+  perchDistance(e: Enemy): number {
+    return Math.hypot(e.x - perchX(this.ctx.s.meta.fieldW), e.y - WORLD.perch.hookY - ENEMIES[e.type].height * 0.3);
+  }
+
+  /**
+   * A thrown raider in flight lands on the hook only from close by and at speed: an aimed throw,
+   * not one carried up and let go (C6). Throws that pass near count as tries for the hit rate.
+   */
+  tryPerch(e: Enemy, radius: number = CRESTS.hookRadius): boolean {
     const s = this.ctx.s;
-    if (!this.ctx.hasStation('perch') || s.perchBusy > 0) return false;
-    const { hookY } = WORLD.perch;
-    const x = perchX(s.meta.fieldW);
-    if (Math.hypot(e.x - x, e.y - hookY - ENEMIES[e.type].height * 0.3) > radius) return false;
-    if (e.type === 'siegeCart' || e.type === 'yeti' || e.big) return false;
+    if (!this.ctx.hasStation('perch') || e.thrownBy < 0 || !perchable(e)) return false;
+    const d = this.perchDistance(e);
+    if (!e.perchTry && d <= CRESTS.tryRadius) { e.perchTry = true; this.ctx.stats.perchTry(); }
+    if (s.perchBusy > 0 || d > radius || Math.hypot(e.vx, e.vy) < CRESTS.minSpeed) return false;
+    this.ctx.stats.perchHit();
     e.st = 'hooked';
-    e.x = x;
-    e.y = hookY + ENEMIES[e.type].height * PERCH.hangDrop;
+    e.x = perchX(s.meta.fieldW);
+    e.y = WORLD.perch.hookY + ENEMIES[e.type].height * PERCH.hangDrop;
     e.vx = 0; e.vy = 0;
     e.rot = 0;
     e.t = PERCH.hangSeconds + PERCH.eatSeconds;
@@ -52,7 +85,7 @@ export class Stations {
   enterPot(e: Enemy) {
     const s = this.ctx.s;
     const { x, rimY } = WORLD.cauldron;
-    const seconds = this.ctx.tuning.cauldronSeconds;
+    const seconds = meltSeconds(this.ctx.loadout.stationTier?.cauldron ?? 1, this.ctx.tuning);
     e.st = 'cooking';
     e.t = seconds;
     e.x = x; e.y = rimY;
@@ -96,11 +129,14 @@ export class Stations {
     this.steerAt(e, x, rimY, e.y - ENEMIES[e.type].height * 0.45, assistRadius, headingCos);
   }
 
-  /** Same for the hook: only a throw really headed for it, since gravity pulls long throws under it. */
-  steerAtPerch(e: Enemy) {
-    if (e.st !== 'air' || !this.ctx.hasStation('perch') || this.ctx.s.perchBusy > 0) return;
-    if (e.type === 'siegeCart' || e.type === 'yeti' || e.big) return;
-    this.steerAt(e, perchX(this.ctx.s.meta.fieldW), WORLD.perch.hookY, e.y - ENEMIES[e.type].height * 0.3, WORLD.perch.assistRadius, WORLD.perch.headingCos);
+  /**
+   * A fresh throw at the hook: much less help than the pot gets, only for a throw that already heads
+   * almost straight at it and will pass close (CRESTS.assistRadius, headingCos).
+   */
+  throwAtPerch(e: Enemy) {
+    if (e.st !== 'air' || !this.ctx.hasStation('perch') || this.ctx.s.perchBusy > 0 || !perchable(e)) return;
+    if (Math.hypot(e.vx, e.vy) < CRESTS.minSpeed) return;
+    this.steerAt(e, perchX(this.ctx.s.meta.fieldW), WORLD.perch.hookY, e.y - ENEMIES[e.type].height * 0.3, CRESTS.assistRadius, CRESTS.headingCos);
   }
 
   /** Bends a throw into a target if it heads that way and passes near. bodyY is the height the target is measured at. */

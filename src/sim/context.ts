@@ -1,6 +1,5 @@
 // What every part of the simulation shares: state, seeded random numbers, events and the links between the parts.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
-import { HANDS } from '../config/hand';
 import { FIELD, WORLD, fieldEntry, fieldSpeedFactor, fieldWall } from '../config/field';
 import type { WeaponDef } from '../config/weapons';
 import { weaponById } from '../config/weapons';
@@ -96,10 +95,6 @@ export class SimContext {
     return ENEMIES[e.type].mass * (e.big ? BEHAVIOUR.big.mass : 1);
   }
 
-  /** Combined strength of the given players' hands. */
-  strengthOf(players: number[]): number {
-    let sum = 0;
-    for (const p of players) sum += HANDS[(this.loadout.handTier[p] ?? 1) - 1].strength;
-    return sum * this.weapons.gripStrength();
-  }
+  /** Combined strength of the given hands (hand numbers, see `Hands`). */
+  strengthOf(hands: number[]): number { return this.hands.strengthOf(hands); }
 }

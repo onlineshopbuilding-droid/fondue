@@ -9,7 +9,7 @@ import { BEHAVIOUR, ENEMIES } from '../../src/config/enemies';
 import { WORLD, perchX } from '../../src/config/field';
 import type { Sim } from '../../src/sim/sim';
 import type { Enemy } from '../../src/sim/types';
-import { battleSim, carryTo, eventsOf, flingUp, grabAt, place, runUntil } from './helpers';
+import { battleSim, eventsOf, flingUp, grabAt, place, runUntil, throwOntoHook } from './helpers';
 
 const kegs = (sim: Sim) => sim.s.projectiles.filter((q) => q.kind === 'bomb');
 
@@ -148,10 +148,11 @@ describe('a Keg Hauler on the eagle hook', () => {
     const below = place(sim, 'grunt', hx);
     const e = place(sim, 'bomber', 900);
     const hp = sim.s.gateHp;
-    carryTo(sim, e, hx, WORLD.perch.hookY);
+    throwOntoHook(sim, e);
+    const flown = runUntil(sim, () => e.st !== 'air', 120);
     expect(e.st).toBe('hooked');
     expect(e.armed).toBe(false);
-    const ev = [...sim.drainEvents(), ...runUntil(sim, () => kegs(sim).length === 0, 200)];
+    const ev = [...flown, ...sim.drainEvents(), ...runUntil(sim, () => kegs(sim).length === 0, 200)];
     expect(eventsOf(ev, 'kegLoose')).toHaveLength(1);
     const boom = eventsOf(ev, 'explosion');
     expect(boom).toHaveLength(1);
@@ -172,7 +173,8 @@ describe('a Keg Hauler on the eagle hook', () => {
     sim.loadout.stations.perch = true;
     const e = place(sim, 'bomber', 900);
     e.armed = false;
-    carryTo(sim, e, perchX(1280), WORLD.perch.hookY);
+    throwOntoHook(sim, e);
+    runUntil(sim, () => e.st !== 'air', 120);
     expect(e.st).toBe('hooked');
     expect(eventsOf(sim.drainEvents(), 'kegLoose')).toHaveLength(0);
     expect(kegs(sim)).toHaveLength(0);

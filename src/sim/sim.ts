@@ -7,6 +7,7 @@ import { SimContext } from './context';
 import { EnemyBehaviour } from './enemies';
 import { Flight } from './flight';
 import { Hands } from './hands';
+import { handIndex } from './physics';
 import { Projectiles } from './projectiles';
 import { Rng } from './rng';
 import type { RunSetup, RunStart } from './rules';
@@ -161,6 +162,8 @@ export class Sim {
     if (!connected) {
       this.ctx.hands.dropHeld(p);
       h.down = false;
+      const second = this.s.hands[this.handOf(p, 1)];
+      if (second) { this.ctx.hands.dropHeld(this.handOf(p, 1)); second.down = false; }
     }
     this.ctx.touchMeta();
   }
@@ -172,13 +175,17 @@ export class Sim {
     this.ctx.touchMeta();
   }
 
+  /** Number of a player's first (0) or second (1) hand, see `handIndex`. */
+  handOf(p: number, which = 0): number { return handIndex(p, which, this.s.meta.names.length); }
+
   command(c: Command) {
     const x = this.ctx;
     switch (c.k) {
-      case 'press': x.hands.press(c.p, c.x, c.y); break;
-      case 'release': x.hands.release(c.p, c.x, c.y, c.vx, c.vy); break;
+      case 'press': x.hands.press(this.handOf(c.p, c.hand), c.x, c.y); break;
+      case 'release': x.hands.release(this.handOf(c.p, c.hand), c.x, c.y, c.vx, c.vy); break;
+      case 'move': x.hands.move(this.handOf(c.p, c.hand), c.x, c.y); break;
       case 'fireSlot': x.weapons.fireSlot(c.p, c.slot); break;
-      case 'shake': x.hands.shake(c.p); break;
+      case 'shake': x.hands.shake(this.handOf(c.p, c.hand)); break;
       case 'pause': x.waves.setPaused(c.p, c.paused); break;
     }
   }

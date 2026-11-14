@@ -4,13 +4,13 @@ import { COOP, DIFFICULTIES, WAVES } from '../../src/config/waves';
 import { crestsFor } from '../../src/config/crests';
 import { ECONOMY } from '../../src/config/economy';
 import { WEAPONS, SHELL_FLIGHT, weaponById, type RollTier, type VolleyTier } from '../../src/config/weapons';
-import { WORLD, perchX } from '../../src/config/field';
+import { WORLD } from '../../src/config/field';
 import { SLOTS } from '../../src/config/slots';
 import { TUNING_DEFAULT } from '../../src/config/tuning';
 import { enemyCountForWave } from '../../src/sim/spawn';
 import { decodeSnapshot, encodeSnapshot } from '../../src/net/snapshot';
 import { PROPS } from '../../src/art/props';
-import { arm, battleSim, clearWave, eventsOf, fire, flingUp, grabAt, makeSim, place, runFor, runUntil, slotFor, wave } from './helpers';
+import { arm, battleSim, clearWave, eventsOf, fire, flingUp, grabAt, makeSim, place, runFor, runUntil, slotFor, throwOntoHook, wave } from './helpers';
 
 /** How far a Pothelm walks while a strong upward fling is in the air (about 0.89 s). */
 const WALK_IN_FLIGHT = ENEMIES.grunt.speed * 0.885;
@@ -393,15 +393,14 @@ describe('stations', () => {
     sim.loadout.stations.perch = true;
     const a = place(sim, 'grunt', 700);
     const b = place(sim, 'grunt', 760);
-    grabAt(sim, 0, a);
-    sim.step();
-    sim.command({ k: 'release', p: 0, x: perchX(1280), y: WORLD.perch.hookY, vx: 0, vy: 0 });
+    // v0.3 (C6): the hook wants an aimed throw; carrying a raider up and letting go is not enough.
+    throwOntoHook(sim, a);
+    runUntil(sim, () => a.st !== 'air', 120);
     expect(a.st).toBe('hooked');
-    grabAt(sim, 0, b);
-    sim.step();
-    sim.command({ k: 'release', p: 0, x: perchX(1280), y: WORLD.perch.hookY, vx: 0, vy: 0 });
-    expect(b.st).toBe('air');
-    const ev = runUntil(sim, () => a.dead, 300);
+    throwOntoHook(sim, b);
+    const flown = runUntil(sim, () => b.st !== 'air', 120);
+    expect(b.st).not.toBe('hooked');
+    const ev = [...flown, ...runUntil(sim, () => a.dead, 300)];
     expect(ev.some((x) => x.e === 'eagle')).toBe(true);
     expect(sim.s.crests).toBe(crestsFor('grunt'));
   });

@@ -3,6 +3,8 @@
  * `ENDLESS.buildRun` with a fresh profile) and lets a test change what it needs before the Sim starts.
  */
 import { ENEMIES, type EnemyType } from '../../src/config/enemies';
+import { WORLD, perchX } from '../../src/config/field';
+import { handStrength, massOfType, throwFactor } from '../../src/sim/physics';
 import type { Flags } from '../../src/config/flags';
 import { SLOTS } from '../../src/config/slots';
 import { TUNING_DEFAULT, type Tuning } from '../../src/config/tuning';
@@ -157,6 +159,20 @@ export function carryTo(sim: Sim, e: Enemy, x: number, y: number, vx = 0, vy = 0
   sim.setHand(p, x, y);
   sim.step();
   sim.command({ k: 'release', p, x, y, vx, vy });
+}
+
+/**
+ * An aimed throw onto the Eagle Perch (C6): grabbed, carried to `lead` world units left of the
+ * hook and flung flat so that its collar meets the hook. The swipe makes up for the raider's weight.
+ */
+export function throwOntoHook(sim: Sim, e: Enemy, p = 0, lead = 180, speed = 1000) {
+  const h = ENEMIES[e.type].height;
+  const t = lead / speed;
+  const drop = 0.5 * sim.tuning.gravity * t * t;
+  const hookX = perchX(sim.fieldW);
+  const y0 = WORLD.perch.hookY + 0.3 * h - drop;
+  const factor = throwFactor(massOfType(e.type, e.big, e.crow), handStrength(sim.loadout.handTier[p] ?? 1));
+  carryTo(sim, e, hookX - lead, y0 - 0.5 * h, speed / (sim.tuning.throwMult * factor), 0, p);
 }
 
 export function fire(sim: Sim, slot: number, p = 0): SimEvent[] {

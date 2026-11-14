@@ -17,7 +17,7 @@ export class Flight {
     e.y += e.vy * DT;
     e.rot += e.rotV * DT;
 
-    if (e.thrownBy >= 0 && this.ctx.stations.tryPerch(e, WORLD.perch.flySnapRadius)) return;
+    if (this.ctx.stations.tryPerch(e)) return;
     if (this.ctx.stations.tryPotInFlight(e)) return;
 
     if (e.x < WORLD.gateX + def.radius * 0.5) {

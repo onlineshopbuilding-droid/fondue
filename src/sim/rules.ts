@@ -83,13 +83,16 @@ export interface RunStatsData {
   goldEarned: number;
   /** Raider Crests left at the Eagle Perch in this run (capped per run). */
   crestsEarned: number;
+  /** Throws that came near the Eagle Perch, and those that landed on the hook (hit rate, `perchHitRate`). */
+  perchTries: number;
+  perchHits: number;
   throws: number;
   wavesCleared: number;
 }
 
 export const emptyStats = (): RunStatsData => ({
   kills: 0, killsByCause: {}, killsByType: {}, throwKillsByType: {}, kegsShaken: 0, kegBlasts: 0, kegBlastKills: 0,
-  weaponShots: {}, gateDamage: 0, goldEarned: 0, crestsEarned: 0, throws: 0, wavesCleared: 0,
+  weaponShots: {}, gateDamage: 0, goldEarned: 0, crestsEarned: 0, perchTries: 0, perchHits: 0, throws: 0, wavesCleared: 0,
 });
 
 /** The values a run starts with: a fresh level, a developer jump, or a wave being resumed. */

@@ -27,4 +27,6 @@ export const HAND_RULES = {
   minFollow: 0.3,
   /** Combined strength of the hands on a Yeti that lifts it off the ground (one hand from tier 4). */
   yetiLift: 2,
+  /** From this hand tier on a player has a second hand of their own for good (C9, variant 1). */
+  secondHandTier: 7,
 };
