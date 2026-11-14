@@ -1,4 +1,6 @@
 /** Text-only screens, kept apart from the UI logic so they are easy to edit. */
+import { firesOnItsOwn, type WeaponDef } from '../config/weapons';
+
 export interface HelpSlide {
   title: string;
   icon: string;
@@ -25,8 +27,16 @@ export const STATION_TIPS: Record<string, string> = {
   perch: 'Fling a raider onto the hook in the top right. Aim well: the eagle leaves a Raider Crest.',
 };
 
-/** Shown once per profile when a weapon first stands in a slot. */
-export const weaponTip = (name: string) => `${name} is on the keep. Just tap it to fire.`;
+/**
+ * Shown once per profile when a weapon first stands in a slot. It says how the weapon fires:
+ * tapped (Damage, Slow, Gate, Support), on its own (passive weapons), or on its own with a tap for
+ * a burst (the Marmot Sentry).
+ */
+export const weaponTip = (def: Pick<WeaponDef, 'name' | 'slot' | 'kind'>): string => {
+  if (firesOnItsOwn(def as WeaponDef)) return `${def.name} is on the keep. It fires on its own, no tap needed.`;
+  if (def.slot === 'passive') return `${def.name} is on the keep. It fires on its own; tap it for a quick burst.`;
+  return `${def.name} is on the keep. Just tap it to fire.`;
+};
 
 /** Shown once per profile at the start of the first fight. */
 export const FIRST_FIGHT_TIP = 'Hold the gate until the last wave is beaten. Gold you earn stays yours for the Keep Shop.';

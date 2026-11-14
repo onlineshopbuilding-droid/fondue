@@ -408,7 +408,7 @@ export class App implements ScreenContext, CoopRoomHost {
     if (this.profile.markTipSeen('firstFight')) this.toast(FIRST_FIGHT_TIP, 'tip', 5500);
     for (const id of meta.loadout.slotWeapon) {
       const def = id ? weaponById(id) : undefined;
-      if (def && this.profile.markTipSeen(`weapon:${def.id}`)) this.toast(weaponTip(def.name), 'tip', 5500);
+      if (def && this.profile.markTipSeen(`weapon:${def.id}`)) this.toast(weaponTip(def), 'tip', 5500);
     }
     // When the King explains this wave himself (a level hint), no tip on top.
     const level = meta.rules.level !== null ? levelOf(meta.rules.world, meta.rules.level) : undefined;
