@@ -406,7 +406,9 @@ export class GuestSession implements Session {
       const o = override.get(e.id);
       if (!o) return e;
       const p = o.p;
-      return { ...e, x: p.x, y: p.y, st: p.thrown ? 'air' as const : 'held' as const, heldBy: p.thrown ? [] : [o.hand], rot: e.rot };
+      // Keep every other holder the host reports (up to four hands), and add my predicted one.
+      const heldBy = p.thrown ? [] : e.heldBy.includes(o.hand) ? e.heldBy : [...e.heldBy, o.hand];
+      return { ...e, x: p.x, y: p.y, st: p.thrown ? 'air' as const : 'held' as const, heldBy, rot: e.rot };
     });
     const justLetGo = performance.now() - this.projReleasedAt < 500;
     const projectiles = v.projectiles.map((q) => {

@@ -142,10 +142,11 @@ export function encodeSnapshot(s: SimState): WireSnapshot {
     e: s.enemies.map((e) => {
       const flags = (e.hidden ? F_HIDDEN : 0) | (e.shieldOn ? F_SHIELD : 0) | (e.armed ? F_ARMED : 0)
         | (e.crow ? F_CROW : 0) | (e.big ? F_BIG : 0) | (e.frozenHeld || e.st === 'frozen' ? F_FROZEN : 0);
+      // Holders go last and take as many entries as there are: two players with two hands each
+      // can all hold the same raider, so the list must not be cut to a fixed length.
       return [
         e.id, ENEMY_TYPES.indexOf(e.type), STATES.indexOf(e.st), r1(e.x), r1(e.y), r2(e.rot), Math.round(e.lane), flags,
-        e.heldBy.length > 0 ? e.heldBy[0] : -1, e.heldBy.length > 1 ? e.heldBy[1] : -1,
-        r2(e.hp / e.maxHp),
+        r2(e.hp / e.maxHp), ...e.heldBy,
       ];
     }),
     q: s.projectiles.map((q) => [q.id, KINDS.indexOf(q.kind), r1(q.x), r1(q.y), r2(q.rot), r1(q.size), q.heldBy]),
@@ -178,7 +179,7 @@ export function decodeSnapshot(w: WireSnapshot): ViewState {
       id: a[0], type: ENEMY_TYPES[a[1]], st: STATES[a[2]], x: a[3], y: a[4], rot: a[5], lane: a[6],
       hidden: (a[7] & F_HIDDEN) !== 0, shield: (a[7] & F_SHIELD) !== 0, armed: (a[7] & F_ARMED) !== 0,
       crow: (a[7] & F_CROW) !== 0, big: (a[7] & F_BIG) !== 0, frozen: (a[7] & F_FROZEN) !== 0,
-      heldBy: [a[8], a[9]].filter((p) => p >= 0), hpFrac: a[10],
+      hpFrac: a[8], heldBy: a.slice(9),
     })),
     projectiles: w.q.map((a) => ({
       id: a[0], kind: KINDS[a[1]], x: a[2], y: a[3], rot: a[4], size: a[5], heldBy: a[6],
