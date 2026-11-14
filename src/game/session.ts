@@ -3,9 +3,11 @@
 import { ENEMIES } from '../config/enemies';
 import { DT, WORLD, fieldWall } from '../config/field';
 import type { ClientCommand, NetMessage } from '../net/protocol';
-import { decodeSnapshot, encodeSnapshot, interpolateViews, type ViewEnemy, type ViewState } from '../net/snapshot';
+import { PlayoutBuffer } from '../net/interp';
+import { decodeSnapshot, encodeSnapshot, type ViewEnemy, type ViewState } from '../net/snapshot';
 import type { Transport } from '../net/transport';
-import { followFactor, grabBonus, handStrength, launchVelocity, liftFlat, massOfType, springStep, throwFactor } from '../sim/physics';
+import { secondHandSimulated } from '../config/flags';
+import { followFactor, grabBonus, handIndex, handStrength, hasPermanentSecondHand, launchVelocity, liftFlat, massOfType, springStep, throwFactor } from '../sim/physics';
 import type { RunSetup } from '../sim/rules';
 import { Sim } from '../sim/sim';
 import type { Command, Meta, SimEvent } from '../sim/types';
@@ -22,10 +24,15 @@ export interface Session {
   meta(): Meta | null;
   drainEvents(): SimEvent[];
   send(c: ClientCommand): void;
-  setHand(x: number, y: number): void;
+  /** `hand` 1 is this player's second hand (C9); without it the first hand. */
+  setHand(x: number, y: number, hand?: number): void;
   /** Called by the input layer for instant local feedback. */
-  localPress(x: number, y: number): void;
-  localRelease(vx: number, vy: number): void;
+  localPress(x: number, y: number, hand?: number): void;
+  localRelease(vx: number, vy: number, hand?: number): void;
+  /** This player may grab with a second finger right now (hand tier 7, Helping Hand, or the laptop switch). */
+  secondHandReady(): boolean;
+  /** Index of this player's hand in `view().hands`: 0 = first, 1 = second hand. */
+  handSlot(hand: number): number;
   connection(): ConnectionState;
   pingMs(): number;
   dispose(): void;
@@ -66,6 +73,7 @@ export class HostSession implements Session {
   private lastUpdate = 0;
   /** Counts steps even while paused, so that a paused game keeps sending its state. */
   private stepCounter = 0;
+  private lastSnapStep = 0;
 
   constructor(setup: RunSetup, coop: boolean) {
     this.role = coop ? 'host' : 'solo';
@@ -131,10 +139,15 @@ export class HostSession implements Session {
       this.acc -= DT;
       steps++;
       this.stepCounter++;
-      if (this.link && this.stepCounter % SNAPSHOT_EVERY_STEPS === 0) this.broadcast();
     }
     if (steps === MAX_CATCHUP_TICKS) this.acc = 0;
     this.collect();
+    // One snapshot per frame at most: a slow frame that ran several steps sends only the newest state,
+    // not a bunch of pictures that arrive together (the guest places them on the host clock anyway).
+    if (this.link && this.stepCounter - this.lastSnapStep >= SNAPSHOT_EVERY_STEPS) {
+      this.lastSnapStep = this.stepCounter;
+      this.broadcast();
+    }
     if (this.link) {
       if (this.netEvents.length > 0) this.broadcast();
       this.pingTimer += dtMs;
@@ -176,12 +189,21 @@ export class HostSession implements Session {
     this.collect();
   }
 
-  setHand(x: number, y: number) { this.sim.setHand(0, x, y); }
-  localPress(x: number, y: number) { this.send({ k: 'press', x, y }); }
-  localRelease(vx: number, vy: number) {
-    const h = this.sim.s.hands[0];
-    this.send({ k: 'release', x: h.x, y: h.y, vx, vy });
+  private second = { x: 0, y: 0 };
+
+  setHand(x: number, y: number, hand = 0) {
+    if (hand === 0) { this.sim.setHand(0, x, y); return; }
+    this.second = { x, y };
+    this.sim.command({ k: 'move', p: 0, hand, x, y });
   }
+  localPress(x: number, y: number, hand = 0) { this.send(hand === 0 ? { k: 'press', x, y } : { k: 'press', x, y, hand }); }
+  localRelease(vx: number, vy: number, hand = 0) {
+    const h = this.sim.s.hands[this.sim.handOf(0, hand)] ?? (hand === 0 ? undefined : this.second);
+    if (!h) return;
+    this.send(hand === 0 ? { k: 'release', x: h.x, y: h.y, vx, vy } : { k: 'release', x: h.x, y: h.y, vx, vy, hand });
+  }
+  secondHandReady(): boolean { return this.sim.ctx.hands.secondHandReady(0); }
+  handSlot(hand: number): number { return this.sim.handOf(0, hand); }
 
   connection(): ConnectionState {
     if (this.role === 'solo') return 'none';
@@ -191,7 +213,7 @@ export class HostSession implements Session {
   dispose() { this.link?.close(); this.link = null; }
 }
 
-const INTERP_DELAY_MS = 100;
+// The guest draws on the host's clock a self-adjusting delay behind it (src/net/interp.ts, PlayoutBuffer).
 
 interface Timed { at: number; view: ViewState; }
 
@@ -213,8 +235,7 @@ interface Prediction {
   acc: number;
 }
 
-/** Events are heard this late on the guest, so they land together with the delayed picture. */
-const EVENT_DELAY_MS = 100;
+/** Events are heard as late as the picture runs behind (the playout delay), so they land together with it. */
 
 
 /** Shows what the host sends and adds local prediction so that throwing feels immediate. */
@@ -222,6 +243,7 @@ export class GuestSession implements Session {
   readonly role = 'guest' as const;
   readonly me = 1;
   private buffer: Timed[] = [];
+  private playout = new PlayoutBuffer();
   private curMeta: Meta | null = null;
   private events: { at: number; ev: SimEvent }[] = [];
   private lost = false;
@@ -233,10 +255,15 @@ export class GuestSession implements Session {
   private ping = 0;
   private pingTimer = 0;
   private handTimer = 0;
-  private handX = WORLD.width / 2;
-  private handY = WORLD.height / 2;
+  /** Where this player's hands are (index 0 = first hand, 1 = second hand, C9), and whether each is down. */
+  private hx = [WORLD.width / 2, -200];
+  private hy = [WORLD.height / 2, -200];
+  private down = [false, false];
+  /** Bumped when Helping Hand lends a second hand: until then (ms) a second finger may grab. */
+  private helperUntil = 0;
   private latest: ViewState | null = null;
-  private pred: Prediction | null = null;
+  /** The raider each hand is predicted to hold. */
+  private preds: (Prediction | null)[] = [null, null];
   private thrown: Prediction[] = [];
 
   onDisconnect: () => void = () => {};
@@ -254,18 +281,20 @@ export class GuestSession implements Session {
         const view = decodeSnapshot(m.s);
         this.buffer.push({ at: performance.now(), view });
         if (this.buffer.length > 40) this.buffer.shift();
+        this.playout.push(view, performance.now());
         break;
       }
       case 'ev': {
-        const at = performance.now() + EVENT_DELAY_MS;
+        const at = performance.now() + this.playout.delayMs;
         for (const ev of m.l) this.events.push({ at, ev });
         break;
       }
       case 'm': this.curMeta = m.m; break;
       case 'start':
         this.buffer = [];
+        this.playout.reset();
         this.curMeta = null;
-        this.pred = null;
+        this.preds = [null, null];
         this.thrown = [];
         this.latest = null;
         this.onRestart();
@@ -285,7 +314,9 @@ export class GuestSession implements Session {
     this.handTimer += dtMs;
     if (this.handTimer >= 16) {
       this.handTimer = 0;
-      this.link.send({ k: 'h', x: Math.round(this.handX * 10) / 10, y: Math.round(this.handY * 10) / 10 });
+      this.link.send({ k: 'h', x: Math.round(this.hx[0] * 10) / 10, y: Math.round(this.hy[0] * 10) / 10 });
+      // The second hand travels as a command, only while its finger is down.
+      if (this.down[1]) this.send({ k: 'move', hand: 1, x: Math.round(this.hx[1] * 10) / 10, y: Math.round(this.hy[1] * 10) / 10 });
     }
     this.pingTimer += dtMs;
     if (this.pingTimer > 1000) { this.pingTimer = 0; this.link.send({ k: 'ping', t: performance.now() }); }
@@ -303,44 +334,38 @@ export class GuestSession implements Session {
   }
 
   private computeView(): ViewState | null {
-    if (this.buffer.length === 0) return null;
-    const renderAt = performance.now() - INTERP_DELAY_MS;
-    let a = this.buffer[0];
-    let b = this.buffer[0];
-    for (let i = 0; i < this.buffer.length; i++) {
-      b = this.buffer[i];
-      if (b.at >= renderAt) break;
-      a = b;
-    }
-    if (a === b || b.at === a.at) return b.view;
-    const f = Math.max(0, Math.min(1, (renderAt - a.at) / (b.at - a.at)));
-    return interpolateViews(a.view, b.view, f);
+    return this.playout.sample(performance.now());
   }
 
   private tuning() { return this.curMeta?.tuning; }
 
   private wall() { return fieldWall(this.curMeta?.fieldW ?? WORLD.width); }
 
+  /** Number of a hand of mine in the host's numbering (see `handIndex`). */
+  handSlot(hand: number): number { return handIndex(this.me, hand, this.curMeta?.names.length ?? 2); }
+
   private stepPrediction(dt: number) {
     const t = this.tuning();
     if (!t) return;
     const newest = this.buffer[this.buffer.length - 1]?.view;
-    const p = this.pred;
-    if (p && newest) {
-      const auth = newest.enemies.find((e) => e.id === p.id);
-      if (auth && auth.heldBy.includes(this.me)) p.confirmed = true;
-      // The host said no, someone else has it, or the enemy died in the meantime.
-      const giveUp = performance.now() - p.pressedAt > 450 + this.ping;
-      const takenByOther = !!auth && auth.heldBy.length > 0 && !auth.heldBy.includes(this.me);
-      if (!auth || takenByOther || (!p.confirmed && giveUp) || (p.confirmed && !auth.heldBy.includes(this.me))) this.pred = null;
-    }
-    if (this.pred) {
+    for (let i = 0; i < this.preds.length; i++) {
+      const p = this.preds[i];
+      const mine = this.handSlot(i);
+      if (p && newest) {
+        const auth = newest.enemies.find((e) => e.id === p.id);
+        if (auth && auth.heldBy.includes(mine)) p.confirmed = true;
+        // The host said no, someone else has it, or the enemy died in the meantime.
+        const giveUp = performance.now() - p.pressedAt > 450 + this.ping;
+        const takenByOther = !!auth && auth.heldBy.length > 0 && !auth.heldBy.includes(mine);
+        if (!auth || takenByOther || (!p.confirmed && giveUp) || (p.confirmed && !auth.heldBy.includes(mine))) this.preds[i] = null;
+      }
+      const q = this.preds[i];
+      if (!q) continue;
       // Fixed steps like the host's: a spring integrated with long frames blows up.
-      const q = this.pred;
       q.acc += Math.min(dt, 0.1);
       while (q.acc >= DT) {
         q.acc -= DT;
-        springStep(q, this.handX + q.offX, this.handY + q.offY, t.holdSpring * followFactor(q.mass, this.strength()), DT);
+        springStep(q, this.hx[i] + q.offX, this.hy[i] + q.offY, t.holdSpring * followFactor(q.mass, this.strength(i)), DT);
         const ground = WORLD.groundY + q.lane;
         if (q.y > ground) { q.y = ground; q.vy = Math.min(0, q.vy); }
       }
@@ -369,17 +394,25 @@ export class GuestSession implements Session {
   view(): ViewState | null {
     const v = this.latest;
     if (!v) return null;
-    const hands = v.hands.map((h, i) => (i === this.me ? { ...h, x: this.handX, y: this.handY } : h));
-    const override = new Map<number, Prediction>();
-    if (this.pred) override.set(this.pred.id, this.pred);
-    for (const b of this.thrown) override.set(b.id, b);
+    const slots = [this.handSlot(0), this.handSlot(1)];
+    const hands = v.hands.map((h, i) => {
+      const k = slots.indexOf(i);
+      return k >= 0 ? { ...h, x: this.hx[k], y: this.hy[k] } : h;
+    });
+    const override = new Map<number, { p: Prediction; hand: number }>();
+    this.preds.forEach((p, k) => { if (p) override.set(p.id, { p, hand: slots[k] }); });
+    for (const b of this.thrown) override.set(b.id, { p: b, hand: -1 });
     const enemies = override.size === 0 ? v.enemies : v.enemies.map((e) => {
-      const p = override.get(e.id);
-      if (!p) return e;
-      return { ...e, x: p.x, y: p.y, st: p.thrown ? 'air' as const : 'held' as const, heldBy: p.thrown ? [] : [this.me], rot: e.rot };
+      const o = override.get(e.id);
+      if (!o) return e;
+      const p = o.p;
+      return { ...e, x: p.x, y: p.y, st: p.thrown ? 'air' as const : 'held' as const, heldBy: p.thrown ? [] : [o.hand], rot: e.rot };
     });
     const justLetGo = performance.now() - this.projReleasedAt < 500;
-    const projectiles = v.projectiles.map((q) => (q.heldBy === this.me && !justLetGo ? { ...q, x: this.handX, y: this.handY } : q));
+    const projectiles = v.projectiles.map((q) => {
+      const k = slots.indexOf(q.heldBy);
+      return k >= 0 && !justLetGo ? { ...q, x: this.hx[k], y: this.hy[k] } : q;
+    });
     return { ...v, hands, enemies, projectiles };
   }
 
@@ -388,26 +421,40 @@ export class GuestSession implements Session {
     const now = performance.now();
     let n = 0;
     while (n < this.events.length && this.events[n].at <= now) n++;
-    return this.events.splice(0, n).map((q) => q.ev);
+    const out = this.events.splice(0, n).map((q) => q.ev);
+    for (const ev of out) if (ev.e === 'extraHand') this.helperUntil = now + ev.seconds * 1000;
+    return out;
   }
 
   send(c: ClientCommand) { this.link.send({ k: 'c', c }); }
 
-  /** Strength of this player's hand, as the host's rules give it. */
-  private strength(): number { return handStrength(this.curMeta?.loadout.handTier[this.me] ?? 1); }
-  setHand(x: number, y: number) { this.handX = x; this.handY = y; }
+  private myTier(): number { return this.curMeta?.loadout.handTier[this.me] ?? 1; }
 
-  localPress(x: number, y: number) {
-    this.send({ k: 'press', x, y });
+  /** Strength of one of this player's hands, as the host's rules give it (a lent hand counts as a full one here). */
+  private strength(_hand = 0): number { return handStrength(this.myTier()); }
+
+  secondHandReady(): boolean {
+    return hasPermanentSecondHand(this.myTier()) || secondHandSimulated(this.curMeta?.flags) || performance.now() < this.helperUntil;
+  }
+
+  setHand(x: number, y: number, hand = 0) { this.hx[hand] = x; this.hy[hand] = y; }
+
+  localPress(x: number, y: number, hand = 0) {
+    if (hand > 0 && !this.secondHandReady()) return;
+    this.down[hand] = true;
+    this.hx[hand] = x; this.hy[hand] = y;
+    if (hand > 0) this.send({ k: 'move', hand, x, y });
+    this.send(hand === 0 ? { k: 'press', x, y } : { k: 'press', x, y, hand });
     const v = this.latest;
     if (!v || v.phase !== 'battle') return;
     // Same order as the host: a bomb within reach is taken before any enemy.
     const pad = (this.tuning()?.grabRadius ?? 30) * 0.5 + 44;
     if (v.projectiles.some((q) => q.kind === 'bomb' && q.heldBy < 0 && Math.hypot(q.x - x, q.y - y) < pad)) return;
-    const target = this.pickEnemy(v.enemies, x, y);
+    const other = this.preds[1 - hand]?.id ?? -1;
+    const target = this.pickEnemy(v.enemies.filter((e) => e.id !== other), x, y);
     if (!target) return;
     const def = ENEMIES[target.type];
-    this.pred = {
+    this.preds[hand] = {
       id: target.id, x: target.x, y: target.y, vx: 0, vy: 0,
       offX: Math.max(-def.radius, Math.min(def.radius, target.x - x)),
       offY: Math.max(0, Math.min(def.height, target.y - y)),
@@ -433,18 +480,22 @@ export class GuestSession implements Session {
     return best;
   }
 
-  localRelease(vx: number, vy: number) {
-    this.send({ k: 'release', x: this.handX, y: this.handY, vx, vy });
+  localRelease(vx: number, vy: number, hand = 0) {
+    if (hand > 0 && !this.down[hand]) return;
+    this.down[hand] = false;
+    const hx = this.hx[hand];
+    const hy = this.hy[hand];
+    this.send(hand === 0 ? { k: 'release', x: hx, y: hy, vx, vy } : { k: 'release', x: hx, y: hy, vx, vy, hand });
     this.projReleasedAt = performance.now();
     const t = this.tuning();
-    const p = this.pred;
-    this.pred = null;
+    const p = this.preds[hand];
+    this.preds[hand] = null;
     if (!p || !t) return;
     // The host starts the throw from hand plus grip offset, not from where the spring lagged to.
-    p.x = Math.max(WORLD.gateX + 10, Math.min(this.wall() - 10, this.handX + p.offX));
-    p.y = Math.min(this.handY + p.offY, WORLD.groundY + p.lane);
+    p.x = Math.max(WORLD.gateX + 10, Math.min(this.wall() - 10, hx + p.offX));
+    p.y = Math.min(hy + p.offY, WORLD.groundY + p.lane);
     // The same functions the host uses, so the prediction flies the same arc.
-    const v = launchVelocity(vx, vy, t, throwFactor(p.mass, this.strength()));
+    const v = launchVelocity(vx, vy, t, throwFactor(p.mass, this.strength(hand)));
     p.vx = v.vx; p.vy = v.vy;
     const lift = liftFlat(p.y, WORLD.groundY + p.lane, p.vx, p.vy);
     if (lift) { p.y = lift.y; p.vy = lift.vy; }
