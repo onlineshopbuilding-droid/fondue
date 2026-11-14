@@ -1,11 +1,17 @@
 name: Deploy to GitHub Pages
 
 # One site, several builds:
-#   /fondue/          the game from main
-#   /fondue/classic/  the frozen alpha from the branch "classic" (tag v0-alpha)
-#   /fondue/dev/      the developer overview, one HTML file from scripts/dev-page.ts
+#   /fondue/            the game from main
+#   /fondue/classic/    the frozen alpha from the branch "classic" (tag v0-alpha, v0.1)
+#   /fondue/dev/        the developer overview, one HTML file from scripts/dev-page.ts
+#   /fondue/v0.2/       the frozen v0.2 from the branch "v0.2" (tag v0.2)
+#   /fondue/next/       the next version in progress from the branch "v0.3-dev", for testing
+#   /fondue/next/dev/   the developer overview of that version
 # Each build needs its own base path, otherwise its files do not load.
-# After a change on "classic", start this workflow by hand (Run workflow, branch main).
+# All builds share one origin and so one browser storage; v0.3 keeps its save under its own keys (fondue.v3.*).
+# The Pages environment only accepts runs from main, so a change on "classic", "v0.2" or "v0.3-dev"
+# goes live when this workflow is started by hand: gh workflow run deploy.yml --ref main
+# (or Actions, Run workflow, branch main).
 on:
   push:
     branches: [main]
@@ -48,6 +54,69 @@ jobs:
         run: |
           npm ci
           npx vite build --base=/fondue/classic/ --outDir ../dist/classic --emptyOutDir
+
+      - name: Check out the frozen v0.2
+        uses: actions/checkout@v4
+        with:
+          ref: v0.2
+          path: .v02-src
+      - name: Build v0.2 into /v0.2/
+        working-directory: .v02-src
+        run: |
+          npm ci
+          npx vite build --base=/fondue/v0.2/ --outDir ../dist/v0.2 --emptyOutDir
+
+      # The next version is work in progress. A broken state on v0.3-dev must never stop main from
+      # going live: these steps may fail, and then /next/ shows a short notice instead of vanishing.
+      - name: Check out the next version (v0.3-dev)
+        id: next-src
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: v0.3-dev
+          path: .next-src
+      - name: Build the next version into /next/
+        id: next
+        if: steps.next-src.outcome == 'success'
+        continue-on-error: true
+        working-directory: .next-src
+        run: |
+          npm ci
+          npx vite build --base=/fondue/next/ --outDir ../dist/next --emptyOutDir
+      - name: Build the developer overview of the next version into /next/dev/
+        id: next-dev
+        if: steps.next.outcome == 'success'
+        continue-on-error: true
+        working-directory: .next-src
+        run: node scripts/dev-page.ts ../dist/next/dev
+      - name: Put a notice page in place of what did not build
+        if: steps.next.outcome != 'success' || steps.next-dev.outcome != 'success'
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GAME_OK: ${{ steps.next.outcome == 'success' }}
+        run: |
+          # notice <folder> <headline>: a small page that says what failed and links to this run.
+          notice() {
+            mkdir -p "$1"
+            cat > "$1/index.html" <<EOF
+          <!doctype html>
+          <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>$2</title></head>
+          <body style="font-family: sans-serif; padding: 24px">
+          <h1>$2</h1>
+          <p>See <a href="$RUN_URL">GitHub Actions</a>. The live game at <a href="/fondue/">/fondue/</a> is not affected.</p>
+          </body></html>
+          EOF
+          }
+          if [ "$GAME_OK" != "true" ]; then
+            echo "::warning title=/next/ not built::The build of v0.3-dev failed; /fondue/next/ shows a notice page. See this run's log."
+            rm -rf dist/next
+            notice dist/next "v0.3 build failed, see Actions"
+          else
+            echo "::warning title=/next/dev/ not built::The developer overview of v0.3-dev failed; /fondue/next/dev/ shows a notice page."
+            rm -rf dist/next/dev
+            notice dist/next/dev "v0.3 developer overview failed, see Actions"
+          fi
 
       - uses: actions/upload-pages-artifact@v3
         with:
