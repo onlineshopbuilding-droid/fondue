@@ -1,6 +1,6 @@
 /**
  * Builds the developer overview, one self-contained HTML file, from the repo's configuration and
- * documents. GitHub Actions runs it after the game build, so the page is published at /fondue/dev/.
+ * documents. GitHub Actions runs it after the game build; the v0.3 page is published at /fondue/next/dev/.
  *   npm run dev-page                  writes dist/dev/index.html
  *   node scripts/dev-page.ts <folder> writes <folder>/index.html
  * The page itself is made in scripts/dev-page/page.ts.
