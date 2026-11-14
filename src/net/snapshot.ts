@@ -79,9 +79,9 @@ export interface ViewState {
 }
 
 const STATES: EnemyState[] = ['walk', 'attack', 'hop', 'float', 'held', 'air', 'stun', 'frozen', 'hooked', 'cooking', 'flee'];
-const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt', 'shell', 'frostShell', 'fireShell'];
+const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt', 'shell', 'frostShell', 'fireShell', 'snowball', 'pinecone', 'hornet'];
 const PHASES: Phase[] = ['banner', 'battle', 'victory', 'intermission', 'defeat', 'gameover', 'runWon'];
-const ZONES: Zone['kind'][] = ['fire', 'cheese'];
+const ZONES: Zone['kind'][] = ['fire', 'cheese', 'snow', 'hotCheese'];
 
 const F_HIDDEN = 1;
 const F_SHIELD = 2;

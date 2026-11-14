@@ -743,5 +743,5 @@ describe('disconnect handling', () => {
 
 // The mortar's slot is the gate arm: sanity check for the helpers used above.
 it('helpers put each weapon into a slot of its own type', () => {
-  for (const w of WEAPONS) expect(SLOTS[slotFor(w.id)].type).toBe(w.slotType);
+  for (const w of WEAPONS) expect(SLOTS[slotFor(w.id)].role).toBe(w.slot);
 });

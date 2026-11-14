@@ -3,7 +3,7 @@
  * by then. Quick-start runs are developer runs: they reach neither the scores nor the stars.
  *
  * Columns: day; gold and offerings in the purse; gateTier (0 to 4); slots = weapon id per slot
- * (wall foot, wall, gate arm, shrine, tower roof) or null; tiers = tier of each owned weapon;
+ * (damage, slow, gate, support, passive; see src/config/slots.ts) or null; tiers = tier of each owned weapon;
  * cauldron and perch = offering sites built; hand = hand tier.
  */
 export interface QuickStart {
@@ -21,20 +21,20 @@ export interface QuickStart {
 export const QUICK_STARTS: QuickStart[] = [
   {
     day: 10, gold: 850, offerings: 40, gateTier: 1,
-    slots: ['wheel', 'stomper', 'mortar', 'comet', null],
-    tiers: { wheel: 1, stomper: 1, mortar: 1, comet: 2 },
+    slots: ['wheel', 'cheese', 'mortar', 'midas', null],
+    tiers: { wheel: 1, cheese: 1, mortar: 1, midas: 2 },
     cauldron: true, perch: false, hand: 1,
   },
   {
     day: 20, gold: 2100, offerings: 45, gateTier: 2,
-    slots: ['wheel', 'stomper', 'bellows', 'comet', 'bolter'],
-    tiers: { wheel: 3, stomper: 3, bellows: 2, comet: 3, bolter: 1 },
+    slots: ['comet', 'frost', 'mortar', 'beacon', 'bolter'],
+    tiers: { comet: 3, frost: 2, mortar: 3, beacon: 2, bolter: 1 },
     cauldron: true, perch: false, hand: 2,
   },
   {
     day: 30, gold: 15000, offerings: 100, gateTier: 3,
-    slots: ['wheel', 'stomper', 'bellows', 'comet', 'bolter'],
-    tiers: { wheel: 4, stomper: 4, bellows: 4, comet: 4, bolter: 4 },
+    slots: ['stomper', 'cuckoo', 'alphorn', 'mender', 'bell'],
+    tiers: { stomper: 4, cuckoo: 4, alphorn: 4, mender: 4, bell: 4 },
     cauldron: true, perch: true, hand: 2,
   },
 ];

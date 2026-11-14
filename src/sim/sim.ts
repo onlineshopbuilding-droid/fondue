@@ -45,6 +45,7 @@ export class Sim {
       hands: Array.from({ length: n }, newHand),
       cooldowns: [0, 0, 0, 0, 0], cooldownMax: [0, 0, 0, 0, 0], delayed: [],
       goldRushT: 0, goldRushFactor: 1, beaconT: 0, airStopT: 0, sentryT: 1, sentryBurst: 0,
+      extraHandT: new Array(n).fill(0), extraHandStrength: 0, gripT: 0, gripStrength: 1, gripLethal: 1, mendT: 0, mendRate: 0,
       spawnQueue: [], spawned: 0, perchBusy: 0, potBusy: 0, potMax: 0, nightfall: false, hold: false,
       nextId: 1, seed: setup.seed, rngState: setup.seed,
       dayKills: 0, dayGold: 0, dayOfferings: 0, dayScore: 0, paused: false,

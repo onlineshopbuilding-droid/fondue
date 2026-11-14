@@ -473,6 +473,16 @@ export class Bot {
         const grabbable = all.filter((e) => ENEMIES[e.type].grabbable && !tough(e) && !e.shieldOn).length;
         return grabbable >= k.minCrowd + 2;
       }
+      case 'drift': return this.crowd(sim, (t as { halfWidth: number }).halfWidth, true).n >= k.minCrowd;
+      case 'toll': return this.crowd(sim, (t as { radius: number }).radius, true).n >= k.minCrowd;
+      case 'helper':
+      case 'grip': return all.filter((e) => ENEMIES[e.type].grabbable).length >= k.minCrowd + 1;
+      case 'mend': return s.gateMax > 0 && s.gateHp / s.gateMax < (k.weaponWise ? 0.7 : 0.95);
+      // Passive weapons fire on their own; a tap rarely adds anything.
+      case 'lob':
+      case 'swarm': return false;
+      case 'cascade': return this.nearGate(sim, 300, true) >= 1;
+      case 'swing': return this.nearGate(sim, (t as { reach: number }).reach + 40, true) >= 1;
     }
   }
 

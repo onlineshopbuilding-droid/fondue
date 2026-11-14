@@ -122,7 +122,7 @@ export function skipToMarket(sim: Sim) {
 export function slotFor(weapon: string): number {
   const def = weaponById(weapon);
   if (!def) throw new Error(`unknown weapon ${weapon}`);
-  return SLOTS.findIndex((s) => s.type === def.slotType);
+  return SLOTS.findIndex((s) => s.role === def.slot);
 }
 
 /** Puts a weapon at a tier into its slot (or the given one) and returns the slot. */

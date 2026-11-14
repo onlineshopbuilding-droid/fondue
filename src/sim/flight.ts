@@ -23,7 +23,7 @@ export class Flight {
     if (e.x < WORLD.gateX + def.radius * 0.5) {
       e.x = WORLD.gateX + def.radius * 0.5;
       const sp = Math.abs(e.vx);
-      if (sp >= this.ctx.tuning.lethalImpact * 1.1) {
+      if (sp >= this.ctx.tuning.lethalImpact * 1.1 * this.ctx.weapons.lethalFactor()) {
         this.landLethal(e, sp);
         return;
       }
@@ -41,7 +41,7 @@ export class Flight {
       this.ctx.combat.shatter(e, e.thrownBy, this.ctx.weapons.shatterSpread());
       return;
     }
-    const lethalAt = e.crow ? this.ctx.tuning.lethalImpact * BEHAVIOUR.crow.lethalShare : this.ctx.tuning.lethalImpact;
+    const lethalAt = (e.crow ? this.ctx.tuning.lethalImpact * BEHAVIOUR.crow.lethalShare : this.ctx.tuning.lethalImpact) * this.ctx.weapons.lethalFactor();
     if (sp >= lethalAt) {
       this.landLethal(e, sp);
       return;

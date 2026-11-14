@@ -63,7 +63,7 @@ export class SimContext {
     return id ? weaponById(id) ?? null : null;
   }
 
-  /** Tier of a weapon in this run, 1 to 5. */
+  /** Tier of a weapon in this run, 1 to 7. */
   tierOf(weaponId: string): number { return this.loadout.weaponTier[weaponId] ?? 1; }
 
   /** The slot a weapon sits in, or -1. */
@@ -99,6 +99,6 @@ export class SimContext {
   strengthOf(players: number[]): number {
     let sum = 0;
     for (const p of players) sum += HANDS[(this.loadout.handTier[p] ?? 1) - 1].strength;
-    return sum;
+    return sum * this.weapons.gripStrength();
   }
 }

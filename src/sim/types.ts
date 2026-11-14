@@ -60,7 +60,8 @@ export interface Enemy {
   big: boolean;
 }
 
-export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell' | 'frostShell' | 'fireShell';
+export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell' | 'frostShell' | 'fireShell'
+  | 'snowball' | 'pinecone' | 'hornet';
 
 export interface Projectile {
   id: number;
@@ -100,7 +101,8 @@ export interface Projectile {
 /** A patch of road that does something to whoever stands in it. */
 export interface Zone {
   id: number;
-  kind: 'fire' | 'cheese';
+  /** fire burns; cheese (Sticky Fondue) slows and may burn; snow (Snowdrift Cannon) slows; hotCheese (Cheese Cascade) scalds before the gate. */
+  kind: 'fire' | 'cheese' | 'snow' | 'hotCheese';
   x: number;
   halfWidth: number;
   /** Seconds left, and how long it lasts in total. */
@@ -208,6 +210,19 @@ export interface SimState {
   /** Seconds until the sentry shoots on its own again, and shots left in a burst. */
   sentryT: number;
   sentryBurst: number;
+  /**
+   * Helping Hand: seconds each player still has a second hand (index = player), and that hand's
+   * strength as a share of the player's own hand. Read by the hand code (package P-Hände).
+   */
+  extraHandT: number[];
+  extraHandStrength: number;
+  /** Iron Grip: seconds left, hand strength factor, and factor on the lethal impact speed (below 1 = easier kills). */
+  gripT: number;
+  gripStrength: number;
+  gripLethal: number;
+  /** Mending Horn: seconds the gate still mends, and how much of its full strength per second. */
+  mendT: number;
+  mendRate: number;
   spawnQueue: SpawnEntry[];
   spawned: number;
   /** Seconds until the eagle hook is free. */
@@ -263,6 +278,15 @@ export type SimEvent =
   | { e: 'beacon'; seconds: number }
   | { e: 'thorns'; reach: number }
   | { e: 'sentryShot'; x: number; y: number; tx: number; ty: number }
+  | { e: 'toll'; x: number; radius: number }
+  | { e: 'extraHand'; seconds: number }
+  | { e: 'grip'; seconds: number }
+  | { e: 'mend'; amount: number }
+  | { e: 'cascade'; halfWidth: number }
+  | { e: 'logSwing'; reach: number }
+  | { e: 'catapult'; x: number; y: number }
+  | { e: 'hive'; x: number; y: number }
+  | { e: 'snowdrift'; x: number; y: number }
   | { e: 'eagle'; x: number; y: number; id: number }
   | { e: 'splash'; x: number; y: number; etype: EnemyType }
   | { e: 'cheese'; x: number; y: number; etype: EnemyType }

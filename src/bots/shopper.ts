@@ -1,7 +1,8 @@
 // The market between days for a scripted player: what it buys and in which order, by skill.
 // It reads only what the market screen shows (prices, locks, what stands on the keep) and buys with `buy`.
 import { SLOTS } from '../config/slots';
-import { weaponsForSlot, type SlotType, type WeaponDef } from '../config/weapons';
+import { weaponsForSlot, type SlotRole, type WeaponDef } from '../config/weapons';
+import { runWeaponGold } from '../sim/shop';
 import type { Sim } from '../sim/sim';
 import type { BotSkill } from './skills';
 
@@ -37,6 +38,15 @@ export function weaponStrength(def: WeaponDef, tier: number): number {
     case 'volley': { const r = def.tiers[i]; return (r.bolts * r.damage * r.volleys * (r.pierce ? 0.7 : 0.5)) / cd; }
     case 'sentry': { const r = def.tiers[i]; return r.damage / r.every + (r.burst * r.damage) / cd; }
     case 'beacon': { const r = def.tiers[i]; return (hits(r.radius * 2) * r.damage * r.seconds * 0.8 + r.flameSeconds * 45) / cd; }
+    case 'drift': { const r = def.tiers[i]; return (hits(r.halfWidth * 2) * r.drifts * r.seconds * (1 - r.slow) * 20 * (r.wholeRoad ? 2 : 1)) / cd; }
+    case 'toll': { const r = def.tiers[i]; return (hits(r.radius * 2) * r.tolls * (r.damage + r.stun * 20)) / cd; }
+    case 'helper': { const r = def.tiers[i]; return (r.seconds * r.strength * 30) / cd; }
+    case 'grip': { const r = def.tiers[i]; return (r.seconds * (r.strength - 1 + (1 - r.lethal)) * 40) / cd; }
+    case 'mend': { const r = def.tiers[i]; return ((r.heal + r.regen * r.seconds) * 1500) / cd; }
+    case 'lob': { const r = def.tiers[i]; return (hits(r.radius * 2) * r.cones * (r.damage + r.stun * 20)) / cd; }
+    case 'swarm': { const r = def.tiers[i]; return (r.hornets * r.damage * r.stings) / cd; }
+    case 'cascade': { const r = def.tiers[i]; return (hits(r.halfWidth * 2) * r.seconds * (r.dps + (1 - r.slow) * 20)) / cd; }
+    case 'swing': { const r = def.tiers[i]; return (hits(r.reach) * r.swings * (r.damage + r.push * 0.1)) / cd; }
   }
 }
 
@@ -48,7 +58,7 @@ export function weaponStrength(def: WeaponDef, tier: number): number {
  */
 export function preferredWeapon(shop: BotSkill['shop'], offered: WeaponDef[], tierOf: (id: string) => number): WeaponDef | null {
   if (offered.length === 0) return null;
-  if (shop === 'random') return [...offered].sort((a, b) => a.buyGold - b.buyGold)[0];
+  if (shop === 'random') return [...offered].sort((a, b) => runWeaponGold(a) - runWeaponGold(b))[0];
   if (shop === 'order') return offered[0];
   let best = offered[0];
   for (const w of offered) if (weaponStrength(w, tierOf(w.id)) > weaponStrength(best, tierOf(best.id))) best = w;
@@ -91,7 +101,7 @@ export class BotShopper {
   }
 
   private offeredFor(sim: Sim, slot: number): WeaponDef[] {
-    const type: SlotType = SLOTS[slot].type;
+    const type: SlotRole = SLOTS[slot].role;
     return weaponsForSlot(type).filter((w) => {
       const r = sim.quote(`weapon:${slot}:${w.id}`).reason;
       return r !== 'locked' && r !== 'unknown';
