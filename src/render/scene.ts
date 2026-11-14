@@ -44,7 +44,7 @@ export interface SceneHooks {
 
 interface HandView { img: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; }
 
-const PROJ_KEYS = { bomb: 'bomb', stone: 'stone', bolt: 'bolt', wheel: 'wheel', comet: 'comet', slab: 'slab', roofBolt: 'roofBolt', shell: 'shell', frostShell: 'shell', fireShell: 'shell' } as const;
+const PROJ_KEYS = { bomb: 'bomb', stone: 'stone', bolt: 'bolt', wheel: 'wheel', comet: 'comet', slab: 'slab', roofBolt: 'roofBolt', shell: 'shell', frostShell: 'shell', fireShell: 'shell', snowball: 'snowball', pinecone: 'pinecone', hornet: 'hornet' } as const;
 
 export class GameScene extends Phaser.Scene {
   session: Session | null = null;
@@ -355,6 +355,7 @@ export class GameScene extends Phaser.Scene {
 
     this.renderProjectiles(view.projectiles);
     this.renderZones(view.zones, time);
+    this.fx.drawZones(view.zones);
   }
 
   private renderKeep(view: ViewState, meta: Meta | null, dt: number, time: number) {
@@ -395,6 +396,7 @@ export class GameScene extends Phaser.Scene {
     this.cheeseGfx.clear();
     for (const z of zones) {
       if (z.kind === 'cheese') { this.drawCheese(z, time); continue; }
+      if (z.kind === 'snow' || z.kind === 'hotCheese') continue;
       seen.add(z.id);
       let list = this.flameViews.get(z.id);
       if (!list) {
@@ -619,7 +621,7 @@ export class GameScene extends Phaser.Scene {
         if (ev.kind === 'cheese') {
           this.sfx('squelch');
           this.fx.splash(ev.x, WORLD.groundY + 50);
-        } else {
+        } else if (ev.kind === 'fire') {
           this.sfx('fire', 0.7);
         }
         break;
@@ -677,6 +679,45 @@ export class GameScene extends Phaser.Scene {
         this.fx.sparks(WORLD.gateX + 10, WORLD.groundY - 40, 8);
         this.sfx('thorns');
         this.shakeCam(4);
+        break;
+      case 'toll':
+        this.fx.toll(ev.x, ev.radius);
+        this.sfx('horn', 0.6);
+        this.shakeCam(5);
+        break;
+      case 'snowdrift':
+        this.fx.snowPuff(ev.x, ev.y);
+        break;
+      case 'logSwing':
+        this.fx.logSwing(ev.reach);
+        this.sfx('slam', 0.7);
+        this.shakeCam(8);
+        break;
+      case 'cascade':
+        this.fx.cascade(ev.halfWidth);
+        this.sfx('squelch');
+        break;
+      case 'mend':
+        this.fx.mend(ev.amount);
+        this.sfx('horn', 0.4);
+        break;
+      case 'extraHand': {
+        const p = this.slotOf('helper', s);
+        this.fx.floatText(p.x + 40, p.y - 40, 'SECOND HAND!');
+        this.fx.sparks(p.x, p.y - 20, 8);
+        break;
+      }
+      case 'grip': {
+        const p = this.slotOf('grip', s);
+        this.fx.floatText(p.x + 40, p.y - 40, 'IRON GRIP!');
+        this.fx.sparks(p.x, p.y - 20, 8);
+        break;
+      }
+      case 'catapult':
+        this.fx.puff(ev.x, ev.y, 0xc89a5a);
+        break;
+      case 'hive':
+        this.fx.puff(ev.x, ev.y, 0xf3cb5e);
         break;
       case 'sentryShot':
         this.fx.streak(ev.x, ev.y, ev.tx, ev.ty);

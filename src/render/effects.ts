@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { partKey, propKey, TEX_SCALE } from './textures';
 import { WORLD } from '../config/field';
+import type { ViewZone } from '../net/snapshot';
 
 const MAX_PARTICLES = 320;
 const MAX_DECALS = 40;
@@ -62,6 +63,8 @@ export class Effects {
   private floatsThisFrame = 0;
   private lines: Phaser.GameObjects.Graphics;
   private strokes: Stroke[] = [];
+  /** Pictures of the snow drifts and hot cheese pools on the road, by zone id. */
+  private zoneViews = new Map<number, Phaser.GameObjects.Image[]>();
 
   constructor(private scene: Phaser.Scene) {
     for (let i = 0; i < MAX_PARTICLES; i++) {
@@ -385,6 +388,95 @@ export class Effects {
         life: 0.55, vx: side * radius * 1.6 * (0.55 + (i / n) * 0.5), vy: -10 - Math.random() * 20, drag: 3, ease: true, a0: 0.85, s0: 0.35, s1: 0.95, squash: 0.65,
       });
       q?.img.setTint(i % 3 ? 0xffffff : 0xe6d8bd);
+    }
+  }
+
+  /** Cowbell Toll: golden rings of sound over the group and a puff of dust where it strikes. */
+  toll(x: number, radius: number) {
+    const y = WORLD.groundY - 40;
+    this.ring(x, y, radius, 0xf3cb5e);
+    const p = this.spawn('fx:ring', x, y, { life: 0.7, ease: true, a0: 0.7, s0: (radius * 0.1 * TEX_SCALE) / 128, s1: (radius * 0.75 * TEX_SCALE) / 128 });
+    p?.img.setTint(0xfff2b0);
+    this.dust(x, WORLD.groundY + 20, 0.5);
+  }
+
+  /** Snowdrift Cannon: a burst of snow where a snowball lands. */
+  snowPuff(x: number, y: number) {
+    for (let i = 0; i < 8; i++) {
+      const a = -Math.PI * (0.1 + Math.random() * 0.8);
+      const v = 120 + Math.random() * 260;
+      const p = this.spawn(propKey('dust'), x, y - 10, { life: 0.6, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 600, drag: 2, ease: true, a0: 0.9, s0: 0.3, s1: 0.8 });
+      p?.img.setTint(0xf4fbff);
+    }
+  }
+
+  /** Battering Log: the trunk swings out of the gate and back, with dust where it sweeps. */
+  logSwing(reach: number) {
+    const x = WORLD.gateX + reach * 0.5;
+    const y = WORLD.groundY - 34;
+    const s = Math.max(0.8, reach / 112);
+    const p = this.spawn(propKey('swingLog'), x, y, { life: 0.45, s0: s, s1: s, fade: true, rotV: -2.6 });
+    p?.img.setRotation(0.6).setDepth(29);
+    this.dust(WORLD.gateX + reach * 0.8, WORLD.groundY + 20, 0.8);
+  }
+
+  /** Cheese Cascade: a stream of hot cheese from the gate arch to the road, with steam. */
+  cascade(halfWidth: number) {
+    const x = WORLD.gateX + 26;
+    const top = WORLD.groundY - 190;
+    const p = this.spawn(propKey('cheeseStream'), x, top, { life: 0.9, s0: 1, s1: 1 });
+    p?.img.setOrigin(0.5, 0).setScale(1 / TEX_SCALE, 2 / TEX_SCALE).setDepth(29);
+    this.splash(x + halfWidth * 0.4, WORLD.groundY + 40);
+  }
+
+  /** Mending Horn: green-gold sparkles rise from the gate and the mended amount floats up. */
+  mend(amount: number) {
+    for (let i = 0; i < 12; i++) {
+      const p = this.spawn(propKey('spark'), WORLD.gateX + (Math.random() - 0.5) * 50, WORLD.groundY - Math.random() * 160, {
+        life: 0.9, vx: (Math.random() - 0.5) * 30, vy: -80 - Math.random() * 90, s0: 1.2, s1: 0.3,
+      });
+      p?.img.setTint(i % 2 ? 0x9be37a : 0xfff2b0);
+    }
+    if (amount > 0) this.floatText(WORLD.gateX + 30, WORLD.groundY - 180, `+${amount}`, '#9be37a');
+  }
+
+  /** A little puff at a weapon on the keep (catapult throw, hornets leaving the hive). */
+  puff(x: number, y: number, tint = 0xffffff) {
+    for (let i = 0; i < 4; i++) {
+      const p = this.spawn(propKey('dust'), x + (Math.random() - 0.5) * 20, y, { life: 0.5, vx: 40 + Math.random() * 60, vy: -40 - Math.random() * 40, drag: 2, ease: true, a0: 0.8, s0: 0.25, s1: 0.6 });
+      p?.img.setTint(tint);
+    }
+  }
+
+  /**
+   * Snow drifts (Snowdrift Cannon) and hot cheese pools (Cheese Cascade) on the road: a row of drift
+   * or pool pictures over the width of the zone, growing in when laid and fading at the end.
+   * Other zone kinds are drawn by the scene.
+   */
+  drawZones(zones: readonly ViewZone[]) {
+    const seen = new Set<number>();
+    for (const z of zones) {
+      if (z.kind !== 'snow' && z.kind !== 'hotCheese') continue;
+      seen.add(z.id);
+      const key = z.kind === 'snow' ? 'snowDrift' : 'cheesePool';
+      const w = z.kind === 'snow' ? 128 : 80;
+      let list = this.zoneViews.get(z.id);
+      if (!list) {
+        const n = Math.max(1, Math.round((z.halfWidth * 2) / (w * 0.8)));
+        list = [];
+        for (let i = 0; i < n; i++) {
+          const x = z.x - z.halfWidth + ((i + 0.5) / n) * z.halfWidth * 2;
+          list.push(this.scene.add.image(x, WORLD.groundY + 36 + (i % 2) * 3, propKey(key)).setOrigin(0.5, 1).setDepth(17));
+        }
+        this.zoneViews.set(z.id, list);
+      }
+      const age = z.dur - z.t;
+      const k = Math.min(1, age * 4) * Math.min(1, z.t * 2);
+      const sx = ((z.halfWidth * 2) / list.length / (w * 0.8)) * 1.1;
+      list.forEach((img) => img.setScale((sx * (0.6 + 0.4 * k)) / TEX_SCALE, (0.6 + 0.4 * k) / TEX_SCALE).setAlpha(k));
+    }
+    for (const [id, list] of this.zoneViews) {
+      if (!seen.has(id)) { list.forEach((i) => i.destroy()); this.zoneViews.delete(id); }
     }
   }
 

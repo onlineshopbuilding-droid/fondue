@@ -83,6 +83,9 @@ export function decorFor(levelDone: number): DecorDef[] {
 export const WEAPON_PEGS: readonly { x: number; y: number }[] = [
   ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => ({ x: 360 + i * 34, y: 402 })),
   ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => ({ x: 1002 + i * 34, y: 402 })),
+  // A second, shorter row below for the 25 weapons of v0.3 (P-Shop may redesign the wall).
+  ...[0, 1, 2, 3, 4].map((i) => ({ x: 411 + i * 34, y: 446 })),
+  ...[0, 1, 2, 3, 4].map((i) => ({ x: 1053 + i * 34, y: 446 })),
 ];
 /** Largest side of a weapon picture on its peg, in room units. */
 export const WEAPON_SIZE = 34;
