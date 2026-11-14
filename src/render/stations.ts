@@ -1,6 +1,7 @@
-// Draws the two offering sites: the Great Cauldron on its mound and the eagle's hook with its eagle.
+// Draws the two stations: the Great Cauldron on its mound and the Eagle Perch with its eagle.
 import Phaser from 'phaser';
 import { WORLD } from '../config/field';
+import { CRESTS } from '../config/crests';
 import { PERCH } from '../config/keep';
 import type { ViewState } from '../net/snapshot';
 import type { Meta } from '../sim/types';
@@ -30,6 +31,8 @@ export class Stations {
   private chain: Phaser.GameObjects.TileSprite;
   private hook: Phaser.GameObjects.Image;
   private eagle: Phaser.GameObjects.Image;
+  /** The small target on the hook (C6), shown while a raider is in a hand. */
+  private target: Phaser.GameObjects.Graphics;
   private eagleT = -1;
   private eagleX = 0;
   private eagleY = 0;
@@ -53,6 +56,7 @@ export class Stations {
     this.chain = scene.add.tileSprite(0, 0, 34, 1200, propKey('hookChain')).setOrigin(0.5, 1).setDepth(17).setVisible(false);
     this.chain.setTileScale(1 / TEX_SCALE);
     this.hook = scene.add.image(0, 0, propKey('perchHook')).setOrigin(0.5, 0).setScale(1 / TEX_SCALE).setDepth(18).setVisible(false);
+    this.target = scene.add.graphics().setDepth(18.5);
     this.eagle = scene.add.image(0, 0, propKey('eagleHeadOpen')).setOrigin(20 / 520, 0.5).setScale(1 / TEX_SCALE).setDepth(40).setVisible(false);
   }
 
@@ -142,6 +146,16 @@ export class Stations {
     this.chain.setPosition(x, hookTop + 6).setTint(tint);
     this.chain.setRotation(sway * 0.25);
     this.hook.setPosition(x, hookTop).setRotation(sway).setTint(busy ? 0xffd9b0 : tint);
+    // The catch is small: a ring of its size shows where to aim while a raider is held.
+    const g = this.target;
+    g.clear();
+    if (owned && !busy && view.enemies.some((e) => e.st === 'held' && e.type !== 'siegeCart')) {
+      const pulse = 0.55 + Math.sin(time * 0.008) * 0.25;
+      g.lineStyle(3, 0x2b2118, 0.5 * pulse);
+      g.strokeCircle(x, WORLD.perch.hookY, CRESTS.hookRadius + 1.5);
+      g.lineStyle(2, 0xfff1c0, pulse);
+      g.strokeCircle(x, WORLD.perch.hookY, CRESTS.hookRadius);
+    }
 
     if (this.eagleT < 0) { this.eagle.setVisible(false); return; }
     this.eagleT += dt;
