@@ -202,15 +202,15 @@ describe('endless mode', () => {
 
   it('the developer menu\'s free wave starts a developer run at that wave; belongings come from the latest quick start before it', async () => {
     const p = await newProfile();
-    const late = ENDLESS.buildRun(p, { world: W, devDay: 45 }, env());
+    const late = ENDLESS.buildRun(p, { world: W, devWave: 45 }, env());
     expect(late.start.wave).toBe(45);
     expect(late.devRun).toBe(true);
     expect(late.start.loadout.slotWeapon.some((w) => w !== null)).toBe(true);
-    const early = ENDLESS.buildRun(p, { world: W, devDay: 5 }, env());
+    const early = ENDLESS.buildRun(p, { world: W, devWave: 5 }, env());
     expect(early.start.wave).toBe(5);
     expect(early.devRun).toBe(true);
     expect(early.start.loadout.slotWeapon.every((w) => w === null)).toBe(true);
-    expect(ENDLESS.buildRun(p, { world: W, devDay: 500 }, env()).start.wave).toBe(99);
+    expect(ENDLESS.buildRun(p, { world: W, devWave: 500 }, env()).start.wave).toBe(99);
   });
 
   it('pays no cheese, remembers the best wave and adds the run to the score list', async () => {

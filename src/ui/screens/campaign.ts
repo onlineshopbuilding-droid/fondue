@@ -90,7 +90,7 @@ function cardHtml(ctx: ScreenContext, id: number): string {
   return `<div class="cm-card-title"><span class="cm-card-num">Level ${id}</span> <span class="cm-card-name" id="cardName">${esc(l.name)}</span></div>
     <div class="cm-card-facts" id="cardFacts">${facts}</div>
     ${l.boss ? `<div class="cm-card-boss" id="cardBoss">Boss: ${esc(l.boss.name)}</div>` : ''}
-    <div class="cm-card-stars" id="cardStars">${cheeseLine}</div>
+    <div class="cm-card-total" id="cardCheeseTotal">${cheeseLine}</div>
     ${cheeseList}
     ${unlockLine}${lock}
     ${open ? loadoutHtml(ctx) : ''}

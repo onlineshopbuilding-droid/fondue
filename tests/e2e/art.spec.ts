@@ -10,7 +10,7 @@ import { waitForGame } from './helpers';
 
 const FREE_PROPS = [
   'handOpen', 'handClosed', 'wheel', 'comet', 'bomb', 'stone', 'shell', 'bolt', 'roofBolt',
-  'gibHelmet', 'gibPlate', 'gibBoot', 'gibStick', 'coin', 'offering', 'drop1', 'dust', 'spark', 'star', 'shieldBubble',
+  'gibHelmet', 'gibPlate', 'gibBoot', 'gibStick', 'coin', 'crestToken', 'drop1', 'dust', 'spark', 'star', 'shieldBubble',
 ];
 
 test('no figure or free prop is cut off by its texture box', async ({ page }) => {

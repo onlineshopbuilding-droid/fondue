@@ -116,7 +116,7 @@ function keepGround(s: GroundStyle, seed: number): string {
 const ground = (s: GroundStyle, seed: number): Art => art(340, 130, 0, 130, SHADE_DEFS + ink(`<g transform="translate(0 -560)">${keepGround(s, seed)}</g>`));
 
 /**
- * The same bank along the west wing, which only the market shows: 420 wide, placed bottom-left at
+ * The same bank along the west wing (not drawn in v0.3, see westWing.ts): 420 wide, placed bottom-left at
  * world (-460, 670), so it runs under the keep's own bank. No paving: the road ends at the gate.
  */
 function westBank(s: GroundStyle, seed: number): string {

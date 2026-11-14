@@ -89,16 +89,16 @@ export class Hud {
   private crests: Phaser.GameObjects.Text;
   private gateBar: Phaser.GameObjects.Graphics;
   private gateText: Phaser.GameObjects.Text;
-  private dayText: Phaser.GameObjects.Text;
+  private waveText: Phaser.GameObjects.Text;
   private sun: Phaser.GameObjects.Graphics;
   private rush: Phaser.GameObjects.Graphics;
   /** Longest Golden Fondue time seen since it started, for the countdown ring. */
   private rushMax = 0;
-  private dayLine = '';
+  private waveLine = '';
   private shown = 0;
   private bump = 0;
   private drawnFrac = -1;
-  private drawnDay = -1;
+  private drawnTrack = -1;
 
   private left: Phaser.GameObjects.Container;
   private right: Phaser.GameObjects.Container;
@@ -120,8 +120,8 @@ export class Hud {
     socket(leftPlate, this.crestPos.x, this.crestPos.y - 1, 19);
     const coin = scene.add.image(this.goldPos.x, this.goldPos.y, propKey('coin')).setScale(1.2 / TEX_SCALE);
     this.gold = scene.add.text(this.goldPos.x + 24, this.goldPos.y, '0', small).setOrigin(0, 0.5);
-    // Raider Crests of this run. The art keeps its old asset name ('offering') until a crest icon is drawn.
-    const crest = scene.add.image(this.crestPos.x, this.crestPos.y, propKey('offering')).setScale(1.2 / TEX_SCALE);
+    // Raider Crests of this run.
+    const crest = scene.add.image(this.crestPos.x, this.crestPos.y, propKey('crestToken')).setScale(1.2 / TEX_SCALE);
     this.crests = scene.add.text(this.crestPos.x + 24, this.crestPos.y, '0', small).setOrigin(0, 0.5);
     this.left.add([leftPlate, this.rush, coin, this.gold, crest, this.crests]);
 
@@ -135,9 +135,9 @@ export class Hud {
     const pause = scene.add.image(PAUSE_X, PAUSE_Y, propKey('iconPause')).setScale(0.62 / TEX_SCALE);
     this.right.add([rightPlate, castle, this.gateBar, this.gateText, pause]);
 
-    this.dayText = scene.add.text(640, 22, '', { ...small, fontSize: '26px' }).setOrigin(0.5);
+    this.waveText = scene.add.text(640, 22, '', { ...small, fontSize: '26px' }).setOrigin(0.5);
     this.sun = scene.add.graphics();
-    this.centre.add([this.dayText, this.sun]);
+    this.centre.add([this.waveText, this.sun]);
 
   }
 
@@ -194,22 +194,22 @@ export class Hud {
     if (frac !== this.drawnFrac) { this.drawnFrac = frac; this.drawGateBar(frac); }
     this.gateText.setText(`${Math.ceil(v.gateHp)}/${v.gateMax}`);
 
-    const line = this.dayLabel(v, meta);
-    if (line !== this.dayLine) {
-      this.dayLine = line;
-      this.dayText.setText(line).setFontSize(line.length > 18 ? 22 : 26);
+    const line = this.waveLabel(v, meta);
+    if (line !== this.waveLine) {
+      this.waveLine = line;
+      this.waveText.setText(line).setFontSize(line.length > 18 ? 22 : 26);
     }
     // The track shows how far the level is: waves done of all waves (endless: the current wave).
     const last = meta?.rules.lastWave ?? null;
     const u = last ? Math.min(1, Math.max(0, (v.wave - 1) / last)) : 0;
     const night = meta?.wave.night ?? false;
     const key = Math.round(u * 400) + (night ? 1000 : 0);
-    if (key !== this.drawnDay) { this.drawnDay = key; this.drawDayTrack(u, night); }
+    if (key !== this.drawnTrack) { this.drawnTrack = key; this.drawWaveTrack(u, night); }
     this.drawRush(v.goldRushT);
   }
 
   /** "LEVEL 7 · WAVE 2/12" in the campaign, "WAVE 12" without an end; in the last wave the raiders left. */
-  private dayLabel(v: ViewState, meta: Meta | null): string {
+  private waveLabel(v: ViewState, meta: Meta | null): string {
     const level = meta?.rules.level ?? null;
     const last = meta?.rules.lastWave ?? null;
     const wave = last !== null ? `${v.wave}/${last}` : `${v.wave}`;
@@ -272,7 +272,7 @@ export class Hud {
   }
 
   /** Level progress: a groove the sun travels along wave by wave; in a night level a moon travels instead. */
-  private drawDayTrack(u: number, night: boolean) {
+  private drawWaveTrack(u: number, night: boolean) {
     const s = this.sun;
     s.clear();
     s.fillStyle(INK, 0.8);

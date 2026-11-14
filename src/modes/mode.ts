@@ -16,8 +16,8 @@ export interface RunChoice {
   difficulty?: Difficulty;
   /** Developer quick start: begin an endless run at this later wave (one of QUICK_STARTS). */
   quickStart?: number;
-  /** Developer menu: begin an endless run at any wave up to QUICK_START_MAX_DAY. Unlike `quickStart`, any wave is taken. */
-  devDay?: number;
+  /** Developer menu: begin an endless run at any wave up to QUICK_START_MAX_WAVE. Unlike `quickStart`, any wave is taken. */
+  devWave?: number;
   /** Developer jump: begin a level at this wave. */
   wave?: number;
   /** A stored wave start of an interrupted level. */

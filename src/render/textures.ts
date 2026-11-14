@@ -160,7 +160,7 @@ const BACKGROUND_GAP_MS = 40;
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Loads the remaining groups while the player is already in the menu or the first day. One texture
+ * Loads the remaining groups while the player is already in the menu or the first level. One texture
  * at a time with a pause in between: started all at once, a group kept the page busy for seconds on
  * slow machines, long enough to drop a co-op link or swallow a long press.
  */
@@ -197,7 +197,7 @@ export async function buildTextures(game: Phaser.Game): Promise<void> {
   tex.addCanvas('fx:shadow', shadowCanvas());
   tex.addCanvas('fx:burst', burstCanvas());
   tex.addCanvas('fx:ring', ringCanvas());
-  // Keep stages and weapon tiers first: both can be bought after day 1; a new landscape comes later.
+  // Keep stages and weapon tiers first: both can be bought after level 1; a new landscape comes later.
   queue = [KEEP_STAGES, WEAPON_TIERS, ...LANDS.filter((l) => l !== FIRST_LAND)];
   void loadRest(tex);
 }

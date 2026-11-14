@@ -67,7 +67,7 @@ export const CASTLE_ART: Record<string, Art> = {
   keepGround_canyon: groundCanyon,
   keepGround_marsh: groundMarsh,
   keepGround_snowpine: groundSnow,
-  // The west wing left of the keep, seen only in the market.
+  // The west wing left of the keep, not drawn in v0.3; the art stays for later (westWing.ts).
   ...WEST_ART,
   keepWestGround_meadow: groundMeadowWest,
   keepWestGround_canyon: groundCanyonWest,

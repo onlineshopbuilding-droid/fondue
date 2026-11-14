@@ -103,8 +103,8 @@ export class WeaponSystem {
   /** Factor on the lethal impact speed of a throw (below 1 while the Iron Grip holds). Read by Flight. */
   lethalFactor(): number { return this.ctx.s.gripT > 0 ? this.ctx.s.gripLethal : 1; }
 
-  /** Clears everything that must not carry over into the next day. */
-  resetForDay() {
+  /** Clears everything that must not carry over into a new start (level start or a resumed wave). */
+  resetForRun() {
     const s = this.ctx.s;
     for (let slot = 0; slot < SLOT_COUNT; slot++) { s.cooldowns[slot] = 0; s.cooldownMax[slot] = 0; }
     s.delayed = [];

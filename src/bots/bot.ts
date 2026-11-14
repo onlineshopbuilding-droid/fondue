@@ -103,7 +103,7 @@ export class Bot {
     return sum;
   }
 
-  /** Hand strength a yeti needs before it leaves the ground. The hand notes in the armoury say as much. */
+  /** Hand strength a yeti needs before it leaves the ground. The hand notes in the Keep Shop say as much. */
   private yetiNeed(e: Enemy) { return HAND_RULES.yetiLift * (e.big ? BEHAVIOUR.big.mass : 1); }
 
   // ---------------------------------------------------------------------------

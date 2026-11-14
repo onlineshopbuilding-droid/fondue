@@ -217,8 +217,8 @@ export class Effects {
     this.twinkle(x, y - 20, 0xffffff);
   }
 
-  offering(x: number, y: number, toX: number, toY: number) {
-    this.spawn(propKey('offering'), x, y - 20, { life: 1.0, toX, toY, s0: 1.4, s1: 0.6, fade: false });
+  crestFly(x: number, y: number, toX: number, toY: number) {
+    this.spawn(propKey('crestToken'), x, y - 20, { life: 1.0, toX, toY, s0: 1.4, s1: 0.6, fade: false });
     this.twinkle(x, y - 20, 0x9ff5ea);
   }
 

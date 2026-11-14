@@ -76,7 +76,7 @@ export class App implements ScreenContext, CoopRoomHost {
   readonly params = new URLSearchParams(location.search);
   readonly coop = new CoopRoom(this);
   /** Wave the next endless game starts at; set from the developer menu, 1 for a normal run. */
-  startDay = 1;
+  startWave = 1;
   loadingTip = LOADING_TIPS[0];
   /** What the run that just ended brought; the result screens show it. */
   reward: Reward | null = null;
@@ -135,11 +135,11 @@ export class App implements ScreenContext, CoopRoomHost {
         this.profile.updateSettings({ flags: { [id]: value } });
         if (this.session instanceof HostSession) this.session.sim.setFlags({ ...this.settings.flags });
       },
-      startDay: () => this.startDay,
-      setStartDay: (day) => { this.startDay = day; if (this.screen === 'play' || this.screen === 'host') this.show(this.screen); },
+      startWave: () => this.startWave,
+      setStartWave: (wave) => { this.startWave = wave; if (this.screen === 'play' || this.screen === 'host') this.show(this.screen); },
       startQuickEndless: () => this.startEndless(),
       profileSummary: () => `🧀 ${this.profile.data.wallet.cheese} · gold ${this.profile.data.wallet.gold} · crests ${this.profile.data.wallet.crests} · levels won: ${this.profile.highestLevelDone(this.world)} · hand tier ${this.profile.data.keep.handTier}${this.profile.data.cheats.used ? ' · cheats used' : ''}${this.temporaryProfile ? ' · test profile' : ''}`,
-      addStars: (n) => { cheatCheese(this.profile, n); this.redrawMenus(); },
+      addCheese: (n) => { cheatCheese(this.profile, n); this.redrawMenus(); },
       unlockEverything: () => { this.unlockEverything(); this.redrawMenus(); },
       replayTutorial: () => { this.profile.resetTutorial(); this.startTutorial(); },
       resetProfile: () => {
@@ -154,7 +154,7 @@ export class App implements ScreenContext, CoopRoomHost {
         this.startSoloRun(CAMPAIGN, { world: this.world, level: Math.max(1, Math.min(max, level)), wave });
       },
       levelCount: () => worldById(this.world).campaign.length,
-      levelDays: (level) => levelOf(this.world, level)?.waves.length ?? 1,
+      levelWaves: (level) => levelOf(this.world, level)?.waves.length ?? 1,
       weaponTier: (id) => this.profile.weaponTier(id),
       setWeaponTier: (id, tier) => { this.profile.setWeaponTier(id, tier); this.redrawMenus(); },
       handTier: () => this.profile.data.keep.handTier,
@@ -188,12 +188,12 @@ export class App implements ScreenContext, CoopRoomHost {
     });
   }
 
-  /** Menus that show stars or unlocks are redrawn after a developer tool changed the profile. */
+  /** Menus that show cheese or unlocks are redrawn after a developer tool changed the profile. */
   private redrawMenus() {
     if (['main', 'armoury', 'campaign', 'options'].includes(this.screen)) this.show(this.screen);
   }
 
-  /** Developer tool: every weapon, slot and offering site, as if the campaign were far along. */
+  /** Developer tool: every weapon, slot and station, as if the campaign were far along. */
   private unlockEverything() {
     // Slots follow from won levels, so the levels that open them are marked as won.
     for (let i = 0; i < SLOT_COUNT; i++) for (let l = 1; l <= (unlockLevelOf(this.world, 'slot', i) ?? 0); l++) this.profile.markLevelDone(this.world, l);
@@ -269,7 +269,6 @@ export class App implements ScreenContext, CoopRoomHost {
       togglePause: () => this.togglePause(),
       isInputBlocked: () => this.screens.isOpen,
       onBuyNotice: (t) => { if (this.session?.role !== 'solo') this.toast(t); },
-      onKeepTap: () => {},
     };
     const view = computeView(innerWidth, innerHeight, readSafeArea());
     this.scene.view = view;
@@ -563,7 +562,7 @@ export class App implements ScreenContext, CoopRoomHost {
    */
   private runEnv(choice: RunChoice, names: string[], handTiers: number[]): RunEnv {
     const env: RunEnv = { names, fieldW: fieldForAspect(innerWidth / innerHeight), handTiers, seed: this.seedParam() };
-    const quick = (choice.quickStart ?? 0) > 0 || (choice.devDay ?? 0) > 0 || (choice.wave ?? 1) > 1;
+    const quick = (choice.quickStart ?? 0) > 0 || (choice.devWave ?? 0) > 0 || (choice.wave ?? 1) > 1;
     if (quick || this.devValuesActive()) {
       env.tuning = { ...this.settings.tuning };
       env.flags = { ...this.settings.flags };
@@ -586,10 +585,10 @@ export class App implements ScreenContext, CoopRoomHost {
     return { world: plan.world, difficulty: plan.difficulty ?? this.settings.difficulty, ...this.endlessStart() };
   }
 
-  /** The developer menu's endless start day: a quick start on its own days, any other day as a free developer day. */
-  private endlessStart(): Pick<RunChoice, 'quickStart' | 'devDay'> {
-    if (this.startDay <= 1) return {};
-    return quickStartFor(this.startDay) ? { quickStart: this.startDay } : { devDay: this.startDay };
+  /** The developer menu's endless start wave: a quick start at its own waves, any other wave as a free developer start. */
+  private endlessStart(): Pick<RunChoice, 'quickStart' | 'devWave'> {
+    if (this.startWave <= 1) return {};
+    return quickStartFor(this.startWave) ? { quickStart: this.startWave } : { devWave: this.startWave };
   }
 
   startPlanSolo(plan: RoomPlan) {
@@ -601,10 +600,10 @@ export class App implements ScreenContext, CoopRoomHost {
    * a continued level, or the tutorial itself is what follows (`skipTutorial`).
    */
   private startSoloRun(mode: GameMode, choice: RunChoice, skipTutorial = false) {
-    const dev = (choice.quickStart ?? 0) > 0 || (choice.devDay ?? 0) > 0 || (choice.wave ?? 1) > 1 || !!choice.resume;
+    const dev = (choice.quickStart ?? 0) > 0 || (choice.devWave ?? 0) > 0 || (choice.wave ?? 1) > 1 || !!choice.resume;
     if (!skipTutorial && !dev && this.tutorialDue()) { this.startTutorial(); return; }
     this.coop.closeRoom();
-    // "Try again" starts a continued level from its first day.
+    // "Try again" starts a continued level from its first wave.
     const again: RunChoice = choice.resume ? { world: choice.world, level: choice.resume.rules.level ?? 1 } : choice;
     this.lastPick = { mode: mode.id, choice: again };
     const setup = this.buildSetup(mode, choice, [this.playerName()], [this.profile.data.keep.handTier]);

@@ -79,7 +79,7 @@ test('cheats: gold, cheese, crests, levels, tiers, second hand and reset, with t
   await page.click('#devGold1000');
   expect((await profile(page)).wallet.gold).toBe(1000);
   await expect(page.locator('#devCheatBadge')).toHaveText('Cheats used');
-  await page.click('#devStars');
+  await page.click('#devCheese');
   expect((await profile(page)).wallet.cheese).toBe(50);
   await page.click('#devCrests');
   expect((await profile(page)).wallet.crests).toBe(40);

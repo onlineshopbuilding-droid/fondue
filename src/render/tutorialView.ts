@@ -15,7 +15,7 @@ import { HostSession, type Session } from '../game/session';
 import { PRELUDE_WHEEL_SLOT } from '../modes/tutorial';
 import type { ViewEnemy, ViewState } from '../net/snapshot';
 import type { Meta, SimEvent } from '../sim/types';
-import type { CamRect } from './marketCamera';
+import type { CamRect } from './camera';
 import { propKey, TEX_SCALE } from './textures';
 import { PotHint, PreludeGuide, type GuideEnemy } from './tutorialGuide';
 import type { GameView } from './viewport';
@@ -119,8 +119,8 @@ export class TutorialView {
     return '';
   }
 
-  /** Called every frame by the scene, after the events were handled. `market` is 0 in the fight. */
-  update(s: Session, view: ViewState, meta: Meta | null, events: SimEvent[], dt: number, gv: GameView, cam: CamRect, market: number) {
+  /** Called every frame by the scene, after the events were handled. */
+  update(s: Session, view: ViewState, meta: Meta | null, events: SimEvent[], dt: number, gv: GameView, cam: CamRect) {
     this.unit = 1 / Math.max(0.2, gv.cssPerUnit);
     if (!meta) { this.hideAll(); return; }
     if (meta.rules.runId !== this.runId) {
@@ -137,7 +137,6 @@ export class TutorialView {
     if (this.pot && battle) this.pot.update(dt, events);
     this.setHold(s, !!this.prelude?.hold);
 
-    if (market > 0) { this.hideAll(); return; }
     this.loopT = (this.loopT + dt) % LOOP;
     this.gfx.clear();
     this.drawKing(dt, cam);

@@ -4,7 +4,7 @@
  * cheese; good runs enter the score list. It opens with the fifth slot.
  */
 import { ENEMY_TYPES } from '../config/enemies';
-import { QUICK_START_MAX_DAY, quickStartAt, quickStartFor } from '../config/quickstart';
+import { QUICK_START_MAX_WAVE, quickStartAt, quickStartFor } from '../config/quickstart';
 import { SLOT_COUNT } from '../config/slots';
 import { TUNING_DEFAULT } from '../config/tuning';
 import { DIFFICULTIES, ENDLESS_WAVES, WAVES, type Difficulty } from '../config/waves';
@@ -48,8 +48,8 @@ export class EndlessMode implements GameMode {
     let start: RunStart = freshStart(rules, keepLoadout(profile, world.id, handTiers));
     // A developer start at a later wave: a quick start's keep instead of the profile's.
     const known = choice.quickStart ? quickStartFor(choice.quickStart) : null;
-    const free = (choice.devDay ?? 0) > 1 ? Math.min(QUICK_START_MAX_DAY, Math.round(choice.devDay!)) : 0;
-    const quickWave = free || known?.day || 0;
+    const free = (choice.devWave ?? 0) > 1 ? Math.min(QUICK_START_MAX_WAVE, Math.round(choice.devWave!)) : 0;
+    const quickWave = free || known?.wave || 0;
     const quick = quickWave ? quickStartAt(quickWave) : null;
     if (quickWave) {
       const rolls = endlessRolls(table, seed);

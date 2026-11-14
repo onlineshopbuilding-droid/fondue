@@ -93,7 +93,7 @@ export class ScreenManager {
     const focused = document.activeElement as HTMLInputElement | null;
     const focusId = focused?.id;
     const caret = focused?.selectionStart ?? null;
-    // A purchase redraws the market; the player's place in the lists must survive that.
+    // A purchase redraws the Keep Shop; the player's place in the lists must survive that.
     const list = samePage ? overlay.querySelector('.items') : null;
     const tabs = samePage ? overlay.querySelector('.tabs') : null;
     const panel = samePage ? overlay.querySelector('.panel') : null;

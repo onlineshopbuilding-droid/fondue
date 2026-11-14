@@ -233,7 +233,7 @@ Stand: 444 Assets.
 | `prop:gibBoot` | 32 × 32 | 16, 16 | 64 × 64 | Start |
 | `prop:gibStick` | 32 × 32 | 16, 16 | 64 × 64 | Start |
 | `prop:coin` | 32 × 32 | 16, 16 | 64 × 64 | Start |
-| `prop:offering` | 32 × 32 | 16, 16 | 64 × 64 | Start |
+| `prop:crestToken` | 32 × 32 | 16, 16 | 64 × 64 | Start |
 | `prop:splat1` | 120 × 34 | 60, 17 | 240 × 68 | Start |
 | `prop:splat2` | 120 × 34 | 60, 17 | 240 × 68 | Start |
 | `prop:splat3` | 120 × 34 | 60, 17 | 240 × 68 | Start |

@@ -57,7 +57,7 @@ export class WaveFlow {
     s.perchBusy = 0;
     s.potBusy = 0;
     s.potMax = 0;
-    this.ctx.weapons.resetForDay();
+    this.ctx.weapons.resetForRun();
     for (const h of s.hands) { h.holding = -1; h.holdingProj = -1; }
     this.startWave(wave, WAVES.firstWaveDelay);
   }

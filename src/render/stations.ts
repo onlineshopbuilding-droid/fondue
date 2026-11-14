@@ -72,20 +72,18 @@ export class Stations {
   potSplash() { this.splashT = 0.3; }
 
   /**
-   * `hook` is where the eagle hook hangs (see marketCamera.hookAt); `market` how far the market
-   * view has come in (0 to 1): there, a site not built yet shows as a faint outline at its place.
+   * `hook` is where the eagle hook hangs (see camera.hookAt). A station not built yet is not drawn.
    */
-  update(view: ViewState, meta: Meta, tint: number, dt: number, time: number, hook: { x: number; top: number }, market = 0) {
+  update(view: ViewState, meta: Meta, tint: number, dt: number, time: number, hook: { x: number; top: number }) {
     const owned = !!meta.loadout.stations.cauldron;
-    const ghost = owned ? 1 : market * 0.38;
-    for (const img of [this.mound, this.potBack, this.potFront]) img.setVisible(owned || market > 0.02).setAlpha(ghost);
+    for (const img of [this.mound, this.potBack, this.potFront]) img.setVisible(owned).setAlpha(1);
     this.mound.setTint(tint);
     this.potFront.setTint(tint);
     // The molten cheese is the glow of the scene, so the inside of the pot stays lit at night.
     const lit = Phaser.Display.Color.Interpolate.ColorWithColor(Phaser.Display.Color.ValueToColor(tint), Phaser.Display.Color.ValueToColor(0xffffff), 100, 70);
     this.potBack.setTint(Phaser.Display.Color.GetColor(lit.r, lit.g, lit.b));
     this.updatePot(view, owned, dt, time);
-    this.updatePerch(view, meta, tint, dt, time, hook, market);
+    this.updatePerch(view, meta, tint, dt, time, hook);
   }
 
   private updatePot(view: ViewState, owned: boolean, dt: number, time: number) {
@@ -134,11 +132,10 @@ export class Stations {
     }
   }
 
-  private updatePerch(view: ViewState, meta: Meta, tint: number, dt: number, time: number, at: { x: number; top: number }, market: number) {
+  private updatePerch(view: ViewState, meta: Meta, tint: number, dt: number, time: number, at: { x: number; top: number }) {
     const owned = !!meta.loadout.stations.perch;
-    const ghost = owned ? 1 : market * 0.42;
-    this.chain.setVisible(owned || market > 0.02).setAlpha(ghost);
-    this.hook.setVisible(owned || market > 0.02).setAlpha(ghost);
+    this.chain.setVisible(owned).setAlpha(1);
+    this.hook.setVisible(owned).setAlpha(1);
     const x = at.x;
     const busy = view.perchBusy > 0;
     const hookTop = at.top;

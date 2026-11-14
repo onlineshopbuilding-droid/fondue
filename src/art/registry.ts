@@ -106,7 +106,7 @@ export function buildAssets(): Record<string, AssetEntry> {
     }
   }
   for (const [name, art] of Object.entries(PROPS)) add({ name: propKey(name), art, scale: TEX_SCALE, group: groupOfProp(name), kind: 'prop' });
-  // Weapons on the keep: `weapon:<id>:<tier>`. Only tier 1 is needed before the first market.
+  // Weapons on the keep: `weapon:<id>:<tier>`. Only tier 1 is needed before the first upgrade in the Keep Shop.
   for (const w of listWeaponArt()) add({ name: w.name, art: w.art, scale: TEX_SCALE, group: w.tier === 1 ? BOOT : WEAPON_TIERS, kind: 'weapon' });
   // The lobby inside the keep is the main menu, so its pictures are made at boot.
   for (const [name, art] of Object.entries(LOBBY_ART)) add({ name: lobbyKey(name), art, scale: name === LOBBY_ROOM ? 1 : TEX_SCALE, group: BOOT, kind: 'prop' });

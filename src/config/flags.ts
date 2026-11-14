@@ -13,13 +13,6 @@ export interface FlagDef {
 
 export const FLAG_DEFS: FlagDef[] = [
   {
-    id: 'dayEnd',
-    label: 'End of day',
-    hint: 'Fight on keeps raiders on the field until they are dead. Retreat is the old rule.',
-    options: [{ value: 'fight', label: 'Fight on' }, { value: 'retreat', label: 'Retreat' }],
-    value: 'fight',
-  },
-  {
     id: 'secondHand',
     label: 'Second hand on the laptop',
     hint: 'Right mouse button = second hand (C9): alone, or pressed while the left button holds, to grab two raiders. Like every switch, it makes runs developer runs.',

@@ -244,8 +244,8 @@ test('co-op campaign: host and guest win level 1 together; both get the round\'s
   // Cheese goes to the host only: the win cheese of level 1, plus gate and challenge cheese where earned.
   const cheese = await host.evaluate(() => (window as any).__fondue.reward.cheese as number);
   expect(cheese).toBeGreaterThanOrEqual(1);
-  await expect(host.locator('#wonStars')).toContainText(`+${cheese}`);
-  await expect(guest.locator('#wonStars')).toContainText('+0');
+  await expect(host.locator('#wonCheese')).toContainText(`+${cheese}`);
+  await expect(guest.locator('#wonCheese')).toContainText('+0');
   await expect(guest.locator('.panel')).toContainText('The host decides');
   const progress = (p: Page) => p.evaluate(() => { const a = (window as any).__fondue; return [a.profile.highestLevelDone(a.world), a.profile.data.wallet.cheese]; });
   expect(await progress(host)).toEqual([1, before.host.cheese + cheese]);

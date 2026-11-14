@@ -15,7 +15,7 @@ const SIZES: Device[] = [
   { name: 'phone', width: 852, height: 393, touch: true },
 ];
 const TIMES: [string, number, boolean][] = [['day', 0.15, false], ['dusk', 0.8, false], ['night', 0.97, true]];
-/** One weapon in every slot, both offering sites. */
+/** One weapon in every slot, both stations. */
 const FULL = { slotWeapon: ['wheel', 'stomper', 'mortar', 'comet', 'bolter'], stations: { cauldron: true, perch: true } };
 
 const frames = (page: Page, n = 6) => page.evaluate((k) => new Promise<void>((r) => {

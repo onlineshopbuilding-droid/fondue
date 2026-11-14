@@ -296,9 +296,9 @@ describe('Profile: currencies and tiers', () => {
 
   it('merges settings and cleans wrong values', async () => {
     const profile = await Profile.load(new MemoryProfileStore());
-    profile.updateSettings({ musicVolume: 3, difficulty: 'easy', tuning: { gravity: 1234 }, flags: { dayEnd: 'retreat' } });
-    expect(profile.data.settings.flags).toEqual({ ...defaultFlags(), dayEnd: 'retreat' });
-    profile.updateSettings({ muted: true, flags: { dayEnd: 'nonsense', cauldron: 'back' } });
+    profile.updateSettings({ musicVolume: 3, difficulty: 'easy', tuning: { gravity: 1234 }, flags: { secondHand: 'on' } });
+    expect(profile.data.settings.flags).toEqual({ ...defaultFlags(), secondHand: 'on' });
+    profile.updateSettings({ muted: true, flags: { secondHand: 'nonsense', cauldron: 'back' } });
     const settings = profile.data.settings;
     expect(settings.musicVolume).toBe(1);
     expect(settings.difficulty).toBe('easy');

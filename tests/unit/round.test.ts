@@ -382,9 +382,9 @@ describe('quick start', () => {
   }));
 
   for (const q of QUICK_STARTS) {
-    it(`wave ${q.day}: starts there with what a run would own`, () => {
-      const sim = quick(q.day);
-      expect(sim.s.wave).toBe(q.day);
+    it(`wave ${q.wave}: starts there with what a run would own`, () => {
+      const sim = quick(q.wave);
+      expect(sim.s.wave).toBe(q.wave);
       expect(sim.s.gold).toBe(q.gold);
       // A quick start is a developer run: no scores, no stars.
       expect(sim.s.meta.devRun).toBe(true);
@@ -399,7 +399,7 @@ describe('quick start', () => {
       expect(sim.s.spawnQueue.length).toBeGreaterThan(10);
     });
 
-    it(`wave ${q.day}: every weapon is real, fits its slot and has a tier`, () => {
+    it(`wave ${q.wave}: every weapon is real, fits its slot and has a tier`, () => {
       expect(q.slots).toHaveLength(SLOTS.length);
       q.slots.forEach((id, slot) => {
         if (id === null) return;
@@ -435,20 +435,22 @@ describe('quick start', () => {
 describe('experiment switches', () => {
   it('every switch has a default among its options', () => {
     for (const f of FLAG_DEFS) expect(f.options.map((o) => o.value)).toContain(f.value);
-    expect(FLAG_DEFS.map((f) => f.id)).toContain('dayEnd');
+    expect(FLAG_DEFS.map((f) => f.id)).toContain('secondHand');
   });
 
   it('old settings and unknown values fall back to the default', () => {
-    expect(cleanFlags({ dayEnd: 'sideways', nonsense: 'x' })).toEqual(defaultFlags());
+    expect(cleanFlags({ secondHand: 'sideways', nonsense: 'x' })).toEqual(defaultFlags());
     expect(cleanFlags(undefined)).toEqual(defaultFlags());
-    expect(cleanFlags({ dayEnd: 'retreat' }).dayEnd).toBe('retreat');
+    expect(cleanFlags({ secondHand: 'on' }).secondHand).toBe('on');
+    // The end-of-day switch went with the days: an old saved value is dropped.
+    expect(cleanFlags({ dayEnd: 'retreat' })).toEqual(defaultFlags());
   });
 
   it('are part of the shared game state, so the guest gets the host values', () => {
     const sim = battle();
     const rev = sim.s.meta.rev;
-    sim.setFlags({ dayEnd: 'retreat' });
-    expect(sim.flag('dayEnd')).toBe('retreat');
+    sim.setFlags({ secondHand: 'on' });
+    expect(sim.flag('secondHand')).toBe('on');
     expect(sim.s.meta.rev).toBeGreaterThan(rev);
   });
 });

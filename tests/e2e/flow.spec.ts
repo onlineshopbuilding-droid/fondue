@@ -306,14 +306,14 @@ test('developer menu: jump to a level and wave; a developer win keeps nothing an
   await station(page, 'options');
   await page.click('#devMenuButton');
   await expect(page.locator('#tuning')).toBeVisible();
-  await page.click('#devStars');
+  await page.click('#devCheese');
   expect(await page.evaluate(() => (window as any).__fondue.profile.data.wallet.cheese)).toBe(50);
   // The last wave of level 3: winning it wins the level.
   const lastWave = levelOf(DEFAULT_WORLD, 3)!.waves.length;
   expect(lastWave).toBeGreaterThan(1);
   await page.fill('#devLevel', '3');
   // The developer menu still calls the field Day; it picks the wave.
-  await page.fill('#devDay', String(lastWave));
+  await page.fill('#devWave', String(lastWave));
   await page.click('#devJump');
   const s = await waitPhase(page, ['banner', 'battle']);
   expect(s!.mode).toBe('campaign');
@@ -343,7 +343,7 @@ test('a new raider is introduced by its window on the level it first comes; a ta
   await station(page, 'options');
   await page.click('#devMenuButton');
   await page.fill('#devLevel', String(level.id));
-  await page.fill('#devDay', '2');
+  await page.fill('#devWave', '2');
   // Untapped, a window goes by itself after some seconds of real time. A slow machine can spend
   // that long between two steps of this test, so here the windows wait for their tap.
   await page.evaluate(() => { (window as any).__fondue.popup.showMs = 10 * 60_000; });
@@ -366,7 +366,7 @@ test('developer menu: quick endless start stays off the scores; profile tools un
   await waitForGame(page);
   await waitForLobby(page);
   await page.keyboard.press('F1');
-  await page.click('#tuning button[data-startday="10"]');
+  await page.click('#tuning button[data-startwave="10"]');
   await page.click('#devQuickSolo');
   await waitFor(() => gameState(page), (s) => s?.wave === 10, GAME_WAIT);
   const meta = await page.evaluate(() => (window as any).__fondue.session.meta());
@@ -385,7 +385,7 @@ test('developer menu: quick endless start stays off the scores; profile tools un
   await page.click('#devUnlockAll');
   const unlocked = await page.evaluate(() => { const p = (window as any).__fondue.profile; const a = (window as any).__fondue; return [p.hasWeapon('bolter'), p.highestLevelDone(a.world) >= 11, p.hasStation('perch')]; });
   expect(unlocked).toEqual([true, true, true]);
-  await page.click('#devStars');
+  await page.click('#devCheese');
   await page.click('#devResetProfile');
   await page.click('#tuning button[data-act="resetConfirm"]');
   const after = await page.evaluate(() => { const p = (window as any).__fondue.profile; return [p.data.wallet.cheese, p.hasWeapon('bolter')]; });

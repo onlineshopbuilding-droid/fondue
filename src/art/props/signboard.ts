@@ -1,5 +1,5 @@
 /**
- * The wooden signboard that announces each day.
+ * The wooden signboard that announces each level and wave.
  * It hangs from the top of the screen with a pine cone on either side.
  */
 import { INK, RUST, RUSTD, MUST, CREAM, FOREST, WOOD, WOODD, WOODL, WHITE, l, hl, art } from '../draw';
@@ -31,7 +31,7 @@ function pineCone(x: number, y: number): string {
   );
 }
 
-/** Day signboard hung on two ropes: grained planks, brass caps, a nailed parchment panel. */
+/** Level signboard hung on two ropes: grained planks, brass caps, a nailed parchment panel. */
 export const banner = (() => {
   const BOARD = 'M18 38H622Q634 38 634 50L626 80L634 112Q634 124 622 124H18Q6 124 6 112L14 80L6 50Q6 38 18 38Z';
   const ROPES = 'M96 0L88 40M96 0L104 40M544 0L536 40M544 0L552 40';

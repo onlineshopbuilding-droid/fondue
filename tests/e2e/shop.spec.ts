@@ -140,7 +140,7 @@ for (const d of DEVICES) {
     await expect(card).toBeVisible();
     // Win, gate above half, gate above 90 %, and the level's challenges.
     expect(await page.locator('#cardCheese li').count()).toBeGreaterThanOrEqual(3);
-    await expect(page.locator('#cardStars')).toContainText('/5 cheese');
+    await expect(page.locator('#cardCheeseTotal')).toContainText('/5 cheese');
     await expect(page.locator('#loadout .lo-tile')).toHaveCount(5);
     // Change the loadout right in the card: the slow slot takes Sticky Fondue.
     await tap(page, d, '#lo-1');

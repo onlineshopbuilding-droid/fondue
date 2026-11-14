@@ -5,7 +5,7 @@ import type { EnemyType } from '../config/enemies';
 import { FLAG_DEFS, type Flags } from '../config/flags';
 import { HANDS } from '../config/hand';
 import { CASTLE_TIERS, STATIONS, STATION_IDS, type StationId } from '../config/keep';
-import { QUICK_STARTS, QUICK_START_MAX_DAY } from '../config/quickstart';
+import { QUICK_STARTS, QUICK_START_MAX_WAVE } from '../config/quickstart';
 import { TUNING_PRESETS, TUNING_SLIDERS, type Tuning } from '../config/tuning';
 import { MAX_TIER, WEAPONS, weaponById } from '../config/weapons';
 import { ENEMY_POPUPS } from '../config/worlds/fondue/story';
@@ -23,22 +23,22 @@ export interface TuningPanelHost {
   /** Experiment switches in effect. */
   flags(): Flags;
   setFlag(id: string, value: string): void;
-  /** Day the next endless game starts on; 1 for a normal run. */
-  startDay(): number;
-  setStartDay(day: number): void;
-  /** An endless run alone, starting on the chosen day. */
+  /** Wave the next endless game starts at; 1 for a normal run. */
+  startWave(): number;
+  setStartWave(wave: number): void;
+  /** An endless run alone, starting at the chosen wave. */
   startQuickEndless(): void;
-  /** One line about the profile: stars, levels won. */
+  /** One line about the profile: cheese, levels won. */
   profileSummary(): string;
-  addStars(n: number): void;
+  addCheese(n: number): void;
   unlockEverything(): void;
   replayTutorial(): void;
   resetProfile(): void;
-  /** Starts a campaign level alone on a later day. */
-  jumpTo(level: number, day: number): void;
+  /** Starts a campaign level alone at a later wave. */
+  jumpTo(level: number, wave: number): void;
   levelCount(): number;
-  /** How many days this campaign level has. */
-  levelDays(level: number): number;
+  /** How many waves this campaign level has. */
+  levelWaves(level: number): number;
   /** Permanent tiers in the profile. */
   weaponTier(id: string): number;
   setWeaponTier(id: string, tier: number): void;
@@ -69,8 +69,8 @@ const BADGE_STYLE = 'display:inline-block;margin:0 8px;padding:1px 9px;border-ra
 /** What the cheats work on: the profile, its world and a redraw of the menus. */
 interface CheatTarget { profile: Profile; world: string; redraw(): void }
 
-/** Stars added per tap of the button. */
-const STAR_GIFT = 50;
+/** Cheese added per tap of the button. */
+const CHEESE_GIFT = 50;
 
 /** The developer overview page, next to the game. */
 const devOverviewUrl = (): string => `${import.meta.env.BASE_URL ?? '/'}dev/`;
@@ -81,7 +81,7 @@ export class TuningPanel {
   private el: HTMLDivElement | null = null;
   private confirmReset = false;
   private jumpLevel = 1;
-  private jumpDay = 1;
+  private jumpWave = 1;
   /** Which page of the menu is on show: the tools, or the decision and rating list. */
   private view: 'main' | 'review' = 'main';
   private tierWeapon = WEAPONS[0]?.id ?? '';
@@ -136,7 +136,7 @@ export class TuningPanel {
       </div>
       ${rows}
       <label class="dev-check"><input type="checkbox" data-toggle="knockOthers" ${t.knockOthers ? 'checked' : ''} ${edit ? '' : 'disabled'}> Thrown enemies knock others over</label>
-      <div class="note-dev">Changed tuning or switches make every run a developer run: no scores, no stars.</div>
+      <div class="note-dev">Changed tuning or switches make every run a developer run: no scores, no cheese.</div>
       <div class="row dev-options" style="margin:10px 0 6px">
         <button class="small secondary" data-act="export">Export</button>
         <button class="small secondary" data-act="import" ${edit ? '' : 'disabled'}>Import</button>
@@ -153,15 +153,15 @@ export class TuningPanel {
         <div class="row dev-options">${f.options.map((o) => `<button class="small ${flags[f.id] === o.value ? '' : 'secondary'}" data-flag="${f.id}" data-value="${o.value}" ${edit ? '' : 'disabled'}>${o.label}</button>`).join('')}</div>
         <div class="note-dev">${f.hint}</div>
       </div>`).join('');
-    const day = this.host.startDay();
-    const days = [1, ...QUICK_STARTS.map((q) => q.day)].map((d) => `<button class="small ${day === d ? '' : 'secondary'}" data-startday="${d}" ${edit ? '' : 'disabled'}>${d === 1 ? 'Normal' : `Day ${d}`}</button>`).join('');
+    const wave = this.host.startWave();
+    const waves = [1, ...QUICK_STARTS.map((q) => q.wave)].map((d) => `<button class="small ${wave === d ? '' : 'secondary'}" data-startwave="${d}" ${edit ? '' : 'disabled'}>${d === 1 ? 'Normal' : `Wave ${d}`}</button>`).join('');
     const reset = this.confirmReset
       ? `<div class="dev-confirm" id="resetConfirm"><div class="dev-label">Erase the whole profile? This cannot be undone.</div>
           <div class="row navrow"><div class="nav-back"><button class="small secondary" data-act="resetCancel">Cancel</button></div>
           <div class="nav-forward"><button class="small alt" data-act="resetConfirm">Erase profile</button></div></div></div>`
       : '<button class="small alt" data-act="resetProfile" id="devResetProfile">Reset profile</button>';
-    const maxDay = this.host.levelDays(this.jumpLevel);
-    this.jumpDay = Math.min(this.jumpDay, maxDay);
+    const maxWave = this.host.levelWaves(this.jumpLevel);
+    this.jumpWave = Math.min(this.jumpWave, maxWave);
     return `
       <div class="dev-section" id="developer">
         ${edit ? '' : '<p class="note">The host decides these for both players.</p>'}
@@ -175,15 +175,15 @@ export class TuningPanel {
           <div class="dev-label">Jump to a campaign level</div>
           <div class="row dev-options">
             <label class="dev-num">Level <input type="number" id="devLevel" min="1" max="${this.host.levelCount()}" value="${this.jumpLevel}"></label>
-            <label class="dev-num">Day <input type="number" id="devDay" min="1" max="${maxDay}" value="${this.jumpDay}"></label>
+            <label class="dev-num">Wave <input type="number" id="devWave" min="1" max="${maxWave}" value="${this.jumpWave}"></label>
             <button class="small" data-act="jump" id="devJump">Go</button>
           </div>
-          <div class="note-dev">Starts alone at once. A later day counts as a developer run.</div>
+          <div class="note-dev">Starts alone at once. A later wave counts as a developer run.</div>
         </div>
         <div class="dev-row">
           <div class="dev-label">Endless starts on</div>
-          <div class="row dev-options">${days}
-            <label class="dev-num">Day <input type="number" id="devEndlessDay" min="1" max="${QUICK_START_MAX_DAY}" value="${day}" ${edit ? '' : 'disabled'}></label>
+          <div class="row dev-options">${waves}
+            <label class="dev-num">Wave <input type="number" id="devEndlessWave" min="1" max="${QUICK_START_MAX_WAVE}" value="${wave}" ${edit ? '' : 'disabled'}></label>
           </div>
           <div class="note-dev">Applies to solo and to an endless game you host. Quick starts do not count for the scores.</div>
           ${edit ? '<div class="row dev-options" style="margin-top:6px"><button class="small" data-act="quickSolo" id="devQuickSolo">Start endless now</button></div>' : ''}
@@ -192,7 +192,7 @@ export class TuningPanel {
           <div class="dev-label">Profile</div>
           <div class="note-dev" id="devProfile">${this.host.profileSummary()}</div>
           <div class="row dev-options">
-            <button class="small secondary" data-act="stars" id="devStars">+${STAR_GIFT} cheese</button>
+            <button class="small secondary" data-act="cheese" id="devCheese">+${CHEESE_GIFT} cheese</button>
             <button class="small secondary" data-act="unlockAll" id="devUnlockAll">Unlock everything</button>
             <button class="small secondary" data-act="replayTutorial" id="devTutorial">Replay tutorial</button>
           </div>
@@ -368,17 +368,17 @@ export class TuningPanel {
     const target = ev.target as HTMLInputElement;
     if (target.id === 'devLevel') {
       this.jumpLevel = clampInt(target.value, 1, this.host.levelCount());
-      // The day field follows the chosen level: it allows every day that level has.
-      const dayField = this.el?.querySelector<HTMLInputElement>('#devDay');
-      const max = this.host.levelDays(this.jumpLevel);
-      if (dayField) {
-        dayField.max = String(max);
-        if (this.jumpDay > max) { this.jumpDay = max; dayField.value = String(max); }
+      // The wave field follows the chosen level: it allows every wave that level has.
+      const waveField = this.el?.querySelector<HTMLInputElement>('#devWave');
+      const max = this.host.levelWaves(this.jumpLevel);
+      if (waveField) {
+        waveField.max = String(max);
+        if (this.jumpWave > max) { this.jumpWave = max; waveField.value = String(max); }
       }
       return;
     }
-    if (target.id === 'devDay') { this.jumpDay = clampInt(target.value, 1, this.host.levelDays(this.jumpLevel)); return; }
-    if (target.id === 'devEndlessDay') { if (target.value !== '') this.host.setStartDay(clampInt(target.value, 1, QUICK_START_MAX_DAY)); return; }
+    if (target.id === 'devWave') { this.jumpWave = clampInt(target.value, 1, this.host.levelWaves(this.jumpLevel)); return; }
+    if (target.id === 'devEndlessWave') { if (target.value !== '') this.host.setStartWave(clampInt(target.value, 1, QUICK_START_MAX_WAVE)); return; }
     if (target.dataset.rnote) { this.host.setRating(target.dataset.rnote, { note: target.value }); return; }
     if (target.id === 'devUnlockTo') { this.unlockTo = clampInt(target.value, 1, 1000); return; }
     if (target.id === 'devTierWeapon' || target.id === 'devPopupEnemy' || target.dataset.rcheck) return;
@@ -419,8 +419,8 @@ export class TuningPanel {
       this.render();
       return;
     }
-    if (b.dataset.startday) {
-      this.host.setStartDay(Number(b.dataset.startday));
+    if (b.dataset.startwave) {
+      this.host.setStartWave(Number(b.dataset.startwave));
       this.render();
       return;
     }
@@ -460,15 +460,15 @@ export class TuningPanel {
     switch (b.dataset.act) {
       case 'close': this.toggle(); return;
       case 'quickSolo': this.toggle(); this.host.startQuickEndless(); return;
-      case 'jump': this.toggle(); this.host.jumpTo(this.jumpLevel, Math.min(this.jumpDay, this.host.levelDays(this.jumpLevel))); return;
+      case 'jump': this.toggle(); this.host.jumpTo(this.jumpLevel, Math.min(this.jumpWave, this.host.levelWaves(this.jumpLevel))); return;
       case 'replayTutorial': this.toggle(); this.host.replayTutorial(); return;
       case 'popup': this.toggle(); this.host.showEnemyPopup(this.popupEnemy); return;
       case 'review': this.view = 'review'; this.copied = ''; this.render(); if (this.el) this.el.scrollTop = 0; return;
       case 'reviewBack': this.view = 'main'; this.copied = ''; this.render(); if (this.el) this.el.scrollTop = 0; return;
       case 'copyRatings': void this.copyRatings(); return;
-      case 'stars':
-        if (this.cheatTarget()) this.withCheat((t) => giveCheese(t.profile, STAR_GIFT));
-        else { this.host.addStars(STAR_GIFT); this.render(); }
+      case 'cheese':
+        if (this.cheatTarget()) this.withCheat((t) => giveCheese(t.profile, CHEESE_GIFT));
+        else { this.host.addCheese(CHEESE_GIFT); this.render(); }
         return;
       case 'crests': this.withCheat((t) => giveCrests(t.profile, CREST_GIFT)); return;
       case 'unlockLevels': this.withCheat((t) => unlockLevels(t.profile, t.world, this.unlockTo)); return;

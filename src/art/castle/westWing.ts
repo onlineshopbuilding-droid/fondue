@@ -1,6 +1,6 @@
 /**
- * The keep's west wing: everything left of the keep, which only the market shows when the camera
- * pulls back (world x -400 to 0; the fight never looks there). One picture per build stage, in that
+ * The keep's west wing: everything left of the keep (world x -400 to 0). Not drawn in v0.3: the
+ * fight never looks there; the art stays for a later view of the keep. One picture per build stage, in that
  * stage's materials: a corner tower where it meets the keep, a back wall with the yard in front of it
  * (the dairy and its cheese wheels), a low front wall and an end tower. Plus night glow, snow and the
  * landscape's ground along the wall foot.

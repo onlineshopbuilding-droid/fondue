@@ -170,7 +170,7 @@ test('developer menu on a phone: from Options by finger, and it starts a game', 
   await tapStation(page, 'options', true);
   await page.tap('#devMenuButton');
   await expect(page.locator('#tuning')).toBeVisible();
-  await page.tap('#tuning button[data-startday="10"]');
+  await page.tap('#tuning button[data-startwave="10"]');
   await page.tap('#devQuickSolo');
   await waitFor(() => gameState(page), (s) => s?.wave === 10, GAME_WAIT);
   await expect(page.locator('#tuning')).toHaveCount(0);

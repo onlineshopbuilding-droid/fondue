@@ -15,7 +15,7 @@ import { CastleView } from './castleView';
 import { Effects } from './effects';
 import { EnemyView } from './enemyView';
 import { Hud } from './hud';
-import { camAt, hookAt, stepMarket, type CamRect } from './marketCamera';
+import { fightRect, hookAt, type CamRect } from './camera';
 import { diveRect } from './lobby/dive';
 import { Stations } from './stations';
 import { TutorialView } from './tutorialView';
@@ -38,8 +38,6 @@ export interface SceneHooks {
   togglePause(): void;
   isInputBlocked(): boolean;
   onBuyNotice(text: string): void;
-  /** A place on the keep was tapped in the market: 'slot:<i>', 'gate', 'station:<id>'. */
-  onKeepTap(spot: string): void;
 }
 
 interface HandView { img: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; }
@@ -57,11 +55,9 @@ export class GameScene extends Phaser.Scene {
   private stations!: Stations;
   /** The King, the gesture lesson of the prelude and the pot hint of level 1. */
   tutorial!: TutorialView;
-  /** 0 in the fight, 1 in the market at the keep; in between while the camera moves. */
-  private marketK = 0;
   /** 0 normally; towards 1 the camera dives into the keep's gate, on the way to the lobby (src/ui/lobby). */
   lobbyDive = 0;
-  /** The part of the world on screen right now (the fight view, the market view or between). */
+  /** The part of the world on screen right now (the fight view, or the lobby's dive into the keep). */
   private cam: CamRect = { x: 0, y: 0, w: WORLD.width, h: WORLD.height };
   private banner!: Phaser.GameObjects.Container;
   private bannerText!: Phaser.GameObjects.Text;
@@ -87,7 +83,7 @@ export class GameScene extends Phaser.Scene {
   private shakeAmp = 0;
   private lastView: ViewState | null = null;
   private lastPhase = '';
-  private lastDay = 0;
+  private shownWave = 0;
   private lastFrameMs = 16.7;
   /** For the debug overlay and tests. */
   debug = { fps: 60, enemies: 0, frameMs: 16 };
@@ -137,7 +133,7 @@ export class GameScene extends Phaser.Scene {
     const w = Math.round(v.width * rs);
     const h = Math.round(v.height * rs);
     if (this.scale.gameSize.width !== w || this.scale.gameSize.height !== h) this.scale.setGameSize(w, h);
-    this.cam = camAt(v, this.marketK);
+    this.cam = fightRect(v);
     this.cameras.main.setSize(w, h).setOrigin(0, 0).setZoom(rs * (v.width / this.cam.w)).setScroll(this.cam.x, this.cam.y);
     this.sharpenText(rs);
     this.bg.layout(v);
@@ -263,12 +259,11 @@ export class GameScene extends Phaser.Scene {
     this.flameViews.clear();
     this.cheeseGfx.clear();
     this.lastPhase = '';
-    this.lastDay = 0;
+    this.shownWave = 0;
     this.lastView = null;
     this.bannerT = -1;
     this.banner.y = -170;
     this.stations.reset();
-    this.marketK = 0;
     this.veilT = 0;
     this.flashT = 0;
     this.veil.setVisible(false);
@@ -284,8 +279,7 @@ export class GameScene extends Phaser.Scene {
     const realDt = Math.min(0.05, deltaMs / 1000);
     const s = this.session;
     if (!s) {
-      this.marketK = 0;
-      this.cam = diveRect(camAt(this.view, 0), this.lobbyDive);
+      this.cam = diveRect(fightRect(this.view), this.lobbyDive);
       this.hud.setVisible(false);
       this.bg.setLandscape('meadow');
       this.bg.update(8, 50, false, 640, realDt);
@@ -293,13 +287,11 @@ export class GameScene extends Phaser.Scene {
       this.hooks?.onFrame(null);
       return;
     }
-    // There is no market during a level any more: the camera stays on the fight (marketK stays 0).
-    this.marketK = stepMarket(this.marketK, false, realDt);
-    this.cam = diveRect(camAt(this.view, this.marketK), this.lobbyDive);
+    this.cam = diveRect(fightRect(this.view), this.lobbyDive);
     // The bars are screen furniture of the fight.
     // While the camera comes out of the keep (lobby) they would be drawn zoomed, so they wait.
-    this.hud.setVisible(this.marketK === 0 && this.lobbyDive === 0);
-    this.banner.setVisible(this.marketK === 0 && this.lobbyDive === 0);
+    this.hud.setVisible(this.lobbyDive === 0);
+    this.banner.setVisible(this.lobbyDive === 0);
 
     s.setHand(this.tracker.x, this.tracker.y);
     if (this.tracker2.pressed) s.setHand(this.tracker2.x, this.tracker2.y, 1);
@@ -332,7 +324,7 @@ export class GameScene extends Phaser.Scene {
       }
       this.renderKeep(view, meta, realDt, now);
       this.updatePhase(view, meta);
-      this.tutorial.update(s, view, meta, events, realDt, this.view, this.cam, this.marketK);
+      this.tutorial.update(s, view, meta, events, realDt, this.view, this.cam);
     }
 
     this.fx.update(dt);
@@ -382,10 +374,9 @@ export class GameScene extends Phaser.Scene {
 
   private renderKeep(view: ViewState, meta: Meta | null, dt: number, time: number) {
     if (!meta) return;
-    const k = this.marketK;
-    const hook = hookAt(this.view, meta.fieldW, k);
-    this.castle.update(view, meta, this.bg.shown, this.bg.tint, this.bg.night, dt, time, k);
-    this.stations.update(view, meta, this.bg.tint, dt, time, hook, k);
+    const hook = hookAt(meta.fieldW);
+    this.castle.update(view, meta, this.bg.shown, this.bg.tint, this.bg.night, dt, time);
+    this.stations.update(view, meta, this.bg.tint, dt, time, hook);
   }
 
   private renderProjectiles(list: ViewProjectile[]) {
@@ -506,9 +497,9 @@ export class GameScene extends Phaser.Scene {
 
   private updatePhase(view: ViewState, meta: Meta | null) {
     // The prelude is no official round: no signboard, it just begins.
-    if (view.wave !== this.lastDay) {
-      const first = this.lastDay <= 0 || view.phase === 'banner';
-      this.lastDay = view.wave;
+    if (view.wave !== this.shownWave) {
+      const first = this.shownWave <= 0 || view.phase === 'banner';
+      this.shownWave = view.wave;
       if (!this.isPrelude() && !first) {
         const line = this.waveBanner(view.wave, meta);
         if (line) this.showBanner(line, 2);
@@ -800,7 +791,7 @@ export class GameScene extends Phaser.Scene {
         break;
       case 'waveStart':
         // The sound of a new wave (its asset still carries the old name).
-        if (ev.wave > 1) this.sfx('dayStart', 0.5);
+        if (ev.wave > 1) this.sfx('waveStart', 0.5);
         break;
       case 'runWon':
         if (this.isPrelude()) break;
@@ -855,10 +846,10 @@ export class GameScene extends Phaser.Scene {
     if (ev.gold > 0) this.fx.floatText(ev.x, ev.y - 60, `+${ev.gold}`);
     this.sfx('coin', 0.45);
     if (ev.cause === 'eagle') {
-      // The crest flies to the counter. The effect and sound keep their old asset names.
+      // The crest flies to the counter.
       const crest = this.hud.crestTarget();
-      this.fx.offering(ev.x, ev.y, crest.x, crest.y);
-      this.sfx('offering');
+      this.fx.crestFly(ev.x, ev.y, crest.x, crest.y);
+      this.sfx('crest');
     }
   }
 

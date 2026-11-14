@@ -32,7 +32,7 @@ export const WORLD = {
  * Field width. The host's screen decides it at the start of a game and both players get the same
  * field. Enemies walk faster on a wider field, so that a wide phone gains no breathing room. They
  * make up only part of the extra distance: at full compensation, fast raiders on a wide field were
- * so much harder to hit that the balance bots lost a third of their days (docs/balance.md).
+ * so much harder to hit that the balance bots lost a third of their runs (docs/balance.md).
  */
 export const FIELD = {
   min: 1280,

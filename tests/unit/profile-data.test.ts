@@ -121,7 +121,7 @@ describe('migrate', () => {
         muted: 1,
         relayAddress: 42,
         tuning: { gravity: 'heavy', throwMult: 2, knockOthers: 'yes', notATuningValue: 5 },
-        flags: { cauldron: 'back', dayEnd: 5 },
+        flags: { cauldron: 'back', secondHand: 5 },
       },
     });
     expect(data.settings).toEqual({

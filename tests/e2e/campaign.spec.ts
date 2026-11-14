@@ -72,7 +72,7 @@ test('first start on a phone: the tutorial teaches the throw, level 1 follows an
   await winRun(page);
   await waitScreen(page, 'won');
   await expect(page.locator('#wonLevel')).toHaveText(LEVEL1.name);
-  await expect(page.locator('#wonStars')).toContainText('+');
+  await expect(page.locator('#wonCheese')).toContainText('+');
   await page.screenshot({ path: 'mobile-screenshots/level1-won.png' });
   const after = await profile(page);
   expect(after.done).toBe(1);
@@ -98,7 +98,7 @@ test('campaign map: a level card, a lost level keeps its gold, try again, and ba
   await page.click('#closeCard');
   await page.click('.cm-st[data-level="1"]');
   await expect(page.locator('#cardName')).toHaveText(LEVEL1.name);
-  await expect(page.locator('#cardStars')).toContainText('0/5 cheese');
+  await expect(page.locator('#cardCheeseTotal')).toContainText('0/5 cheese');
   await page.screenshot({ path: 'mobile-screenshots/campaign-map.png' });
   await page.click('#playLevel');
   const first = await waitPhase(page, ['banner', 'battle']);
@@ -139,12 +139,12 @@ test('a level won from the map pays cheese once, unlocks what it holds and opens
   expect(won.cheese).toBeGreaterThanOrEqual(1);
   await page.click('#continue');
   await waitForLobby(page);
-  await expect(page.locator('#stars')).toHaveText(String(won.cheese));
+  await expect(page.locator('#cheeseTotal')).toHaveText(String(won.cheese));
   await station(page, 'campaign');
   await expect(page.locator('.cm-st[data-level="2"]')).toHaveClass(/done/);
   await expect(page.locator('.cm-st[data-level="3"]')).toHaveAttribute('data-a', 'level');
   await page.click('.cm-st[data-level="2"]');
-  await expect(page.locator('#cardStars')).toContainText('replays pay gold');
+  await expect(page.locator('#cardCheeseTotal')).toContainText('replays pay gold');
   await expect(page.locator('#playLevel')).toHaveText('Play again');
   // Winning again pays no cheese twice: only bits not set before count.
   const maskOf = () => page.evaluate(() => { const a = (window as any).__fondue; return (a.profile.data.worlds[a.world].cheese['2'] ?? 0) as number; });

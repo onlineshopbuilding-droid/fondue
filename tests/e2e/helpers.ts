@@ -219,9 +219,6 @@ export async function endLevel(page: Page) {
   await nextWave(page);
 }
 
-/** @deprecated Days are waves now (F2): ends the current wave, like `nextWave`. */
-export const endDay = nextWave;
-
 /** Breaks the gate of the host's run. */
 export async function breakGate(page: Page) {
   await page.evaluate(() => { (window as any).__fondue.session.sim.s.gateHp = 0; });
