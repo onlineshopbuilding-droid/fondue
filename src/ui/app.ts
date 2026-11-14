@@ -162,6 +162,9 @@ export class App implements ScreenContext, CoopRoomHost {
       ratings: () => this.profile.data.devRatings,
       setRating: (id, patch) => this.profile.setRating(id, patch),
       ratingsText: () => this.profile.ratingsAsText(reviewLabels()),
+      profile: () => this.profile,
+      world: () => this.world,
+      afterCheat: () => this.redrawMenus(),
     });
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
