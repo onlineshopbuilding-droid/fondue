@@ -3,6 +3,8 @@
  * `ENDLESS.buildRun` with a fresh profile) and lets a test change what it needs before the Sim starts.
  */
 import { ENEMIES, type EnemyType } from '../../src/config/enemies';
+import { WORLD, perchX } from '../../src/config/field';
+import { handStrength, massOfType, throwFactor } from '../../src/sim/physics';
 import type { Flags } from '../../src/config/flags';
 import { SLOTS } from '../../src/config/slots';
 import { TUNING_DEFAULT, type Tuning } from '../../src/config/tuning';
@@ -10,7 +12,8 @@ import type { Difficulty, Landscape } from '../../src/config/waves';
 import { weaponById } from '../../src/config/weapons';
 import { ENDLESS as ENDLESS_MODE } from '../../src/modes';
 import { MemoryProfileStore, Profile } from '../../src/profile';
-import { FixedPlanner, type DayPlanner, type DaySpec } from '../../src/sim/plan';
+import type { WaveDef } from '../../src/config/worlds/types';
+import { FixedPlanner, type WavePlanner } from '../../src/sim/plan';
 import type { Loadout, RunRules, RunSetup, RunStart } from '../../src/sim/rules';
 import { Sim } from '../../src/sim/sim';
 import type { Enemy, SimEvent } from '../../src/sim/types';
@@ -31,18 +34,18 @@ export interface SimOpts {
   fieldW?: number;
   handTiers?: number[];
   /** Start values on top of a fresh start. */
-  day?: number;
+  wave?: number;
   gold?: number;
-  offerings?: number;
+  gateHp?: number;
   loadout?: Partial<Loadout>;
   seenTypes?: EnemyType[];
   /** Replaces single rules of the run. */
   rules?: Partial<RunRules>;
-  /** Fixed days instead of the endless planner. */
-  days?: DaySpec[];
+  /** Fixed waves instead of the endless planner (the run ends after the last of them). */
+  waves?: WaveDef[];
   landscape?: Landscape;
   coopCount?: number;
-  planner?: DayPlanner;
+  planner?: WavePlanner;
   devRun?: boolean;
   profile?: Profile;
 }
@@ -54,16 +57,17 @@ export function makeSetup(o: SimOpts = {}): RunSetup {
     names, fieldW: o.fieldW ?? 1280, handTiers: o.handTiers ?? names.map(() => 1), seed: o.seed ?? 42,
     tuning: { ...TUNING_DEFAULT, ...o.tuning }, flags: o.flags,
   });
-  const rules: RunRules = { ...setup.rules, ...o.rules };
+  // Unit tests arm any slot they like; a fresh profile has none open.
+  const rules: RunRules = { ...setup.rules, slotsOpen: setup.rules.slotsOpen.map(() => true), ...(o.waves ? { lastWave: o.waves.length } : {}), ...o.rules };
   const base: RunStart = setup.start;
   const loadout: Loadout = { ...base.loadout, ...o.loadout };
   if (o.handTiers && !o.loadout?.handTier) loadout.handTier = [...o.handTiers];
   const start: RunStart = {
-    ...base, loadout, day: o.day ?? base.day, gold: o.gold ?? base.gold, offerings: o.offerings ?? base.offerings,
+    ...base, loadout, wave: o.wave ?? base.wave, gold: o.gold ?? base.gold, gateHp: o.gateHp ?? base.gateHp,
     seenTypes: o.seenTypes ?? base.seenTypes,
   };
   let planner = o.planner ?? setup.planner;
-  if (o.days) planner = new FixedPlanner(o.days, o.landscape ?? 'meadow', () => o.coopCount ?? 1);
+  if (o.waves) planner = new FixedPlanner(o.waves, o.landscape ?? 'meadow', { coopFactor: o.coopCount ?? 1 });
   return { ...setup, rules, start, planner, devRun: o.devRun ?? setup.devRun };
 }
 
@@ -71,11 +75,12 @@ export function makeSim(o: SimOpts = {}): Sim {
   return new Sim(makeSetup(o));
 }
 
-/** A run already in the fight, with an empty arrival list, so the test places its own raiders. */
+/** A run already in the fight with the wave clock stopped, so the test places its own raiders. */
 export function battleSim(o: SimOpts = {}): Sim {
   const sim = makeSim(o);
   toBattle(sim);
-  sim.s.spawnQueue = [];
+  sim.freezeWaves();
+  sim.s.enemies = [];
   sim.drainEvents();
   return sim;
 }
@@ -109,20 +114,20 @@ export function runFor(sim: Sim, seconds: number): SimEvent[] {
   return all;
 }
 
-/** Ends the fight of the current day with an empty field and steps into the market. */
-export function skipToMarket(sim: Sim) {
-  toBattle(sim);
-  sim.s.spawnQueue = [];
+/** One small wave for tests: `n` Pothelms over `seconds`, then `pause` seconds of breath. */
+export const wave = (n: number, seconds = 4, pause = 3): WaveDef => ({ counts: { grunt: n }, spawnSeconds: seconds, packs: 1, pauseAfter: pause });
+
+/** Clears the field and lets every remaining wave arrive at once (the run then ends when they are gone). */
+export function clearWave(sim: Sim) {
   sim.s.enemies = [];
-  sim.s.dayT = sim.s.meta.today.seconds;
-  runUntil(sim, () => sim.s.phase !== 'battle' && sim.s.phase !== 'victory', 1000);
+  sim.s.waveT = Math.max(sim.s.waveT, ...sim.s.spawnQueue.map((e) => e.t));
 }
 
 /** The first slot that takes this weapon. */
 export function slotFor(weapon: string): number {
   const def = weaponById(weapon);
   if (!def) throw new Error(`unknown weapon ${weapon}`);
-  return SLOTS.findIndex((s) => s.type === def.slotType);
+  return SLOTS.findIndex((s) => s.role === def.slot);
 }
 
 /** Puts a weapon at a tier into its slot (or the given one) and returns the slot. */
@@ -154,6 +159,20 @@ export function carryTo(sim: Sim, e: Enemy, x: number, y: number, vx = 0, vy = 0
   sim.setHand(p, x, y);
   sim.step();
   sim.command({ k: 'release', p, x, y, vx, vy });
+}
+
+/**
+ * An aimed throw onto the Eagle Perch (C6): grabbed, carried to `lead` world units left of the
+ * hook and flung flat so that its collar meets the hook. The swipe makes up for the raider's weight.
+ */
+export function throwOntoHook(sim: Sim, e: Enemy, p = 0, lead = 180, speed = 1000) {
+  const h = ENEMIES[e.type].height;
+  const t = lead / speed;
+  const drop = 0.5 * sim.tuning.gravity * t * t;
+  const hookX = perchX(sim.fieldW);
+  const y0 = WORLD.perch.hookY + 0.3 * h - drop;
+  const factor = throwFactor(massOfType(e.type, e.big, e.crow), handStrength(sim.loadout.handTier[p] ?? 1));
+  carryTo(sim, e, hookX - lead, y0 - 0.5 * h, speed / (sim.tuning.throwMult * factor), 0, p);
 }
 
 export function fire(sim: Sim, slot: number, p = 0): SimEvent[] {

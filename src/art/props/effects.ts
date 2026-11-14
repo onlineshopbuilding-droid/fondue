@@ -1,5 +1,5 @@
 /**
- * Debris and effect images: armour bits, coin, offering, blood splats, dust, sparks, stars, flames, the ice block and the shield bubble.
+ * Debris and effect images: armour bits, coin, crest token, blood splats, dust, sparks, stars, flames, the ice block and the shield bubble.
  * The particle system in src/render/effects.ts throws these around.
  */
 import { INK, TEALD, RUST, RUSTD, MUST, MUSTL, CREAM, WOOD, WOODD, WOODL, IRON, IRONL, RED, REDL, GLOW, WHITE, GOLD, GOLDD, n, hl, blob, art, centred, starPoints } from '../draw';
@@ -93,8 +93,8 @@ export const coin = (() => {
   );
 })();
 
-/** Offering: a wedge of cheese with holes under a soft teal glow and a "collected" arrow. */
-export const offering = fxPad(
+/** Crest token (Raider Crest): a wedge of cheese with holes under a soft teal glow and a "collected" arrow. */
+export const crestToken = fxPad(
   28,
   28,
   2,

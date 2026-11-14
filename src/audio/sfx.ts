@@ -13,7 +13,7 @@ export type SfxName =
   | 'impactSplat'
   | 'softBounce'
   | 'coin'
-  | 'offering'
+  | 'crest'
   | 'explosion'
   | 'cannon'
   | 'bolter'
@@ -30,7 +30,7 @@ export type SfxName =
   | 'uiClick'
   | 'uiDenied'
   | 'buy'
-  | 'dayStart'
+  | 'waveStart'
   | 'victory'
   | 'defeat'
   | 'weaponReady'
@@ -526,7 +526,7 @@ function coin(): Float32Array {
   return m.finish(0.42);
 }
 
-function offering(): Float32Array {
+function crest(): Float32Array {
   const m = new Mix(1.05, 19);
   ['E5', 'A5', 'B5', 'E6'].forEach((note, i) => {
     const freq = hz(note);
@@ -585,7 +585,7 @@ function brass(m: Mix, note: string, start: number, dur: number, gain = 1, cutof
 
 type NoteSpec = readonly [string, number, number];
 
-function dayStart(): Float32Array {
+function waveStart(): Float32Array {
   const m = new Mix(0.98, 24);
   const line: NoteSpec[] = [['G4', 0, 0.12], ['C5', 0.12, 0.12], ['E5', 0.24, 0.12], ['G5', 0.36, 0.58]];
   for (const [note, start, dur] of line) brass(m, note, start, dur);
@@ -757,7 +757,7 @@ export const SFX_RECIPES: Record<SfxName, Recipe[]> = {
   impactSplat: [() => splat(50, 1400), () => splat(51, 2100), () => splat(52, 950)],
   softBounce: [softBounce],
   coin: [coin],
-  offering: [offering],
+  crest: [crest],
   explosion: [() => explosion(60), () => explosion(61)],
   cannon: [cannon],
   bolter: [bolter],
@@ -774,7 +774,7 @@ export const SFX_RECIPES: Record<SfxName, Recipe[]> = {
   uiClick: [uiClick],
   uiDenied: [uiDenied],
   buy: [buy],
-  dayStart: [dayStart],
+  waveStart: [waveStart],
   victory: [victory],
   defeat: [defeat],
   weaponReady: [weaponReady],

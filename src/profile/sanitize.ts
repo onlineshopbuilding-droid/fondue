@@ -3,10 +3,13 @@
 import { cleanFlags, type Flags } from '../config/flags';
 import { TUNING_DEFAULT, type Tuning } from '../config/tuning';
 import { DIFFICULTIES, type Difficulty } from '../config/waves';
+import { CHEESE_FULL_MASK } from '../config/currencies';
+import { STATIONS, STATION_IDS, type StationId } from '../config/keep';
 import {
-  CLAIMED_RUNS_LIMIT, HAND_TIER_MAX, HAND_TIER_MIN, PROFILE_VERSION, SCORES_LIMIT, WEAPON_TIER_MAX, WEAPON_TIER_MIN,
-  freshProfile, freshSettings,
-  type DevRating, type ProfileData, type ProfileSettings, type ScoreEntry, type WorldProgress,
+  CASTLE_TIER_MAX, CASTLE_TIER_MIN, CLAIMED_RUNS_LIMIT, HAND_TIER_MAX, HAND_TIER_MIN, LOADOUT_LENGTH, PROFILE_FORMAT,
+  PROFILE_VERSION, SCORES_LIMIT, WEAPON_TIER_MAX, WEAPON_TIER_MIN, freshProfile, freshSettings,
+  type DevRating, type KeepData, type OwnedWeapon, type ProfileData, type ProfileSettings, type ScoreEntry, type SeenData,
+  type Wallet, type WorldProgress,
 } from './schema';
 
 export type RawRecord = Record<string, unknown>;
@@ -95,7 +98,7 @@ function sanitizeScore(value: unknown): ScoreEntry | null {
   const entry: ScoreEntry = {
     names: asString(value.names, ''),
     coop: asBoolean(value.coop, false),
-    day: asCount(value.day),
+    wave: asCount(value.wave ?? value.day),
     score: value.score,
     kills: asCount(value.kills),
     difficulty: asDifficulty(value.difficulty, 'medium'),
@@ -112,20 +115,31 @@ export function sanitizeScores(value: unknown): ScoreEntry[] {
   return entries.sort((a, b) => b.score - a.score).slice(0, SCORES_LIMIT);
 }
 
-function sanitizeMilestones(value: unknown): Record<string, number[]> {
-  const out: Record<string, number[]> = {};
-  for (const [difficulty, days] of entriesOf(value)) out[difficulty] = integerList(days);
+/** Level -> cheese mask: only whole level numbers and the five known bits are kept. */
+function sanitizeCheese(value: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [level, mask] of entriesOf(value)) {
+    if (!/^\d+$/.test(level) || !isFiniteNumber(mask)) continue;
+    const clean = Math.floor(mask) & CHEESE_FULL_MASK;
+    if (clean > 0) out[level] = clean;
+  }
+  return out;
+}
+
+function sanitizeBest(value: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [difficulty, wave] of entriesOf(value)) if (isFiniteNumber(wave)) out[difficulty] = asCount(wave);
   return out;
 }
 
 export function sanitizeWorld(value: unknown): WorldProgress {
   const raw = isRecord(value) ? value : {};
   return {
-    levelsDone: integerList(raw.levelsDone),
-    guestStarLevels: integerList(raw.guestStarLevels),
+    levelsDone: integerList(raw.levelsDone).filter((n) => n >= 1),
+    cheese: sanitizeCheese(raw.cheese),
     storyRead: stringList(raw.storyRead),
-    endlessMilestones: sanitizeMilestones(raw.endlessMilestones),
     scores: sanitizeScores(raw.scores),
+    endlessBest: sanitizeBest(raw.endlessBest),
   };
 }
 
@@ -135,12 +149,57 @@ function sanitizeWorlds(value: unknown): Record<string, WorldProgress> {
   return out;
 }
 
-function sanitizeWeaponTiers(value: unknown): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const [weaponId, tier] of entriesOf(value)) {
-    if (isFiniteNumber(tier)) out[weaponId] = asTier(tier, WEAPON_TIER_MIN, WEAPON_TIER_MAX);
+function sanitizeWallet(value: unknown): Wallet {
+  const raw = isRecord(value) ? value : {};
+  return { cheese: asCount(raw.cheese), gold: asCount(raw.gold), crests: asCount(raw.crests) };
+}
+
+function sanitizeOwnedWeapons(value: unknown): Record<string, OwnedWeapon> {
+  const out: Record<string, OwnedWeapon> = {};
+  for (const [weaponId, owned] of entriesOf(value)) {
+    const tier = isRecord(owned) ? owned.tier : owned;
+    if (isFiniteNumber(tier)) out[weaponId] = { tier: asTier(tier, WEAPON_TIER_MIN, WEAPON_TIER_MAX) };
   }
   return out;
+}
+
+function sanitizeStations(value: unknown): Record<StationId, number> {
+  const raw = isRecord(value) ? value : {};
+  const out = {} as Record<StationId, number>;
+  for (const id of STATION_IDS) out[id] = asTier(raw[id], 0, STATIONS[id].tiers.length, 0);
+  return out;
+}
+
+/** The keep: tiers in range, only owned weapons in the loadout, each weapon at most once. */
+export function sanitizeKeep(value: unknown): KeepData {
+  const raw = isRecord(value) ? value : {};
+  const weapons = sanitizeOwnedWeapons(raw.weapons);
+  const stored = Array.isArray(raw.loadout) ? raw.loadout : [];
+  const used = new Set<string>();
+  const loadout = Array.from({ length: LOADOUT_LENGTH }, (_, i) => {
+    const id = stored[i];
+    if (typeof id !== 'string' || !Object.hasOwn(weapons, id) || used.has(id)) return null;
+    used.add(id);
+    return id;
+  });
+  return {
+    castleTier: asTier(raw.castleTier, CASTLE_TIER_MIN, CASTLE_TIER_MAX),
+    handTier: asTier(raw.handTier, HAND_TIER_MIN, HAND_TIER_MAX),
+    stations: sanitizeStations(raw.stations),
+    weapons,
+    loadout,
+  };
+}
+
+function sanitizeSeen(value: unknown): SeenData {
+  const raw = isRecord(value) ? value : {};
+  return {
+    tutorial: asBoolean(raw.tutorial, false),
+    enemies: stringList(raw.enemies),
+    tips: stringList(raw.tips),
+    slotIntros: integerList(raw.slotIntros),
+    v3Notice: asBoolean(raw.v3Notice, false),
+  };
 }
 
 export function sanitizeRating(value: unknown): DevRating {
@@ -163,26 +222,23 @@ function sanitizeCoopCampaign(value: unknown): Record<string, unknown> {
 export function sanitizeProfile(value: unknown): ProfileData {
   const base = freshProfile();
   const raw = isRecord(value) ? value : {};
+  const cheats = isRecord(raw.cheats) ? raw.cheats : {};
   return {
+    format: PROFILE_FORMAT,
     version: PROFILE_VERSION,
     profileId: asString(raw.profileId, '') || base.profileId,
     createdAt: asString(raw.createdAt, '') || base.createdAt,
     updatedAt: asString(raw.updatedAt, '') || base.updatedAt,
     name: asString(raw.name, base.name),
     settings: sanitizeSettings(raw.settings),
-    stars: asCount(raw.stars),
-    starsEarned: asCount(raw.starsEarned),
-    unlockedWeapons: stringList(raw.unlockedWeapons),
-    unlockedSlots: integerList(raw.unlockedSlots),
-    unlockedStations: stringList(raw.unlockedStations),
-    weaponTiers: sanitizeWeaponTiers(raw.weaponTiers),
-    handTier: asTier(raw.handTier, HAND_TIER_MIN, HAND_TIER_MAX),
-    tutorialDone: asBoolean(raw.tutorialDone, false),
-    seenEnemies: stringList(raw.seenEnemies),
-    seenTips: stringList(raw.seenTips),
-    claimedRuns: stringList(raw.claimedRuns).slice(-CLAIMED_RUNS_LIMIT),
+    wallet: sanitizeWallet(raw.wallet),
+    earned: sanitizeWallet(raw.earned),
+    keep: sanitizeKeep(raw.keep),
     worlds: sanitizeWorlds(raw.worlds),
+    seen: sanitizeSeen(raw.seen),
+    claimedRuns: stringList(raw.claimedRuns).slice(-CLAIMED_RUNS_LIMIT),
     devRatings: sanitizeRatings(raw.devRatings),
+    cheats: { used: asBoolean(cheats.used, false), log: stringList(cheats.log).slice(-100) },
     pendingRun: raw.pendingRun === undefined ? null : raw.pendingRun,
     coopCampaign: sanitizeCoopCampaign(raw.coopCampaign),
   };

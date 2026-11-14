@@ -1,5 +1,5 @@
 /**
- * Weather overlays drawn over the keep: snow per build stage, canyon dust and marsh moss.
+ * Weather overlays drawn over the keep: snow per build stage (one per castle tier), canyon dust and marsh moss.
  * They are 300x660 with the same anchor as the keep.
  */
 import { INK, p, n, hl } from '../draw';
@@ -69,6 +69,17 @@ export const SNOW_TIERS: string[] = [
     snowCap(spireD(217, 148, 48, 108), 166, 268, 106, 126, 562) +
     snowCap(spireD(52, 124, 22, 108), 28, 76, 106, 115, 564) + snowCap(spireD(150, 124, 22, 108), 126, 174, 106, 115, 565) +
     snowMerlons(-20, 174, 124, 15, 9, 566) + snowMerlons(176, 258, 146, 13, 7, 570) + drift(164, 216, 184, 576) + snowLedges(581),
+  ...[false, true].map((top) => {
+    const k = top ? 10 : 0;
+    return (
+      snowCap(spireD(100, 142, 68, top ? 96 : 102), 28, 172, (top ? 94 : 100), (top ? 114 : 118), 591 + k) +
+      snowCap(spireD(217, 148, 50, top ? 92 : 100), 164, 270, (top ? 90 : 98), (top ? 112 : 118), 592 + k) +
+      snowCap(spireD(52, 124, 22, top ? 98 : 104), 28, 76, top ? 96 : 102, top ? 108 : 112, 594 + k) +
+      snowCap(spireD(150, 124, 22, top ? 98 : 104), 126, 174, top ? 96 : 102, top ? 108 : 112, 595 + k) +
+      snowMerlons(-20, 174, 121, 15, 9, 596 + k) + snowMerlons(176, 258, 143, 13, 7, 597 + k) + drift(164, top ? 194 : 216, 184, 598 + k) +
+      (top ? drift(176, 260, 214, 599) : '') + snowLedges(611 + k)
+    );
+  }),
 ];
 
 /** Sand blown against the wall foot and settled on the ledges. Tier-independent: only the shared lower wall. */

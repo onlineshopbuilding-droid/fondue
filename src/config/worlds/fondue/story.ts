@@ -16,28 +16,60 @@ export const PRELUDE_LINES: string[] = [
   "Stop them, whoever you are!",
 ];
 
-/** Short tutorial hints, at most eight words each. */
+/** Short tutorial hints, at most eight words each (`wheel` and `wheelDone` are King lines and may be longer). */
 export const TUTORIAL_HINTS: {
   grab: string;
   fling: string;
   wellDone: string;
-  cauldronMarket: string;
-  cauldronThrow: string;
+  wheel: string;
+  wheelDone: string;
   lobbyWelcome: string;
 } = {
   grab: "Grab a mouse knight and fling it up!",
   fling: "Swipe up fast and let go!",
-  wellDone: "Splendid! The cheese is safe. Keep going!",
-  cauldronMarket: "Throw mice in my cauldron: more cheese!",
-  cauldronThrow: "Fling mice into the cauldron behind the castle.",
+  wellDone: "Splendid! The cheese is safe.",
+  wheel: "See my Rolling Wheel on the wall? Tap it!",
+  wheelDone: "Bowled over! It rolls again once it is ready.",
   lobbyWelcome: "Welcome inside my castle, dear helper!",
+};
+
+/**
+ * What the King says after the first win of level 1 (D4): cheese and gold in a few sentences, then
+ * the way into the shop for the first upgrade.
+ */
+export const FIRST_WIN_LINES: string[] = [
+  "Every level hides five cheese. Cheese unlocks new weapons.",
+  "Gold makes what you have stronger, and you keep it all.",
+  "Come, let us spend your gold on that wheel!",
+];
+
+/** The King in the Keep Shop while he guides the first upgrade, and when it is done. */
+export const FIRST_UPGRADE_LINES: { pickSlot: string; buy: string; done: string } = {
+  pickSlot: "Tap the Damage slot, where my wheel sits.",
+  buy: "Now tap the glowing button: tier 2 for the wheel!",
+  done: "Splendid! A bigger wheel. Back to the gate, level 2 awaits.",
+};
+
+/** King Fridolin introduces each weapon slot the first time it opens. Index = slot (see src/config/slots.ts). */
+export const SLOT_INTROS: string[] = [
+  "This is your Damage slot. Whatever sits here rolls, stabs and smashes down the road.",
+  "This is your Slow slot. Weapons here hold the raiders back, so your hand can catch them.",
+  "This is your Gate slot. Right above the gate, it strikes the raiders at our door.",
+  "This is your Support slot. It helps your hand and the gate. Tap it at the right moment.",
+  "This is your Passive slot. It works all by itself, no tap needed. Watch its ring fill up.",
+];
+
+/** King Fridolin introduces the two stations the first time they can be unlocked. */
+export const STATION_INTROS: Record<string, string> = {
+  cauldron: "My Great Cauldron is ready! Unlock it in the Keep Shop. Every raider you throw in pays double gold.",
+  perch: "An eagle has settled by the gate! Unlock the Eagle Perch in the Keep Shop. Raiders you fling onto it leave Raider Crests.",
 };
 
 /** Names of the 100 campaign levels; index 0 is level 1. */
 export const LEVEL_NAMES: string[] = [
   // Act 1: Meadow, summer. The mice are a joke.
   "Pot Helmets",
-  "Downhill Wheel",
+  "Gooey Road",
   "Kegs on the Road",
   "Crumbs at the Gate",
   "Summer Siege",
@@ -151,7 +183,7 @@ export const LEVEL_NAMES: string[] = [
 export const LEVEL_STORY: string[] = [
   // Act 1
   "The mice wear soup pots as helmets, and the King finds it adorable.",
-  "A stone wheel joins the wall, and the first mice learn that roads go downhill.",
+  "A pot of Sticky Fondue joins the wall, and the first mice learn that cheese can be a trap.",
   "Kegs that go boom: the mice are taking this more seriously than the King hoped.",
   "Every mouse you fling squeaks the same word on the way up: cheese!",
   "After a small feast, the King counted the cheese twice, just in case.",
@@ -163,11 +195,11 @@ export const LEVEL_STORY: string[] = [
   // Act 2
   "The mice came back with maps, drums and a marching song, which is never good.",
   "Some mice have strapped springs to their boots and now bounce over their friends.",
-  "Now the army marches up the canyon road, so the King unpacked his great-grandfather's alphorn.",
-  "Nothing but bouncing bandits all day: the King got seasick just watching.",
-  "In the canyon every squeak echoes, so the army sounds twice as big.",
+  "Now the army marches up the canyon road, and the King packed extra bread for the climb.",
   "You may borrow the King's giant fondue forks, as long as you promise to wash them.",
-  "Hexers float in amber bubbles, and the King says that is cheating.",
+  "In the canyon every squeak echoes, so the army sounds twice as big.",
+  "The King rolled out his Great Cauldron: every mouse thrown in pays double gold.",
+  "Hexers float in amber bubbles, so the King blew his Frost Horn at them in protest.",
   "They tried to sneak up the pass in the dark, but you heard their armour clank.",
   "The first autumn leaves fell, and the King ordered a bigger pot for winter.",
   "Old Barrelbelly is down, and the King has stopped calling the mice adorable.",
@@ -175,24 +207,24 @@ export const LEVEL_STORY: string[] = [
   "The mice now march under a banner: a wheel of cheese with one small bite missing.",
   "So many kegs today that the canyon still smells of smoke and toasted whiskers.",
   "Slingers fire pebbles from far out: the King has a bump to prove it.",
-  "Down from the attic came the Frost Horn, and the mice got very chilly toes.",
+  "Cold winds blew down the canyon, and the mice got very chilly toes.",
   "With the canyon cleared, the scouts report something worse on the way: rain.",
   "Rain turned the land into a marsh, and the marsh mice have joined the war.",
   "A night attack in the fog, and the frogs croaked for the wrong side.",
-  "The King's old cuckoo clock now stops mice in their tracks, though it still runs late.",
+  "Marsh mist hides the road, and the King keeps losing his spoon in it.",
   "Marsh rats built a siege cart, too heavy to lift, so you tapped it to splinters.",
-  "Countess Hornhoof's goats scattered across the marsh, and a comet now waits at the shrine.",
+  "Countess Hornhoof's goats scattered across the marsh, and not one of them braked.",
   // Act 4
   "A captured scout squeaked that the army is led by Duchess Crumbtail herself.",
+  "The King's old cuckoo clock now stops mice in their tracks, though it still runs late.",
   "Everyone has soggy boots, and the King says royal socks are not for sharing.",
-  "An eagle now watches from the new perch, and the mice keep looking up nervously.",
   "Siege cart after siege cart rolled out of the mist, and your tapping finger is sore.",
-  "With a roar the Dragon Bellows woke, and the whole marsh smelled of toast.",
+  "One long blast of the old Alphorn, and the mice tumbled back down the road.",
   "Balloons full of marsh gas: now the mice attack from the sky as well.",
   "The gate cracked today, and for one quiet moment the King stopped humming.",
   "Balloons filled the sky like cheese bubbles, and every single one came down.",
   "Winter came early, and mice in fur cloaks marched out of the snowy pines.",
-  "Granny Bubblewick's great bubble finally burst, and the new Roof Bolter covers the whole sky.",
+  "Granny Bubblewick's great bubble finally burst, all over her own army.",
   // Act 5
   "Again the King counted his cheese, and for the first time he counted slowly.",
   "A mouse brought a letter under a white flag, and the King hid it unread.",
@@ -203,18 +235,18 @@ export const LEVEL_STORY: string[] = [
   "The longest night of the year, full of Shades, and you did not blink once.",
   "The castle is snowed in, and the King now eats fondue for breakfast, lunch and supper.",
   "Deep rumbling shakes the ground, and scouts say the mice are building something big.",
-  "The caravan lies in pieces, and a marmot with a crossbow has joined the tower.",
+  "The caravan lies in pieces, and the King built a bonfire from its wheels.",
   // Act 6
   "Spring is here, and the army is back in the canyon, bigger than before.",
   "The mice made friends with the canyon crows, and a beaten Crowcaller comes back with wings.",
   "At last the King read the letter, went very quiet, and ordered more bread.",
   "Crows stole three spoons and the King's second-best crown today.",
-  "Spikes now cover the gate, and the rats who knock on it wish they had not.",
+  "The rats who knocked on the spiky gate today wish they had not.",
   "So many crows that noon looked like midnight, and every one had to be caught twice.",
   "Up the pass the rats hauled a catapult, and it rolled all the way back.",
   "The King found a mouse hole in the cellar and stuffed it with a royal sock.",
   "Far up the mountains, the mice blew a horn, and something big blew back.",
-  "Admiral Puffington landed in the river, and the Ember Beacon now makes every throw go boom.",
+  "Admiral Puffington landed in the river, and a Pinecone Catapult now guards the tower.",
   // Act 7
   "A Yeti has joined the mice, and it is only here because they promised it cheese.",
   "Lifting a Yeti takes two hands, or one very strong one, and a lot of grunting.",
@@ -225,7 +257,7 @@ export const LEVEL_STORY: string[] = [
   "The King held out one spoonful of fondue, and the Yeti almost changed sides.",
   "Still, the mice promised the Yeti a whole wheel, so it stayed with them, sighing.",
   "The Yeti went home for one day and came back with its sister.",
-  "Both Yetis limped off with sore backsides, and the King's fondue now glows like gold.",
+  "Both Yetis limped off with sore backsides, and an eagle has settled on a perch by the gate.",
   // Act 8
   "By their campfires the mice sang sad songs tonight, and the King listened from the wall.",
   "Duchess Crumbtail was seen on the hill, watching you through a tiny spyglass.",
@@ -319,7 +351,7 @@ export const ENEMY_POPUPS: Record<EnemyType, { title: string; text: string }> = 
   },
   yeti: {
     title: "Yeti",
-    text: "One normal hand can only drag a Yeti along. Lift it with two players, or with the strongest hand.",
+    text: "One weak hand can only drag a Yeti along. Lift it with two hands at once, or train your hand to tier 4.",
   },
 };
 
@@ -331,6 +363,8 @@ export const KING_LOBBY_LINES: { minLevel: number; maxLevel: number; text: strin
   { minLevel: 0, maxLevel: 100, text: "Do not touch the big wheel by the fire. It knows me." },
   { minLevel: 0, maxLevel: 100, text: "You fling mice beautifully. Has anyone ever told you that?" },
   { minLevel: 0, maxLevel: 100, text: "Gold is lovely, but have you ever smelled melted cheese at dawn?" },
+  { minLevel: 1, maxLevel: 30, text: "Gold burning a hole in your pocket? The Keep Shop is right by the door." },
+  { minLevel: 2, maxLevel: 100, text: "Five cheese in every level. I count them all, twice." },
   { minLevel: 0, maxLevel: 100, text: "A king needs three things: a crown, a castle and a very big pot." },
   { minLevel: 0, maxLevel: 100, text: "If you drop your bread in the pot, you owe me a song." },
   { minLevel: 0, maxLevel: 100, text: "I counted the cheese this morning. Then I counted it again. Twice." },
@@ -341,22 +375,22 @@ export const KING_LOBBY_LINES: { minLevel: number; maxLevel: number; text: strin
   { minLevel: 0, maxLevel: 12, text: "They will give up by teatime. Mice always do." },
   { minLevel: 0, maxLevel: 20, text: "Do not worry about the gate. It is a very sturdy gate. Mostly." },
   { minLevel: 0, maxLevel: 10, text: "Where did you come from, anyway? Never mind. Fling more mice." },
-  { minLevel: 1, maxLevel: 30, text: "Every mouse in the cauldron is one more piece of cheese. Splendid!" },
+  { minLevel: 16, maxLevel: 40, text: "Every mouse in the cauldron pays double gold. Splendid!" },
   { minLevel: 3, maxLevel: 25, text: "Those kegs go boom. Shake them loose before they reach my door." },
   { minLevel: 7, maxLevel: 30, text: "The goats are on their side now? Goats used to like me." },
   { minLevel: 10, maxLevel: 40, text: "I found my old spell book again. No reason. Just tidying." },
-  { minLevel: 10, maxLevel: 100, text: "Every day you hold the gate, the pot gets fuller. Glorious." },
+  { minLevel: 10, maxLevel: 100, text: "Every level you hold the gate, the pot gets fuller. Glorious." },
   { minLevel: 12, maxLevel: 35, text: "Bouncing mice. Next they will fly. Ha! Imagine that." },
   // Canyon and marsh: the mice get organised
   { minLevel: 15, maxLevel: 45, text: "The canyon echoes so nicely. Fondue! Fondue! Fondue! Lovely." },
   { minLevel: 15, maxLevel: 100, text: "You are the best helper I ever summoned. The only one, actually." },
-  { minLevel: 16, maxLevel: 60, text: "Use the forks if you must, but bring them back clean." },
-  { minLevel: 20, maxLevel: 60, text: "The Gate Mortar is older than the cheese. Treat it gently." },
+  { minLevel: 14, maxLevel: 60, text: "Use the forks if you must, but bring them back clean." },
+  { minLevel: 4, maxLevel: 60, text: "The Gate Mortar is older than the cheese. Treat it gently." },
   { minLevel: 20, maxLevel: 50, text: "Autumn already? The pot needs to be bigger. Much bigger." },
   { minLevel: 25, maxLevel: 50, text: "Rain, rain, rain. At least the fondue stays warm." },
-  { minLevel: 28, maxLevel: 100, text: "The cuckoo clock was a gift. Nobody remembers who gave it." },
+  { minLevel: 32, maxLevel: 100, text: "The cuckoo clock was a gift. Nobody remembers who gave it." },
   { minLevel: 30, maxLevel: 60, text: "These mice are organised now. Who taught them to organise?" },
-  { minLevel: 33, maxLevel: 100, text: "The eagle on the perch is not ours. It just likes the view." },
+  { minLevel: 70, maxLevel: 100, text: "The eagle on the perch is not ours. It just likes the view." },
   { minLevel: 36, maxLevel: 55, text: "Balloons! I said it as a joke. Who listens to my jokes?" },
   // Winter: small cracks
   { minLevel: 37, maxLevel: 50, text: "The gate cracked. It is fine. Everything is fine. Pass the bread." },
@@ -374,7 +408,7 @@ export const KING_LOBBY_LINES: { minLevel: number; maxLevel: number; text: strin
   { minLevel: 61, maxLevel: 80, text: "A Yeti! The mice promised it cheese. My cheese! The cheek." },
   { minLevel: 62, maxLevel: 100, text: "Lift a Yeti together, or find a stronger hand. I believe in you." },
   { minLevel: 67, maxLevel: 90, text: "It almost took the spoon. Imagine a Yeti on our side!" },
-  { minLevel: 70, maxLevel: 100, text: "The Golden Fondue shines so brightly. Almost as bright as my smile." },
+  { minLevel: 7, maxLevel: 100, text: "The Golden Fondue shines so brightly. Almost as bright as my smile." },
   // Late: the King softens
   { minLevel: 72, maxLevel: 99, text: "That Duchess has a very fine spyglass. And very fine manners, I hear." },
   { minLevel: 75, maxLevel: 100, text: "You have been here so long. Do you miss home? Wherever that is." },

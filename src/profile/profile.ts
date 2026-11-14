@@ -1,12 +1,14 @@
 // The player's permanent save: holds the data in memory, offers every way to read and change it, and saves in the background.
 // Reading is synchronous; a failing storage never stops the game, the profile then simply lives until the page closes.
+// Every change is written at most SAVE_DELAY_MS later; flushSync() writes at once (page hide, app switch, close).
 import type { Flags } from '../config/flags';
+import type { StationId } from '../config/keep';
 import type { Tuning } from '../config/tuning';
 import { exportCode, importCode } from './codec';
-import { importLegacy, migrate } from './migrations';
-import { asTier, isRecord, sanitizeRating, sanitizeSettings } from './sanitize';
+import { migrate } from './migrations';
+import { asTier, isRecord, sanitizeProfile, sanitizeRating, sanitizeSettings } from './sanitize';
 import {
-  CLAIMED_RUNS_LIMIT, HAND_TIER_MAX, HAND_TIER_MIN, LEGACY_SCORES_KEY, LEGACY_SETTINGS_KEY, PROFILE_KEY, SCORES_LIMIT,
+  CLAIMED_RUNS_LIMIT, HAND_TIER_MAX, HAND_TIER_MIN, PROFILE_KEY, SCORES_LIMIT,
   WEAPON_TIER_MAX, WEAPON_TIER_MIN, freshProfile, freshRating, freshWorld,
   type DevRating, type ProfileData, type ProfileSettings, type ScoreEntry, type WorldProgress,
 } from './schema';
@@ -20,15 +22,17 @@ export type SettingsPatch = Partial<Omit<ProfileSettings, 'tuning' | 'flags'>> &
 
 export type ProfileListener = (data: Readonly<ProfileData>) => void;
 
+/** Changes are written at most this long after they happen (several changes become one write). */
+export const SAVE_DELAY_MS = 250;
+
+/** Shown once when the device refuses to store the profile. */
+export const SAVE_FAILED_NOTICE = 'Progress can’t be saved on this device right now.';
+
 /** Adds a value to a list unless it is already in it. True if it was added. */
 function addOnce<T>(list: T[], value: T): boolean {
   if (list.includes(value)) return false;
   list.push(value);
   return true;
-}
-
-function isWholeAmount(n: number): boolean {
-  return Number.isInteger(n) && n > 0;
 }
 
 async function readQuietly(store: ProfileStore, key: string): Promise<string | null> {
@@ -37,13 +41,6 @@ async function readQuietly(store: ProfileStore, key: string): Promise<string | n
   } catch {
     return null;
   }
-}
-
-/** A new profile that starts with the name, settings and leaderboard of the old game version, if there are any. */
-async function freshWithLegacy(store: ProfileStore): Promise<ProfileData> {
-  const settingsRaw = await readQuietly(store, LEGACY_SETTINGS_KEY);
-  const scoresRaw = await readQuietly(store, LEGACY_SCORES_KEY);
-  return { ...freshProfile(), ...importLegacy(settingsRaw, scoresRaw) };
 }
 
 /** The stored object, or null if the text is no JSON or no object. */
@@ -65,6 +62,10 @@ export class Profile {
   private readonly listeners = new Set<ProfileListener>();
   private dirty = false;
   private saving: Promise<void> | null = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  /** True once a save failed; the game keeps playing from memory. */
+  private failed = false;
+  private noticeShown = false;
 
   private constructor(store: ProfileStore, data: ProfileData) {
     this.store = store;
@@ -72,29 +73,64 @@ export class Profile {
   }
 
   /**
-   * Reads the profile from the store. Without a stored profile, the old game version's data is
-   * taken over once. A damaged profile is set aside under its own key and replaced. Never throws.
+   * Reads the profile from the store. Without a stored profile, it starts fresh; keys of earlier
+   * game versions are never read. A damaged profile is set aside under its own key and replaced. Never throws.
    */
   static async load(store: ProfileStore): Promise<Profile> {
     const text = await readQuietly(store, PROFILE_KEY);
     const stored = text === null ? null : parseStored(text);
     if (stored) return new Profile(store, migrate(stored));
 
-    const profile = new Profile(store, await freshWithLegacy(store));
+    const profile = new Profile(store, freshProfile());
     if (text !== null) await profile.setAside(text);
-    profile.scheduleSave();
+    profile.dirty = true;
+    profile.saving = profile.saveNow();
     await profile.flush();
     return profile;
   }
 
-  /** The whole profile, for reading. Change it only through the methods below. */
+  /** The whole profile, for reading. Change it only through the methods below or src/modes/progress.ts. */
   get data(): Readonly<ProfileData> {
     return this.current;
   }
 
-  /** Resolves once every change made so far is saved (or the attempt has failed). */
+  /** Saves every change made so far now. Resolves once it is stored (or the attempt has failed). */
   flush(): Promise<void> {
+    if (this.timer !== null) {
+      clearTimeout(this.timer);
+      this.timer = null;
+      this.saving ??= this.saveNow();
+    }
     return this.saving ?? Promise.resolve();
+  }
+
+  /**
+   * Writes the profile at once, synchronously if the store can (localStorage can). For page hide,
+   * app switch and close, when there is no time to wait. Never throws.
+   */
+  flushSync(): void {
+    if (this.timer !== null) { clearTimeout(this.timer); this.timer = null; }
+    if (!this.dirty && this.saving === null) return;
+    if (!this.store.writeSync) { void this.flush(); return; }
+    try {
+      this.store.writeSync(PROFILE_KEY, JSON.stringify(this.current));
+      this.dirty = false;
+      this.noteSaved(null);
+    } catch (error) {
+      this.noteSaved(error);
+    }
+  }
+
+  /** True while the device refuses to store the profile; progress then lives in memory only. */
+  get saveFailed(): boolean {
+    return this.failed;
+  }
+
+  /** The notice to show once when saving fails, or null (already shown, or saving works). */
+  takeSaveNotice(): string | null {
+    if (!this.failed || this.noticeShown) return null;
+    this.noticeShown = true;
+    return SAVE_FAILED_NOTICE;
   }
 
   /** Calls the listener after every change. Returns a function that stops it. */
@@ -123,71 +159,58 @@ export class Profile {
     this.changed();
   }
 
-  // --- Stars ---
+  // --- Changes from the progression rules (src/modes/progress.ts) ---
 
-  /** Pays out stars: raises the balance and the total ever earned. */
-  addStars(n: number): void {
-    if (!isWholeAmount(n)) return;
-    this.current.stars += n;
-    this.current.starsEarned += n;
-    this.changed();
-  }
-
-  /** Takes stars from the balance. False, and nothing changes, if there are not enough. */
-  spendStars(n: number): boolean {
-    if (!isWholeAmount(n) || this.current.stars < n) return false;
-    this.current.stars -= n;
+  /**
+   * Applies one change to the data and saves it. The function returns false if it changed nothing.
+   * Only src/modes/progress.ts and the developer cheats should need this.
+   */
+  edit(change: (data: ProfileData) => boolean | void): boolean {
+    const result = change(this.current);
+    if (result === false) return false;
     this.changed();
     return true;
   }
 
-  // --- Unlocks and tiers ---
+  // --- Keep (read) ---
 
-  /** Unlocks a weapon. True if it was new. */
-  unlockWeapon(id: string): boolean {
-    return this.changedIf(addOnce(this.current.unlockedWeapons, id));
-  }
-
-  /** Unlocks a weapon slot. True if it was new. */
-  unlockSlot(index: number): boolean {
-    return this.changedIf(addOnce(this.current.unlockedSlots, index));
-  }
-
-  /** Unlocks a station of the castle. True if it was new. */
-  unlockStation(id: string): boolean {
-    return this.changedIf(addOnce(this.current.unlockedStations, id));
-  }
-
-  /** Is this weapon unlocked? */
+  /** Is this weapon unlocked (owned)? */
   hasWeapon(id: string): boolean {
-    return this.current.unlockedWeapons.includes(id);
+    return Object.hasOwn(this.current.keep.weapons, id);
   }
 
-  /** Is this weapon slot unlocked? */
-  hasSlot(index: number): boolean {
-    return this.current.unlockedSlots.includes(index);
+  /** The permanent tier of a weapon, 1..7. A weapon not owned counts as tier 1. */
+  weaponTier(id: string): number {
+    return Object.hasOwn(this.current.keep.weapons, id) ? this.current.keep.weapons[id].tier : WEAPON_TIER_MIN;
   }
 
   /** Is this station unlocked? */
   hasStation(id: string): boolean {
-    return this.current.unlockedStations.includes(id);
+    return this.stationTier(id) > 0;
   }
 
-  /** The permanent tier of a weapon, 1..5. A weapon never upgraded is tier 1. */
-  weaponTier(id: string): number {
-    return Object.hasOwn(this.current.weaponTiers, id) ? this.current.weaponTiers[id] : WEAPON_TIER_MIN;
+  /** Tier of a station, 0 if not unlocked. */
+  stationTier(id: string): number {
+    return Object.hasOwn(this.current.keep.stations, id) ? this.current.keep.stations[id as StationId] : 0;
   }
 
-  /** Sets the permanent tier of a weapon, limited to 1..5. */
+  /** Developer cheat: owns the weapon at this tier (1..7). Marks the profile as changed by cheats. */
   setWeaponTier(id: string, tier: number): void {
     if (id === '__proto__') return;
-    this.current.weaponTiers[id] = asTier(tier, WEAPON_TIER_MIN, WEAPON_TIER_MAX);
-    this.changed();
+    this.current.keep.weapons[id] = { tier: asTier(tier, WEAPON_TIER_MIN, WEAPON_TIER_MAX) };
+    this.noteCheat(`weapon ${id} tier ${tier}`);
   }
 
-  /** Sets the tier of the hand, limited to 1..3. */
+  /** Developer cheat: sets the hand tier (1..7). Marks the profile as changed by cheats. */
   setHandTier(tier: number): void {
-    this.current.handTier = asTier(tier, HAND_TIER_MIN, HAND_TIER_MAX);
+    this.current.keep.handTier = asTier(tier, HAND_TIER_MIN, HAND_TIER_MAX);
+    this.noteCheat(`hand tier ${tier}`);
+  }
+
+  /** Notes a permanent developer cheat; the profile is then marked as changed by cheats. */
+  noteCheat(what: string): void {
+    this.current.cheats.used = true;
+    this.current.cheats.log = [...this.current.cheats.log, `${new Date().toISOString()} ${what}`].slice(-100);
     this.changed();
   }
 
@@ -216,22 +239,19 @@ export class Profile {
     return Math.max(0, ...(this.peekWorld(world)?.levelsDone ?? []));
   }
 
-  /** Notes that the stars for helping in this level as a guest were paid. True the first time. */
-  claimGuestStars(world: string, level: number): boolean {
-    return this.changedIf(addOnce(this.world(world).guestStarLevels, level));
-  }
-
   /** Notes that a story page was read. True the first time. */
   markStoryRead(world: string, pageId: string): boolean {
     return this.changedIf(addOnce(this.world(world).storyRead, pageId));
   }
 
-  /** Notes that an endless milestone was paid out. True the first time. */
-  claimEndlessMilestone(world: string, difficulty: string, day: number): boolean {
-    const milestones = this.world(world).endlessMilestones;
-    if (difficulty === '__proto__') return false;
-    if (!Object.hasOwn(milestones, difficulty)) milestones[difficulty] = [];
-    return this.changedIf(addOnce(milestones[difficulty], day));
+  /** Remembers the best endless wave per difficulty. True if it is a new best. */
+  noteEndlessBest(world: string, difficulty: string, wave: number): boolean {
+    if (difficulty === '__proto__' || !Number.isFinite(wave)) return false;
+    const best = this.world(world).endlessBest;
+    if ((best[difficulty] ?? 0) >= wave) return false;
+    best[difficulty] = Math.floor(wave);
+    this.changed();
+    return true;
   }
 
   /** Adds a result to a world's leaderboard. Returns the new list: best first, 30 at most. */
@@ -260,23 +280,36 @@ export class Profile {
 
   /** Notes that the popup of an enemy type was shown. True the first time. */
   markEnemySeen(type: string): boolean {
-    return this.changedIf(addOnce(this.current.seenEnemies, type));
+    return this.changedIf(addOnce(this.current.seen.enemies, type));
   }
 
   /** Notes that a tip was shown. True the first time. */
   markTipSeen(id: string): boolean {
-    return this.changedIf(addOnce(this.current.seenTips, id));
+    return this.changedIf(addOnce(this.current.seen.tips, id));
   }
 
-  /** Notes that the tutorial was played through. */
+  /** Notes that the introduction of a weapon slot was shown. True the first time. */
+  markSlotIntroSeen(slot: number): boolean {
+    return this.changedIf(addOnce(this.current.seen.slotIntros, slot));
+  }
+
+  /** Notes that the one-time v0.3 welcome was shown. True the first time. */
+  markV3NoticeSeen(): boolean {
+    if (this.current.seen.v3Notice) return false;
+    this.current.seen.v3Notice = true;
+    this.changed();
+    return true;
+  }
+
+  /** Notes that the tutorial was played through. (completeTutorial in progress.ts also hands out the Rolling Wheel.) */
   markTutorialDone(): void {
-    this.current.tutorialDone = true;
+    this.current.seen.tutorial = true;
     this.changed();
   }
 
   /** Makes the tutorial start again on the next visit. */
   resetTutorial(): void {
-    this.current.tutorialDone = false;
+    this.current.seen.tutorial = false;
     this.changed();
   }
 
@@ -331,6 +364,12 @@ export class Profile {
     this.changed(false);
   }
 
+  /** Replaces the whole profile with other data (sanitized first). For tests and later cloud accounts. */
+  replace(data: unknown): void {
+    this.current = sanitizeProfile(data);
+    this.changed(false);
+  }
+
   // --- Saving ---
 
   private peekWorld(id: string): WorldProgress | undefined {
@@ -355,24 +394,39 @@ export class Profile {
     }
   }
 
+  /** Marks the profile as changed and writes it at most SAVE_DELAY_MS later. */
   private scheduleSave(): void {
     this.dirty = true;
-    this.saving ??= this.saveSoon();
+    if (this.timer !== null || this.saving !== null) return;
+    this.timer = setTimeout(() => {
+      this.timer = null;
+      this.saving ??= this.saveNow();
+    }, SAVE_DELAY_MS);
   }
 
-  /** Waits for the end of the current tick, so several changes become one write, then saves until nothing is left. */
-  private async saveSoon(): Promise<void> {
+  /** Saves until nothing is left. */
+  private async saveNow(): Promise<void> {
     await Promise.resolve();
     while (this.dirty) {
       this.dirty = false;
       try {
         await this.store.write(PROFILE_KEY, JSON.stringify(this.current));
-        this.lastError = null;
+        this.noteSaved(null);
       } catch (error) {
-        this.lastError = error;
+        this.noteSaved(error);
       }
     }
     this.saving = null;
+  }
+
+  private noteSaved(error: unknown): void {
+    this.lastError = error;
+    if (error) {
+      this.failed = true;
+    } else {
+      this.failed = false;
+      this.noticeShown = false;
+    }
   }
 
   /** Keeps unreadable profile text under its own key, so nothing is lost for good. */
@@ -380,7 +434,7 @@ export class Profile {
     try {
       await this.store.write(`${PROFILE_KEY}.broken.${Date.now()}`, text);
     } catch (error) {
-      this.lastError = error;
+      this.noteSaved(error);
     }
   }
 }

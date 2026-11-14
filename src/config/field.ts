@@ -32,13 +32,18 @@ export const WORLD = {
  * Field width. The host's screen decides it at the start of a game and both players get the same
  * field. Enemies walk faster on a wider field, so that a wide phone gains no breathing room. They
  * make up only part of the extra distance: at full compensation, fast raiders on a wide field were
- * so much harder to hit that the balance bots lost a third of their days (docs/balance.md).
+ * so much harder to hit that the balance bots lost a third of their runs (docs/balance.md).
  */
 export const FIELD = {
   min: 1280,
   max: 1760,
-  /** Enemies start this far beyond the wall and hurry onto the field, out of everyone's sight. */
-  offstageRun: 260,
+  /**
+   * Raiders step onto the field at its right end or, when the host sees less, just beyond the
+   * visible right edge plus entryMargin (B3: the first raider is on screen within 1.5 to 2 s).
+   * They start offstageRun further out and hurry in at offstageSpeed, out of sight.
+   */
+  entryMargin: 30,
+  offstageRun: 60,
   offstageSpeed: 1200,
   /** 0: the same speed on every field. 1: the same walking time to the gate on every field. */
   speedCompensation: 0.5,

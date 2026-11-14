@@ -4,11 +4,12 @@
  * A quick tap no longer drops it.
  */
 import { describe, expect, it } from 'vitest';
+import { crestsFor } from '../../src/config/crests';
 import { BEHAVIOUR, ENEMIES } from '../../src/config/enemies';
 import { WORLD, perchX } from '../../src/config/field';
 import type { Sim } from '../../src/sim/sim';
 import type { Enemy } from '../../src/sim/types';
-import { battleSim, carryTo, eventsOf, flingUp, grabAt, place, runUntil } from './helpers';
+import { battleSim, eventsOf, flingUp, grabAt, place, runUntil, throwOntoHook } from './helpers';
 
 const kegs = (sim: Sim) => sim.s.projectiles.filter((q) => q.kind === 'bomb');
 
@@ -81,7 +82,7 @@ describe('shaking a Keg Hauler', () => {
     sim.command({ k: 'pause', p: 0, paused: true });
     expect(eventsOf(shake(sim), 'kegLoose')).toHaveLength(0);
     sim.command({ k: 'pause', p: 0, paused: false });
-    sim.s.phase = 'victory';
+    sim.s.phase = 'runWon';
     expect(eventsOf(shake(sim), 'kegLoose')).toHaveLength(0);
     expect(e.armed).toBe(true);
   });
@@ -147,10 +148,11 @@ describe('a Keg Hauler on the eagle hook', () => {
     const below = place(sim, 'grunt', hx);
     const e = place(sim, 'bomber', 900);
     const hp = sim.s.gateHp;
-    carryTo(sim, e, hx, WORLD.perch.hookY);
+    throwOntoHook(sim, e);
+    const flown = runUntil(sim, () => e.st !== 'air', 120);
     expect(e.st).toBe('hooked');
     expect(e.armed).toBe(false);
-    const ev = [...sim.drainEvents(), ...runUntil(sim, () => kegs(sim).length === 0, 200)];
+    const ev = [...flown, ...sim.drainEvents(), ...runUntil(sim, () => kegs(sim).length === 0, 200)];
     expect(eventsOf(ev, 'kegLoose')).toHaveLength(1);
     const boom = eventsOf(ev, 'explosion');
     expect(boom).toHaveLength(1);
@@ -162,7 +164,8 @@ describe('a Keg Hauler on the eagle hook', () => {
     expect(sim.s.stats.kegBlastKills).toBe(1);
     // The hauler itself still goes to the eagle.
     runUntil(sim, () => e.dead, 300);
-    expect(sim.s.offerings).toBe(1);
+    expect(sim.s.stats.killsByCause.eagle).toBe(1);
+    expect(sim.s.crests).toBe(crestsFor('bomber'));
   });
 
   it('a Keg Hauler without a keg hangs there quietly', () => {
@@ -170,7 +173,8 @@ describe('a Keg Hauler on the eagle hook', () => {
     sim.loadout.stations.perch = true;
     const e = place(sim, 'bomber', 900);
     e.armed = false;
-    carryTo(sim, e, perchX(1280), WORLD.perch.hookY);
+    throwOntoHook(sim, e);
+    runUntil(sim, () => e.st !== 'air', 120);
     expect(e.st).toBe('hooked');
     expect(eventsOf(sim.drainEvents(), 'kegLoose')).toHaveLength(0);
     expect(kegs(sim)).toHaveLength(0);

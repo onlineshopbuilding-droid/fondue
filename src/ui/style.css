@@ -206,11 +206,11 @@ input[type='range']::-moz-range-thumb {
 }
 
 .purse { display: flex; justify-content: center; gap: 28px; font-family: 'Lilita One', sans-serif; font-size: 28px; margin-bottom: 8px; text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8); }
-/* coin and offering textures are 32 px boxes with the drawing at 28: sizes keep the drawn size, margins absorb the border. */
+/* coin and crest textures are 32 px boxes with the drawing at 28: sizes keep the drawn size, margins absorb the border. */
 .purse img { width: 32px; height: 32px; vertical-align: -7px; margin: 0 4px 0 -2px; }
 
 .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; min-height: 250px; align-content: start; }
-/* Market cards: a lighter sheet laid on the parchment. */
+/* Cards: a lighter sheet laid on the parchment. */
 .item {
   border: 3px solid var(--ink); border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px;
   background: linear-gradient(180deg, #fffdf6 0%, #fbf3df 100%);
@@ -347,7 +347,7 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
   table.scores { font-size: 12px; }
   table.scores th, table.scores td { padding: 2px 6px; }
 
-  /* The market: title and purse on one line, tabs in a swipeable strip, the list scrolls, the buttons stay. */
+  /* Wide panels: title and purse on one line, tabs in a swipeable strip, the list scrolls, the buttons stay. */
   .panel.wide { display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
   .panel.wide h2 { text-align: left; }
   .purse { position: absolute; top: 6px; right: 16px; margin: 0; font-size: 18px; gap: 14px; }
@@ -364,7 +364,7 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
   .item .foot { font-size: 14px; }
   .panel.wide p { flex: none; font-size: 11px; }
 
-  /* Below the day banner (its lower edge sits at about 27% of the height), as on the laptop. */
+  /* Below the level banner (its lower edge sits at about 27% of the height), as on the laptop. */
   .toast-area { top: calc(29% + env(safe-area-inset-top)); left: 22%; gap: 4px; }
   .toast, .toast.tip { font-size: 13px; padding: 4px 12px; border-radius: 8px; max-width: min(620px, 72vw); opacity: 0.9; box-shadow: inset 0 1px 0 rgba(255, 236, 190, 0.18), inset 0 0 0 1.5px rgba(233, 180, 76, 0.3), 0 2px 0 rgba(20, 12, 8, 0.5); }
   .toast.tip { box-shadow: inset 0 1px 0 rgba(255, 230, 250, 0.22), inset 0 0 0 1.5px rgba(255, 246, 223, 0.18), 0 2px 0 rgba(20, 12, 8, 0.5); }
@@ -372,7 +372,7 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
 }
 
 /* ------------------------------------------------------------------------------------------- */
-/* Transition menus of the big update: campaign list, armoury, market list, rooms, win screen.  */
+/* Transition menus of the big update: campaign list, Keep Shop, rooms, win screen.          */
 /* ------------------------------------------------------------------------------------------- */
 
 /* The bottom line of every page: going back on the left, going on on the right. */
@@ -381,7 +381,8 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
 .navrow .nav-forward { justify-content: flex-end; margin-left: auto; }
 
 .note-line { text-align: center; }
-.star { color: var(--mustard); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; }
+.version-line { font-size: 12px; opacity: 0.6; }
+.cur-icon { color: var(--mustard); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; }
 
 /* Main menu: progress line, big ways in, small extras. */
 .progress { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 26px; margin-bottom: 14px; text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8); }
@@ -399,14 +400,56 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
 .item .note-next { opacity: 0.8; }
 .item.dim { opacity: 0.8; }
 .item .foot { gap: 6px; flex-wrap: wrap; }
-.day-line { text-align: center; font-weight: 800; font-size: 16px; margin: 0 0 8px; color: var(--wood-dark); }
 
 /* Win screen. */
 .won-name { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 28px; color: var(--plum); }
-.won-stars { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 72px; line-height: 1.1; color: var(--ink); }
-.won-stars .star { -webkit-text-stroke-width: 3px; }
+.won-cheese { text-align: center; font-family: 'Lilita One', sans-serif; font-size: 72px; line-height: 1.1; color: var(--ink); }
+.won-cheese .cur-icon { -webkit-text-stroke-width: 3px; }
 ul.unlocks { list-style: none; padding: 0; margin: 8px 0; text-align: center; font-family: 'Lilita One', sans-serif; font-size: 24px; color: var(--teal); }
 p.story { text-align: center; font-style: italic; }
+/* The nav row stays in sight; should a very low window ever be too small, only the content scrolls. */
+.panel.won { width: min(560px, 100%); display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 20px; }
+.won-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.won .row.navrow { flex: none; }
+.won h2 { margin-bottom: 4px; }
+.won .won-cheese { font-size: 56px; line-height: 1.05; }
+.won ul.unlocks { font-size: 21px; margin: 6px 0; }
+.won .stats { margin: 6px auto 8px; }
+.cheese-list { margin: 6px 0; padding-left: 4px; list-style: none; }
+.cheese-list li { margin: 2px 0; }
+
+/* King Fridolin with a speech bubble, outside the battlefield (win screen, Keep Shop guide). */
+.king-says { display: flex; gap: 10px; align-items: flex-end; margin: 6px 0 8px; text-align: left; }
+.king-says img { width: 58px; height: auto; flex: none; }
+.king-bubble {
+  background: #fff6df; color: #2b2118; border: 3px solid #2b2118; border-radius: 14px;
+  padding: 7px 12px; font-weight: 800; font-size: 15px; line-height: 1.35;
+}
+
+/* Phones in landscape: the win screen in two columns, with the nav row always in sight below. */
+@media (max-height: 520px) {
+  .panel.won { width: min(860px, 100%); padding-top: 8px; padding-bottom: 8px; }
+  .won-body {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    grid-template-areas: 'head side' 'foot side'; grid-template-rows: auto 1fr; gap: 0 16px; align-items: start;
+  }
+  .won-head { grid-area: head; }
+  .won-side { grid-area: side; }
+  .won-foot { grid-area: foot; }
+  .won h2 { font-size: 20px; margin: 0 0 2px; }
+  .won .won-name { font-size: 16px; line-height: 1.15; }
+  .won .won-cheese { font-size: 30px; line-height: 1.05; }
+  .won .won-cheese .cur-icon { -webkit-text-stroke-width: 2px; }
+  .won .stats { grid-template-columns: 1fr auto; gap: 0 10px; font-size: 13px; margin: 2px auto; max-width: 240px; }
+  .won ul.unlocks { font-size: 14px; margin: 2px 0; }
+  .won p.story, .won .note-line { font-size: 11.5px; margin: 2px 0; line-height: 1.2; }
+  .won .king-says { gap: 6px; margin: 0 0 3px; }
+  .won .king-says img { width: 38px; }
+  .won .king-bubble { border-width: 2px; border-radius: 10px; padding: 3px 8px; font-size: 12px; line-height: 1.25; }
+  .won .cheese-list { margin: 2px 0; font-size: 12px; line-height: 1.2; }
+  .won .cheese-list li { margin: 1px 0; }
+  .won .row.navrow { flex: none; margin-top: 4px !important; }
+}
 
 /* Co-op rooms: two columns, and the live list of who is in. */
 .panel.room { width: min(860px, 100%); }
@@ -477,9 +520,8 @@ textarea { width: 100%; resize: vertical; font-size: 14px; }
   .items .sect { font-size: 15px; padding: 3px 2px 1px; border-bottom-width: 2px; }
   .item .why { font-size: 11px; }
   .item .tier { font-size: 12px; }
-  .day-line { font-size: 12px; margin: 0 0 4px; flex: none; text-align: left; }
   .won-name { font-size: 18px; }
-  .won-stars { font-size: 40px; }
+  .won-cheese { font-size: 40px; }
   ul.unlocks { font-size: 16px; margin: 2px 0; }
   .room-grid { gap: 4px 14px; }
   .room-col { gap: 4px; }
@@ -511,11 +553,11 @@ textarea { width: 100%; resize: vertical; font-size: 14px; }
 .cm-head h2 { margin: 0; flex: 1; text-align: left; font-size: 32px; }
 .cm-head h2::before, .cm-head h2::after { display: none; }
 .cm-progress { display: flex; flex-direction: column; gap: 3px; min-width: 150px; }
-.cm-progress-text, .cm-stars { font-family: 'Lilita One', sans-serif; color: var(--cream); text-shadow: 0 2px 0 var(--ink); }
+.cm-progress-text, .cm-cheese { font-family: 'Lilita One', sans-serif; color: var(--cream); text-shadow: 0 2px 0 var(--ink); }
 .cm-progress-text { font-size: 18px; text-align: right; }
 .cm-bar { height: 12px; border: 2px solid var(--ink); border-radius: 7px; background: rgba(30, 16, 8, 0.45); overflow: hidden; }
 .cm-bar-fill { height: 100%; background: linear-gradient(180deg, #ffe9a8 0%, var(--mustard) 55%, #c98a2a 100%); }
-.cm-stars { font-size: 28px; white-space: nowrap; }
+.cm-cheese { font-size: 28px; white-space: nowrap; }
 
 .cm-scroll {
   flex: 1 1 0; min-height: 0; position: relative; overflow-x: auto; overflow-y: hidden;
@@ -626,7 +668,7 @@ button.cm-st.sel { outline: 4px solid #fff; outline-offset: 3px; z-index: 3; }
 .cm-card-name { font-size: 26px; }
 .cm-card-facts { font-weight: 800; font-size: 15px; color: var(--wood-dark); }
 .cm-card-boss { font-family: 'Lilita One', sans-serif; font-size: 18px; color: var(--rust); }
-.cm-card-stars { font-weight: 800; font-size: 16px; }
+.cm-card-total { font-weight: 800; font-size: 16px; }
 .cm-card-secret { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--teal); margin: 4px 0; }
 .cm-card-secret .cm-q { position: static; flex: none; }
 ul.cm-card-unlocks { list-style: none; margin: 2px 0; padding: 0; font-family: 'Lilita One', sans-serif; font-size: 17px; color: var(--teal); }
@@ -645,7 +687,7 @@ ul.cm-card-unlocks { list-style: none; margin: 2px 0; padding: 0; font-family: '
   .cm-progress { min-width: 110px; gap: 2px; }
   .cm-progress-text { font-size: 13px; }
   .cm-bar { height: 9px; }
-  .cm-stars { font-size: 20px; }
+  .cm-cheese { font-size: 20px; }
   .cm-sign { font-size: 12px; top: 4px; padding: 1px 7px; border-width: 2px; }
   .cm-keep { width: 110px; height: 106px; }
   .cm-camp { width: 110px; height: 79px; }
@@ -660,125 +702,199 @@ ul.cm-card-unlocks { list-style: none; margin: 2px 0; padding: 0; font-family: '
   .cm-card { width: min(330px, 42vw); bottom: max(6px, env(safe-area-inset-bottom)); right: max(8px, env(safe-area-inset-right)); max-height: calc(100% - 58px); padding: 6px 12px; gap: 2px; border-width: 3px; border-radius: 12px; }
   .cm-card-num { font-size: 13px; }
   .cm-card-name { font-size: 19px; }
-  .cm-card-facts, .cm-card-stars, .cm-card-secret, .cm-card-lock { font-size: 12px; }
+  .cm-card-facts, .cm-card-total, .cm-card-secret, .cm-card-lock { font-size: 12px; }
   .cm-card-boss { font-size: 14px; }
   ul.cm-card-unlocks { font-size: 13px; }
   .cm-card .row.navrow { margin-top: 4px !important; }
 }
 
 /* ------------------------------------------------------------------------------------------- */
-/* Market at the keep: the scene is the shop. Only the bars, the hint and the window take taps; */
-/* everything else falls through to the keep's places on the canvas.                          */
+/* Wallet: cheese, gold and Raider Crests on a dark wooden plate (shop and campaign map).     */
 /* ------------------------------------------------------------------------------------------- */
-#ui .overlay:has(> .market) { background: none; pointer-events: none; padding: 0; overflow: hidden; }
-body:has(.market) #app canvas { cursor: pointer; }
-.market { position: absolute; inset: 0; pointer-events: none; }
-.market .m-top, .market .m-bottom > *, .market .m-win { pointer-events: auto; }
-
-.market .m-top {
-  position: absolute; top: max(6px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right));
-  display: flex; gap: 10px; align-items: center;
-}
-/* Gold and offerings: big, on a dark wooden plate so they read over sky and night alike. */
-.market .m-purse {
-  position: static; display: flex; margin: 0; gap: 18px; padding: 2px 16px; min-height: 48px; align-items: center;
-  font-size: 30px; color: var(--cream); text-shadow: 0 2px 0 var(--ink);
-  background: linear-gradient(180deg, #8a5a33 0%, var(--wood-dark) 100%); border: 3px solid var(--ink); border-radius: 14px;
+.wallet {
+  display: inline-flex; gap: 14px; align-items: center; padding: 3px 14px; min-height: 44px; white-space: nowrap;
+  font-family: 'Lilita One', sans-serif; font-size: 24px; color: var(--cream); text-shadow: 0 2px 0 var(--ink);
+  background: linear-gradient(180deg, #8a5a33 0%, var(--wood-dark) 100%); border: 3px solid var(--ink); border-radius: 12px;
   box-shadow: inset 0 2px 0 rgba(255, 236, 200, 0.25), 0 3px 0 var(--ink);
 }
-.market .m-purse img { width: 32px; height: 32px; vertical-align: -7px; margin: 0 4px 0 0; }
-.market .m-chip {
-  --b: var(--parchment); color: var(--ink); text-shadow: none; display: inline-flex; align-items: center; gap: 6px;
-  font-size: 20px; padding: 4px 14px 4px 8px; min-height: 48px; border-width: 3px;
-}
-.market .m-chip.on { --b: var(--mustard); }
-.market .m-chip img { width: 34px; height: 34px; }
+.wal-chip { display: inline-flex; align-items: center; gap: 5px; }
+.wal-ico { font-size: 0.9em; text-shadow: none; }
 
-.market .m-bottom {
-  position: absolute; left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(6px, env(safe-area-inset-bottom));
-  display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; pointer-events: none;
+/* ------------------------------------------------------------------------------------------- */
+/* Keep Shop: the keep seen from outside on the left, the chosen spot's panel on the right.   */
+/* ------------------------------------------------------------------------------------------- */
+#ui .overlay:has(> .shop) { padding: 10px; }
+.panel.shop {
+  width: min(1180px, 100%); height: min(760px, 100%); max-height: none; overflow: hidden; padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 10px;
 }
-.market .m-bottom .nav-forward { display: flex; align-items: center; gap: 10px; justify-content: flex-end; flex-wrap: nowrap; margin-left: auto; }
-.market .m-go { display: flex; gap: 8px; }
-.market #ready { min-width: 132px; }
-.market .m-day, .market .status {
-  font-weight: 800; font-size: 14px; color: var(--cream); text-shadow: 0 1px 0 var(--ink), 0 0 6px rgba(20, 12, 8, 0.8);
-  background: rgba(30, 20, 14, 0.55); border-radius: 10px; padding: 4px 10px; min-height: 0; max-width: 46vw;
+.sh-top { display: flex; align-items: center; gap: 14px; flex: none; }
+.sh-top h2 { margin: 0; flex: 1; text-align: left; font-size: 34px; }
+.sh-top h2::before, .sh-top h2::after { display: none; }
+.sh-body { flex: 1 1 0; min-height: 0; display: flex; gap: 14px; }
+.sh-keep {
+  position: relative; flex: none; height: 100%; aspect-ratio: 480 / 590; max-width: 48%;
+  border: 4px solid var(--ink); border-radius: 16px; overflow: hidden;
+  background: linear-gradient(180deg, #8fc6e8 0%, #c6e4f2 55%, #e9f3e0 100%);
 }
-.market .status:empty { display: none; }
-.market .m-hint {
-  position: absolute; right: max(8px, env(safe-area-inset-right)); bottom: calc(68px + env(safe-area-inset-bottom)); max-width: min(420px, 44vw);
-  font-weight: 800; font-size: 16px; padding: 6px 12px; border: 3px solid var(--ink); border-radius: 12px;
-  background: rgba(255, 246, 223, 0.92); box-shadow: 0 3px 0 rgba(20, 12, 8, 0.45); pointer-events: none;
+/* Own layer: the keep's big pictures are drawn once, not again whenever a spot above them changes
+   (with software drawing that took seconds per frame and froze the page in the Keep Shop). */
+.sh-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; will-change: transform; }
+.sh-spot {
+  position: absolute; transform: translate(-50%, -50%); width: 60px; height: 60px; min-width: 48px; min-height: 48px; padding: 0;
+  border-radius: 50%; --b: transparent; background: rgba(255, 246, 223, 0.12); border: 3px dashed rgba(255, 246, 223, 0.95);
+  box-shadow: 0 0 0 2px rgba(43, 33, 24, 0.7), 0 0 6px rgba(255, 236, 160, 0.4);
+  color: var(--cream); font-size: 13px; text-shadow: 0 1.5px 0 var(--ink), 0 0 3px var(--ink);
+  display: flex; align-items: flex-end; justify-content: center;
 }
-.market .m-hint.level { background: var(--parchment); border-color: var(--plum); color: var(--plum); display: flex; align-items: center; gap: 8px; }
-.market .m-hint .m-king { height: 56px; width: auto; flex: none; margin: -14px 0 -6px -4px; }
+/* The breathing glow fades a ready-made shadow in and out (opacity runs without repainting). */
+.sh-spot::after {
+  content: ''; position: absolute; inset: -3px; border-radius: 50%; pointer-events: none;
+  box-shadow: 0 0 16px 3px rgba(255, 236, 160, 0.9); opacity: 0.3; will-change: opacity;
+  animation: sh-breathe 2.4s ease-in-out infinite;
+}
+.sh-spot.sel::after { display: none; }
+.sh-spot:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.94); }
+.sh-spot.sel { border: 4px solid var(--mustard); background: rgba(233, 180, 76, 0.22); box-shadow: 0 0 0 3px var(--ink), 0 0 18px 4px rgba(255, 214, 110, 0.95); }
+.sh-spot-name {
+  position: absolute; top: calc(100% - 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
+  font-size: 13px; line-height: 1; padding: 2px 6px; border-radius: 7px; background: rgba(43, 33, 24, 0.78); border: 1.5px solid var(--ink);
+}
+.sh-badge {
+  position: absolute; top: -6px; right: -6px; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 13px; color: var(--ink); text-shadow: none;
+  background: var(--cream); border: 2px solid var(--ink);
+}
+.sh-badge.plus { background: var(--mustard); font-size: 18px; }
+.sh-badge.new { background: var(--mustard); }
+@keyframes sh-breathe { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-/* The window of one place: on the right, below the purse and above the Ready button. */
-.market .m-win {
-  position: absolute; right: max(8px, env(safe-area-inset-right)); top: calc(64px + env(safe-area-inset-top)); bottom: calc(66px + env(safe-area-inset-bottom));
-  width: min(470px, 54vw); display: flex; flex-direction: column;
-  background: var(--parchment); border: 4px solid var(--ink); border-radius: 16px; padding: 8px 10px;
-  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.8), 0 5px 0 var(--wood-dark), 0 12px 28px rgba(10, 8, 22, 0.45);
-}
-.market .m-win-head { display: flex; align-items: center; gap: 10px; flex: none; margin-bottom: 6px; }
-.market .m-win-title { font-family: 'Lilita One', sans-serif; font-size: 24px; line-height: 1.05; color: var(--rust); }
-.market .m-win-title span { display: block; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; color: var(--wood-dark); }
-.market .m-close { min-height: 44px; min-width: 64px; }
-.market .m-list.items { display: flex; flex-direction: column; gap: 6px; flex: 1 1 0; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.market .m-row {
-  display: grid; grid-template-columns: auto 1fr; grid-template-areas: "pic info" "pic act"; gap: 2px 10px; align-items: center;
-  background: linear-gradient(180deg, #fffdf6 0%, #fbf3df 100%); border: 3px solid var(--ink); border-radius: 12px; padding: 6px 8px;
-}
-.market .m-row.owned { background: linear-gradient(180deg, #ecf6e6 0%, #d6ebcf 100%); }
-.market .m-row.dim .m-pic img { filter: saturate(0.6); }
-.market .m-row.locked { opacity: 0.85; }
-.market .m-info { grid-area: info; min-width: 0; }
-.market .m-row .name { font-family: 'Lilita One', sans-serif; font-size: 20px; line-height: 1.1; }
-.market .m-row .tier { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; color: var(--teal); margin-left: 4px; }
-.market .m-row .desc { font-size: 14px; font-weight: 600; line-height: 1.25; }
-.market .m-row .next { display: block; color: var(--teal); font-weight: 800; }
-.market .m-act { grid-area: act; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; font-weight: 800; }
-.market .m-act button { min-height: 44px; min-width: 88px; }
-.market .m-act .why { font-size: 13px; font-weight: 800; color: var(--rust); }
-.market .price img { width: 20px; height: 20px; vertical-align: -4px; margin: 0 2px 0 6px; }
-.market .m-note { text-align: center; font-weight: 800; color: var(--wood-dark); padding: 6px; }
+.sh-side { flex: 1 1 0; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 4px 6px 0; }
+.sh-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; font-size: 26px; color: var(--plum); }
+.sh-lead { font-size: 16px; margin: 4px 0; }
+.sh-lead.lock, .sh-why { color: var(--rust); font-weight: 800; }
+.sh-why { font-size: 14px; margin-top: 3px; }
+.sh-change { display: inline-block; font-weight: 800; color: var(--teal); background: rgba(47, 127, 122, 0.1); border: 2px solid rgba(47, 127, 122, 0.45); border-radius: 10px; padding: 3px 10px; }
+.sh-buy { margin-top: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.sh-price { font-family: 'Nunito', sans-serif; font-weight: 900; margin-left: 4px; }
+.sh-max { font-family: 'Lilita One', sans-serif; color: var(--teal); font-size: 17px; }
+button.buy { min-height: 48px; }
+.shop button.small { min-height: 44px; }
 
-/* The picture frame grows mightier with the tier: wood, iron, brass, gold, glowing gold. */
-.market .m-pic {
-  grid-area: pic; width: 72px; height: 72px; border: 3px solid var(--ink); border-radius: 12px; display: grid; place-items: center;
-  background: radial-gradient(circle at 40% 35%, #fff8e6 0%, #e9d6ae 100%); box-shadow: inset 0 0 0 3px #9a6a3c;
-}
-.market .m-pic img { width: 92%; height: 92%; object-fit: contain; }
-.market .m-pic.t2 { box-shadow: inset 0 0 0 3px #777d83; }
-.market .m-pic.t3 { box-shadow: inset 0 0 0 3px #c9a23e; }
-.market .m-pic.t4 { box-shadow: inset 0 0 0 4px #e9b44c; background: radial-gradient(circle at 40% 35%, #fffbe8 0%, #f3dc9a 100%); }
-.market .m-pic.t5 { box-shadow: inset 0 0 0 4px #ffe08a, 0 0 12px 2px rgba(255, 210, 90, 0.85); background: radial-gradient(circle at 40% 35%, #fffef4 0%, #ffe29a 100%); }
-.market .m-pips { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: 2px; }
-.market .m-pips i { width: 8px; height: 8px; border-radius: 50%; background: #f3cb5e; border: 2px solid var(--ink); }
-.market .m-pips.t4 i, .market .m-pips.t5 i { background: #ffe08a; box-shadow: 0 0 4px rgba(255, 210, 90, 0.9); }
+.pips { display: inline-flex; gap: 3px; vertical-align: middle; }
+.pips i { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--ink); background: rgba(43, 33, 24, 0.12); }
+.pips i.on { background: var(--mustard); }
+.pips i.top.on { background: radial-gradient(circle at 35% 30%, #fffbe0 0%, #ffd95e 45%, #d1972f 100%); box-shadow: 0 0 5px 1px rgba(255, 214, 110, 0.9); }
 
-/* Phones in landscape: the same market, packed tighter; every tap area stays at least 44 px. */
+.sw-list { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.sw-row {
+  display: flex; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 12px;
+  background: #fffaf0; border: 3px solid rgba(138, 90, 51, 0.5); box-shadow: inset 0 2px 0 #fff;
+}
+.sw-row.worn { border-color: var(--teal); background: #f1fbf6; }
+.sw-row.locked .sw-pic { filter: grayscale(0.7) brightness(0.9); }
+.sw-pic { width: 64px; height: 64px; flex: none; }
+.sw-main { flex: 1; min-width: 0; }
+.sw-name { font-family: 'Lilita One', sans-serif; font-size: 19px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sw-worn { font-size: 13px; color: var(--cream); background: var(--teal); border: 2px solid var(--ink); border-radius: 8px; padding: 0 6px; }
+.sw-desc { font-size: 14px; font-weight: 600; line-height: 1.25; }
+.sw-state, .sw-next { font-size: 14px; font-weight: 800; margin-top: 2px; color: var(--wood-dark); }
+.sw-state.lock { color: var(--rust); }
+.sw-state.top { color: var(--teal); }
+.sw-next b { color: var(--teal); }
+.sw-next { display: flex; align-items: center; gap: 4px; }
+.sw-now, .sw-then { width: 30px; height: 30px; flex: none; }
+.sw-then { filter: drop-shadow(0 0 3px rgba(255, 214, 110, 0.9)); }
+.sw-arrow { font-weight: 900; color: var(--teal); }
+.sh-stages { display: inline-flex; align-items: flex-end; gap: 8px; }
+.sh-stages img { height: 140px; width: auto; }
+.sh-stages img:last-child { filter: drop-shadow(0 0 6px rgba(255, 214, 110, 0.9)); }
+.sw-acts { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 4px; max-width: 190px; }
+.sw-acts .sh-why { font-size: 12px; line-height: 1.2; }
+
+/* ------------------------------------------------------------------------------------------- */
+/* Loadout strip before a level (in the level card and on the endless page).                  */
+/* ------------------------------------------------------------------------------------------- */
+.loadout { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
+.lo-strip { display: flex; gap: 6px; justify-content: center; }
+.lo-tile {
+  position: relative; width: 58px; height: 58px; min-width: 48px; min-height: 48px; padding: 0; border-radius: 12px;
+  --b: #fffaf0; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center;
+}
+.lo-tile img { width: 100%; height: 100%; }
+.lo-tile.on { --b: #ffe8a8; outline: 3px solid var(--mustard); outline-offset: 1px; }
+.lo-tile.locked { --b: #cfc7b8; }
+.lo-role {
+  position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%); font-size: 10px; line-height: 1; padding: 1px 4px; white-space: nowrap;
+  color: var(--cream); background: rgba(43, 33, 24, 0.85); border-radius: 5px; text-shadow: none;
+}
+.lo-empty { font-size: 26px; color: var(--wood); }
+.lo-lock { font-size: 18px; }
+.lo-choice { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 6px; border-radius: 10px; background: rgba(138, 90, 51, 0.12); }
+.lo-pick {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 2px 10px 2px 4px; font-size: 14px;
+  --b: #fffaf0; border: 2px solid var(--ink); border-radius: 10px;
+}
+.lo-pick img { width: 40px; height: 40px; }
+.lo-pick, .lo-tile { color: var(--ink); text-shadow: none; }
+.lo-pick .pips i { width: 7px; height: 7px; border-width: 1.5px; }
+.lo-pick.on { --b: #dff3ec; outline: 3px solid var(--teal); }
+.lo-pick.none { padding: 2px 12px; }
+.lo-hint { font-size: 13px; font-weight: 800; color: var(--wood-dark); }
+
+/* Level card: the five cheese and the challenges; the map stations show the cheese won. */
+ul.cm-card-cheese { list-style: none; margin: 2px 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; font-weight: 800; font-size: 14px; }
+ul.cm-card-cheese li { display: flex; gap: 5px; align-items: baseline; opacity: 0.75; }
+ul.cm-card-cheese li.got { opacity: 1; color: var(--teal); }
+ul.cm-card-cheese li:nth-child(n + 4) { grid-column: 1 / -1; }
+.cm-ck { flex: none; width: 1.2em; text-align: center; }
+.cm-got {
+  position: absolute; top: calc(100% + 2px); left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 11px; line-height: 1; padding: 1px 4px; border-radius: 6px;
+  color: var(--ink); text-shadow: none; background: rgba(255, 246, 223, 0.9); border: 1.5px solid var(--ink);
+}
+.cm-got.full { background: var(--mustard); }
+.cm-head .wallet { font-size: 20px; min-height: 40px; }
+/* Close and Play stay in reach even when a long card scrolls. */
+.cm-card .row.navrow { position: sticky; bottom: -12px; padding-bottom: 4px; background: var(--parchment); z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) { .sh-spot::after { animation: none; } }
+
+/* Phones in landscape: the shop fills the screen, the wallet and the lists get smaller. */
 @media (max-height: 520px) {
-  .market .m-top { gap: 6px; }
-  .market .m-purse { font-size: 22px; min-height: 44px; padding: 0 10px; gap: 12px; border-width: 2px; }
-  .market .m-purse img { width: 24px; height: 24px; vertical-align: -5px; }
-  .market .m-chip { font-size: 16px; min-height: 44px; padding: 2px 10px 2px 6px; }
-  .market .m-chip img { width: 28px; height: 28px; }
-  .market .m-day, .market .status { font-size: 11px; padding: 3px 8px; max-width: 40vw; }
-  .market #ready { min-width: 104px; }
-  .market .m-hint { font-size: 12px; padding: 4px 8px; bottom: calc(56px + env(safe-area-inset-bottom)); border-width: 2px; }
-  .market .m-hint .m-king { height: 40px; margin: -10px 0 -4px -2px; }
-  .market .m-win { top: calc(54px + env(safe-area-inset-top)); bottom: calc(56px + env(safe-area-inset-bottom)); padding: 5px 8px; border-width: 3px; border-radius: 12px; width: min(440px, 54vw); }
-  .market .m-win-title { font-size: 18px; }
-  .market .m-win-title span { font-size: 11px; }
-  .market .m-win-head { margin-bottom: 4px; }
-  .market .m-row { padding: 3px 6px; gap: 0 8px; border-width: 2px; border-radius: 10px; }
-  .market .m-pic { width: 52px; height: 52px; border-width: 2px; border-radius: 9px; }
-  .market .m-row .name { font-size: 15px; }
-  .market .m-row .desc { font-size: 11px; line-height: 1.2; }
-  .market .m-act { gap: 6px; }
-  .market .m-act .why { font-size: 11px; }
-  .market .price img { width: 15px; height: 15px; vertical-align: -3px; margin-left: 4px; }
-  .market .m-pips i { width: 6px; height: 6px; border-width: 1.5px; }
+  #ui .overlay:has(> .shop) { padding: max(4px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); }
+  .panel.shop { width: 100%; height: 100%; padding: 6px 10px; gap: 5px; border-width: 3px; border-radius: 14px; outline: none; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.8), 0 4px 0 var(--wood-dark); }
+  .sh-top { gap: 8px; }
+  .sh-top h2 { font-size: 22px; -webkit-text-stroke-width: 3px; }
+  .wallet { font-size: 17px; gap: 10px; padding: 2px 10px; min-height: 36px; border-width: 2px; }
+  .sh-body { gap: 8px; }
+  .sh-keep { border-width: 3px; border-radius: 12px; }
+  .sh-spot { width: 50px; height: 50px; font-size: 11px; border-width: 2.5px; }
+  .sh-spot-name { font-size: 10px; padding: 1px 4px; }
+  .sh-badge { width: 19px; height: 19px; font-size: 11px; top: -5px; right: -5px; }
+  .sh-title { font-size: 19px; gap: 6px; margin-bottom: 0; }
+  .sh-lead { font-size: 12.5px; margin: 2px 0; line-height: 1.3; }
+  .sh-why { font-size: 11.5px; }
+  .sh-change { padding: 2px 7px; border-radius: 8px; }
+  .pips i { width: 9px; height: 9px; border-width: 1.5px; }
+  .sw-list { gap: 5px; margin-top: 3px; }
+  .sw-row { padding: 3px 6px; gap: 6px; border-width: 2px; border-radius: 10px; }
+  .sw-pic { width: 46px; height: 46px; }
+  .sw-name { font-size: 15px; gap: 5px; }
+  .sw-desc { font-size: 11.5px; }
+  .sw-state, .sw-next { font-size: 11.5px; }
+  .sw-acts { max-width: 150px; gap: 3px; }
+  .sw-now, .sw-then { width: 24px; height: 24px; }
+  .sh-stages img { height: 74px; }
+  .sw-acts button.small, .sh-buy button.small { font-size: 13px; padding: 2px 8px; }
+  .cm-head .wallet { font-size: 15px; min-height: 32px; }
+  .loadout { gap: 4px; margin: 2px 0; }
+  .lo-strip { gap: 4px; }
+  .lo-tile { width: 48px; height: 48px; border-width: 2px; border-radius: 10px; }
+  .lo-role { font-size: 8.5px; }
+  .lo-choice { gap: 4px; padding: 4px; }
+  .lo-pick { font-size: 12px; min-height: 44px; }
+  .lo-pick img { width: 34px; height: 34px; }
+  ul.cm-card-cheese { font-size: 11.5px; }
+  .cm-got { font-size: 9.5px; }
 }

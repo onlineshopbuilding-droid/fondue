@@ -3,18 +3,39 @@
 import type { Difficulty } from '../../config/waves';
 import { GuestSession, HostSession, type Session } from '../../game/session';
 import { CAMPAIGN, ENDLESS } from '../../modes';
-import { loopbackTransport } from '../../net/loopback';
-import { peerTransport } from '../../net/peer';
+import { pickTransport } from '../../net/choose';
 import { PROTOCOL_VERSION, type NetMessage, type RoomPlan } from '../../net/protocol';
-import { relayTransport } from '../../net/relay';
 import { makeRoomCode, normalizeRoomCode, withLatency, type RoomHost, type Transport, type TransportKind } from '../../net/transport';
 import type { Profile } from '../../profile';
 import type { RunSetup } from '../../sim/rules';
 import type { ScreenId } from '../screens/screen';
+import { BUILD_HASH } from '../version';
+import { GAME_VERSION } from '../../config/game';
 
-declare const __GAME_VERSION__: string;
-/** Both players must run the same build. A test can pretend to be an out-of-date client with ?fakever=x. */
-export const BUILD = new URLSearchParams(location.search).get('fakever') ?? `${PROTOCOL_VERSION}-${__GAME_VERSION__}`;
+/**
+ * Both players must run the same game version and build, for example "3-v0.3-8c1dddb".
+ * A test can pretend to be an out-of-date client with ?fakever=x.
+ */
+export const BUILD = new URLSearchParams(location.search).get('fakever') ?? `${PROTOCOL_VERSION}-v${GAME_VERSION}-${BUILD_HASH}`;
+
+/** The address this game was opened at, without query: /fondue/ and /fondue/classic/ are different games. */
+export const ADDRESS = `${location.origin}${location.pathname}`;
+
+/** "4-v0.3-8c1dddb" as players read it: "v0.3 (build 8c1dddb)". */
+export function versionText(build: string): string {
+  const m = /^\d+-v([^-]+)-(.+)$/.exec(build);
+  return m ? `v${m[1]} (build ${m[2]})` : build;
+}
+
+/** The message both players see when their games do not match. */
+export function mismatchText(friendVer: string, friendAddr: string | undefined, me: 'host' | 'guest'): string {
+  const where = friendAddr === undefined ? 'an unknown address' : friendAddr === ADDRESS ? 'the same address' : `another address (${friendAddr})`;
+  const fix = friendAddr === ADDRESS || friendAddr === undefined
+    ? 'Both of you need to reload the page (pull down or Ctrl+F5) to get the same version.'
+    : `Both of you need to open ${ADDRESS} and reload the page.`;
+  const who = me === 'guest' ? 'The host runs' : 'Your friend runs';
+  return `${who} ${versionText(friendVer)} at ${where}; you run ${versionText(BUILD)}. ${fix}`;
+}
 
 /** Seats in a room. The network code knows one guest today; the room list is built for more. */
 export const ROOM_SEATS = 2;
@@ -98,9 +119,7 @@ export class CoopRoom {
   }
 
   private transport(): TransportKind {
-    if (this.app.params.get('net') === 'loopback') return loopbackTransport;
-    const relay = this.app.profile.data.settings.relayAddress.trim();
-    return relay ? relayTransport(relay) : peerTransport;
+    return pickTransport({ net: this.app.params.get('net'), relayAddress: this.app.profile.data.settings.relayAddress });
   }
 
   private shaped(link: Transport): Transport {
@@ -133,6 +152,8 @@ export class CoopRoom {
     const p = this.app.profile;
     const world = this.app.world;
     const next: RoomPlan = { ...this.plan, ...change, world };
+    // Endless opens with the fifth slot (E1), for a hosted room as for a solo run.
+    if (next.mode !== 'campaign' && !ENDLESS.isAvailable(p, world)) next.mode = 'campaign';
     if (next.mode === 'campaign') {
       const level = next.level ?? CAMPAIGN.nextLevel(p, world);
       next.level = CAMPAIGN.canPlay(p, world, level) ? level : CAMPAIGN.nextLevel(p, world);
@@ -223,7 +244,12 @@ export class CoopRoom {
     if (m.k === 'hand') { if (link === this.lobbyLink) this.guestHand = m.handTier; return; }
     if (m.k !== 'hello') return;
     if (m.ver !== BUILD) {
-      link.send({ k: 'reject', reason: 'version', hostVer: BUILD });
+      link.send({ k: 'reject', reason: 'version', hostVer: BUILD, hostAddr: ADDRESS });
+      // The host learns it too, not only the friend who could not get in.
+      this.status = `${m.name || 'A friend'} could not join. ${mismatchText(m.ver, m.addr, 'host')}`;
+      this.error = true;
+      if (this.app.screen === 'host') this.redraw('host');
+      else this.app.toast(this.status);
       return;
     }
     const name = m.name || 'Guest';
@@ -274,15 +300,16 @@ export class CoopRoom {
     link.onMessage = (m) => {
       if (m.k !== 'hand') { inner(m); return; }
       this.guestHand = m.handTier;
-      // Endless hands grow with gold during the run; only a campaign hand comes from the profile.
-      if (!session.sim.rules.handBuyable) session.sim.setHandTier(1, m.handTier);
+      // The guest brings the hand of their own profile (E2).
+      session.sim.setHandTier(1, m.handTier);
     };
   }
 
   startCoopAsHost() {
     if (!this.lobbyLink) return;
+    if (this.plan.mode !== 'campaign' && !ENDLESS.isAvailable(this.app.profile, this.app.world)) this.setPlan({ mode: 'campaign', level: null });
     const names = [this.app.playerName(), this.guestName];
-    const setup = this.app.coopSetup(this.plan, names, [this.app.profile.data.handTier, this.guestHand]);
+    const setup = this.app.coopSetup(this.plan, names, [this.app.profile.data.keep.handTier, this.guestHand]);
     const session = new HostSession(setup, true);
     const link = this.lobbyLink;
     this.attachToSession(session, link);
@@ -342,7 +369,7 @@ export class CoopRoom {
       if (token !== this.token) { link.close(); return; }
       this.joining = false;
       this.listenAsGuest(link, code);
-      link.send({ k: 'hello', ver: BUILD, name: this.app.playerName(), handTier: this.app.profile.data.handTier });
+      link.send({ k: 'hello', ver: BUILD, name: this.app.playerName(), handTier: this.app.profile.data.keep.handTier, addr: ADDRESS });
     } catch (err) {
       this.joining = false;
       if (token !== this.token) return;
@@ -360,7 +387,7 @@ export class CoopRoom {
 
   /** The guest's hand may have grown since the last run; the host needs it for the next one. */
   private sendHand(link: Transport) {
-    link.send({ k: 'hand', handTier: this.app.profile.data.handTier });
+    link.send({ k: 'hand', handTier: this.app.profile.data.keep.handTier });
   }
 
   private planText(): string {
@@ -393,7 +420,7 @@ export class CoopRoom {
         this.joined = false;
         this.status = m.reason === 'full'
           ? 'This room already has two players.'
-          : 'Your game version differs from the host. Please reload the page (Ctrl+F5) on both sides.';
+          : mismatchText(m.hostVer, m.hostAddr, 'guest');
         this.error = true;
         this.app.show('join', code);
         link.close();

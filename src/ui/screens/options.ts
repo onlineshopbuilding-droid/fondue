@@ -2,7 +2,10 @@
 // It opens from the main menu and from the pause screen; its back button returns to whichever applies.
 import { DEFAULT_WORLD } from '../../config/worlds';
 import { syncUnlocks } from '../../modes';
+import { cheatBadge } from '../../modes/cheats';
 import { BACK_BUTTON, esc, navRow } from '../html';
+import { GAME_NAME } from '../../config/game';
+import { VERSION_LABEL } from '../version';
 import type { ScreenContext } from './context';
 import type { Screen } from './screen';
 import { difficultyOptions, onSettingsInput } from './settingsFields';
@@ -36,6 +39,8 @@ class OptionsScreen implements Screen {
         <div class="status err" id="profileError"></div>
         <div class="row"><button class="small alt" data-a="importProfile">Load profile</button></div>
       </div>
+      <p class="note-line version-line" id="versionLabel">${esc(GAME_NAME)} ${esc(VERSION_LABEL)}</p>
+      ${cheatBadge(ctx.profile) ? `<p class="note-line" id="optCheatBadge">${esc(cheatBadge(ctx.profile) ?? '')}</p>` : ''}
       ${navRow(returnBtn, DEV_MENU_BUTTON ? '<button class="secondary" data-a="devMenu" id="devMenuButton">Developer menu</button>' : '')}</div>`;
   }
 

@@ -1,5 +1,6 @@
 /**
- * Patches of road that act on whoever stands in them: fire burns, sticky cheese slows.
+ * Patches of road that act on whoever stands in them: fire burns, sticky cheese and snow slow,
+ * hot cheese before the gate scalds and slows.
  * Weapons lay them down; they fade on their own.
  */
 import { DT } from '../config/field';
@@ -16,6 +17,14 @@ export class Zones {
 
   addCheese(x: number, halfWidth: number, seconds: number, slow: number, dps: number) {
     this.add({ kind: 'cheese', x, halfWidth, t: seconds, dur: seconds, dps, slow });
+  }
+
+  addSnow(x: number, halfWidth: number, seconds: number, slow: number) {
+    this.add({ kind: 'snow', x, halfWidth, t: seconds, dur: seconds, dps: 0, slow });
+  }
+
+  addHotCheese(x: number, halfWidth: number, seconds: number, slow: number, dps: number) {
+    this.add({ kind: 'hotCheese', x, halfWidth, t: seconds, dur: seconds, dps, slow });
   }
 
   private add(z: Omit<Zone, 'id'>) {

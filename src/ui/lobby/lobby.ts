@@ -7,13 +7,15 @@ import { WEAPONS } from '../../config/weapons';
 // The story texts of the one world there is; a second world would bring its own.
 import { KING_LOBBY_LINES, STORYBOOK } from '../../config/worlds/fondue/story';
 import type { Session } from '../../game/session';
-import { ENDLESS } from '../../modes';
+import { SLOT_COUNT } from '../../config/slots';
+import { ENDLESS, unlockLevelOf } from '../../modes';
 import type { Profile } from '../../profile';
 import { diveOf, fadeOf, stepLobby } from '../../render/lobby/dive';
 import { linesFor, pagesFor, pickLine, STATIONS, type StationId } from '../../render/lobby/layout';
 import { LobbyScene, type LobbySpot, type LobbyState } from '../../render/lobby/lobbyScene';
 import type { GameScene } from '../../render/scene';
 import type { PendingRun } from '../screens/context';
+import { ENDLESS_LOCKED, pendingWave } from '../screens/main';
 import { htmlMenuWanted, OVER_LOBBY } from './mode';
 import { StorybookWindow } from './storybook';
 
@@ -85,7 +87,7 @@ export class Lobby {
     return {
       levelDone: p.highestLevelDone(this.host.world),
       weapons: WEAPONS.filter((w) => w.enabled && p.hasWeapon(w.id)).map((w) => w.id),
-      pending: pending ? { level: pending.rules.level ?? 1, day: pending.start.day } : null,
+      pending: pending ? { level: pending.rules.level ?? 1, wave: pendingWave(pending) } : null,
       endless: ENDLESS.isAvailable(p, this.host.world),
     };
   }
@@ -119,6 +121,11 @@ export class Lobby {
     if (!STATIONS.some((s) => s.id === id)) return;
     this.click();
     if (id === 'storybook') { this.openBook(); return; }
+    if (id === 'play' && !ENDLESS.isAvailable(this.host.profile, this.host.world)) {
+      const level = unlockLevelOf(this.host.world, 'slot', SLOT_COUNT - 1);
+      this.say(level === null ? ENDLESS_LOCKED : `${ENDLESS_LOCKED} Win level ${level}!`);
+      return;
+    }
     this.host.lobbyAction(id);
   }
 

@@ -104,7 +104,7 @@ node scripts/list-assets.ts
 Die Größe und der Ankerpunkt gelten in Weltpixeln. „Bilddatei in Pixeln“ ist die Größe, in der man eine Ersatzdatei anlegt.
 
 <!-- ASSETS:START (erzeugt von scripts/list-assets.ts, nicht von Hand ändern) -->
-Stand: 328 Assets.
+Stand: 444 Assets.
 
 ### Figurenteile (86)
 
@@ -197,7 +197,7 @@ Stand: 328 Assets.
 | `rig:crow:body` | 50 × 34 | 25, 16 | 100 × 68 | 0, -12 | static | Start |
 | `rig:crow:wingFront` | 37 × 41 | 13, 31 | 74 × 82 | 3, -16 | armFront | Start |
 
-### Requisiten, Burg und Effekte (142)
+### Requisiten, Burg und Effekte (163)
 
 | Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gruppe |
 |---|---|---|---|---|
@@ -219,6 +219,13 @@ Stand: 328 Assets.
 | `prop:shell` | 30 × 30 | 15, 15 | 60 × 60 | Start |
 | `prop:bolt` | 64 × 18 | 32, 9 | 128 × 36 | Start |
 | `prop:roofBolt` | 44 × 14 | 22, 7 | 88 × 28 | Start |
+| `prop:snowball` | 28 × 28 | 14, 14 | 56 × 56 | Start |
+| `prop:snowDrift` | 128 × 40 | 64, 38 | 256 × 80 | Start |
+| `prop:pinecone` | 26 × 30 | 13, 15 | 52 × 60 | Start |
+| `prop:hornet` | 30 × 26 | 15, 13 | 60 × 52 | Start |
+| `prop:cheeseStream` | 30 × 100 | 15, 0 | 60 × 200 | Start |
+| `prop:cheesePool` | 80 × 24 | 40, 22 | 160 × 48 | Start |
+| `prop:swingLog` | 112 × 40 | 56, 20 | 224 × 80 | Start |
 | `prop:handOpen` | 72 × 72 | 39, 49 | 144 × 144 | Start |
 | `prop:handClosed` | 72 × 72 | 39, 43 | 144 × 144 | Start |
 | `prop:gibHelmet` | 32 × 32 | 16, 16 | 64 × 64 | Start |
@@ -226,7 +233,7 @@ Stand: 328 Assets.
 | `prop:gibBoot` | 32 × 32 | 16, 16 | 64 × 64 | Start |
 | `prop:gibStick` | 32 × 32 | 16, 16 | 64 × 64 | Start |
 | `prop:coin` | 32 × 32 | 16, 16 | 64 × 64 | Start |
-| `prop:offering` | 32 × 32 | 16, 16 | 64 × 64 | Start |
+| `prop:crestToken` | 32 × 32 | 16, 16 | 64 × 64 | Start |
 | `prop:splat1` | 120 × 34 | 60, 17 | 240 × 68 | Start |
 | `prop:splat2` | 120 × 34 | 60, 17 | 240 × 68 | Start |
 | `prop:splat3` | 120 × 34 | 60, 17 | 240 × 68 | Start |
@@ -257,17 +264,25 @@ Stand: 328 Assets.
 | `prop:keep2` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
 | `prop:keep3` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
 | `prop:keep4` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
+| `prop:keep5` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
+| `prop:keep6` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
 | `prop:keepGlow0` | 300 × 660 | 0, 660 | 600 × 1320 | Start |
 | `prop:keepGlow1` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
 | `prop:keepGlow2` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
 | `prop:keepGlow3` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
 | `prop:keepGlow4` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
+| `prop:keepGlow5` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
+| `prop:keepGlow6` | 300 × 660 | 0, 660 | 600 × 1320 | Burgstufen |
+| `prop:gate5` | 74 × 150 | 0, 150 | 148 × 300 | Start |
+| `prop:gate6` | 74 × 150 | 0, 150 | 148 × 300 | Start |
 | `prop:keepShadow` | 560 × 110 | 0, 110 | 1120 × 220 | Start |
 | `prop:keepWeather_snowpine_0` | 300 × 660 | 0, 660 | 600 × 1320 | snowpine |
 | `prop:keepWeather_snowpine_1` | 300 × 660 | 0, 660 | 600 × 1320 | snowpine |
 | `prop:keepWeather_snowpine_2` | 300 × 660 | 0, 660 | 600 × 1320 | snowpine |
 | `prop:keepWeather_snowpine_3` | 300 × 660 | 0, 660 | 600 × 1320 | snowpine |
 | `prop:keepWeather_snowpine_4` | 300 × 660 | 0, 660 | 600 × 1320 | snowpine |
+| `prop:keepWeather_snowpine_5` | 300 × 660 | 0, 660 | 600 × 1320 | snowpine |
+| `prop:keepWeather_snowpine_6` | 300 × 660 | 0, 660 | 600 × 1320 | snowpine |
 | `prop:keepWeather_canyon` | 300 × 660 | 0, 660 | 600 × 1320 | canyon |
 | `prop:keepWeather_marsh` | 300 × 660 | 0, 660 | 600 × 1320 | marsh |
 | `prop:keepGround_meadow` | 340 × 130 | 0, 130 | 680 × 260 | meadow (Start) |
@@ -289,6 +304,12 @@ Stand: 328 Assets.
 | `prop:keepWest4` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
 | `prop:keepWestGlow4` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
 | `prop:keepWestSnow_snowpine_4` | 400 × 660 | 0, 660 | 800 × 1320 | snowpine |
+| `prop:keepWest5` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestGlow5` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestSnow_snowpine_5` | 400 × 660 | 0, 660 | 800 × 1320 | snowpine |
+| `prop:keepWest6` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestGlow6` | 400 × 660 | 0, 660 | 800 × 1320 | Burgstufen |
+| `prop:keepWestSnow_snowpine_6` | 400 × 660 | 0, 660 | 800 × 1320 | snowpine |
 | `prop:keepWestGround_meadow` | 420 × 130 | 0, 130 | 840 × 260 | meadow (Start) |
 | `prop:keepWestGround_canyon` | 420 × 130 | 0, 130 | 840 × 260 | canyon |
 | `prop:keepWestGround_marsh` | 420 × 130 | 0, 130 | 840 × 260 | marsh |
@@ -344,90 +365,185 @@ Stand: 328 Assets.
 | `lobby:garland` | 1600 × 140 | 800, 0 | 3200 × 280 | Start |
 | `lobby:nameBanner` | 420 × 110 | 210, 55 | 840 × 220 | Start |
 
-### Waffen (je Stufe ein Bild) (80)
+### Waffen (je Stufe ein Bild) (175)
 
 | Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gruppe |
 |---|---|---|---|---|
 | `weapon:wheel:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:wheel:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:wheel:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:wheel:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:wheel:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:cheese:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:cheese:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:cheese:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:cheese:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:cheese:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:wheel:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:wheel:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:wheel:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:wheel:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:wheel:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:wheel:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
 | `weapon:forks:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:forks:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:forks:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:forks:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:forks:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:forks:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:forks:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:forks:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:forks:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:forks:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:forks:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
 | `weapon:stomper:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:stomper:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:stomper:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:stomper:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:stomper:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:alphorn:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:alphorn:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:alphorn:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:alphorn:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:alphorn:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:cuckoo:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:cuckoo:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:cuckoo:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:cuckoo:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:cuckoo:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:stomper:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:stomper:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:stomper:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:stomper:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:stomper:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:stomper:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
 | `weapon:comet:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:comet:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:comet:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:comet:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:comet:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bell:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:bell:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bell:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bell:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bell:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:midas:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:midas:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:midas:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:midas:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:midas:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:mortar:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:mortar:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:mortar:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:mortar:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:mortar:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:frost:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:frost:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:frost:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:frost:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:frost:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:comet:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:comet:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:comet:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:comet:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:comet:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:comet:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
 | `weapon:bellows:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:bellows:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bellows:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bellows:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bellows:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:thorns:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:thorns:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:thorns:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:thorns:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:thorns:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bolter:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:bolter:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bolter:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bolter:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:bolter:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:sentry:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:sentry:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:sentry:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:sentry:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:sentry:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:bellows:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bellows:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bellows:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bellows:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bellows:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bellows:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cheese:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:cheese:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cheese:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cheese:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cheese:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cheese:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cheese:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:frost:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:frost:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:frost:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:frost:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:frost:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:frost:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:frost:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cuckoo:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:cuckoo:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cuckoo:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cuckoo:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cuckoo:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cuckoo:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cuckoo:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:snowdrift:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:snowdrift:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:snowdrift:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:snowdrift:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:snowdrift:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:snowdrift:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:snowdrift:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cowbell:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:cowbell:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cowbell:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cowbell:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cowbell:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cowbell:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cowbell:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:midas:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:midas:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:midas:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:midas:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:midas:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:midas:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:midas:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
 | `weapon:beacon:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
-| `weapon:beacon:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:beacon:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:beacon:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
-| `weapon:beacon:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 5 |
+| `weapon:beacon:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:beacon:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:beacon:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:beacon:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:beacon:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:beacon:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:helper:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:helper:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:helper:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:helper:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:helper:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:helper:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:helper:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:grip:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:grip:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:grip:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:grip:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:grip:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:grip:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:grip:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mender:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:mender:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mender:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mender:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mender:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mender:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mender:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:sentry:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:sentry:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:sentry:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:sentry:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:sentry:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:sentry:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:sentry:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bolter:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:bolter:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bolter:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bolter:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bolter:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bolter:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bolter:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bell:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:bell:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bell:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bell:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bell:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bell:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:bell:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:catapult:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:catapult:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:catapult:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:catapult:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:catapult:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:catapult:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:catapult:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:hive:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:hive:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:hive:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:hive:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:hive:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:hive:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:hive:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mortar:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:mortar:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mortar:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mortar:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mortar:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mortar:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:mortar:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:thorns:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:thorns:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:thorns:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:thorns:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:thorns:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:thorns:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:thorns:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:alphorn:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:alphorn:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:alphorn:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:alphorn:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:alphorn:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:alphorn:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:alphorn:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cascade:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:cascade:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cascade:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cascade:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cascade:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cascade:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:cascade:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:log:1` | 120 × 120 | 60, 60 | 240 × 240 | Start |
+| `weapon:log:2` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:log:3` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:log:4` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:log:5` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:log:6` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
+| `weapon:log:7` | 120 × 120 | 60, 60 | 240 × 240 | Waffenstufen 2 bis 7 |
 
 ### Landschaftsebenen (16)
 

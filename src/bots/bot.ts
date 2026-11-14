@@ -1,4 +1,5 @@
-// A scripted player for headless balance runs: one hand that grabs, throws, shakes, taps weapons and shops.
+// A scripted player for headless balance runs: one hand that grabs, throws, shakes and taps weapons.
+// It only fights; nothing is bought during a run (shopping between runs lives in armoury.ts).
 // It uses only the commands a person's input turns into, sees only what a person sees, and takes time for everything.
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD, perchX } from '../config/field';
@@ -8,8 +9,8 @@ import type { WeaponDef } from '../config/weapons';
 import { weaponById } from '../config/weapons';
 import { handStrength, massOfType, throwFactor } from '../sim/physics';
 import type { Sim } from '../sim/sim';
+import { meltSeconds } from '../sim/stations';
 import type { Enemy } from '../sim/types';
-import { BotShopper } from './shopper';
 import type { BotSkill } from './skills';
 
 interface Step { t: number; run: () => void }
@@ -38,26 +39,13 @@ export class Bot {
   private glide: Glide | null = null;
   private nextDecision = 0;
   private nextWeaponLook = 0;
-  private shopped = -1;
   private potFreeAt = 0;
   private perchFreeAt = 0;
-  readonly shopper: BotShopper;
 
-  constructor(private p: number, private skill: BotSkill, private rand: () => number) {
-    this.shopper = new BotShopper(p, skill, rand);
-  }
+  constructor(private p: number, private skill: BotSkill, private rand: () => number) {}
 
   tick(sim: Sim) {
     const s = sim.s;
-    if (s.phase === 'intermission') {
-      this.clear();
-      if (this.shopped !== s.day) {
-        this.shopped = s.day;
-        this.shopper.shop(sim);
-        sim.command({ k: 'ready', p: this.p, ready: true });
-      }
-      return;
-    }
     if (s.phase !== 'battle' || s.paused) {
       this.clear();
       return;
@@ -115,7 +103,7 @@ export class Bot {
     return sum;
   }
 
-  /** Hand strength a yeti needs before it leaves the ground. The hand notes in the armoury say as much. */
+  /** Hand strength a yeti needs before it leaves the ground. The hand notes in the Keep Shop say as much. */
   private yetiNeed(e: Enemy) { return HAND_RULES.yetiLift * (e.big ? BEHAVIOUR.big.mass : 1); }
 
   // ---------------------------------------------------------------------------
@@ -302,7 +290,7 @@ export class Bot {
       const ex = x + e.grabOffX;
       const ey = y + e.grabOffY;
       const v = this.lobTo(sim, e, ex, ey - ENEMIES[e.type].height * 0.45, WORLD.cauldron.x, WORLD.cauldron.rimY, 0.34);
-      if (v) { this.potFreeAt = this.now + 0.7 + sim.tuning.cauldronSeconds; return this.swipe(sim, e, v); }
+      if (v) { this.potFreeAt = this.now + 0.7 + meltSeconds(sim.s.meta.loadout.stationTier?.cauldron ?? 1, sim.tuning); return this.swipe(sim, e, v); }
     }
     return this.swipe(sim, e, { vx: this.gauss(60), vy: -1250 - this.rand() * 250 });
   }
@@ -473,6 +461,16 @@ export class Bot {
         const grabbable = all.filter((e) => ENEMIES[e.type].grabbable && !tough(e) && !e.shieldOn).length;
         return grabbable >= k.minCrowd + 2;
       }
+      case 'drift': return this.crowd(sim, (t as { halfWidth: number }).halfWidth, true).n >= k.minCrowd;
+      case 'toll': return this.crowd(sim, (t as { radius: number }).radius, true).n >= k.minCrowd;
+      case 'helper':
+      case 'grip': return all.filter((e) => ENEMIES[e.type].grabbable).length >= k.minCrowd + 1;
+      case 'mend': return s.gateMax > 0 && s.gateHp / s.gateMax < (k.weaponWise ? 0.7 : 0.95);
+      // Passive weapons fire on their own; a tap rarely adds anything.
+      case 'lob':
+      case 'swarm': return false;
+      case 'cascade': return this.nearGate(sim, 300, true) >= 1;
+      case 'swing': return this.nearGate(sim, (t as { reach: number }).reach + 40, true) >= 1;
     }
   }
 

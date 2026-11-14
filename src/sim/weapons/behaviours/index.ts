@@ -5,6 +5,15 @@
 import type { WeaponKind } from '../../../config/weapons';
 import type { WeaponBehaviour } from '../behaviour';
 import { BeaconBehaviour } from './beacon';
+import { CascadeBehaviour } from './cascade';
+import { DriftBehaviour } from './drift';
+import { GripBehaviour } from './grip';
+import { HelperBehaviour } from './helper';
+import { LobBehaviour } from './lob';
+import { MendBehaviour } from './mend';
+import { SwarmBehaviour } from './swarm';
+import { SwingBehaviour } from './swing';
+import { TollBehaviour } from './toll';
 import { ChainBehaviour } from './chain';
 import { GoldBehaviour } from './gold';
 import { PuddleBehaviour } from './puddle';
@@ -35,4 +44,13 @@ export const BEHAVIOURS: Record<WeaponKind, WeaponBehaviour<any>> = {
   volley: new VolleyBehaviour(),
   sentry: new SentryBehaviour(),
   beacon: new BeaconBehaviour(),
+  drift: new DriftBehaviour(),
+  toll: new TollBehaviour(),
+  helper: new HelperBehaviour(),
+  grip: new GripBehaviour(),
+  mend: new MendBehaviour(),
+  lob: new LobBehaviour(),
+  swarm: new SwarmBehaviour(),
+  cascade: new CascadeBehaviour(),
+  swing: new SwingBehaviour(),
 };

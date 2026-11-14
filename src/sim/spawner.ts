@@ -1,23 +1,21 @@
-// Part of the simulation: brings the day's raiders onto the field at their times.
+// Part of the simulation: brings the wave's raiders onto the field at their times.
 import { BEHAVIOUR, ENEMIES, type EnemyType } from '../config/enemies';
-import { DAY } from '../config/waves';
-import { FIELD, WORLD, fieldEntry } from '../config/field';
+import { FIELD, WORLD } from '../config/field';
 import type { Enemy } from './types';
 import type { SimContext } from './context';
 
 /**
- * Brings the raiders of the day plan onto the field at their times.
- * It also creates a single raider with its starting state.
+ * Brings the raiders of the wave plan onto the field at their times, never more alive at once
+ * than the run allows. It also creates a single raider with its starting state.
  */
 export class Spawner {
   constructor(private ctx: SimContext) {}
 
   spawn() {
     const s = this.ctx.s;
-    // Nightfall: whoever has not arrived yet stays home.
-    if (s.dayT >= s.meta.today.seconds) return;
     let alive = s.enemies.length;
-    while (s.spawned < s.spawnQueue.length && s.spawnQueue[s.spawned].t <= s.dayT && alive < DAY.maxAlive) {
+    const max = this.ctx.rules.maxAlive;
+    while (s.spawned < s.spawnQueue.length && s.spawnQueue[s.spawned].t <= s.waveT && alive < max) {
       const entry = s.spawnQueue[s.spawned];
       this.spawnEnemy(entry.type, undefined, entry.big ?? false);
       s.spawned++;
@@ -25,7 +23,8 @@ export class Spawner {
     }
   }
 
-  spawnEnemy(type: EnemyType, x = fieldEntry(this.ctx.s.meta.fieldW) + FIELD.offstageRun + this.ctx.rng.range(0, 30), big = false): Enemy {
+  /** Raiders step in just beyond the visible right edge (B3) and hurry onto the field. */
+  spawnEnemy(type: EnemyType, x = this.ctx.entryX + FIELD.offstageRun + this.ctx.rng.range(0, 30), big = false): Enemy {
     const s = this.ctx.s;
     const def = ENEMIES[type];
     const sc = this.ctx.rules.scaling;

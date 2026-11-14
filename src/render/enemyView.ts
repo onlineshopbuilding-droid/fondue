@@ -14,7 +14,7 @@ const POT_FIGURE_SCALE = 0.72;
 const HOOK_SWING = 0.12;
 /** How much higher a hooked balloonist hangs than the simulation's collar point. */
 const HOOK_BALLOON_LIFT = 34;
-/** Health bar of a boss day's big raider: wider, and red so that it reads as a boss. */
+/** Health bar of a boss wave's big raider: wider, and red so that it reads as a boss. */
 const BIG_BAR_WIDTH = 96;
 const BIG_BAR_COLOR = 0xd1495b;
 
@@ -160,7 +160,7 @@ export class EnemyView {
 
     const def = ENEMIES[e.type];
     const ground = WORLD.groundY + e.lane;
-    // Raiders of a boss day are drawn bigger; their grip area in the simulation grows with them.
+    // Raiders of a boss wave are drawn bigger; their grip area in the simulation grows with them.
     const big = e.big ? BEHAVIOUR.big.scale : 1;
     const h = (e.crow ? 40 : def.height) * 0.5 * big;
     const rot = e.rot;

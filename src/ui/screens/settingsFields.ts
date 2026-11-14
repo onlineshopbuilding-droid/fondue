@@ -9,9 +9,9 @@ export function difficultyOptions(ctx: ScreenContext): string {
     .map((d) => `<option value="${d}" ${d === ctx.settings.difficulty ? 'selected' : ''}>${DIFFICULTIES[d].label}</option>`).join('');
 }
 
-/** Reminds the player that the developer menu set a later start day. */
+/** Reminds the player that the developer menu set a later start wave. */
 export function quickNote(ctx: ScreenContext): string {
-  return ctx.startDay > 1 ? `<div class="status" id="quickNote">Quick start: day ${ctx.startDay}. Does not count for the scores.</div>` : '';
+  return ctx.startWave > 1 ? `<div class="status" id="quickNote">Quick start: wave ${ctx.startWave}. Does not count for the scores.</div>` : '';
 }
 
 /** Use as a screen's `onInput`: writes a changed field into the profile, which saves itself. */

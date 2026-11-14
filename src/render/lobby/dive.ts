@@ -8,7 +8,7 @@
  */
 import { WORLD } from '../../config/field';
 import { LOBBY_MOVE } from '../../config/lobby';
-import { ease, type CamRect } from '../marketCamera';
+import { ease, type CamRect } from '../camera';
 
 /** Seconds of the whole move, in or out (from src/config/lobby.ts). */
 export const LOBBY_SECONDS = LOBBY_MOVE.seconds;

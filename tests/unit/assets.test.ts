@@ -8,6 +8,7 @@ import {
   ASSETS, applyOverrides, assetsOfGroup, buildAssets, cloudKey, landscapeKey, listAssets, parseAssetParams, partKey, propKey, weaponKey,
 } from '../../src/art/registry';
 import { MAX_TIER, WEAPONS } from '../../src/config/weapons';
+import { WEAPON_ART_BY_SLOT, WEAPON_ART_IDS, WEAPON_ART_TIERS, weaponArt } from '../../src/art/weapons';
 import { ASSET_OVERRIDES } from '../../src/config/assets';
 import { assetTables, DOC, withTables } from '../../scripts/list-assets';
 
@@ -16,7 +17,7 @@ function expectedNames(): string[] {
   const names: string[] = [];
   for (const [rig, { parts }] of Object.entries(RIGS)) for (const part of parts) names.push(partKey(rig, part.name));
   for (const name of Object.keys(PROPS)) names.push(propKey(name));
-  for (const w of WEAPONS) for (let tier = 1; tier <= MAX_TIER; tier++) names.push(weaponKey(w.id, tier));
+  for (const id of WEAPON_ART_IDS) for (let tier = 1; tier <= WEAPON_ART_TIERS; tier++) names.push(weaponKey(id, tier));
   for (const land of Object.keys(LANDSCAPE_ART)) for (const layer of ['far', 'mid', 'near', 'ground']) names.push(landscapeKey(land, layer));
   CLOUDS.forEach((_, i) => names.push(cloudKey(i)));
   for (const name of Object.keys(LOBBY_ART)) names.push(lobbyKey(name));
@@ -70,10 +71,44 @@ describe('asset directory', () => {
     // Weapons: tier 1 is there before the first market, the higher tiers load in the background.
     expect(ASSETS['weapon:wheel:1'].group).toBe('boot');
     expect(ASSETS['weapon:wheel:5'].group).toBe('weaponTiers');
+    expect(ASSETS['weapon:log:7'].group).toBe('weaponTiers');
     // A landscape's strips are made first, then its props; every asset is in exactly one group.
     expect(assetsOfGroup('meadow').slice(0, 4).map((a) => a.name)).toEqual(['land:meadow:far', 'land:meadow:mid', 'land:meadow:near', 'land:meadow:ground']);
     const grouped = (['boot', 'keepStages', 'weaponTiers', 'meadow', 'canyon', 'marsh', 'snowpine'] as const).flatMap((g) => assetsOfGroup(g));
     expect(grouped.length).toBe(listAssets().length);
+  });
+
+  it('has a picture for every weapon of the game at every tier it can reach', () => {
+    for (const w of WEAPONS) for (let tier = 1; tier <= MAX_TIER; tier++) expect(ASSETS[weaponKey(w.id, tier)], `${w.id} ${tier}`).toBeDefined();
+  });
+
+  it('draws 25 weapons, five per slot, in seven tiers that all look different and use no masks or filters', () => {
+    expect(WEAPON_ART_TIERS).toBe(7);
+    expect(WEAPON_ART_IDS.length).toBe(25);
+    expect(new Set(WEAPON_ART_IDS).size).toBe(25);
+    for (const ids of Object.values(WEAPON_ART_BY_SLOT)) expect(ids.length).toBe(5);
+    for (const id of ['snowdrift', 'cowbell', 'helper', 'grip', 'mender', 'catapult', 'hive', 'cascade', 'log']) expect(WEAPON_ART_IDS).toContain(id);
+    // Ids are made fresh for every picture and every tier is drawn a little bigger, so compare the
+    // pictures without ids and without the overall scale: each tier must change what is drawn.
+    const plain = (svg: string) => svg.replace(/\b(id="|url\(#)[a-z]+[0-9a-z]*/g, '$1').replace(/scale\([0-9.]+\)/g, '');
+    for (const id of WEAPON_ART_IDS) {
+      const pics = new Set<string>();
+      for (let tier = 1; tier <= WEAPON_ART_TIERS; tier++) {
+        const svg = ASSETS[weaponKey(id, tier)].art.svg;
+        expect(svg, `${id} ${tier}`).not.toMatch(/<mask|<filter/);
+        pics.add(plain(svg));
+      }
+      expect(pics.size, id).toBe(WEAPON_ART_TIERS);
+    }
+    // Higher tiers draw more parts: tier 4 more than tier 1, tier 7 the most.
+    for (const id of WEAPON_ART_IDS) {
+      const len = (tier: number) => weaponArt(id, tier).svg.length;
+      expect(len(4), id).toBeGreaterThan(len(1));
+      for (let tier = 1; tier < WEAPON_ART_TIERS; tier++) expect(len(WEAPON_ART_TIERS), `${id} ${tier}`).toBeGreaterThan(len(tier));
+    }
+    // Tiers outside 1 to 7 fall back to the nearest one; an unknown id gets a placeholder.
+    expect(weaponArt('wheel', 9).svg.length).toBe(weaponArt('wheel', 7).svg.length);
+    expect(weaponArt('noSuchWeapon', 3).svg.startsWith('<svg')).toBe(true);
   });
 
   it('ships without overrides, so the normal game shows the built-in art', () => {

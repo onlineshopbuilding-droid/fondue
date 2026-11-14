@@ -1,6 +1,6 @@
 /**
  * Parts every keep stage shares: the gate opening, the foundation and the furniture of the weapon slots.
- * The five stages in keepStages.ts place these at the same spots, so gates and weapons fit every stage.
+ * The seven stages (keepStages.ts and keepStagesGrand.ts) place these at the same spots, so gates and weapons fit every stage.
  */
 import { IRON, IRONL, r, p, n, hl, LIGHT, litPath, litRect, rivets } from '../draw';
 import { tone, linear as lin } from '../shade';
@@ -10,7 +10,7 @@ import { VOID, rand, rect, clip, SHADOW, form, shade, rock, type Stonework, maso
 // Parts every tier shares: the gate opening, the foundation, the slot furniture.
 // ---------------------------------------------------------------------------------------------
 
-/** Dark opening plus depth inside it. The leaf (`gate0..4`) is drawn over art x 151..225, y 490..640. */
+/** Dark opening plus depth inside it. The leaf (`gate0..6`) is drawn over art x 151..225, y 490..640. */
 export const gateVoid =
   r(151, 486, 74, 158, VOID, 0) +
   n(rect(151, 486, 74, 22), '#000', 0.4) +
@@ -25,7 +25,8 @@ export function foundation(seed: number, s: Omit<Stonework, 'seed'>, fills: [str
   const R = rand(seed);
   const plinth = 'M-24 590H134L144 656H-24Z';
   const spur = 'M239 596H252L266 656H239Z';
-  const apron = 'M-24 640Q6 630 32 640T86 636T146 646L150 664H-24Z' + 'M236 642Q254 636 270 646T302 648V664H236Z';
+  // The right apron tapers off inside the picture (art x < 296): no straight cut where the art ends.
+  const apron = 'M-24 640Q6 630 32 640T86 636T146 646L150 664H-24Z' + 'M236 642Q254 636 270 645Q286 650 292 656Q294 662 284 664H236Z';
   let rocks = '';
   const big: [number, number, number, number, number][] = [
     [-6, 640, 30, 16, 0], [36, 648, 26, 12, 1], [118, 650, 24, 11, 2], [146, 652, 12, 8, 0],

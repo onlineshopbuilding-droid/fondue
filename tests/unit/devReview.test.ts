@@ -9,17 +9,17 @@ import { importCode } from '../../src/profile';
 import { newProfile } from './helpers';
 
 describe('decision and rating list', () => {
-  it('has unique ids, every weapon once, and decisions numbered D-01 upwards', () => {
+  it('has unique ids, every weapon once, and decisions numbered D3-01 upwards', () => {
     expect(new Set(REVIEW_ITEMS.map((r) => r.id)).size).toBe(REVIEW_ITEMS.length);
     expect(WEAPON_REVIEWS.map((r) => r.weapon)).toEqual(WEAPONS.map((w) => w.id));
-    DECISIONS.forEach((d, i) => expect(d.id).toBe(`D-${String(i + 1).padStart(2, '0')}`));
+    DECISIONS.forEach((d, i) => expect(d.id).toBe(`D3-${String(i + 1).padStart(2, '0')}`));
   });
 
   it('a rating is kept in the profile and travels in its export code', async () => {
     const p = await newProfile();
-    p.setRating('D-04', { checked: true, verdict: 'good', note: 'keep it' });
+    p.setRating('D3-04', { checked: true, verdict: 'good', note: 'keep it' });
     const back = importCode(p.exportCode());
-    expect(back.devRatings['D-04']).toEqual({ checked: true, verdict: 'good', note: 'keep it' });
+    expect(back.devRatings['D3-04']).toEqual({ checked: true, verdict: 'good', note: 'keep it' });
   });
 
   it('copies as text with the readable titles', async () => {

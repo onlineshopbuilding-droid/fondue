@@ -1,31 +1,34 @@
 /**
- * Campaign mode: one level from the world's table, with the weapons, tiers and hand of the profile.
- * Winning pays stars once, unlocks what the table says, and moves the campaign on.
- * Co-op is "the host's campaign with a helper": the guest brings only a hand.
+ * Campaign mode: one level from the world's table, a fight of waves played with the permanent keep
+ * of the profile (castle, worn weapons and their tiers, stations, hand). Nothing is bought in a level.
+ * The end pays the gold of the run (won or lost, E-066), the Raider Crests, and, for a win, each of
+ * the level's five cheese once.
+ * Co-op is "the host's campaign with a helper": the guest brings only a hand and keeps the gold.
  */
 import { CAMPAIGN_SCALING } from '../config/campaignScaling';
 import { SLOT_COUNT } from '../config/slots';
-import { STARS } from '../config/stars';
 import { TUNING_DEFAULT } from '../config/tuning';
 import { COOP } from '../config/waves';
-import { WEAPONS } from '../config/weapons';
 import { levelOf, worldById } from '../config/worlds';
 import type { LevelDef } from '../config/worlds/types';
 import type { Profile } from '../profile';
-import { FixedPlanner, type DaySpec } from '../sim/plan';
-import { freshStart, type RunResult, type RunRules, type RunSetup, type Scaling, type WeaponRule } from '../sim/rules';
+import { FixedPlanner } from '../sim/plan';
+import { freshStart, type Loadout, type RunResult, type RunRules, type RunSetup, type Scaling } from '../sim/rules';
+import { challengesDone } from './challenges';
 import { newRunId, noReward, type GameMode, type NextStep, type Reward, type Role, type RunChoice, type RunEnv } from './mode';
-import { maxGateTier, syncUnlocks, unlocksOfLevel } from './unlocks';
+import { addCrests, addGold, applyLevelCheese, cheeseMask, levelCheese, levelEnded } from './progress';
+import { openSlots, syncUnlocks, unlocksOfLevel } from './unlocks';
 
 /** The numbers live in src/config/campaignScaling.ts; re-exported here for older imports. */
 export { CAMPAIGN_SCALING };
 
 export function campaignScaling(level: LevelDef): Scaling {
   const extra = level.power - 1;
+  const steps = Math.max(1, level.waves.length - 1);
   return {
     count: 1, hp: level.power, damage: 1 + extra * CAMPAIGN_SCALING.damageShare, speed: 1 + extra * CAMPAIGN_SCALING.speedShare,
     gold: 1 + extra * CAMPAIGN_SCALING.goldPerPower,
-    damageGrowth: CAMPAIGN_SCALING.damageGrowth, speedGrowth: CAMPAIGN_SCALING.speedGrowth, hpGrowth: CAMPAIGN_SCALING.hpGrowth,
+    damageGrowth: CAMPAIGN_SCALING.damageOverLevel / steps, speedGrowth: CAMPAIGN_SCALING.speedOverLevel / steps, hpGrowth: CAMPAIGN_SCALING.hpOverLevel / steps,
     easeIn: CAMPAIGN_SCALING.easeIn,
   };
 }
@@ -36,6 +39,32 @@ export const levelSeed = (world: string, level: number): number => {
   for (const ch of `${world}:${level}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   return h | 0;
 };
+
+/**
+ * The permanent keep of a profile as the loadout of a run (A1): castle tier, the weapons worn in
+ * open slots with their tiers, the stations owned, and the hand of every player.
+ */
+export function keepLoadout(profile: Profile, world: string, handTiers: number[]): Loadout {
+  const keep = profile.data.keep;
+  const open = openSlots(profile, world);
+  const slotWeapon = Array.from({ length: SLOT_COUNT }, (_, i) => {
+    const id = keep.loadout[i] ?? null;
+    return open[i] && id !== null && profile.hasWeapon(id) ? id : null;
+  });
+  const weaponTier: Record<string, number> = {};
+  for (const id of slotWeapon) if (id !== null) weaponTier[id] = profile.weaponTier(id);
+  return {
+    gateTier: Math.max(0, keep.castleTier - 1), slotWeapon, weaponTier,
+    stations: { cauldron: (keep.stations.cauldron ?? 0) > 0, perch: (keep.stations.perch ?? 0) > 0 },
+    stationTier: { cauldron: keep.stations.cauldron ?? 0, perch: keep.stations.perch ?? 0 },
+    handTier: handTiers.map((t) => t || 1),
+  };
+}
+
+/** Gold and crests of a run go to the profile, in every mode and also for a lost run (E-066). */
+export function payRun(profile: Profile, result: RunResult): { gold: number; crests: number } {
+  return { gold: addGold(profile, result.stats.goldEarned), crests: addCrests(profile, result.stats.crestsEarned) };
+}
 
 export class CampaignMode implements GameMode {
   readonly id = 'campaign';
@@ -56,60 +85,56 @@ export class CampaignMode implements GameMode {
     if (choice.resume) {
       const level = levelOf(choice.resume.rules.world, choice.resume.rules.level ?? 1)!;
       return {
-        seed: choice.resume.seed, names: env.names, tuning: TUNING_DEFAULT, fieldW: env.fieldW,
+        seed: choice.resume.seed, names: env.names, tuning: TUNING_DEFAULT, fieldW: env.fieldW, viewRight: env.viewRight,
         rules: choice.resume.rules, start: choice.resume.start, planner: this.planner(level),
       };
     }
     const level = levelOf(choice.world, choice.level ?? 1)!;
     const players = env.names.length;
-    const weapons: Record<string, WeaponRule> = {};
-    for (const w of WEAPONS) weapons[w.id] = { offered: w.enabled && profile.hasWeapon(w.id), fixedTier: profile.weaponTier(w.id) };
+    const open = openSlots(profile, choice.world);
     const rules: RunRules = {
       runId: newRunId(`campaign-${level.id}`), mode: this.id, world: choice.world, level: level.id, difficulty: null,
-      lastDay: level.days.length, players,
+      lastWave: level.waves.length, players,
       scaling: campaignScaling(level),
-      slotsOpen: Array.from({ length: SLOT_COUNT }, (_, i) => profile.hasSlot(i)),
-      weapons,
-      stationsOffered: worldById(choice.world).stations.filter((s) => profile.hasStation(s)),
-      maxGateTier: maxGateTier(profile, choice.world),
-      handStart: env.names.map((_, i) => env.handTiers[i] ?? 1),
-      handBuyable: false, tierUpgrades: false, hasMarket: true, gateCannotFall: false, marketOnly: level.marketOnly,
+      maxAlive: Math.round(level.maxAlive * (players > 1 ? Math.sqrt(COOP.countFactor) : 1)),
+      slotsOpen: Array.from({ length: SLOT_COUNT }, (_, i) => open[i] ?? false),
+      gateCannotFall: false,
     };
-    const start = { ...freshStart(rules), gold: level.startGold, day: Math.min(choice.day ?? 1, level.days.length) };
+    const handTiers = env.names.map((_, i) => env.handTiers[i] ?? 1);
+    const wave = Math.max(1, Math.min(choice.wave ?? 1, level.waves.length));
+    const start = { ...freshStart(rules, keepLoadout(profile, choice.world, handTiers)), wave };
     return {
       seed: levelSeed(choice.world, level.id), names: env.names, tuning: env.tuning ?? TUNING_DEFAULT, flags: env.flags,
-      fieldW: env.fieldW, rules, start, planner: this.planner(level), devRun: !!env.devRun || (choice.day ?? 1) > 1,
+      fieldW: env.fieldW, viewRight: env.viewRight, rules, start, planner: this.planner(level), devRun: !!env.devRun || wave > 1,
     };
   }
 
-  private planner(level: LevelDef): FixedPlanner {
-    const days: DaySpec[] = level.days.map((d, i) => ({
-      counts: d.counts, night: d.night, seconds: d.seconds, big: d.big,
-      boss: level.boss && i === level.days.length - 1 ? level.boss.name : null,
-    }));
-    return new FixedPlanner(days, level.landscape, () => COOP.campaignFactor);
+  planner(level: LevelDef): FixedPlanner {
+    return new FixedPlanner(level.waves, level.landscape, { night: level.night, boss: level.boss?.name ?? null, coopFactor: COOP.countFactor });
   }
 
   reward(result: RunResult, rules: RunRules, profile: Profile, role: Role): Reward {
     const world = rules.world;
     const level = levelOf(world, rules.level ?? 0);
     if (role !== 'guest') profile.clearPendingRun();
-    if (!level || result.devRun || !result.won || !profile.claimRun(result.runId)) return noReward();
-
-    if (role === 'guest') {
-      // The helper is paid once per level and keeps no level progress of their own.
-      const stars = profile.claimGuestStars(world, level.id) ? Math.ceil(level.stars * STARS.guestShare) : 0;
-      if (stars > 0) profile.addStars(stars);
-      return { counted: true, stars, firstWin: false, unlocks: [], story: level.story, score: null, nextLevel: null };
+    if (!level || result.devRun || !profile.claimRun(result.runId)) return noReward();
+    const paid = payRun(profile, result);
+    const base = { ...noReward(), counted: true, story: result.won ? level.story : '', ...paid };
+    // The helper keeps the gold of the round, but no level progress and no cheese (E2).
+    if (role === 'guest' || !result.won) {
+      levelEnded(profile);
+      return base;
     }
     const firstWin = profile.markLevelDone(world, level.id);
-    const stars = firstWin ? level.stars : Math.floor(level.stars * STARS.replayShare);
-    if (stars > 0) profile.addStars(stars);
+    const challenges = challengesDone(level.challenges, result.stats);
+    const before = levelCheese(profile, world, level.id);
+    const cheese = applyLevelCheese(profile, world, level.id, cheeseMask({ won: true, gateShare: result.gateShare, challenges }));
     syncUnlocks(profile, world);
+    levelEnded(profile);
     const last = worldById(world).campaign.length;
     return {
-      counted: true, stars, firstWin, unlocks: firstWin ? unlocksOfLevel(world, level.id) : [], story: level.story, score: null,
-      nextLevel: level.id < last ? level.id + 1 : null,
+      ...base, cheese, cheeseBits: levelCheese(profile, world, level.id) & ~before, challenges, firstWin,
+      unlocks: firstWin ? unlocksOfLevel(world, level.id) : [], nextLevel: level.id < last ? level.id + 1 : null,
     };
   }
 

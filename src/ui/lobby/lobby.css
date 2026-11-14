@@ -1,10 +1,11 @@
-/* The lobby inside the keep: the main menu screen is only a small chip over the hall (stars and
+/* The lobby inside the keep: the main menu screen is only a small chip over the hall (cheese and
    campaign progress); the hall itself is a Phaser scene and takes the taps. */
 #ui .overlay:has(> .lobby-hud) {
   background: none; pointer-events: none; padding: 0; overflow: hidden;
   align-items: flex-start; justify-content: flex-start;
 }
 .lobby-hud {
+  display: flex; align-items: center; gap: 8px;
   padding: max(8px, env(safe-area-inset-top)) 12px 0 max(12px, env(safe-area-inset-left));
 }
 .lobby-chip {
@@ -14,8 +15,13 @@
   padding: 3px 14px 4px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
   text-shadow: 0 2px 0 #2b2118;
 }
-.lobby-chip .star { color: #f3cb5e; }
+.lobby-chip .cur-icon { color: #f3cb5e; }
 .lobby-chip .sep { opacity: 0.6; }
+/* The version, small beside the chip, on the beam above the stations; the overlay takes no taps. */
+.lobby-version {
+  font-size: 11px; line-height: 1; white-space: nowrap; color: #fff6df; opacity: 0.8;
+  text-shadow: 0 1px 0 #2b2118, 0 0 3px #2b2118;
+}
 
 /* The storybook window over the hall. */
 .storybook-veil {

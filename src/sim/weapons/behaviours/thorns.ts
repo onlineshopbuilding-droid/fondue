@@ -11,7 +11,10 @@ export class ThornsBehaviour implements WeaponBehaviour<ThornsTier> {
     const near = allTargets(ctx).filter((e) => e.x <= WORLD.gateX + tier.burstReach && e.st !== 'float');
     if (near.length === 0) return false;
     ctx.emit({ e: 'thorns', reach: tier.burstReach });
-    for (const e of near) ctx.combat.hurt(e, tier.burstDamage, 'spike', shot.p);
+    for (const e of near) {
+      ctx.combat.hurt(e, tier.burstDamage, 'spike', shot.p);
+      if (!e.dead) ctx.combat.stun(e, tier.burstStun);
+    }
     return true;
   }
 

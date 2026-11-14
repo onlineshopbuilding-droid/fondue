@@ -1,11 +1,13 @@
 // Packs a profile into one line of text and back, as a backup and for moving to another device.
-// Format: FONDUE1.<base64url of the JSON in UTF-8>.<FNV-1a checksum of those bytes, 8 hex digits>
+// Format: FONDUE3.<base64url of the JSON in UTF-8>.<FNV-1a checksum of those bytes, 8 hex digits>
 import { GAME_NAME } from '../config/game';
 import { migrate } from './migrations';
 import { isRecord } from './sanitize';
-import type { ProfileData } from './schema';
+import { PROFILE_FORMAT, type ProfileData } from './schema';
 
-const PREFIX = 'FONDUE1';
+const PREFIX = 'FONDUE3';
+/** Codes of earlier game versions (v0.2 used FONDUE1). They are rejected with a clear message. */
+const OLD_PREFIXES = ['FONDUE1', 'FONDUE2'];
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -61,6 +63,7 @@ function decodeJson(bytes: Uint8Array): unknown {
 /** The profile inside a code, brought to the current version. Throws an Error if the code is broken. */
 export function importCode(code: string): ProfileData {
   const parts = String(code).replace(/\s+/g, '').split('.');
+  if (OLD_PREFIXES.includes(parts[0])) throw new Error('This code is from an older version of the game and cannot be used in v0.3.');
   if (parts[0] !== PREFIX) throw new Error(`This is not a ${GAME_NAME} profile code.`);
   if (parts.length !== 3 || !parts[1] || !parts[2]) throw new Error('Profile code is incomplete.');
   const bytes = fromBase64Url(parts[1]);
@@ -68,6 +71,6 @@ export function importCode(code: string): ProfileData {
     throw new Error('Profile code is damaged or incomplete (checksum does not match).');
   }
   const parsed = decodeJson(bytes);
-  if (!isRecord(parsed)) throw new Error('Profile code does not contain a profile.');
+  if (!isRecord(parsed) || parsed.format !== PROFILE_FORMAT) throw new Error('Profile code does not contain a profile.');
   return migrate(parsed);
 }

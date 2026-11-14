@@ -13,7 +13,7 @@ import { TUNING_DEFAULT, type Tuning } from '../config/tuning';
 import { WEAPONS, weaponById } from '../config/weapons';
 import { DEFAULT_WORLD, levelOf, worldById } from '../config/worlds';
 import { HostSession, type Session } from '../game/session';
-import { CAMPAIGN, ENDLESS, MODES, TUTORIAL, modeOf, syncUnlocks, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from '../modes';
+import { CAMPAIGN, ENDLESS, MODES, TUTORIAL, cheatCheese, modeOf, syncUnlocks, unlockLevelOf, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from '../modes';
 import type { ViewState } from '../net/snapshot';
 import type { RoomPlan } from '../net/protocol';
 import { normalizeRoomCode, type Transport } from '../net/transport';
@@ -31,7 +31,7 @@ import { SCREENS } from './screens';
 import type { PendingRun, ScreenContext } from './screens/context';
 import { ScreenManager, type ScreenId } from './screens/screen';
 import { mainScreen } from './screens/main';
-import { shopScreen } from './screens/shop';
+import { shopAfterWin } from '../modes/tutorial';
 import { Lobby } from './lobby/lobby';
 import { TuningPanel } from './tuningPanel';
 
@@ -75,8 +75,8 @@ export class App implements ScreenContext, CoopRoomHost {
   readonly art = { rigs: RIGS, props: PROPS };
   readonly params = new URLSearchParams(location.search);
   readonly coop = new CoopRoom(this);
-  /** Day the next endless game starts on; set from the developer menu, 1 for a normal run. */
-  startDay = 1;
+  /** Wave the next endless game starts at; set from the developer menu, 1 for a normal run. */
+  startWave = 1;
   loadingTip = LOADING_TIPS[0];
   /** What the run that just ended brought; the result screens show it. */
   reward: Reward | null = null;
@@ -97,7 +97,7 @@ export class App implements ScreenContext, CoopRoomHost {
   private lastMetaRev = -1;
   private handledRun = '';
   private bannerKey = '';
-  private lastPurse = '';
+  private lastWave = -1;
   private lostToastShown = false;
 
   get settings(): Readonly<ProfileSettings> { return this.profile.data.settings; }
@@ -135,11 +135,11 @@ export class App implements ScreenContext, CoopRoomHost {
         this.profile.updateSettings({ flags: { [id]: value } });
         if (this.session instanceof HostSession) this.session.sim.setFlags({ ...this.settings.flags });
       },
-      startDay: () => this.startDay,
-      setStartDay: (day) => { this.startDay = day; if (this.screen === 'play' || this.screen === 'host') this.show(this.screen); },
+      startWave: () => this.startWave,
+      setStartWave: (wave) => { this.startWave = wave; if (this.screen === 'play' || this.screen === 'host') this.show(this.screen); },
       startQuickEndless: () => this.startEndless(),
-      profileSummary: () => `★ ${this.profile.data.stars} · levels won: ${this.profile.highestLevelDone(this.world)} · hand tier ${this.profile.data.handTier}${this.temporaryProfile ? ' · test profile' : ''}`,
-      addStars: (n) => { this.profile.addStars(n); this.redrawMenus(); },
+      profileSummary: () => `🧀 ${this.profile.data.wallet.cheese} · gold ${this.profile.data.wallet.gold} · crests ${this.profile.data.wallet.crests} · levels won: ${this.profile.highestLevelDone(this.world)} · hand tier ${this.profile.data.keep.handTier}${this.profile.data.cheats.used ? ' · cheats used' : ''}${this.temporaryProfile ? ' · test profile' : ''}`,
+      addCheese: (n) => { cheatCheese(this.profile, n); this.redrawMenus(); },
       unlockEverything: () => { this.unlockEverything(); this.redrawMenus(); },
       replayTutorial: () => { this.profile.resetTutorial(); this.startTutorial(); },
       resetProfile: () => {
@@ -149,24 +149,32 @@ export class App implements ScreenContext, CoopRoomHost {
         this.toast('Profile erased');
         this.redrawMenus();
       },
-      jumpTo: (level, day) => {
+      jumpTo: (level, wave) => {
         const max = worldById(this.world).campaign.length;
-        this.startSoloRun(CAMPAIGN, { world: this.world, level: Math.max(1, Math.min(max, level)), day });
+        this.startSoloRun(CAMPAIGN, { world: this.world, level: Math.max(1, Math.min(max, level)), wave });
       },
       levelCount: () => worldById(this.world).campaign.length,
-      levelDays: (level) => levelOf(this.world, level)?.days.length ?? 1,
+      levelWaves: (level) => levelOf(this.world, level)?.waves.length ?? 1,
       weaponTier: (id) => this.profile.weaponTier(id),
       setWeaponTier: (id, tier) => { this.profile.setWeaponTier(id, tier); this.redrawMenus(); },
-      handTier: () => this.profile.data.handTier,
+      handTier: () => this.profile.data.keep.handTier,
       setHandTier: (tier) => { this.profile.setHandTier(tier); this.redrawMenus(); },
       showEnemyPopup: (type) => this.popup.show([type]),
       ratings: () => this.profile.data.devRatings,
       setRating: (id, patch) => this.profile.setRating(id, patch),
       ratingsText: () => this.profile.ratingsAsText(reviewLabels()),
+      profile: () => this.profile,
+      world: () => this.world,
+      afterCheat: () => this.redrawMenus(),
     });
     this.applyAudioSettings();
     window.addEventListener('keydown', (e) => this.onKey(e));
     window.addEventListener('pagehide', () => this.session?.dispose());
+    // Saving must survive closing the tab and switching away from the home-screen app.
+    const flush = () => this.profile?.flushSync();
+    window.addEventListener('pagehide', flush);
+    window.addEventListener('beforeunload', flush);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
     this.bindLogoLongPress();
     const rotate = document.createElement('div');
     rotate.id = 'rotate';
@@ -180,16 +188,22 @@ export class App implements ScreenContext, CoopRoomHost {
     });
   }
 
-  /** Menus that show stars or unlocks are redrawn after a developer tool changed the profile. */
+  /** Menus that show cheese or unlocks are redrawn after a developer tool changed the profile. */
   private redrawMenus() {
     if (['main', 'armoury', 'campaign', 'options'].includes(this.screen)) this.show(this.screen);
   }
 
-  /** Developer tool: every weapon, slot and offering site, as if the campaign were far along. */
+  /** Developer tool: every weapon, slot and station, as if the campaign were far along. */
   private unlockEverything() {
-    for (const w of WEAPONS) if (w.enabled) this.profile.unlockWeapon(w.id);
-    for (let i = 0; i < SLOT_COUNT; i++) this.profile.unlockSlot(i);
-    for (const s of STATION_IDS) this.profile.unlockStation(s);
+    // Slots follow from won levels, so the levels that open them are marked as won.
+    for (let i = 0; i < SLOT_COUNT; i++) for (let l = 1; l <= (unlockLevelOf(this.world, 'slot', i) ?? 0); l++) this.profile.markLevelDone(this.world, l);
+    this.profile.edit((d) => {
+      for (const w of WEAPONS) if (w.enabled && !Object.hasOwn(d.keep.weapons, w.id)) d.keep.weapons[w.id] = { tier: 1 };
+      for (const s of STATION_IDS) d.keep.stations[s] = Math.max(1, d.keep.stations[s]);
+    });
+    this.profile.noteCheat('unlock everything');
+    syncUnlocks(this.profile, this.world);
+    this.profile.flushSync();
     this.toast('Everything unlocked');
   }
 
@@ -238,6 +252,8 @@ export class App implements ScreenContext, CoopRoomHost {
     this.profile = loaded.profile;
     this.temporaryProfile = loaded.temporary;
     syncUnlocks(this.profile, this.world);
+    // A full or blocked storage: keep playing from memory and say so once.
+    this.profile.onChange(() => setTimeout(() => { const n = this.profile.takeSaveNotice(); if (n) this.toast(n, 'tip', 5000); }, 400));
     (window as unknown as Record<string, unknown>).__fondue = this;
     this.wireUp();
     if (this.params.get('relay')) this.profile.updateSettings({ relayAddress: this.params.get('relay')! });
@@ -253,8 +269,6 @@ export class App implements ScreenContext, CoopRoomHost {
       togglePause: () => this.togglePause(),
       isInputBlocked: () => this.screens.isOpen,
       onBuyNotice: (t) => { if (this.session?.role !== 'solo') this.toast(t); },
-      // The market at the keep: a tapped place opens its window.
-      onKeepTap: (spot) => { if (this.screen === 'shop') shopScreen.openSpot(this, spot); },
     };
     const view = computeView(innerWidth, innerHeight, readSafeArea());
     this.scene.view = view;
@@ -295,7 +309,7 @@ export class App implements ScreenContext, CoopRoomHost {
 
   /** A new player meets the tutorial before anything else, unless the page asks for the menu (tests). */
   private tutorialDue(): boolean {
-    return !this.profile.data.tutorialDone && !['1', 'html'].includes(this.params.get('menu') ?? '');
+    return !this.profile.data.seen.tutorial && !['1', 'html'].includes(this.params.get('menu') ?? '');
   }
 
   /** Follows window resizes and phone rotation. */
@@ -362,64 +376,53 @@ export class App implements ScreenContext, CoopRoomHost {
 
     if (view.phase !== this.lastPhase) {
       this.lastPhase = view.phase;
-      this.onPhase(view, meta);
+      this.onPhase(view);
     }
     if (meta && meta.rev !== this.lastMetaRev) {
       this.lastMetaRev = meta.rev;
-      if (this.screen === 'results' || this.screen === 'shop') this.show(this.screen);
     }
     if (meta) this.checkResult(meta);
     // A guest learns the field width from the host once the game has started.
     if (meta && s.role !== 'solo' && meta.fieldW !== this.scene.view.fieldW) this.applyView();
-    const purse = `${view.gold}/${view.offerings}`;
-    if (purse !== this.lastPurse) {
-      this.lastPurse = purse;
-      if (this.screen === 'shop') this.show('shop');
+    // Solo campaign: the start of every wave is kept, so the level can be continued there (B1).
+    if (meta && view.wave !== this.lastWave && (view.phase === 'banner' || view.phase === 'battle')) {
+      this.lastWave = view.wave;
+      this.savePending(meta);
     }
     this.syncPause(view, meta);
     this.syncConnection();
-    if (view.phase === 'banner' && meta) this.onBanner(view, meta);
+    if ((view.phase === 'banner' || view.phase === 'battle') && meta) this.onWave(view, meta);
   }
 
-  /** Once per day at its start: windows for new raiders and short tips the profile has not seen yet. */
-  private onBanner(view: ViewState, meta: Meta) {
-    const key = `${meta.rules.runId}:${view.day}`;
-    if (this.bannerKey === key || meta.today === undefined) return;
+  /** Once per wave at its start: windows for new raiders; at the level start short tips the profile has not seen yet. */
+  private onWave(view: ViewState, meta: Meta) {
+    const key = `${meta.rules.runId}:${meta.wave.wave}`;
+    if (this.bannerKey === key || meta.wave === undefined) return;
+    const first = !this.bannerKey.startsWith(`${meta.rules.runId}:`);
     this.bannerKey = key;
     // The prelude introduces its Pothelms by hand, so level 1 needs no window for them.
-    if (meta.rules.mode === 'tutorial') { for (const t of meta.today.newTypes) this.profile.markEnemySeen(t); return; }
-    const fresh = meta.today.newTypes.filter((t) => this.profile.markEnemySeen(t));
+    if (meta.rules.mode === 'tutorial') { for (const t of meta.wave.newTypes) this.profile.markEnemySeen(t); return; }
+    const fresh = meta.wave.newTypes.filter((t) => this.profile.markEnemySeen(t));
     if (fresh.length > 0) this.popup.show(fresh);
-    if (meta.devRun) return;
+    if (meta.devRun || !first) return;
     if (this.profile.markTipSeen('firstFight')) this.toast(FIRST_FIGHT_TIP, 'tip', 5500);
     for (const id of meta.loadout.slotWeapon) {
       const def = id ? weaponById(id) : undefined;
-      if (def && this.profile.markTipSeen(`weapon:${def.id}`)) this.toast(weaponTip(def.name), 'tip', 5500);
+      if (def && this.profile.markTipSeen(`weapon:${def.id}`)) this.toast(weaponTip(def), 'tip', 5500);
     }
-    // When the level's King explains this day himself (the pot on day 2 of level 1), no tip on top.
+    // When the King explains this wave himself (a level hint), no tip on top.
     const level = meta.rules.level !== null ? levelOf(meta.rules.world, meta.rules.level) : undefined;
-    const kingSpeaks = !!level?.hints.some((h) => h.when === 'battle' && h.day === view.day);
+    const kingSpeaks = !!level?.hints.some((h) => h.wave === view.wave);
     for (const st of STATION_IDS) {
       if (meta.loadout.stations[st] && STATION_TIPS[st] && this.profile.markTipSeen(`station:${st}`) && !kingSpeaks) this.toast(STATION_TIPS[st], 'tip', 5500);
     }
   }
 
-  private onPhase(view: ViewState, meta: Meta | null) {
+  private onPhase(view: ViewState) {
     switch (view.phase) {
       case 'banner':
-        if (meta) this.savePending(meta, view.day);
-        if (this.screen === 'results' || this.screen === 'shop') this.show('none');
-        this.audio.startMusic('battle');
-        break;
       case 'battle':
-        if (this.screen === 'results' || this.screen === 'shop') this.show('none');
         this.audio.startMusic('battle');
-        break;
-      case 'intermission':
-        if (meta) this.savePending(meta, view.day + 1);
-        this.loadingTip = LOADING_TIPS[Math.floor(Math.random() * LOADING_TIPS.length)];
-        this.audio.startMusic('menu');
-        this.show('results');
         break;
       case 'gameover':
       case 'runWon':
@@ -429,21 +432,22 @@ export class App implements ScreenContext, CoopRoomHost {
     }
   }
 
-  /** Solo campaign: keeps the start of this day, so the level can be continued after the app was closed. */
-  private savePending(meta: Meta, day: number) {
+  /** Solo campaign: keeps the start of this wave, so the level can be continued after the app was closed (B1). */
+  private savePending(meta: Meta) {
     const s = this.session;
     if (!(s instanceof HostSession) || s.role !== 'solo') return;
     if (meta.rules.mode !== CAMPAIGN.id || meta.devRun || meta.result) return;
-    const pending: PendingRun = { v: 1, rules: meta.rules, seed: s.sim.s.seed, start: s.sim.dayStartSave(day) };
+    const pending: PendingRun = { v: 2, rules: meta.rules, seed: s.sim.s.seed, start: s.sim.waveStartSave() };
     this.profile.setPendingRun(pending);
   }
 
   /** The interrupted level in the profile, if it still fits the level table. */
   pendingRun(): PendingRun | null {
     const p = this.profile.data.pendingRun as Partial<PendingRun> | null;
-    if (!p || p.v !== 1 || !p.rules || !p.start || typeof p.seed !== 'number') return null;
-    if (p.rules.mode !== CAMPAIGN.id || !levelOf(p.rules.world, p.rules.level ?? 0)) return null;
-    if (typeof p.start.day !== 'number' || p.start.day > (p.rules.lastDay ?? 0)) return null;
+    if (!p || p.v !== 2 || !p.rules || !p.start || typeof p.seed !== 'number') return null;
+    const level = levelOf(p.rules.world, p.rules.level ?? 0);
+    if (p.rules.mode !== CAMPAIGN.id || !level || p.rules.lastWave !== level.waves.length) return null;
+    if (typeof p.start.wave !== 'number' || p.start.wave < 1 || p.start.wave > level.waves.length) return null;
     return p as PendingRun;
   }
 
@@ -478,6 +482,11 @@ export class App implements ScreenContext, CoopRoomHost {
   /** Continue on the win screen. */
   afterRun() {
     if (!this.result || !this.resultRules) { this.leaveToMenu(); return; }
+    // After the first win of level 1 the King leads into the shop for the first upgrade (D4).
+    if (this.session?.role === 'solo' && this.result.won && shopAfterWin(this.profile, this.resultRules.world, this.resultRules.level)) {
+      this.leaveToMenu('armoury');
+      return;
+    }
     this.follow(modeOf(this.resultRules.mode).next(this.result, this.resultRules, this.profile));
   }
 
@@ -498,7 +507,7 @@ export class App implements ScreenContext, CoopRoomHost {
     const s = this.session;
     if (!s) return;
     if (s.role === 'host' && s.connection() === 'connected') this.lostToastShown = false;
-    if (s.role === 'host' && s.connection() === 'lost' && !this.lostToastShown && (this.screen === 'results' || this.screen === 'shop')) {
+    if (s.role === 'host' && s.connection() === 'lost' && !this.lostToastShown && (this.screen === 'none' || this.screen === 'won' || this.screen === 'gameover')) {
       this.lostToastShown = true;
       this.toast('Your friend dropped out. You can carry on; they can rejoin with the room code.', '', 5000);
     }
@@ -553,7 +562,7 @@ export class App implements ScreenContext, CoopRoomHost {
    */
   private runEnv(choice: RunChoice, names: string[], handTiers: number[]): RunEnv {
     const env: RunEnv = { names, fieldW: fieldForAspect(innerWidth / innerHeight), handTiers, seed: this.seedParam() };
-    const quick = (choice.quickStart ?? 0) > 0 || (choice.devDay ?? 0) > 0 || (choice.day ?? 1) > 1;
+    const quick = (choice.quickStart ?? 0) > 0 || (choice.devWave ?? 0) > 0 || (choice.wave ?? 1) > 1;
     if (quick || this.devValuesActive()) {
       env.tuning = { ...this.settings.tuning };
       env.flags = { ...this.settings.flags };
@@ -576,10 +585,10 @@ export class App implements ScreenContext, CoopRoomHost {
     return { world: plan.world, difficulty: plan.difficulty ?? this.settings.difficulty, ...this.endlessStart() };
   }
 
-  /** The developer menu's endless start day: a quick start on its own days, any other day as a free developer day. */
-  private endlessStart(): Pick<RunChoice, 'quickStart' | 'devDay'> {
-    if (this.startDay <= 1) return {};
-    return quickStartFor(this.startDay) ? { quickStart: this.startDay } : { devDay: this.startDay };
+  /** The developer menu's endless start wave: a quick start at its own waves, any other wave as a free developer start. */
+  private endlessStart(): Pick<RunChoice, 'quickStart' | 'devWave'> {
+    if (this.startWave <= 1) return {};
+    return quickStartFor(this.startWave) ? { quickStart: this.startWave } : { devWave: this.startWave };
   }
 
   startPlanSolo(plan: RoomPlan) {
@@ -591,13 +600,13 @@ export class App implements ScreenContext, CoopRoomHost {
    * a continued level, or the tutorial itself is what follows (`skipTutorial`).
    */
   private startSoloRun(mode: GameMode, choice: RunChoice, skipTutorial = false) {
-    const dev = (choice.quickStart ?? 0) > 0 || (choice.devDay ?? 0) > 0 || (choice.day ?? 1) > 1 || !!choice.resume;
+    const dev = (choice.quickStart ?? 0) > 0 || (choice.devWave ?? 0) > 0 || (choice.wave ?? 1) > 1 || !!choice.resume;
     if (!skipTutorial && !dev && this.tutorialDue()) { this.startTutorial(); return; }
     this.coop.closeRoom();
-    // "Try again" starts a continued level from its first day.
+    // "Try again" starts a continued level from its first wave.
     const again: RunChoice = choice.resume ? { world: choice.world, level: choice.resume.rules.level ?? 1 } : choice;
     this.lastPick = { mode: mode.id, choice: again };
-    const setup = this.buildSetup(mode, choice, [this.playerName()], [this.profile.data.handTier]);
+    const setup = this.buildSetup(mode, choice, [this.playerName()], [this.profile.data.keep.handTier]);
     this.useSession(new HostSession(setup, false));
   }
 
@@ -605,7 +614,7 @@ export class App implements ScreenContext, CoopRoomHost {
     this.coop.closeRoom();
     this.lastPick = null;
     const setup = TUTORIAL.buildRun(this.profile, { world: this.world }, {
-      names: [this.playerName()], fieldW: fieldForAspect(innerWidth / innerHeight), handTiers: [this.profile.data.handTier],
+      names: [this.playerName()], fieldW: fieldForAspect(innerWidth / innerHeight), handTiers: [this.profile.data.keep.handTier],
     });
     this.useSession(new HostSession(setup, false));
   }
@@ -642,6 +651,7 @@ export class App implements ScreenContext, CoopRoomHost {
 
   private resetRunState() {
     this.lastPhase = '';
+    this.lastWave = -1;
     this.lastMetaRev = -1;
     this.bannerKey = '';
     this.popup.clear();

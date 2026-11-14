@@ -1,4 +1,6 @@
 /** Text-only screens, kept apart from the UI logic so they are easy to edit. */
+import { firesOnItsOwn, type WeaponDef } from '../config/weapons';
+
 export interface HelpSlide {
   title: string;
   icon: string;
@@ -6,41 +8,53 @@ export interface HelpSlide {
 }
 
 export const HELP_SLIDES: HelpSlide[] = [
-  { title: 'Hold the gate', icon: 'king', text: 'The mice and rats of the valley want the King\'s cheese back. Their knights march down the road toward his gate. Reach in with your finger and stop them.' },
+  { title: 'Hold the gate', icon: 'king', text: 'The mice and rats of the valley want the King’s cheese back. Their knights march down the road toward his gate. Reach in with your finger and stop them.' },
   { title: 'Grab and fling', icon: 'handClosed', text: 'Touch a raider to grab it. Swipe up fast and let go to throw it. It is beaten when it lands hard, so a quick flick skyward is enough.' },
-  { title: 'Heavy raiders', icon: 'dust', text: 'Heavy raiders fly shorter for the same swipe. A Yeti needs two players lifting together, or a hand of tier 3. Lift a raider high and just let go: the fall does the rest.' },
+  { title: 'Heavy raiders', icon: 'dust', text: 'Heavy raiders fly shorter for the same swipe. A Yeti needs a hand of tier 4, or two hands lifting together. Lift a raider high and just let go: the fall does the rest.' },
   { title: 'Keg Haulers', icon: 'bomb', text: 'Lift a Keg Hauler and shake it a few times. The keg comes loose, falls and bursts on the raiders below.' },
-  { title: 'Offerings', icon: 'cauldronBack', text: 'Between days the market opens at the keep: tap a place on it to buy there with gold. Throw raiders into the Great Cauldron behind the keep and they melt into cheese, or fling them onto the Eagle Perch in the top right. Each one pays an offering.' },
-  { title: 'Weapons', icon: 'iconCastle', text: 'Weapons sit in five slots on the keep. Just tap a weapon to fire it; it picks its own target. A ring shows it reloading. When the ring is gone, it is ready.' },
-  { title: 'Campaign', icon: 'iconComet', text: 'One hundred levels, each a few days long. Every level starts fresh with an oak gate and empty slots. Win the last day to earn stars and unlock new weapons and slots.' },
-  { title: 'Stars and the armoury', icon: 'star', text: 'Spend stars in the armoury. Weapon tiers and a stronger hand stay with you for every later level. In a level you only buy the weapon into its slot.' },
-  { title: 'Endless', icon: 'iconStomper', text: 'No last day. Every weapon starts on tier 1 and you upgrade it with gold and offerings along the way. How long can you hold?' },
+  { title: 'Waves', icon: 'iconComet', text: 'A level is one fight in waves: a few raiders, a short breath, then more. Win when every wave is beaten. If the gate falls, the level is lost, but the gold you earned stays yours.' },
+  { title: 'Weapons and slots', icon: 'iconCastle', text: 'The keep has five slots: Damage, Slow, Gate, Support and Passive. Tap a weapon to fire it; it picks its own target. Passive weapons fire on their own. A ring shows the reload.' },
+  { title: 'Cheese', icon: 'cheese', text: 'Every level has five cheese: win it, keep the gate above half, keep it above 90 %, and beat its two challenges. Each cheese counts once. Cheese unlocks new weapons and stations.' },
+  { title: 'Gold and the Keep Shop', icon: 'coin', text: 'Gold from every level and endless run is yours to keep. Spend it in the Keep Shop on weapon tiers, the castle and your hand. Everything you build stays for every level.' },
+  { title: 'Tier 7 and Raider Crests', icon: 'perchHook', text: 'Late in the campaign the Eagle Perch opens. Fling a raider onto its hook and the eagle leaves a Raider Crest. Every tier 7 needs crests on top of gold.' },
+  { title: 'Endless', icon: 'iconStomper', text: 'Once all five slots are yours, endless opens: wave after wave with your own keep. No cheese there, but plenty of gold. How long can you hold?' },
   { title: 'Know your enemy', icon: 'iconFrost', text: 'Tap Siege Carts again and again. Hexers are untouchable while their bubble is up. Every new raider is explained the first time it shows up.' },
 ];
 
 /** Shown once per profile when the cauldron or the hook first stands on the keep. */
 export const STATION_TIPS: Record<string, string> = {
-  cauldron: 'The Great Cauldron stands behind the keep. Throw raiders into it: each one melts into cheese for an offering.',
-  perch: 'Fling a raider onto the hook in the top right, or carry it there. The eagle pays an offering.',
+  cauldron: 'The Great Cauldron stands behind the keep. Throw a raider into it: it pays double gold.',
+  perch: 'Fling a raider onto the hook in the top right. Aim well: the eagle leaves a Raider Crest.',
 };
 
-/** Shown once per profile when a weapon first stands in a slot. */
-export const weaponTip = (name: string) => `${name} is on the keep. Just tap it to fire.`;
+/**
+ * Shown once per profile when a weapon first stands in a slot. It says how the weapon fires:
+ * tapped (Damage, Slow, Gate, Support), on its own (passive weapons), or on its own with a tap for
+ * a burst (the Marmot Sentry).
+ */
+export const weaponTip = (def: Pick<WeaponDef, 'name' | 'slot' | 'kind'>): string => {
+  if (firesOnItsOwn(def as WeaponDef)) return `${def.name} is on the keep. It fires on its own, no tap needed.`;
+  if (def.slot === 'passive') return `${def.name} is on the keep. It fires on its own; tap it for a quick burst.`;
+  return `${def.name} is on the keep. Just tap it to fire.`;
+};
 
 /** Shown once per profile at the start of the first fight. */
-export const FIRST_FIGHT_TIP = 'Hold the gate until the sun has set and the last raider is gone. Gold buys things in the market between days.';
+export const FIRST_FIGHT_TIP = 'Hold the gate until the last wave is beaten. Gold you earn stays yours for the Keep Shop.';
 
 export const LOADING_TIPS: string[] = [
   'A flick does not need to be big. It needs to be quick.',
-  'When the sun sets no more raiders come, but the ones on the road fight to the end.',
+  'Between two waves there is a short breath. Use it to get ready.',
   'The cauldron can only melt one raider at a time.',
-  'Offerings early on pay for the great things later.',
+  'Keep the gate above 90 % for an extra cheese.',
   'A bomb in the air can be caught and thrown back.',
   'Lift a Keg Hauler over a crowd and shake it: the keg falls and bursts below.',
   'Frozen raiders can be picked up too.',
   'Weapons recharge for everyone at once. Agree who fires.',
-  'Heavy raiders fly shorter. A stronger hand from the armoury helps.',
+  'Heavy raiders fly shorter. A stronger hand from the Keep Shop helps.',
   'Weapons recharge on their own. Tap them often.',
+  'Stuck on a level? Play it again or go endless: the gold stays yours.',
+  'Each level has two challenges. Their cheese is worth coming back for.',
+  'Swap weapons on the level card before you tap Play.',
 ];
 
 export const CREDITS_HTML = `

@@ -6,12 +6,13 @@ import type { Landscape } from '../config/waves';
 import { WORLD } from '../config/field';
 import { CLOUD_SCALE, LAND_SCALE, cloudKey, landscapeKey, landscapeReady, wantLandscape } from './textures';
 import type { GameView } from './viewport';
-import { MARKET_LEFT } from './marketCamera';
 
 /** How far to the right the widest supported screen can look. */
 const EAST_REACH = 2120;
-/** How far left of the field the market view looks (the keep's west wing), with some room for parallax. */
-const WEST_REACH = -MARKET_LEFT + 60;
+/** World x the landscape covers on the left (behind and beyond the keep), so no edge ever shows. */
+const WEST_LEFT = -392;
+/** How far left of the field the landscape reaches, with some room for parallax. */
+const WEST_REACH = -WEST_LEFT + 60;
 /** How far above the world the squarest screen can look. */
 const SKY_REACH = 640;
 
@@ -224,7 +225,7 @@ export class Background {
     this.midEast = east(this.mid, 4);
     this.nearEast = east(this.near, 5);
     this.groundEast = east(this.ground, 6);
-    // And to the left, for the market view of the keep's west wing.
+    // And to the left, behind and beyond the keep.
     const west = (of: Phaser.GameObjects.Image, depth: number) =>
       scene.add.image(of.x - of.displayWidth, of.y, of.texture.key).setOrigin(0, of.originY).setScale(of.scaleX, of.scaleY).setFlipX(true).setDepth(depth);
     this.farWest = west(this.far, 3);
@@ -242,7 +243,7 @@ export class Background {
   layout(v: GameView) {
     this.eastEdge = v.width;
     const top = Math.min(SKY_TOP, v.offsetY - 40);
-    const left = Math.min(v.offsetX, MARKET_LEFT) - 40;
+    const left = Math.min(v.offsetX, WEST_LEFT) - 40;
     this.sky.setPosition(left, top).setDisplaySize(v.offsetX + v.width + 40 - left, SKY_BOTTOM - top);
     this.lastSkyKey = '';
   }
@@ -282,10 +283,11 @@ export class Background {
   }
 
   /**
-   * dayT and daySeconds in seconds (`meta.today.seconds`); `nightLevel` keeps the whole day dark;
+   * skyT of skySeconds: how far the light has gone from day to night (the scene passes the level's waves);
+   * `nightLevel` keeps the whole level dark;
    * handX for a small parallax with the pointer.
    */
-  update(dayT: number, daySeconds: number, nightLevel: boolean, handX: number, dt: number) {
+  update(skyT: number, skySeconds: number, nightLevel: boolean, handX: number, dt: number) {
     this.clock += dt;
     for (const c of this.clouds) {
       c.img.x -= c.v * dt;
@@ -302,7 +304,7 @@ export class Background {
     this.midWest.x = this.mid.x - this.mid.displayWidth;
     this.nearWest.x = this.near.x - this.near.displayWidth;
 
-    const u = nightLevel ? NIGHT_LEVEL_U : daySeconds > 0 ? Math.min(1, dayT / daySeconds) : 0;
+    const u = nightLevel ? NIGHT_LEVEL_U : skySeconds > 0 ? Math.min(1, skyT / skySeconds) : 0;
     const sky = this.skyAt(u);
     const starA = Math.max(0, (u - 0.72) / 0.2);
     this.stars.setAlpha(starA);

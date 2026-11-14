@@ -4,11 +4,16 @@ import { REVIEW_ITEMS, type ReviewItem } from '../config/devReview';
 import type { EnemyType } from '../config/enemies';
 import { FLAG_DEFS, type Flags } from '../config/flags';
 import { HANDS } from '../config/hand';
-import { QUICK_STARTS, QUICK_START_MAX_DAY } from '../config/quickstart';
+import { CASTLE_TIERS, STATIONS, STATION_IDS, type StationId } from '../config/keep';
+import { QUICK_STARTS, QUICK_START_MAX_WAVE } from '../config/quickstart';
 import { TUNING_PRESETS, TUNING_SLIDERS, type Tuning } from '../config/tuning';
 import { MAX_TIER, WEAPONS, weaponById } from '../config/weapons';
 import { ENEMY_POPUPS } from '../config/worlds/fondue/story';
-import type { DevRating } from '../profile';
+import { campaignLength, cheatBadge, giveCheese, giveCrests, giveGold, setCastleTier, setStationTier, unlockLevels } from '../modes/cheats';
+import type { DevRating, Profile } from '../profile';
+import {
+  editableFields, importOverrides, overrideCount, overrideOf, overridesAsText, resetWeaponOverrides, setWeaponOverride,
+} from '../sim/weapons/overrides';
 import { esc, weaponUri } from './html';
 
 export interface TuningPanelHost {
@@ -18,22 +23,22 @@ export interface TuningPanelHost {
   /** Experiment switches in effect. */
   flags(): Flags;
   setFlag(id: string, value: string): void;
-  /** Day the next endless game starts on; 1 for a normal run. */
-  startDay(): number;
-  setStartDay(day: number): void;
-  /** An endless run alone, starting on the chosen day. */
+  /** Wave the next endless game starts at; 1 for a normal run. */
+  startWave(): number;
+  setStartWave(wave: number): void;
+  /** An endless run alone, starting at the chosen wave. */
   startQuickEndless(): void;
-  /** One line about the profile: stars, levels won. */
+  /** One line about the profile: cheese, levels won. */
   profileSummary(): string;
-  addStars(n: number): void;
+  addCheese(n: number): void;
   unlockEverything(): void;
   replayTutorial(): void;
   resetProfile(): void;
-  /** Starts a campaign level alone on a later day. */
-  jumpTo(level: number, day: number): void;
+  /** Starts a campaign level alone at a later wave. */
+  jumpTo(level: number, wave: number): void;
   levelCount(): number;
-  /** How many days this campaign level has. */
-  levelDays(level: number): number;
+  /** How many waves this campaign level has. */
+  levelWaves(level: number): number;
   /** Permanent tiers in the profile. */
   weaponTier(id: string): number;
   setWeaponTier(id: string, tier: number): void;
@@ -45,10 +50,27 @@ export interface TuningPanelHost {
   ratings(): Readonly<Record<string, DevRating>>;
   setRating(id: string, patch: Partial<DevRating>): void;
   ratingsText(): string;
+  /**
+   * For the permanent cheats (F2): the profile, the world and a redraw of the menus afterwards.
+   * Optional; without them the panel uses the game's test hook `window.__fondue`.
+   */
+  profile?(): Profile;
+  world?(): string;
+  afterCheat?(): void;
 }
 
-/** Stars added per tap of the button. */
-const STAR_GIFT = 50;
+/** Gold and crests added per tap. */
+const GOLD_GIFTS = [1000, 10000];
+const CREST_GIFT = 40;
+
+/** The look of the small marks ("Cheats used", "3 changed"); inline, because style.css belongs to the screens. */
+const BADGE_STYLE = 'display:inline-block;margin:0 8px;padding:1px 9px;border-radius:999px;background:#c8553d;color:#fff;font-size:12px;font-weight:800;vertical-align:middle';
+
+/** What the cheats work on: the profile, its world and a redraw of the menus. */
+interface CheatTarget { profile: Profile; world: string; redraw(): void }
+
+/** Cheese added per tap of the button. */
+const CHEESE_GIFT = 50;
 
 /** The developer overview page, next to the game. */
 const devOverviewUrl = (): string => `${import.meta.env.BASE_URL ?? '/'}dev/`;
@@ -59,12 +81,18 @@ export class TuningPanel {
   private el: HTMLDivElement | null = null;
   private confirmReset = false;
   private jumpLevel = 1;
-  private jumpDay = 1;
+  private jumpWave = 1;
   /** Which page of the menu is on show: the tools, or the decision and rating list. */
   private view: 'main' | 'review' = 'main';
   private tierWeapon = WEAPONS[0]?.id ?? '';
   private popupEnemy = (Object.keys(ENEMY_POPUPS)[0] ?? 'grunt') as EnemyType;
   private copied = '';
+  /** Weapon editor: the weapon and tier on show, whether it is unfolded, and its text field. */
+  private editWeapon = WEAPONS[0]?.id ?? '';
+  private editTier = 1;
+  private editorOpen = false;
+  private editorNote = '';
+  private unlockTo = 10;
 
   constructor(private root: HTMLElement, private host: TuningPanelHost) {}
 
@@ -98,7 +126,7 @@ export class TuningPanel {
         <input type="range" data-key="${s.key}" min="${s.min}" max="${s.max}" step="${s.step}" value="${t[s.key]}" ${edit ? '' : 'disabled'}>
       </div>`).join('');
     return `
-      <div class="dev-head"><h3>Developer menu</h3><button class="small" data-act="close" id="devClose">Close</button></div>
+      <div class="dev-head"><h3>Developer menu</h3>${this.badge()}<button class="small" data-act="close" id="devClose">Close</button></div>
       ${this.developer(edit)}
       <div class="dev-section">
       <h3>Tuning</h3>
@@ -108,7 +136,7 @@ export class TuningPanel {
       </div>
       ${rows}
       <label class="dev-check"><input type="checkbox" data-toggle="knockOthers" ${t.knockOthers ? 'checked' : ''} ${edit ? '' : 'disabled'}> Thrown enemies knock others over</label>
-      <div class="note-dev">Changed tuning or switches make every run a developer run: no scores, no stars.</div>
+      <div class="note-dev">Changed tuning or switches make every run a developer run: no scores, no cheese.</div>
       <div class="row dev-options" style="margin:10px 0 6px">
         <button class="small secondary" data-act="export">Export</button>
         <button class="small secondary" data-act="import" ${edit ? '' : 'disabled'}>Import</button>
@@ -125,15 +153,15 @@ export class TuningPanel {
         <div class="row dev-options">${f.options.map((o) => `<button class="small ${flags[f.id] === o.value ? '' : 'secondary'}" data-flag="${f.id}" data-value="${o.value}" ${edit ? '' : 'disabled'}>${o.label}</button>`).join('')}</div>
         <div class="note-dev">${f.hint}</div>
       </div>`).join('');
-    const day = this.host.startDay();
-    const days = [1, ...QUICK_STARTS.map((q) => q.day)].map((d) => `<button class="small ${day === d ? '' : 'secondary'}" data-startday="${d}" ${edit ? '' : 'disabled'}>${d === 1 ? 'Normal' : `Day ${d}`}</button>`).join('');
+    const wave = this.host.startWave();
+    const waves = [1, ...QUICK_STARTS.map((q) => q.wave)].map((d) => `<button class="small ${wave === d ? '' : 'secondary'}" data-startwave="${d}" ${edit ? '' : 'disabled'}>${d === 1 ? 'Normal' : `Wave ${d}`}</button>`).join('');
     const reset = this.confirmReset
       ? `<div class="dev-confirm" id="resetConfirm"><div class="dev-label">Erase the whole profile? This cannot be undone.</div>
           <div class="row navrow"><div class="nav-back"><button class="small secondary" data-act="resetCancel">Cancel</button></div>
           <div class="nav-forward"><button class="small alt" data-act="resetConfirm">Erase profile</button></div></div></div>`
       : '<button class="small alt" data-act="resetProfile" id="devResetProfile">Reset profile</button>';
-    const maxDay = this.host.levelDays(this.jumpLevel);
-    this.jumpDay = Math.min(this.jumpDay, maxDay);
+    const maxWave = this.host.levelWaves(this.jumpLevel);
+    this.jumpWave = Math.min(this.jumpWave, maxWave);
     return `
       <div class="dev-section" id="developer">
         ${edit ? '' : '<p class="note">The host decides these for both players.</p>'}
@@ -147,15 +175,15 @@ export class TuningPanel {
           <div class="dev-label">Jump to a campaign level</div>
           <div class="row dev-options">
             <label class="dev-num">Level <input type="number" id="devLevel" min="1" max="${this.host.levelCount()}" value="${this.jumpLevel}"></label>
-            <label class="dev-num">Day <input type="number" id="devDay" min="1" max="${maxDay}" value="${this.jumpDay}"></label>
+            <label class="dev-num">Wave <input type="number" id="devWave" min="1" max="${maxWave}" value="${this.jumpWave}"></label>
             <button class="small" data-act="jump" id="devJump">Go</button>
           </div>
-          <div class="note-dev">Starts alone at once. A later day counts as a developer run.</div>
+          <div class="note-dev">Starts alone at once. A later wave counts as a developer run.</div>
         </div>
         <div class="dev-row">
           <div class="dev-label">Endless starts on</div>
-          <div class="row dev-options">${days}
-            <label class="dev-num">Day <input type="number" id="devEndlessDay" min="1" max="${QUICK_START_MAX_DAY}" value="${day}" ${edit ? '' : 'disabled'}></label>
+          <div class="row dev-options">${waves}
+            <label class="dev-num">Wave <input type="number" id="devEndlessWave" min="1" max="${QUICK_START_MAX_WAVE}" value="${wave}" ${edit ? '' : 'disabled'}></label>
           </div>
           <div class="note-dev">Applies to solo and to an endless game you host. Quick starts do not count for the scores.</div>
           ${edit ? '<div class="row dev-options" style="margin-top:6px"><button class="small" data-act="quickSolo" id="devQuickSolo">Start endless now</button></div>' : ''}
@@ -164,16 +192,104 @@ export class TuningPanel {
           <div class="dev-label">Profile</div>
           <div class="note-dev" id="devProfile">${this.host.profileSummary()}</div>
           <div class="row dev-options">
-            <button class="small secondary" data-act="stars" id="devStars">+${STAR_GIFT} stars</button>
+            <button class="small secondary" data-act="cheese" id="devCheese">+${CHEESE_GIFT} cheese</button>
             <button class="small secondary" data-act="unlockAll" id="devUnlockAll">Unlock everything</button>
             <button class="small secondary" data-act="replayTutorial" id="devTutorial">Replay tutorial</button>
           </div>
           <div class="row dev-options" style="margin-top:6px">${reset}</div>
         </div>
+        ${this.cheats()}
         ${this.tiers()}
+        ${this.weaponEditor(edit)}
         ${this.popups()}
         ${switches}
       </div>`;
+  }
+
+  /** The profile and world the cheats change; the host gives them, the test hook is the fallback. */
+  private cheatTarget(): CheatTarget | null {
+    const profile = this.host.profile?.();
+    if (profile) return { profile, world: this.host.world?.() ?? 'fondue', redraw: () => this.host.afterCheat?.() };
+    const app = (window as unknown as { __fondue?: { profile?: Profile; world?: string; screen?: string; show?(s: string): void } }).__fondue;
+    if (!app?.profile) return null;
+    return {
+      profile: app.profile, world: app.world ?? 'fondue',
+      redraw: () => { if (app.screen && ['main', 'campaign', 'options', 'keep', 'shop'].includes(app.screen)) app.show?.(app.screen); },
+    };
+  }
+
+  /** "Cheats used": a profile changed by cheats says so at the top of the menu. */
+  private badge(): string {
+    const t = this.cheatTarget();
+    const text = t ? cheatBadge(t.profile) : null;
+    return text ? `<span class="dev-badge" style="${BADGE_STYLE}" id="devCheatBadge" title="This profile was changed by developer cheats.">${esc(text)}</span>` : '';
+  }
+
+  /** Permanent cheats: currencies, levels, castle and station tiers. */
+  private cheats(): string {
+    const t = this.cheatTarget();
+    if (!t) return '';
+    const d = t.profile.data;
+    const castle = CASTLE_TIERS.map((_, i) => i + 1)
+      .map((n) => `<button class="small ${n === d.keep.castleTier ? '' : 'secondary'}" data-castletier="${n}" id="devCastleTier${n}">${n}</button>`).join('');
+    const stations = STATION_IDS.map((id) => {
+      const now = d.keep.stations[id] ?? 0;
+      const buttons = Array.from({ length: STATIONS[id].tiers.length + 1 }, (_, n) => n)
+        .map((n) => `<button class="small ${n === now ? '' : 'secondary'}" data-station="${id}" data-stationtier="${n}" id="devStation-${id}-${n}">${n === 0 ? 'Off' : n}</button>`).join('');
+      return `<div class="dev-label" style="margin-top:6px">${esc(STATIONS[id].name)}</div><div class="row dev-options">${buttons}</div>`;
+    }).join('');
+    return `
+      <div class="dev-row" id="devCheats">
+        <div class="dev-label">Cheats (permanent, they mark the profile)</div>
+        <div class="row dev-options">
+          ${GOLD_GIFTS.map((n) => `<button class="small secondary" data-gold="${n}" id="devGold${n}">+${n} gold</button>`).join('')}
+          <button class="small secondary" data-act="crests" id="devCrests">+${CREST_GIFT} crests</button>
+        </div>
+        <div class="row dev-options" style="margin-top:6px">
+          <label class="dev-num">Win levels 1 to <input type="number" id="devUnlockTo" min="1" max="${campaignLength(t.world)}" value="${this.unlockTo}"></label>
+          <button class="small secondary" data-act="unlockLevels" id="devUnlockLevels">Unlock</button>
+        </div>
+        <div class="dev-label" style="margin-top:6px">Castle tier</div>
+        <div class="row dev-options">${castle}</div>
+        ${stations}
+      </div>`;
+  }
+
+  /** F1: every number of every weapon tier, live in the running game; reset; export as text. */
+  private weaponEditor(edit: boolean): string {
+    const def = weaponById(this.editWeapon) ?? WEAPONS[0];
+    if (!def) return '';
+    const tier = Math.max(1, Math.min(def.tiers.length, this.editTier));
+    const row = def.tiers[tier - 1] as unknown as Record<string, number>;
+    const options = WEAPONS.map((w) => `<option value="${w.id}" ${w.id === def.id ? 'selected' : ''}>${esc(w.name)}</option>`).join('');
+    const tiers = def.tiers.map((_, i) => `<button class="small ${i + 1 === tier ? '' : 'secondary'}" data-edittier="${i + 1}" id="devEditTier${i + 1}">${i + 1}</button>`).join('');
+    const fields = editableFields(def, tier).map((f) => {
+      const changed = overrideOf(def.id, tier, f);
+      return `<label class="dev-num dev-wfield${changed === undefined ? '' : ' changed'}">${esc(f)}
+        <input type="number" step="any" data-wfield="${f}" id="devW-${f}" value="${changed ?? row[f]}" ${edit ? '' : 'disabled'}>
+        <span class="note-dev">default ${row[f]}</span></label>`;
+    }).join('');
+    const count = overrideCount();
+    return `
+      <details class="dev-row" id="devWeaponEditor" ${this.editorOpen ? 'open' : ''}>
+        <summary class="dev-label">Weapon editor${count ? ` <span class="dev-badge" style="${BADGE_STYLE}" id="devEditCount">${count} changed</span>` : ''}</summary>
+        ${edit ? '' : '<p class="note">The host sets these values.</p>'}
+        <div class="row dev-options"><select id="devEditWeapon" class="dev-select">${options}</select></div>
+        <div class="row dev-options" style="margin-top:6px">${tiers}</div>
+        <div class="note-dev">${esc(String((def.tiers[tier - 1] as { note?: string }).note ?? ''))}</div>
+        <div class="row dev-options dev-wfields" style="margin-top:6px">${fields}</div>
+        <div class="row dev-options" style="margin-top:6px">
+          <button class="small secondary" data-act="wResetTier" id="devWResetTier" ${edit ? '' : 'disabled'}>Reset this tier</button>
+          <button class="small secondary" data-act="wResetWeapon" id="devWResetWeapon" ${edit ? '' : 'disabled'}>Reset weapon</button>
+          <button class="small alt" data-act="wResetAll" id="devWResetAll" ${edit ? '' : 'disabled'}>Reset all</button>
+        </div>
+        <div class="row dev-options" style="margin-top:6px">
+          <button class="small secondary" data-act="wExport" id="devWExport">Export as text</button>
+          <button class="small secondary" data-act="wImport" id="devWImport" ${edit ? '' : 'disabled'}>Import</button>
+        </div>
+        <textarea id="devWeaponText" placeholder="Exported changes appear here. Paste an export and press Import.">${esc(this.editorNote)}</textarea>
+        <div class="note-dev">Changes work at the next shot. Any change makes runs developer runs: no cheese, no gold, no progress. Kept until the page reloads.</div>
+      </details>`;
   }
 
   /** Setting any weapon's lasting tier and the hand tier directly. */
@@ -252,19 +368,21 @@ export class TuningPanel {
     const target = ev.target as HTMLInputElement;
     if (target.id === 'devLevel') {
       this.jumpLevel = clampInt(target.value, 1, this.host.levelCount());
-      // The day field follows the chosen level: it allows every day that level has.
-      const dayField = this.el?.querySelector<HTMLInputElement>('#devDay');
-      const max = this.host.levelDays(this.jumpLevel);
-      if (dayField) {
-        dayField.max = String(max);
-        if (this.jumpDay > max) { this.jumpDay = max; dayField.value = String(max); }
+      // The wave field follows the chosen level: it allows every wave that level has.
+      const waveField = this.el?.querySelector<HTMLInputElement>('#devWave');
+      const max = this.host.levelWaves(this.jumpLevel);
+      if (waveField) {
+        waveField.max = String(max);
+        if (this.jumpWave > max) { this.jumpWave = max; waveField.value = String(max); }
       }
       return;
     }
-    if (target.id === 'devDay') { this.jumpDay = clampInt(target.value, 1, this.host.levelDays(this.jumpLevel)); return; }
-    if (target.id === 'devEndlessDay') { if (target.value !== '') this.host.setStartDay(clampInt(target.value, 1, QUICK_START_MAX_DAY)); return; }
+    if (target.id === 'devWave') { this.jumpWave = clampInt(target.value, 1, this.host.levelWaves(this.jumpLevel)); return; }
+    if (target.id === 'devEndlessWave') { if (target.value !== '') this.host.setStartWave(clampInt(target.value, 1, QUICK_START_MAX_WAVE)); return; }
     if (target.dataset.rnote) { this.host.setRating(target.dataset.rnote, { note: target.value }); return; }
+    if (target.id === 'devUnlockTo') { this.unlockTo = clampInt(target.value, 1, 1000); return; }
     if (target.id === 'devTierWeapon' || target.id === 'devPopupEnemy' || target.dataset.rcheck) return;
+    if (target.dataset.wfield || target.id === 'devEditWeapon' || target.id === 'devWeaponText') return;
     const t = { ...this.host.values() };
     if (target.dataset.key) {
       const key = target.dataset.key as Exclude<keyof Tuning, 'knockOthers'>;
@@ -282,6 +400,13 @@ export class TuningPanel {
   private onChange(ev: Event) {
     const target = ev.target as HTMLInputElement & HTMLSelectElement;
     if (target.id === 'devTierWeapon') { this.tierWeapon = target.value; this.render(); return; }
+    if (target.id === 'devEditWeapon') { this.editWeapon = target.value; this.editTier = 1; this.editorOpen = true; this.render(); return; }
+    if (target.dataset.wfield) {
+      if (target.value !== '' && this.host.canEdit()) setWeaponOverride(this.editWeapon, this.editTier, target.dataset.wfield, Number(target.value));
+      this.editorOpen = true;
+      this.render();
+      return;
+    }
     if (target.id === 'devPopupEnemy') { this.popupEnemy = target.value as EnemyType; return; }
     if (target.dataset.rcheck) this.host.setRating(target.dataset.rcheck, { checked: target.checked });
   }
@@ -294,8 +419,8 @@ export class TuningPanel {
       this.render();
       return;
     }
-    if (b.dataset.startday) {
-      this.host.setStartDay(Number(b.dataset.startday));
+    if (b.dataset.startwave) {
+      this.host.setStartWave(Number(b.dataset.startwave));
       this.render();
       return;
     }
@@ -309,6 +434,15 @@ export class TuningPanel {
       this.render();
       return;
     }
+    if (b.dataset.gold) { this.withCheat((t) => giveGold(t.profile, Number(b.dataset.gold))); return; }
+    if (b.dataset.castletier) { this.withCheat((t) => setCastleTier(t.profile, Number(b.dataset.castletier))); return; }
+    if (b.dataset.station && b.dataset.stationtier) {
+      const id = b.dataset.station as StationId;
+      const tier = Number(b.dataset.stationtier);
+      this.withCheat((t) => setStationTier(t.profile, id, tier));
+      return;
+    }
+    if (b.dataset.edittier) { this.editTier = Number(b.dataset.edittier); this.editorOpen = true; this.render(); return; }
     if (b.dataset.handtier) {
       this.host.setHandTier(Number(b.dataset.handtier));
       this.render();
@@ -326,13 +460,33 @@ export class TuningPanel {
     switch (b.dataset.act) {
       case 'close': this.toggle(); return;
       case 'quickSolo': this.toggle(); this.host.startQuickEndless(); return;
-      case 'jump': this.toggle(); this.host.jumpTo(this.jumpLevel, Math.min(this.jumpDay, this.host.levelDays(this.jumpLevel))); return;
+      case 'jump': this.toggle(); this.host.jumpTo(this.jumpLevel, Math.min(this.jumpWave, this.host.levelWaves(this.jumpLevel))); return;
       case 'replayTutorial': this.toggle(); this.host.replayTutorial(); return;
       case 'popup': this.toggle(); this.host.showEnemyPopup(this.popupEnemy); return;
       case 'review': this.view = 'review'; this.copied = ''; this.render(); if (this.el) this.el.scrollTop = 0; return;
       case 'reviewBack': this.view = 'main'; this.copied = ''; this.render(); if (this.el) this.el.scrollTop = 0; return;
       case 'copyRatings': void this.copyRatings(); return;
-      case 'stars': this.host.addStars(STAR_GIFT); this.render(); return;
+      case 'cheese':
+        if (this.cheatTarget()) this.withCheat((t) => giveCheese(t.profile, CHEESE_GIFT));
+        else { this.host.addCheese(CHEESE_GIFT); this.render(); }
+        return;
+      case 'crests': this.withCheat((t) => giveCrests(t.profile, CREST_GIFT)); return;
+      case 'unlockLevels': this.withCheat((t) => unlockLevels(t.profile, t.world, this.unlockTo)); return;
+      case 'wResetTier': resetWeaponOverrides(this.editWeapon, this.editTier); this.editorOpen = true; this.render(); return;
+      case 'wResetWeapon': resetWeaponOverrides(this.editWeapon); this.editorOpen = true; this.render(); return;
+      case 'wResetAll': resetWeaponOverrides(); this.editorNote = ''; this.editorOpen = true; this.render(); return;
+      case 'wExport': this.editorNote = overridesAsText(); this.editorOpen = true; this.render(); return;
+      case 'wImport': {
+        const text = this.el?.querySelector<HTMLTextAreaElement>('#devWeaponText')?.value ?? '';
+        try {
+          this.editorNote = `Imported ${importOverrides(text)} values.`;
+        } catch {
+          this.editorNote = 'That was not a weapon export.';
+        }
+        this.editorOpen = true;
+        this.render();
+        return;
+      }
       case 'unlockAll': this.host.unlockEverything(); this.render(); return;
       case 'resetProfile': this.confirmReset = true; this.render(); return;
       case 'resetCancel': this.confirmReset = false; this.render(); return;
@@ -348,6 +502,15 @@ export class TuningPanel {
         }
         return;
     }
+  }
+
+  /** Runs a cheat on the profile, then redraws the menus and this panel. */
+  private withCheat(run: (t: CheatTarget) => unknown) {
+    const t = this.cheatTarget();
+    if (!t) return;
+    run(t);
+    t.redraw();
+    this.render();
   }
 
   /** Puts the ratings on the clipboard; the text also shows below the button, to copy by hand if that fails. */

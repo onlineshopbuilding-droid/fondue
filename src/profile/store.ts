@@ -7,6 +7,8 @@ export interface ProfileStore {
   /** Rejects if the text could not be stored. */
   write(key: string, value: string): Promise<void>;
   remove(key: string): Promise<void>;
+  /** Optional: stores at once, before returning. Used when the page is hidden or closed. Throws on failure. */
+  writeSync?(key: string, value: string): void;
 }
 
 /** Keeps the profile in the browser's localStorage. */
@@ -22,6 +24,10 @@ export class LocalProfileStore implements ProfileStore {
   }
 
   async write(key: string, value: string): Promise<void> {
+    this.writeSync(key, value);
+  }
+
+  writeSync(key: string, value: string): void {
     if (typeof localStorage === 'undefined') throw new Error('No local storage available.');
     try {
       localStorage.setItem(key, value);
@@ -57,6 +63,10 @@ export class MemoryProfileStore implements ProfileStore {
   }
 
   async write(key: string, value: string): Promise<void> {
+    this.writeSync(key, value);
+  }
+
+  writeSync(key: string, value: string): void {
     if (this.failWrites) throw new Error('Simulated write failure.');
     this.entries.set(key, value);
     this.writeCount += 1;

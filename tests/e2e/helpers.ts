@@ -7,7 +7,7 @@ import { DT } from '../../src/config/field';
  */
 
 export const CI = !!process.env.CI;
-/** A generous limit for things that wait on game time (banners, the fall of the gate, a day's end). */
+/** A generous limit for things that wait on game time (banners, the fall of the gate, the end of a wave). */
 export const GAME_WAIT = CI ? 60_000 : 20_000;
 
 export interface Device { name: string; width: number; height: number; touch: boolean }
@@ -86,10 +86,10 @@ export const gameState = (page: Page) => page.evaluate(() => {
   const v = s?.view();
   const m = s?.meta();
   return v ? {
-    phase: v.phase as string, day: v.day as number, gold: v.gold as number, offerings: v.offerings as number,
-    gateHp: v.gateHp as number, gateMax: v.gateMax as number, dayT: v.dayT as number, paused: v.paused as boolean,
+    phase: v.phase as string, wave: v.wave as number, gold: v.gold as number, crests: v.crests as number,
+    gateHp: v.gateHp as number, gateMax: v.gateMax as number, waveT: v.waveT as number, runT: v.runT as number, paused: v.paused as boolean,
     enemies: v.enemies.map((e: any) => ({ id: e.id, type: e.type, st: e.st, x: e.x, y: e.y, heldBy: e.heldBy, armed: e.armed })),
-    // Kills of the run so far: the host counts them live, the total in Meta only grows at the end of a day.
+    // Kills of the run so far: the host counts them live, the total in Meta only grows at the end of the run.
     hands: v.hands, cooldowns: v.cooldowns as number[], potBusy: v.potBusy as number, kills: (s.sim?.s.stats.kills ?? m?.totalKills) as number,
     mode: m?.rules.mode as string, level: m?.rules.level as number | null,
     connection: s.connection(), ping: s.pingMs(), screen: app.screen as string,
@@ -146,15 +146,30 @@ export const waitPhase = (page: Page, phases: string | string[], timeoutMs = GAM
 
 export const waitScreen = (page: Page, screen: string, timeoutMs = GAME_WAIT) => waitFor(() => screenOf(page), (s) => s === screen, timeoutMs);
 
-/** Taps away the "New enemy" windows a fresh profile sees on its first day. */
+/** Taps away the "New enemy" windows a fresh profile sees in its first waves. */
 export async function closePopups(page: Page) {
   for (let i = 0; i < 6 && (await page.locator('#enemyPopup').count()) > 0; i++) {
     await page.locator('#enemyPopup').click().catch(() => {});
   }
 }
 
-/** From the lobby to the first fight of an endless run alone. */
+/** Campaign levels a profile must have won before endless opens (it opens with the fifth slot). */
+export const ENDLESS_AFTER_LEVEL = 11;
+
+/** Gives the profile of this page the progress that opens endless, and marks the tutorial as seen. */
+export async function unlockEndless(page: Page) {
+  await page.evaluate((upTo) => {
+    const a = (window as any).__fondue;
+    for (let l = 1; l <= upTo; l++) a.profile.markLevelDone(a.world, l);
+    a.profile.edit((d: any) => { d.seen.tutorial = true; });
+    a.profile.flushSync();
+  }, ENDLESS_AFTER_LEVEL);
+}
+
+/** From the lobby to the first fight of an endless run alone (endless is opened first if it is still locked). */
 export async function startEndless(page: Page) {
+  await waitForLobby(page);
+  await unlockEndless(page);
   await station(page, 'play');
   await page.click('#startEndless');
   await waitPhase(page, 'battle');
@@ -167,8 +182,8 @@ export async function startSolo(page: Page, query = '?menu=1') {
   await startEndless(page);
 }
 
-/** An empty road and slow raiders, so a test controls exactly who is on the field. */
-export async function clearField(page: Page, walkSpeed = 0.02) {
+/** An empty road and slow raiders, so a test controls exactly who is on the field. Slowing them is a tuning change, so the run then counts as a developer run; `null` keeps the speed (and the reward). */
+export async function clearField(page: Page, walkSpeed: number | null = 0.02) {
   await page.evaluate((w) => {
     const sim = (window as any).__fondue.session.sim;
     sim.s.spawnQueue = [];
@@ -178,14 +193,30 @@ export async function clearField(page: Page, walkSpeed = 0.02) {
   }, walkSpeed);
 }
 
-/** Lets the day of the host end now: nobody left on the road and the sun is down. */
-export async function endDay(page: Page) {
+/**
+ * The current wave of the host's run is over at once: nobody left on the road and no one still to come.
+ * The next wave follows by itself after the short empty-field delay; on the last wave of a level the run is won.
+ */
+export async function nextWave(page: Page) {
   await page.evaluate(() => {
     const s = (window as any).__fondue.session.sim.s;
     s.spawnQueue = [];
+    s.spawned = 0;
     s.enemies = [];
-    s.dayT = Math.max(s.dayT, s.meta.today.seconds);
+    s.waveDone = false;
+    s.wavesFrozen = false;
   });
+}
+
+/** Wins the host's campaign level: its last wave is reached and nobody is left on the road. Endless cannot be won (use breakGate). */
+export async function endLevel(page: Page) {
+  await page.evaluate(() => {
+    const s = (window as any).__fondue.session.sim.s;
+    const last = s.meta.rules?.lastWave as number | null;
+    if (last === null || last === undefined) throw new Error('endLevel: an endless run has no last wave; use breakGate');
+    s.wave = Math.max(s.wave, last);
+  });
+  await nextWave(page);
 }
 
 /** Breaks the gate of the host's run. */
@@ -279,25 +310,4 @@ export async function drag(page: Page, from: [number, number], to: [number, numb
     await page.waitForTimeout(stepMs);
   }
   await page.mouse.up();
-}
-
-/** Taps a place of the market at the keep by its pixels. */
-export async function tapMarket(page: Page, id: string, touch: boolean) {
-  await page.waitForFunction(() => (window as any).__fondue.scene.marketProgress() >= 1, null, { timeout: GAME_WAIT });
-  const spot = await page.evaluate((s) => {
-    const p = (window as any).__fondue.scene.marketSpotCss(s);
-    return p ? { ...p, free: document.elementFromPoint(p.x, p.y)?.tagName === 'CANVAS' } : null;
-  }, id);
-  expect(spot, `market place ${id}`).toBeTruthy();
-  expect(spot.free, `market place ${id} is not covered by a window`).toBe(true);
-  if (touch) await page.touchscreen.tap(spot.x, spot.y);
-  else await page.mouse.click(spot.x, spot.y);
-}
-
-/** Ends the day and opens the market at the keep. */
-export async function toMarket(page: Page) {
-  await endDay(page);
-  await waitPhase(page, 'intermission');
-  await page.click('#toShop');
-  await waitScreen(page, 'shop');
 }

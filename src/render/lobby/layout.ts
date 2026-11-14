@@ -42,7 +42,7 @@ export const STATIONS: readonly StationDef[] = [
   { id: 'credits', label: 'Credits', art: 'painting', x: 1010, y: 214, r: 84, lx: 1010, ly: 306 },
   { id: 'scores', label: 'Scores', art: 'slate', x: 1186, y: 222, r: 82, lx: 1186, ly: 312 },
   { id: 'coop', label: 'Co-op', art: 'feastTable', x: 1136, y: 540, r: 118, lx: 1136, ly: 640 },
-  { id: 'armoury', label: 'Armoury', art: 'armourStand', x: 1350, y: 466, r: 104, lx: 1350, ly: 640 },
+  { id: 'armoury', label: 'Shop', art: 'armourStand', x: 1350, y: 466, r: 104, lx: 1350, ly: 640 },
 ];
 
 /** The King sits here (feet of the throne at the bottom); a tap on him brings a remark. */
@@ -83,6 +83,9 @@ export function decorFor(levelDone: number): DecorDef[] {
 export const WEAPON_PEGS: readonly { x: number; y: number }[] = [
   ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => ({ x: 360 + i * 34, y: 402 })),
   ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => ({ x: 1002 + i * 34, y: 402 })),
+  // A second, shorter row below, so all 25 weapons of v0.3 find a peg.
+  ...[0, 1, 2, 3, 4].map((i) => ({ x: 411 + i * 34, y: 446 })),
+  ...[0, 1, 2, 3, 4].map((i) => ({ x: 1053 + i * 34, y: 446 })),
 ];
 /** Largest side of a weapon picture on its peg, in room units. */
 export const WEAPON_SIZE = 34;

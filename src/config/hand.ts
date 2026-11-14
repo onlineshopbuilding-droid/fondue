@@ -1,17 +1,21 @@
 /**
- * The hand and how strong it is. A stronger hand throws heavy raiders further (see `mass` in
- * enemies.ts). Campaign: tiers are bought with stars between levels. Endless: with gold during a run.
+ * The hand and how strong it is, kept for good in the profile. A stronger hand throws heavy raiders
+ * further (see `mass` in enemies.ts). Tiers are bought with gold, tier 7 also with Raider Crests.
  *
- * HANDS columns: strength = compared with a raider's mass; gold, offerings = price in an endless
- * run; stars = price in the armoury; note = shown to players.
- * The list is one hand today; more hands can become more lists later.
+ * HANDS columns: strength = compared with a raider's mass; gold, crests = price of the step up to
+ * this tier (tier 1 is free); note = shown to players.
  */
-export interface HandTier { strength: number; gold: number; offerings: number; stars: number; note: string }
+import { CREST_COST } from './tiers';
+export interface HandTier { strength: number; gold: number; crests: number; note: string }
 
 export const HANDS: HandTier[] = [
-  { strength: 1, gold: 0, offerings: 0, stars: 0, note: 'Throws a Pothelm with ease. Heavy raiders fly short.' },
-  { strength: 1.5, gold: 2500, offerings: 10, stars: 12, note: 'Heavy raiders fly almost like light ones.' },
-  { strength: 2.2, gold: 9000, offerings: 20, stars: 30, note: 'Lifts a Yeti alone.' },
+  { strength: 1, gold: 0, crests: 0, note: 'Throws a Pothelm with ease. Heavy raiders fly short.' },
+  { strength: 1.25, gold: 500, crests: 0, note: 'A firmer grip.' },
+  { strength: 1.55, gold: 1500, crests: 0, note: 'Heavy raiders fly almost like light ones.' },
+  { strength: 2, gold: 3500, crests: 0, note: 'Lifts a Yeti alone.' },
+  { strength: 2.4, gold: 8000, crests: 0, note: 'Yetis fly a fair way.' },
+  { strength: 2.8, gold: 16000, crests: 0, note: 'Nothing on the road is too heavy.' },
+  { strength: 3.3, gold: 30000, crests: CREST_COST, note: 'A second hand joins the first.' },
 ];
 
 export const MAX_HAND_TIER = HANDS.length;
@@ -22,6 +26,8 @@ export const HAND_RULES = {
   minThrow: 0.45,
   /** The spring that pulls a held raider to the hand is multiplied by strength / mass, at least this. */
   minFollow: 0.3,
-  /** Combined strength of the hands on a Yeti that lifts it off the ground. */
+  /** Combined strength of the hands on a Yeti that lifts it off the ground (one hand from tier 4). */
   yetiLift: 2,
+  /** From this hand tier on a player has a second hand of their own for good (C9, variant 1). */
+  secondHandTier: 7,
 };
