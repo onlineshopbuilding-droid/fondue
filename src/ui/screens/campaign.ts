@@ -77,7 +77,7 @@ function cardHtml(ctx: ScreenContext, id: number): string {
   const cheeseList = `<ul class="cm-card-cheese" id="cardCheese">
       ${pip(b.win, 'Win')}${pip(b.gateHalf, `Gate above ${Math.round(CHEESE.gateHalf * 100)} %`)}${pip(b.gateHigh, `Gate above ${Math.round(CHEESE.gateHigh * 100)} %`)}
       ${ch[0] ? pip(b.challenge1, ch[0]) : ''}${ch[1] ? pip(b.challenge2, ch[1]) : ''}</ul>`;
-  const stars = `<span class="cm-cheese-ico" aria-hidden="true">🧀</span> <b id="cardGot">${got}</b>/${CHEESE.perLevel} cheese${done ? ' · replays pay gold' : ''}`;
+  const cheeseLine = `<span class="cm-cheese-ico" aria-hidden="true">🧀</span> <b id="cardGot">${got}</b>/${CHEESE.perLevel} cheese${done ? ' · replays pay gold' : ''}`;
   const unlocks = unlocksOfLevel(ctx.world, id);
   let unlockLine = '';
   if (unlocks.length > 0) {
@@ -90,7 +90,7 @@ function cardHtml(ctx: ScreenContext, id: number): string {
   return `<div class="cm-card-title"><span class="cm-card-num">Level ${id}</span> <span class="cm-card-name" id="cardName">${esc(l.name)}</span></div>
     <div class="cm-card-facts" id="cardFacts">${facts}</div>
     ${l.boss ? `<div class="cm-card-boss" id="cardBoss">Boss: ${esc(l.boss.name)}</div>` : ''}
-    <div class="cm-card-stars" id="cardStars">${stars}</div>
+    <div class="cm-card-stars" id="cardStars">${cheeseLine}</div>
     ${cheeseList}
     ${unlockLine}${lock}
     ${open ? loadoutHtml(ctx) : ''}

@@ -922,6 +922,8 @@ ul.cm-card-cheese li:nth-child(n + 4) { grid-column: 1 / -1; }
 }
 .cm-got.full { background: var(--mustard); }
 .cm-head .wallet { font-size: 20px; min-height: 40px; }
+/* Close and Play stay in reach even when a long card scrolls. */
+.cm-card .row.navrow { position: sticky; bottom: -12px; padding-bottom: 4px; background: var(--parchment); z-index: 1; }
 
 @media (prefers-reduced-motion: reduce) { .sh-spot { animation: none; } }
 

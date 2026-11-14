@@ -14,10 +14,10 @@ import type { Screen } from './screen';
 /** Why endless is still closed, for the menu and the lobby. */
 export const ENDLESS_LOCKED = 'Endless opens with your fifth slot. Keep winning campaign levels!';
 
-/** The wave an interrupted level continues at (older saves knew only days). */
+/** The wave an interrupted level continues at. */
 export function pendingWave(p: PendingRun): number {
-  const s = p.start as unknown as { wave?: unknown; day?: unknown };
-  return typeof s.wave === 'number' ? s.wave : typeof s.day === 'number' ? s.day : 1;
+  const s = p.start as unknown as { wave?: unknown };
+  return typeof s.wave === 'number' ? s.wave : 1;
 }
 
 export const mainScreen: Screen = {
