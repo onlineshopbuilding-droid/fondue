@@ -17,7 +17,7 @@ const KINDS: [AssetEntry['kind'], string][] = [
   ['landscape', 'Landschaftsebenen'],
   ['cloud', 'Wolken'],
 ];
-const GROUPS: Record<string, string> = { boot: 'Start', keepStages: 'Burgstufen', weaponTiers: 'Waffenstufen 2 bis 5', meadow: 'meadow (Start)' };
+const GROUPS: Record<string, string> = { boot: 'Start', keepStages: 'Burgstufen', weaponTiers: 'Waffenstufen 2 bis 7', meadow: 'meadow (Start)' };
 const num = (v: number) => String(Math.round(v * 10) / 10);
 
 /** The Markdown tables of all assets, one per kind. */
