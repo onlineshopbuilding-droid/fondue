@@ -11,10 +11,14 @@ import { makeRoomCode, normalizeRoomCode, withLatency, type RoomHost, type Trans
 import type { Profile } from '../../profile';
 import type { RunSetup } from '../../sim/rules';
 import type { ScreenId } from '../screens/screen';
+import { BUILD_HASH } from '../version';
+import { GAME_VERSION } from '../../config/game';
 
-declare const __GAME_VERSION__: string;
-/** Both players must run the same build. A test can pretend to be an out-of-date client with ?fakever=x. */
-export const BUILD = new URLSearchParams(location.search).get('fakever') ?? `${PROTOCOL_VERSION}-${__GAME_VERSION__}`;
+/**
+ * Both players must run the same game version and build, for example "3-v0.3-8c1dddb".
+ * A test can pretend to be an out-of-date client with ?fakever=x.
+ */
+export const BUILD = new URLSearchParams(location.search).get('fakever') ?? `${PROTOCOL_VERSION}-v${GAME_VERSION}-${BUILD_HASH}`;
 
 /** Seats in a room. The network code knows one guest today; the room list is built for more. */
 export const ROOM_SEATS = 2;

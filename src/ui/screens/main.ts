@@ -7,9 +7,8 @@ import { worldById } from '../../config/worlds';
 import { CAMPAIGN, ENDLESS } from '../../modes';
 import { esc } from '../html';
 import { htmlMenuWanted } from '../lobby/mode';
+import { VERSION_LABEL } from '../version';
 import type { Screen } from './screen';
-
-declare const __GAME_VERSION__: string;
 
 export const mainScreen: Screen = {
   id: 'main',
@@ -19,7 +18,8 @@ export const mainScreen: Screen = {
     const next = CAMPAIGN.nextLevel(p, ctx.world);
     if (!htmlMenuWanted()) {
       return `<div class="lobby-hud"><div class="lobby-chip progress" id="progress"><span class="star">★</span> <span id="stars">${p.data.stars}</span>`
-        + ` <span class="sep">·</span> Level <span id="levelNow">${next}</span>/${total}</div></div>`;
+        + ` <span class="sep">·</span> Level <span id="levelNow">${next}</span>/${total}</div>`
+        + `<div class="lobby-version" id="versionLabel">${esc(VERSION_LABEL)}</div></div>`;
     }
     const pending = ctx.pendingRun();
     const cont = pending
@@ -42,7 +42,7 @@ export const mainScreen: Screen = {
             <button class="secondary small" data-a="help">Help</button>
             <button class="secondary small" data-a="credits">Credits</button>
           </div>
-          <div class="version">build ${esc(__GAME_VERSION__)}</div></div>`;
+          <div class="version" id="versionLabel">${esc(VERSION_LABEL)}</div></div>`;
   },
   onAction(action, _el, ctx) {
     switch (action) {

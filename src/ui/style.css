@@ -381,6 +381,7 @@ table.scores tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.35);
 .navrow .nav-forward { justify-content: flex-end; margin-left: auto; }
 
 .note-line { text-align: center; }
+.version-line { font-size: 12px; opacity: 0.6; }
 .star { color: var(--mustard); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; }
 
 /* Main menu: progress line, big ways in, small extras. */

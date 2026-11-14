@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
+import { GAME_VERSION } from '../../src/config/game';
 import { DEFAULT_WORLD, levelOf } from '../../src/config/worlds';
 import { ENEMY_POPUPS } from '../../src/config/worlds/fondue/story';
 import { HELP_SLIDES } from '../../src/ui/content';
 import {
-  breakGate, clearField, drag, endDay, gameState, spawn, startSolo, station, tapStation, waitFor, waitForGame, waitForLobby,
-  screenOf, waitGame, waitPhase, waitScreen, GAME_WAIT,
+  DEVICES, breakGate, clearField, drag, endDay, gameState, spawn, startSolo, station, tapStation, waitFor, waitForGame, waitForLobby,
+  openGame, screenOf, waitGame, waitPhase, waitScreen, GAME_WAIT,
 } from './helpers';
 
 /** Menus, the course of a day and the developer tools, on the laptop with the mouse. */
@@ -46,10 +47,39 @@ test('lobby: every station opens its page and Back returns to the hall', async (
   expect(errors).toEqual([]);
 });
 
+for (const d of DEVICES) {
+  test(`${d.name}: the version shows small in the lobby, clear of every station, and in the Options`, async ({ browser }) => {
+    const { context, page, errors } = await openGame(browser, d);
+    await waitForLobby(page);
+    const label = page.locator('#versionLabel');
+    await expect(label).toBeVisible();
+    await expect(label).toHaveText(new RegExp(`^v${GAME_VERSION.replaceAll('.', '\\.')} · build [0-9a-z]+$`));
+    const box = (await label.boundingBox())!;
+    // Beside the chip, in the top row, where no station or its sign sits.
+    const chip = (await page.locator('#progress').boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(chip.x + chip.width);
+    expect(box.y + box.height).toBeLessThanOrEqual(chip.y + chip.height);
+    const spots = (await page.evaluate(() => (window as any).__fondue.lobby.spots())) as { id: string; x: number; y: number; r: number }[];
+    expect(spots.length).toBeGreaterThan(0);
+    for (const s of spots) {
+      // Distance from the station's centre to the nearest point of the label.
+      const dx = Math.max(box.x - s.x, 0, s.x - (box.x + box.width));
+      const dy = Math.max(box.y - s.y, 0, s.y - (box.y + box.height));
+      expect(Math.hypot(dx, dy), `the version label stays clear of ${s.id}`).toBeGreaterThan(s.r);
+    }
+    await page.screenshot({ path: `mobile-screenshots/lobby-version-${d.name}.png` });
+    await tapStation(page, 'options', d.touch);
+    await expect(headline(page)).toHaveText('Options');
+    await expect(page.locator('#versionLabel')).toContainText(`v${GAME_VERSION} · build`);
+    expect(errors).toEqual([]);
+    await context.close();
+  });
+}
+
 test('the plain menu (?menu=html) has a button for every station and shows the build', async ({ page }) => {
   await page.goto('/?menu=html');
   await waitForGame(page);
-  await expect(page.locator('.version')).toContainText('build');
+  await expect(page.locator('.version')).toContainText(`v${GAME_VERSION} · build`);
   for (const a of ['campaign', 'play', 'coop', 'armoury', 'options', 'scores', 'help', 'credits']) await expect(page.locator(`button[data-a="${a}"]`)).toBeVisible();
   expect(await page.evaluate(() => (window as any).__fondue.lobby.visible)).toBe(false);
   await page.click('button[data-a="play"]');
