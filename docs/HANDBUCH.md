@@ -318,15 +318,22 @@ Die Bots lesen die Tabelle; für den Einkauf in fester Reihenfolge ggf. `src/bot
 | `npx playwright test --config playwright.live.config.ts` | Veröffentlichte Seite; mit `EXPECT_BUILD=<kurzer Hash>` prüft er, dass der neue Build live ist |
 | `npm run relay` | Plan-B-Server lokal |
 
-**Veröffentlichen**, sobald Tim oder Lenny es sagt: alle Tests grün, Pull Request nach `main`, Merge. `.github/workflows/ci.yml` führt für jeden Pull Request die Prüfung `test` aus (Typ-Check, Unit-Tests, Browser-Tests in sechs Teilen), ohne Grün kein Merge. `.github/workflows/deploy.yml` baut nach jedem Merge drei Dinge in einen Ordner und stellt sie live:
+**Veröffentlichen**, sobald Tim oder Lenny es sagt: alle Tests grün, Pull Request nach `main`, Merge. `.github/workflows/ci.yml` führt für jeden Pull Request die Prüfung `test` aus (Typ-Check, Unit-Tests, Browser-Tests in sechs Teilen), ohne Grün kein Merge. `.github/workflows/deploy.yml` baut nach jedem Merge diese Stände in einen Ordner und stellt sie live:
 
 | Adresse | Was |
 |---|---|
 | https://onlineshopbuilding-droid.github.io/fondue/ | das Spiel von `main` |
-| https://onlineshopbuilding-droid.github.io/fondue/classic/ | der alte Stand vom Branch `classic` (Tag `v0-alpha`), E-032 |
+| https://onlineshopbuilding-droid.github.io/fondue/classic/ | der alte Stand vom Branch `classic` (Tag `v0-alpha`, `v0.1`), E-032 |
 | https://onlineshopbuilding-droid.github.io/fondue/dev/ | die Entwickler-Übersicht, aus dem Code erzeugt |
+| https://onlineshopbuilding-droid.github.io/fondue/v0.2/ | v0.2, eingefroren auf dem Branch `v0.2` (Tag `v0.2`) |
+| https://onlineshopbuilding-droid.github.io/fondue/next/ | die nächste Version zum Testen, vom Branch `v0.3-dev` |
+| https://onlineshopbuilding-droid.github.io/fondue/next/dev/ | die Entwickler-Übersicht dieser nächsten Version |
 
-Nach einer Änderung am Branch `classic` den Deploy von Hand starten (Actions, „Run workflow“, Branch `main`). Zurückrollen auf den alten Stand: `main` per Pull Request auf den Stand von `v0-alpha` bringen (kein Force-Push).
+Alle Adressen teilen sich den Browser-Speicher. Deshalb speichert v0.3 unter eigenen Schlüsseln (`fondue.v3.*`) und lässt den Spielstand der Live-Version in Ruhe.
+
+Ist der Stand auf `v0.3-dev` kaputt, läuft die Auslieferung trotzdem durch: `/next/` (oder `/next/dev/`) zeigt dann eine kurze Seite „v0.3 build failed, see Actions“, und der Lauf hat eine Warnung. Das Spiel unter `/fondue/` ist davon nie betroffen.
+
+Nach einer Änderung an `classic`, `v0.2` oder `v0.3-dev` den Deploy von Hand starten: `gh workflow run deploy.yml --ref main` (oder Actions, „Run workflow“, Branch `main`). Die Pages-Umgebung nimmt nur Läufe von `main` an. Zurückrollen auf den alten Stand: `main` per Pull Request auf den Stand von `v0-alpha` bringen (kein Force-Push).
 
 ## 8. Hilfen beim Ausprobieren
 

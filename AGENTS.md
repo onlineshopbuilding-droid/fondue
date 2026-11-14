@@ -76,6 +76,7 @@ Diese Begriffe gelten überall genau so: im Code, in Spieltexten und in Dokument
 - Build: `npm run build`
 - Veröffentlichen: Pull Request nach `main` mergen (GitHub Actions, .github/workflows/deploy.yml)
 - Live: https://onlineshopbuilding-droid.github.io/fondue/, alter Stand: https://onlineshopbuilding-droid.github.io/fondue/classic/, Entwickler-Übersicht: https://onlineshopbuilding-droid.github.io/fondue/dev/
+- Testadresse der nächsten Version (Branch `v0.3-dev`): https://onlineshopbuilding-droid.github.io/fondue/next/, eingefrorenes v0.2: https://onlineshopbuilding-droid.github.io/fondue/v0.2/. Nach einer Änderung auf diesen Branches neu ausliefern mit `gh workflow run deploy.yml --ref main`. Alle Adressen im Handbuch, Abschnitt 7.
 - Tests: `npm test` (Unit), `npm run test:e2e` (Browser auf Laptop, iPhone 16, OnePlus 8T; weitere Größen mit `ALL_SCREENS=1`), `npx playwright test --config playwright.live.config.ts` (Live), `npx playwright test --config playwright.perf.config.ts` (FPS), `npm run balance` (Bots, Endlos und alle 100 Level)
 - Erzeugte Dokumente: `node scripts/campaign-table.ts` (Level-Tabelle), `node scripts/list-assets.ts` (Asset-Liste), `npm run dev-page` (Entwickler-Übersicht)
 - Schalter in der Adresse (`?menu=1`, `?menu=html`, `?fresh=1`, `?tutorial=1`, `?profile=`, `?asset=` …): `docs/HANDBUCH.md`, Abschnitt 8
