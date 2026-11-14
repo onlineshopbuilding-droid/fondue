@@ -87,7 +87,7 @@ export class CampaignRunner {
     const profile = await Profile.load(new MemoryProfileStore());
     // A player reaches the campaign through the tutorial, which gives the free Rolling Wheel.
     completeTutorial(profile, world);
-    // Levels skipped at the front count as won, with their stars, so the profile is where it would be.
+    // Levels skipped at the front count as won, with their cheese, so the profile is where it would be.
     for (let l = 1; l < from; l++) { this.markWon(profile, world, l); spendProgress(profile, skills[0], world); }
     const t0 = Date.now();
     const levels: LevelRun[] = [];

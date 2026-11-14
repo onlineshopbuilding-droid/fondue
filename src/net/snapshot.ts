@@ -20,7 +20,7 @@ export interface ViewEnemy {
   armed: boolean;
   crow: boolean;
   frozen: boolean;
-  /** An oversized raider of a boss day. */
+  /** An oversized raider of a boss wave. */
   big: boolean;
   /** Who holds it: empty for nobody. */
   heldBy: number[];

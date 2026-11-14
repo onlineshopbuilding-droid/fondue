@@ -56,7 +56,7 @@ export interface Enemy {
   maxHp: number;
   /** How far right a single weak hand may drag a yeti. */
   tugLimit: number;
-  /** An oversized raider of a boss day: more hit points, harder strikes, much heavier. */
+  /** An oversized raider of a boss wave: more hit points, harder strikes, much heavier. */
   big: boolean;
 }
 

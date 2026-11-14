@@ -6,7 +6,7 @@ import type { Enemy } from './types';
 import type { SimContext } from './context';
 
 /**
- * The two offering sites: the Great Cauldron behind the road and the Eagle Perch.
+ * The two stations: the Great Cauldron behind the road and the Eagle Perch.
  * Includes the gentle steering that lets a throw aimed at them actually land there.
  */
 export class Stations {

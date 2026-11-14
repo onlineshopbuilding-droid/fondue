@@ -166,13 +166,13 @@ export const BEHAVIOUR = {
    * margin (px), lethalShare: it dies at this share of the usual landing speed, strike: its damage to the gate.
    */
   crow: { speed: 260, altitude: 110, grabPad: 18, lethalShare: 0.4, strike: 6 },
-  /** Speed factor of the old "retreat" rule at the end of a day. */
+  /** Speed factor of a raider running off the field (developer flag "retreat"). */
   fleeSpeed: 1.9,
-  /** Taps needed to break a siege cart, on any day. */
+  /** Taps needed to break a siege cart, in any wave. */
   siegeCartTaps: 7,
   /** A Yeti held by a hand too weak to lift it: how fast it can be dragged (px/s), its walk speed factor while held, how far back one hand can drag it (px). */
   yeti: { tugSpeed: 90, slowWhileHeld: 0.35, tugReach: 70 },
-  /** Oversized raiders of boss days: factors on hit points, strike, mass, drawn size, gold and speed. */
+  /** Oversized raiders of boss waves: factors on hit points, strike, mass, drawn size, gold and speed. */
   /** landingDamage: share of its hit points a hard landing takes off. */
   big: { hp: 14, strike: 2.5, mass: 2.4, scale: 1.75, gold: 10, speed: 0.7, landingDamage: 0.34 },
   /** Weight of a crow, which is not in the table above. */

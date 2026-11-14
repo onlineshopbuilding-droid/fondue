@@ -74,7 +74,7 @@ export class App implements ScreenContext, CoopRoomHost {
   readonly art = { rigs: RIGS, props: PROPS };
   readonly params = new URLSearchParams(location.search);
   readonly coop = new CoopRoom(this);
-  /** Day the next endless game starts on; set from the developer menu, 1 for a normal run. */
+  /** Wave the next endless game starts at; set from the developer menu, 1 for a normal run. */
   startDay = 1;
   loadingTip = LOADING_TIPS[0];
   /** What the run that just ended brought; the result screens show it. */
