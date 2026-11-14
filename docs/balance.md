@@ -1,6 +1,6 @@
 # Balance (v0.3)
 
-Stand: 14.11.2026, Paket P-Balance (Etappe 4). Gemessen mit den Bots, `npm run balance`; die vollständigen Zahlen stehen in `docs/balance-latest.md` (maschinenlesbar `docs/balance-latest.json`), dort oben auch die Tabelle „Ziele auf einen Blick“. Die Bots sagen, ob eine Änderung in die richtige Richtung geht; wie sich Menschen schlagen, zeigt nur echtes Spielen.
+Stand: 14.11.2026, Paket P-Balance (Etappe 4), Nachbesserung B5 nach der Prüfung (Etappe 5). Gemessen mit den Bots, `npm run balance`; die vollständigen Zahlen stehen in `docs/balance-latest.md` (maschinenlesbar `docs/balance-latest.json`), dort oben auch die Tabelle „Ziele auf einen Blick“. Die Bots sagen, ob eine Änderung in die richtige Richtung geht; wie sich Menschen schlagen, zeigt nur echtes Spielen.
 
 ## Ziele (Auftrag v0.3, Abschnitte 5 und 6)
 
@@ -34,13 +34,13 @@ Simulation ohne Grafik, 60 Schritte je Sekunde. Die Bots (`src/bots/`) benutzen 
 
 **A4 Wappen-Grind:** Burg von „Mid solo“ nach Level 75 (Adlerhaken gekauft). 20 Spieler je Zeile spielen Runden (Level 76 wiederholt, oder Endlos Medium bis Welle 20), bis 50 Wappen (`CREST_COST`) zusammen sind. Gemessen werden Median der Runden, Wappen je Runde und die Trefferquote am Haken (`perchHits / perchTries`, aus `src/sim/stations.ts`).
 
-## Ergebnisse (Lauf vom 14.11.2026, 06:42)
+## Ergebnisse (Lauf vom 14.11.2026, 09:04)
 
 | Ziel | Messwert | Ergebnis |
 |---|---|---|
 | B5 ohne Ausbau | Mid ohne Ausbau scheitert zuerst an Level 15, gewinnt 27 von 100 | erfüllt |
 | B5 mit Ausbau | Mid (Geschmack 1) scheitert zuerst an Level 70, B an 80, C erst an 100; nie geschafft 12 / 9 / 1 Level | erfüllt (weiter als ohne Ausbau) |
-| B5 Great | Versuche je Level 1–25 / 26–50 / 51–75 / 76–100: 1 / 1 / 1 / 1,4; Boss-Level 2,0, sonst 1,0 | erfüllt |
+| B5 Great | Versuche je Level 1–25 / 26–50 / 51–75 / 76–100: 1 / 1 / 1 / 1,4; Boss-Level 2,0, sonst 1,0 (Level 90 und 100 in 6 Versuchen nicht geschafft, Level 80 im ersten mit Tor 53 %) | erfüllt (Schwelle im Test: spät mindestens 1,3, Boss mindestens 0,3 über sonst) |
 | A3 Farmer | Level 76–100: 3,5 Versuche je Level, Tor im Median 5 %, 12 Level nie geschafft | erfüllt |
 | B1 Längen (Mid) | früh Median 89 s (7 von 8 im Bereich), Mitte 203 s (52 von 61), Boss und Sonder 364 s (10 von 19) | erfüllt, Boss knapp |
 | B2 Pausen | längste Strecke ohne lebenden Räuber über alle Zeilen und Versuche 2,6 s | erfüllt |
@@ -52,7 +52,7 @@ Simulation ohne Grafik, 60 Schritte je Sekunde. Die Bots (`src/bots/`) benutzen 
 Weitere Beobachtungen:
 - **Poor solo** kommt ohne Mühe bis in die Mitte, scheitert zuerst an Level 44, gewinnt 52 von 100 und schafft ab Level 51 kaum noch etwas. Gewollt: Der schwache Bot ist schwächer als die meisten Menschen.
 - **Mid solo** gewinnt die ersten 69 Level fast immer im ersten Versuch; ab Level 70 brauchen Boss-Level mehrere Versuche, von Level 92 an schafft „Mid solo“ (Geschmack 1) die meisten Level nicht mehr. Wie weit Mid kommt, hängt stark von der Waffenwahl ab: Geschmack 6 (Rolling Wheel, Sticky Fondue, Hedgehog Gate, Mending Horn, Pinecone Catapult) schafft 99 Level.
-- **Great solo** wird erst ab etwa Level 80 gefordert (Tor im Median 78 % in Level 76–100) und scheitert nur an Level 90 und 100.
+- **Great solo** wird erst ab etwa Level 80 gefordert (Tor im Median 79 % in Level 76–100) und scheitert nur an Level 90 und 100. Level 90 lag ohne `bossPowerLate` auf der Kippe: Ein Wiederholungslauf der Prüfung gab dort 3 Versuche statt „nie“ und damit spät nur 1,28 Versuche je Level (B5 knapp verfehlt). Mit `bossPowerLate` 0,1, 0,2 und 0,3 gaben alle Läufe 1,4 und Boss 2,0; gewählt ist 0,2 als Abstand zur Kippe.
 - **Gold:** Ab der Mitte hält der Stufen-Deckel (`TIER_CAP_BY_LEVEL`), nicht das Gold, den Ausbau auf. Nach jeder Anhebung des Deckels (Level 10, 25, 45) ist das Gold kurz knapp, danach sammelt es sich an. Darum farmt der Farmer kaum: Gold fehlt ihm fast nie, und mehr Gold hilft über den Deckel hinaus nicht.
 - **Wappen** kommen nur aus Runden mit dem Adlerhaken; jede Runde bringt höchstens 2, und die Bots erreichen sie in fast jeder Runde. Die Trefferquote am Haken liegt bei 22 % (Mid) und 23 % (Great).
 
@@ -62,6 +62,7 @@ Weitere Beobachtungen:
 |---|---|---|---|---|
 | Stärke ab Level 40 zusätzlich, wächst mit dem Quadrat (`CURVE.powerLate`, `powerLateFrom`, neue Funktion `powerOf`) | worlds/fondue/campaign.ts | gab es nicht (Level 100: Stärke 5,95) | +3 bei Level 100 (Level 100: 8,95; Level 70: 5,2) | Mid und Great gewannen alle 100 Level im ersten Versuch; späte Level verlangen jetzt Stufe 6 und 7 |
 | Boss-Level stärker (`CURVE.bossPower`) | worlds/fondue/campaign.ts | 1,12 | 1,45 | Boss-Level brauchten nicht mehr Versuche |
+| Späte Boss-Level stärker (`CURVE.bossPowerLate`, neue Funktion `bossFactorOf`; Etappe 5) | worlds/fondue/campaign.ts | gab es nicht (Boss-Faktor überall 1,45) | +0,2 bei Level 100, wächst ab Level 40 mit dem Quadrat (Level 80: 1,54; 90: 1,59; 100: 1,65; Level 50: +0,01, 60: +0,02, 70: +0,05) | B5: Great brauchte spät nur 1,28 Versuche je Level, weil Level 90 auf der Kippe lag; frühe Bosse bleiben gleich |
 | Geplante Dauer Boss-Level (`secondsBossMin`) | worlds/fondue/campaign.ts | 360 s | 450 s (höchstens weiter 600 s) | Gemessen dauerten Boss-Level nur 4–5 Minuten, Ziel 6–10 |
 | Geplante Dauer Sonderlevel (`secondsSpecialMin/Max`) | worlds/fondue/campaign.ts | 360–470 s | 430–560 s | dto. |
 | Gold je Kill wächst mit der Levelstärke (`CAMPAIGN_SCALING.goldPerPower`) | campaignScaling.ts | 0,7 | 0 | Mid hatte am Ende 6,4 Millionen Gold übrig; späte Level bringen ohnehin mehr Räuber |
@@ -80,7 +81,7 @@ Messmethode wie oben unter „Methode“ (`BALANCE_PART=grind npm run balance`).
 
 ## Unsicher und offen
 
-- **Mid scheitert spät, je nach Waffenwahl.** Mid mit Geschmack 1 schafft 12 der letzten 31 Level nie, mit Geschmack 6 fast alles. Ob die letzten zehn Level für normale Menschen zu schwer sind, müssen Tim und Lenny spielen. Stellschraube: `CURVE.powerLate` (3) und `bossPower` (1,45).
+- **Mid scheitert spät, je nach Waffenwahl.** Mid mit Geschmack 1 schafft 12 der letzten 31 Level nie, mit Geschmack 6 fast alles. Ob die letzten zehn Level für normale Menschen zu schwer sind, müssen Tim und Lenny spielen. Stellschraube: `CURVE.powerLate` (3), `bossPower` (1,45) und `bossPowerLate` (0,2).
 - **Mending Horn und Pinecone Catapult wirken stark.** Der Geschmack mit beiden kommt fast ohne Niederlage durch. Die Waffen sind untereinander noch nicht gleich stark; die Bots messen das nur grob.
 - **Gold verliert spät an Bedeutung.** Ab Level 65 sammelt sich Gold an, weil nur noch Stufe 7 (mit Wappen) offen ist. Der Farmer unterscheidet sich darum kaum von Mid. Wenn Gold spät mehr zählen soll, müsste Stufe 7 mehr Gold kosten oder der Deckel feiner werden.
 - **Wappen-Grind ist für alle gleich lang,** weil die Bots fast jede Runde 2 Wappen holen. Menschen, die schlechter zielen, brauchen länger. Ob 2 je Runde sich zu knapp anfühlt, ist offen.

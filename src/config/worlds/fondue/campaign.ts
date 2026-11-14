@@ -39,6 +39,12 @@ export const CURVE = {
   powerLate: 3,
   /** Raiders of a boss level are this much stronger than the curve says. */
   bossPower: 1.45,
+  /**
+   * From level powerLateFrom on the boss factor grows by up to this much more, with the square
+   * like powerLate (level 80: +0.09, level 90: +0.14, level 100: +0.2), so the last bosses ask even
+   * a strong player for more than one try (B5, balance.md).
+   */
+  bossPowerLate: 0.2,
   /** Planned length in seconds: levels 1 to 5, the ramp to level 20, the middle, boss and special levels. */
   secondsFirst: 70,
   secondsPerEarlyLevel: 11,
@@ -244,10 +250,21 @@ function wavesOf(level: number, target: number, counts: Partial<Record<EnemyType
   return waves;
 }
 
+/** Share of the late campaign a level has reached: 0 up to powerLateFrom, 1 at the last level. */
+function lateShare(level: number): number {
+  return Math.max(0, level - CURVE.powerLateFrom) / (LEVEL_COUNT - CURVE.powerLateFrom);
+}
+
 /** Strength of a level's raiders before the boss factor. */
 export function powerOf(level: number): number {
-  const late = Math.max(0, level - CURVE.powerLateFrom) / (LEVEL_COUNT - CURVE.powerLateFrom);
+  const late = lateShare(level);
   return 1 + CURVE.powerPerLevel * (level - 1) + CURVE.powerLate * late * late;
+}
+
+/** Boss factor of a level: bossPower, growing late in the campaign by up to bossPowerLate. */
+export function bossFactorOf(level: number): number {
+  const late = lateShare(level);
+  return CURVE.bossPower + CURVE.bossPowerLate * late * late;
 }
 
 function buildLevel(level: number): LevelDef {
@@ -269,7 +286,7 @@ function buildLevel(level: number): LevelDef {
     waves,
     targetSeconds,
     challenges: challengesFor(level, levelCounts),
-    power: powerOf(level) * (boss ? CURVE.bossPower : 1),
+    power: powerOf(level) * (boss ? bossFactorOf(level) : 1),
     boss,
     twist,
     story: LEVEL_STORY[level - 1] ?? '',
