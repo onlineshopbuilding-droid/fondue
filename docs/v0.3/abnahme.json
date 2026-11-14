@@ -73,8 +73,8 @@
     "id": "B5",
     "titel": "Schwierigkeit über die Kampagne",
     "pruefung": "Bot-Läufe zeigen: ohne Ausbau bleibt der mittlere Bot vor Level 30 stecken (Startwert); mit Ausbau kommt er weiter; der sehr gute Bot braucht in späten Leveln und Boss-Leveln spürbar mehr Versuche als in frühen.",
-    "status": "offen",
-    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Teilweise belegt: Mid ohne Ausbau scheitert zuerst an Level 15 und gewinnt 27 von 100; Mid mit Ausbau scheitert zuerst an Level 70 (nie geschafft: 12), also weiter als ohne Ausbau. Der dritte Teil ist in der Wiederholung von pruefer NICHT erfüllt: Great solo braucht Versuche je Level 1 / 1 / 1 / 1,28 (Abschnitte 1 bis 25 / 26 bis 50 / 51 bis 75 / 76 bis 100), Boss-Level 1,7 gegen 1,0 sonst; die Prüfung im Test verlangt mindestens +0,3 (docs/balance-latest.md: „nicht erfüllt“). Der Lauf davor (05:42) lag bei 1,4 und 2,0, also knapp und nicht ganz reproduzierbar; docs/balance.md nennt weiter die alten Werte. Offen: Great-Bot im späten Abschnitt etwas fordern (CURVE.powerLate oder bossPower) oder die Schwelle bewusst setzen."
+    "status": "erledigt",
+    "beleg": "Nachprüfung durch pruefer am 14.11.2026 (Stand 5727958, gebaute App dist). Wiederholung npm run balance (Exit 0, 83 s), Tabelle „Ziele auf einen Blick“: B5 ohne Ausbau: Mid ohne Ausbau scheitert zuerst an Level 15 (Soll vor Level 30), erfüllt; B5 mit Ausbau: Mid scheitert zuerst an Level 70, nie geschafft 12, erfüllt; B5/G1 Great spät: Versuche je Level 1–25 / 26–50 / 51–75 / 76–100 = 1 / 1 / 1 / 1,4, Boss 2 gegen 1 sonst, erfüllt (Schwelle mindestens +0,3). Der frühere Befund 1,28 / Boss 1,7 ist durch bossPowerLate 0,2 (Commit 10875e5) behoben und deckt sich mit docs/balance.md. Alle weiteren Zeilen der Tabelle (A3, E2, B1, B2, C3, E1, A4) erfüllt."
   },
   {
     "id": "C1",
@@ -122,8 +122,8 @@
     "id": "C7",
     "titel": "Burg-Stufen 1 bis 7 und Issue 1",
     "pruefung": "Screenshots aller sieben Burg-Stufen auf allen drei Formaten; Kommentar in Issue 1.",
-    "status": "offen",
-    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Alle sieben Burg-Stufen auf allen drei Formaten sind belegt (castle-tiers.spec grün: docs/screenshots/v0.3/castle-tier1..7-laptop/iphone-16/oneplus-8t.png, dazu castle-wide-tier1/7.png). Es fehlt der Kommentar mit den Screenshots in GitHub-Issue 1: gh issue view 1 zeigt 0 Kommentare (Issue ist dem Konto zugewiesen). Sobald der Kommentar steht, ist der Eintrag erledigt."
+    "status": "erledigt",
+    "beleg": "Nachprüfung durch pruefer am 14.11.2026 (Stand 5727958, gebaute App dist). Alle sieben Burg-Stufen auf allen drei Formaten belegt (castle-tiers.spec grün im vollen Lauf: docs/screenshots/v0.3/castle-tier1..7-laptop/iphone-16/oneplus-8t.png). Kommentar in Issue 1 steht jetzt (gh issue view 1 --comments: Kommentar von onlineshopbuilding-droid mit Stufe 1 und 7, Landschaften Wiese Tag, Canyon Abend, Schneewald Nacht, breitem Bildschirm und dem Verweis auf alle sieben Stufen je Gerät; Schließen erst über Fixes #1 im Pull Request)."
   },
   {
     "id": "C8",
@@ -213,8 +213,8 @@
     "id": "G1",
     "titel": "Tests und Balance",
     "pruefung": "npm test, npm run test:e2e und npm run balance grün, Ergebnisse im Bericht.",
-    "status": "offen",
-    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Stand der Läufe von pruefer: npx tsc --noEmit sauber, npm test 575 von 575 grün (38 Dateien), npm run build grün, npm run balance Exit 0 (aber B5 „Great spät mehr Versuche“ im Bericht „nicht erfüllt“). npm run test:e2e gegen die gebaute App: 92 Tests, 85 grün, 3 rot, 4 übersprungen (look.spec, nur mit ALL_SCREENS): keep.spec „a keg is shaken loose, a raider melts in the pot behind the keep, the eagle takes one“ auf Laptop, iPhone 16 und OnePlus 8T (veralteter Test, siehe PRUEFUNG.md). Erledigt, sobald dieser Test an den gezielten Wurf angepasst ist und B5 geklärt ist."
+    "status": "erledigt",
+    "beleg": "Nachprüfung durch pruefer am 14.11.2026 (Stand 5727958, gebaute App dist). npx tsc --noEmit sauber (Exit 0); npm test 577 von 577 grün (39 Dateien); npm run build grün; npx playwright test --config tests/playwright.dist.config.ts: 92 Tests, 88 bestanden, 0 fehlgeschlagen, 4 übersprungen (look.spec, nur mit ALL_SCREENS), 30,9 min; der frühere rote keep.spec-Test (Adlerhaken) ist durch den echten Wurf ersetzt und läuft auf allen drei Formaten grün; npm run balance Exit 0, alle Zeilen „Ziele auf einen Blick“ erfüllt (siehe B5)."
   },
   {
     "id": "G2",
@@ -227,8 +227,8 @@
     "id": "G3",
     "titel": "Bereit für App Store und Google Play",
     "pruefung": "Liste im Bericht, was für den Store-Bau später noch nötig ist.",
-    "status": "offen",
-    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Die Liste „Was für den Store-Bau noch nötig ist“ steht noch in keinem Dokument im Repo (docs/v0.3/BERICHT.md fehlt bisher, Etappe 6). Technisch gelesen: package.json hat Capacitor 8.6 (android:prepare), Querformat, sichere Ränder und fondue.v3.-Speicher sind getestet. Erledigt, sobald BERICHT.md die Liste enthält."
+    "status": "erledigt",
+    "beleg": "Nachprüfung durch pruefer am 14.11.2026 (Stand 5727958, gebaute App dist). docs/v0.3/BERICHT.md enthält den Abschnitt „Was für den Store-Bau später noch nötig ist (G3)“ (ProfileStore für den App-Speicher, lockerere Versionsprüfung, App-Icon, Name, Datenschutzerklärung, Altersfreigabe, Store-Texte und Bilder, Zugang nur über Store-Testkanäle)."
   },
   {
     "id": "G4",

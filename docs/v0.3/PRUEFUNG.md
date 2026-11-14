@@ -99,3 +99,17 @@ Nur teilweise automatisch prüfbar, deshalb mit Vermerk auf „erledigt“ geset
 - `tests/playwright.dist.config.ts`: alle Browser-Tests gegen `dist` (`npm run build`, dann `npx playwright test --config tests/playwright.dist.config.ts`, Port über `TEST_PORT`).
 - `tests/playwright.check.config.ts`, `tests/check/playthrough.spec.ts`, `tests/check/coopStartDevices.spec.ts`: Durchspielen und B3 im Koop auf drei Formaten.
 - `docs/screenshots/v0.3/check-*.png`: Bilder des Durchspielens.
+
+## 8. Nachprüfung (14.11.2026, Stand 5727958)
+
+Saubere Läufe nach den Korrekturen (Adlerhaken-Test mit echtem Wurf, Waffen-Tipp, Shop-Hänger, späte Boss-Stärke):
+
+- `npx tsc --noEmit`: sauber.
+- `npm test`: 577 von 577 grün (39 Dateien).
+- `npm run build`: grün.
+- Browser-Tests gegen die gebaute App (`npx playwright test --config tests/playwright.dist.config.ts`): 92 Tests, **88 bestanden, 0 fehlgeschlagen, 4 übersprungen** (look.spec, nur mit `ALL_SCREENS=1`), 30,9 min. Die drei früheren roten keep.spec-Tests laufen grün.
+- `npm run balance`: Exit 0, alle Zeilen „Ziele auf einen Blick“ erfüllt; Great-Bot 1 / 1 / 1 / 1,4, Boss 2 gegen 1 sonst. `docs/balance-latest.*` haben sich nur durch Zeitstempel und Laufzeit geändert und sind nicht committet.
+- Live: `/fondue/`, `/classic/`, `/dev/`, `/v0.2/`, `/next/`, `/next/dev/` antworten alle mit 200; der Deploy-Lauf (workflow_dispatch) ist „success“. Das Paket unter `/next/` enthält `fondue.v3.` und nicht `fondue.profile`, das unter `/fondue/` weiter `fondue.profile`. Bild der Lobby mit „v0.3“: `docs/screenshots/v0.3/check-live-next.png`.
+- Issue 1 hat jetzt einen Kommentar mit den Burg-Bildern.
+
+Abnahme: B5, C7, G1 und G3 sind belegt und auf „erledigt“ gesetzt: **34 erledigt, 0 offen, 0 abgeschaltet**. Weiterhin nicht automatisch prüfbar (Vermerke in `abnahme.json`): Gefühl B4/C9, Home-Bildschirm-Speicher auf dem iPhone A6, echte Geräte über das Internet E2, Neulings-Verhalten D1, die Wiederholung des Hängers (Fehler 3) auf einem echten Handy.
