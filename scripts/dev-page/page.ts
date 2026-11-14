@@ -1,43 +1,61 @@
 /**
- * The developer overview (/fondue/dev/): one self-contained HTML page built from the game's
- * configuration and the generated documents, so it never goes out of date.
- * Loaded through Vite by scripts/dev-page.ts; `readDevInput` collects the data, `renderDevPage`
- * turns it into HTML without touching the disk.
+ * The developer overview of v0.3 (/fondue/next/dev/): one self-contained HTML page built from the
+ * game's configuration, so it never goes out of date. Loaded through Vite by scripts/dev-page.ts;
+ * `readDevInput` collects the data, `renderDevPage` turns it into HTML without touching the disk.
+ *
+ * Shows: weapons (slot, unlock level, cheese price, seven tiers and what each tier changes = A5),
+ * tier prices (gold, crests, caps), castle and hand tiers, stations, enemies, levels and waves,
+ * unlocks, the cheese sum (must be 500), the interactive decision list (answers become GitHub
+ * issues), the roadmap to v1.0 and the v0.3 acceptance list.
+ * Level fields are read defensively: whatever the level table has is shown.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import * as enemies from '../../src/config/enemies';
+import { CURRENCIES } from '../../src/config/currencies';
+import { DECISIONS_V3, LEGACY_DECISIONS, ROADMAP, type Decision } from '../../src/config/decisions';
 import { ENEMIES, ENEMY_TYPES, type EnemyType } from '../../src/config/enemies';
-import { GAME_NAME } from '../../src/config/game';
+import { GAME_NAME, GAME_VERSION } from '../../src/config/game';
 import { HAND_RULES, HANDS } from '../../src/config/hand';
-import * as keep from '../../src/config/keep';
-import * as slots from '../../src/config/slots';
-import { CREST_COST, TIER_CAP_BY_LEVEL, WEAPON_TIER_GOLD } from '../../src/config/tiers';
-import { DIFFICULTIES, type Difficulty } from '../../src/config/waves';
-import * as weapons from '../../src/config/weapons';
-import { MAX_TIER, upgradePrice, WEAPONS, type WeaponDef } from '../../src/config/weapons';
-import * as worlds from '../../src/config/worlds';
-import * as campaign from '../../src/config/worlds/fondue/campaign';
-import type { EndlessDef } from '../../src/config/worlds/types';
-import { EndlessPlanner } from '../../src/modes/endlessPlanner';
-import { daySeed } from '../../src/sim/plan';
-import { Rng } from '../../src/sim/rng';
-import { enemyCountForDay } from '../../src/sim/spawn';
-import { bossText, campaignData, dayTotal, LANDSCAPE_DE, num, twistText, unlockText, type CampaignData } from '../campaign-table';
+import { CASTLE_TIERS, STATIONS, STATION_IDS } from '../../src/config/keep';
+import { SLOTS } from '../../src/config/slots';
+import { CREST_COST, TIER_CAP_BY_LEVEL, WEAPON_TIER_GOLD, tierCrests, weaponTierGold } from '../../src/config/tiers';
+import { MAX_TIER, WEAPONS, type WeaponDef } from '../../src/config/weapons';
+import { buildIssueUrls } from './issues';
 import { esc, inline, markdown } from './markdown';
 
+export const NEXT_URL = 'https://onlineshopbuilding-droid.github.io/fondue/next/';
 export const LIVE_URL = 'https://onlineshopbuilding-droid.github.io/fondue/';
 export const CLASSIC_URL = 'https://onlineshopbuilding-droid.github.io/fondue/classic/';
+export const ISSUE_URL = 'https://github.com/onlineshopbuilding-droid/fondue/issues/new';
+/** Upper bound of one issue address. */
+export const ISSUE_MAX = 7000;
+/** Browser storage of the decision drafts (only this key, prefix fondue.v3.). */
+export const DRAFT_KEY = 'fondue.v3.dev.decisions';
 
-interface Acceptance { punkte: { id: string; abschnitt: string; text: string; erledigt: boolean; beleg?: string }[] }
+interface AcceptanceItem { id: string; titel: string; pruefung: string; status: string; beleg?: string }
+
+/** One campaign level as far as the page can read it. */
+export interface LevelRow {
+  id: number;
+  name: string;
+  boss: boolean;
+  waves: number | null;
+  days: number | null;
+  raiders: number | null;
+  targetSeconds: number | null;
+  challenges: string[];
+  landscape: string;
+}
+
+export interface UnlockRow { level: number; text: string }
 
 export interface DevInput {
-  campaign: CampaignData;
-  endless: EndlessDef;
+  levels: LevelRow[] | null;
+  levelError: string;
+  unlocks: UnlockRow[];
   balanceMd: string;
   balanceDate: string;
-  decisionsMd: string;
-  acceptance: Acceptance;
+  acceptance: AcceptanceItem[];
   weaponArt: Record<string, string>;
   fonts: { display?: string; body?: string; bodyBold?: string };
   version: string;
@@ -49,6 +67,49 @@ const font = (root: string, file: string): string | undefined => {
   const p = join(root, 'node_modules', '@fontsource', file);
   return existsSync(p) ? readFileSync(p).toString('base64') : undefined;
 };
+const numOf = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+const countsSum = (counts: unknown): number => {
+  if (!counts || typeof counts !== 'object') return 0;
+  return Object.values(counts as Record<string, unknown>).reduce<number>((a, v) => a + (numOf(v) ?? 0), 0);
+};
+
+/** Reads one level of whatever shape the level table has right now. */
+export function levelRow(raw: unknown): LevelRow {
+  const l = (raw ?? {}) as Record<string, unknown>;
+  const waves = Array.isArray(l.waves) ? (l.waves as Record<string, unknown>[]) : null;
+  const days = Array.isArray(l.days) ? (l.days as Record<string, unknown>[]) : null;
+  const groups = waves ?? days;
+  const raiders = groups ? groups.reduce((a, g) => a + countsSum(g.counts) + countsSum(g.big), 0) : null;
+  const challenges = Array.isArray(l.challenges)
+    ? (l.challenges as unknown[]).map((c) => {
+      const o = (c ?? {}) as Record<string, unknown>;
+      return String(o.text ?? o.label ?? o.title ?? o.id ?? '');
+    }).filter(Boolean)
+    : [];
+  const minutes = numOf(l.targetMinutes);
+  return {
+    id: numOf(l.id) ?? 0,
+    name: typeof l.name === 'string' ? l.name : '',
+    boss: !!l.boss,
+    waves: waves ? waves.length : null,
+    days: days ? days.length : null,
+    raiders,
+    targetSeconds: numOf(l.targetSeconds) ?? (minutes !== null ? minutes * 60 : null),
+    challenges,
+    landscape: typeof l.landscape === 'string' ? l.landscape : '',
+  };
+}
+
+function unlockText(u: Record<string, unknown>): string {
+  switch (u.kind) {
+    case 'slot': { const s = SLOTS[Number(u.slot)]; return `Slot ${s ? s.name : u.slot}`; }
+    case 'weapon': { const w = WEAPONS.find((x) => x.id === u.weapon); return `Waffe ${w ? w.name : u.weapon}${w ? ` (${w.cheesePrice} Käse)` : ''}`; }
+    case 'station': { const s = STATIONS[u.station as keyof typeof STATIONS]; return `${s ? s.name : u.station}${s ? ` (${s.cheesePrice} Käse)` : ''}`; }
+    case 'gate': return `Tor-Stufe ${u.tier}`;
+    case 'hand': return `Hand-Stufe ${u.tier}`;
+    default: return String(u.kind);
+  }
+}
 
 /** Collects everything the page shows. */
 export async function readDevInput(root: string, version: string): Promise<DevInput> {
@@ -61,18 +122,34 @@ export async function readDevInput(root: string, version: string): Promise<DevIn
       if (svg) weaponArt[w.id] = svg;
     }
   } catch (e) {
-    // The pictures are a bonus: the page is still useful without them.
     console.warn('weapon art not available:', (e as Error).message);
+  }
+  // The level table is being rebuilt; whatever fails here leaves the rest of the page intact.
+  let levels: LevelRow[] | null = null;
+  let levelError = '';
+  try {
+    const worlds = await import('../../src/config/worlds');
+    levels = worlds.worldById(worlds.DEFAULT_WORLD).campaign.map(levelRow);
+  } catch (e) {
+    levelError = (e as Error).message;
+    console.warn('level table not available:', levelError);
+  }
+  let unlocks: UnlockRow[] = [];
+  try {
+    const u = await import('../../src/config/worlds/fondue/unlocks');
+    unlocks = (u.UNLOCKS as unknown as Record<string, unknown>[]).map((x) => ({ level: Number(x.level) || 0, text: unlockText(x) }));
+  } catch (e) {
+    console.warn('unlock table not available:', (e as Error).message);
   }
   let balanceDate = '';
   try { balanceDate = JSON.parse(read(join(root, 'docs', 'balance-latest.json')) || '{}').date ?? ''; } catch { /* no date */ }
+  let acceptance: AcceptanceItem[] = [];
+  try { acceptance = JSON.parse(read(join(root, 'docs', 'v0.3', 'abnahme.json')) || '[]'); } catch { /* none */ }
   return {
-    campaign: campaignData({ worlds, campaign, enemies, weapons, keep, slots }),
-    endless: worlds.worldById(worlds.DEFAULT_WORLD).endless,
+    levels, levelError, unlocks,
     balanceMd: read(join(root, 'docs', 'balance-latest.md')),
     balanceDate,
-    decisionsMd: read(join(root, 'docs', 'OFFENE-ENTSCHEIDUNGEN.md')),
-    acceptance: JSON.parse(read(join(root, 'docs', 'abnahme-grosses-update.json')) || '{"punkte":[]}'),
+    acceptance: Array.isArray(acceptance) ? acceptance : [],
     weaponArt,
     fonts: {
       display: font(root, 'lilita-one/files/lilita-one-latin-400-normal.woff2'),
@@ -86,280 +163,270 @@ export async function readDevInput(root: string, version: string): Promise<DevIn
 
 // ---------- small helpers ----------
 
-const SLOT_DE: Record<string, string> = { foot: 'Mauerfuß', wall: 'Mauer', gate: 'Torarm', shrine: 'Schrein', tower: 'Turmdach' };
+const SLOT_DE: Record<string, string> = { damage: 'Damage (links unten)', slow: 'Slow (links Mitte)', support: 'Support (links oben)', passive: 'Passive (rechts oben)', gate: 'Gate (über dem Tor)' };
 const TARGET_DE: Record<string, string> = { none: 'zielt nicht', front: 'vorderster Räuber', crowd: 'dichteste Gruppe', tough: 'zähster Räuber' };
-const DIFF_DE: Record<Difficulty, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
-const DIFFS: Difficulty[] = ['easy', 'medium', 'hard'];
 
+export const num = (v: number, digits = 2): string => {
+  const r = Number(v.toFixed(digits));
+  return String(r).replace('.', ',');
+};
+const fmtVal = (v: unknown): string => typeof v === 'number' ? num(v) : typeof v === 'boolean' ? (v ? 'ja' : 'nein') : esc(String(v));
 const table = (head: string[], rows: string[][], cls = ''): string =>
   `<div class="scroll"><table${cls ? ` class="${cls}"` : ''}><thead><tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>`
   + rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('') + '</tbody></table></div>';
-
 const enemyName = (t: string): string => esc(ENEMIES[t as EnemyType]?.name ?? t);
-const pct = (v: number): string => `${num(v * 100, 0)} %`;
+const seconds = (s: number | null): string => (s === null ? '–' : s >= 60 ? `${num(s / 60, 1)} min` : `${num(s, 0)} s`);
+
+/** What changes from the tier before: switches and numbers with their change in per cent. */
+export function tierChanges(def: WeaponDef, tier: number): string {
+  if (tier <= 1) return 'Start';
+  const now = def.tiers[tier - 1] as unknown as Record<string, unknown>;
+  const before = def.tiers[tier - 2] as unknown as Record<string, unknown>;
+  const parts: string[] = [];
+  for (const [k, v] of Object.entries(now)) {
+    if (k === 'note') continue;
+    const b = before[k];
+    if (v === b) continue;
+    if (typeof v === 'number' && typeof b === 'number') {
+      const pct = b === 0 ? '' : ` (${v > b ? '+' : ''}${num(((v - b) / Math.abs(b)) * 100, 0)} %)`;
+      parts.push(`${k} ${num(b)} → ${num(v)}${pct}`);
+    } else parts.push(`${k} ${fmtVal(b)} → ${fmtVal(v)}`);
+  }
+  return parts.join(' · ') || '–';
+}
+
+/** Cheese of everything that costs cheese: all weapons plus the stations. Must be 500. */
+export function cheeseSum(): { weapons: number; stations: number; total: number } {
+  const weapons = WEAPONS.filter((w) => w.enabled).reduce((a, w) => a + w.cheesePrice, 0);
+  const stations = STATION_IDS.reduce((a, id) => a + STATIONS[id].cheesePrice, 0);
+  return { weapons, stations, total: weapons + stations };
+}
 
 // ---------- sections ----------
 
-function campaignSection(d: CampaignData): string {
-  const cards = d.levels.map((l) => {
-    const unlocks = d.unlocks.filter((u) => u.level === l.id).map((u) => unlockText(u, d));
-    const types = ENEMY_TYPES.filter((t) => l.days.some((day) => (day.counts[t] ?? 0) > 0 || (day.big[t] ?? 0) > 0));
-    const rows = types.map((t) => [enemyName(t) + (l.newEnemies.includes(t) ? ' <span class="tag new">neu</span>' : ''),
-      ...l.days.map((day) => {
-        const n = day.counts[t] ?? 0;
-        const big = day.big[t] ?? 0;
-        return `${n || ''}${big ? ` <span class="tag boss">+${big} Riese</span>` : ''}`;
-      })]);
-    rows.push(['<strong>Zusammen</strong>', ...l.days.map((day) => `<strong>${dayTotal(day.counts)}</strong>`)]);
-    const head = ['Räuber', ...l.days.map((day, i) => `Tag ${i + 1}${day.night ? ' 🌙' : ''}`)];
-    const badges = [
-      l.boss ? `<span class="tag boss">Boss</span>` : '',
-      l.newEnemies.length ? `<span class="tag new">neu: ${l.newEnemies.map(enemyName).join(', ')}</span>` : '',
-      l.twist ? `<span class="tag twist">${esc(l.twist.label)}</span>` : '',
-      unlocks.length ? `<span class="tag unlock">🔓 ${esc(unlocks.join(', '))}</span>` : '',
-    ].join(' ');
-    const search = [l.id, l.name, LANDSCAPE_DE[l.landscape], l.boss?.name ?? '', twistText(l.twist, d), unlocks.join(' '), l.newEnemies.map((t) => ENEMIES[t].name).join(' ')].join(' ').toLowerCase();
-    const kinds = [l.boss ? 'boss' : '', l.newEnemies.length ? 'new' : '', l.twist ? 'twist' : '', unlocks.length ? 'unlock' : ''].join(' ');
-    const extra = [
-      `Landschaft: ${esc(LANDSCAPE_DE[l.landscape] ?? l.landscape)}`,
-      `Stärke ×${num(l.power)}`,
-      `${l.stars} ★ beim ersten Sieg`,
-      l.startGold ? `Startgold ${l.startGold}` : '',
-      l.marketOnly ? `Markt nur: ${esc(l.marketOnly.join(', '))}` : '',
-      d.overrides[l.id] ? `✎ von Hand geändert: ${esc(d.overrides[l.id].join(', '))}` : '',
-    ].filter(Boolean).join(' · ');
-    return `<details class="lvl" id="level-${l.id}" data-search="${esc(search)}" data-kinds="${kinds}">
-<summary><span class="num">${l.id}</span><span class="lname">${esc(l.name)}</span><span class="meta">${esc(LANDSCAPE_DE[l.landscape] ?? '')} · ${l.days.length} Tage · ${l.stars} ★</span> ${badges}</summary>
-<div class="body">${l.boss ? `<p><strong>Boss: ${esc(bossText(l, d))}</strong> – <em>${esc(l.boss.line)}</em></p>` : ''}
-${l.twist ? `<p>Besonderheit: ${esc(twistText(l.twist, d))}</p>` : ''}
-<p class="small">${extra}</p>
-${l.story ? `<p class="story">„${esc(l.story)}“</p>` : ''}
-${table(head, rows, 'compact days')}</div></details>`;
-  }).join('\n');
-  const curve = table(['Wert', 'Zahl'], Object.entries(d.curve).map(([k, v]) => [`<code>${k}</code>`, num(v)]));
-  return `<section id="kampagne"><h2>Kampagne</h2>
-<p>Alle 100 Level mit allen Räubern je Tag (allein gespielt; zu zweit kommen mehr). Antippen klappt ein Level auf. Dasselbe als Tabelle: <code>docs/KAMPAGNE-TABELLE.md</code>. Ein Level ändern: <code>LEVEL_OVERRIDES</code> in <code>src/config/worlds/fondue/campaign.ts</code>.</p>
-<div class="filter"><label>Suchen oder Level-Nummer <input id="q" type="search" inputmode="search" placeholder="z. B. 40, Boss-Name, Sumpf"></label>
-<label>Zeigen <select id="kind"><option value="">alle Level</option><option value="boss">nur Boss-Level</option><option value="new">nur mit neuen Räubern</option><option value="twist">nur mit Besonderheit</option><option value="unlock">nur mit Freischaltung</option></select></label>
-<span id="count" class="small"></span></div>
-<div id="levels">${cards}</div>
-<details class="box"><summary>Die Kurve (<code>CURVE</code>)</summary>${curve}</details></section>`;
-}
-
-/** Endless numbers: the count span per day and difficulty, and how often each raider shows up. */
-function endlessSection(e: EndlessDef): string {
-  const maxDay = 40;
-  const s = e.countSpread;
-  const countRows: string[][] = [];
-  for (let day = 1; day <= maxDay; day++) {
-    const row = [String(day)];
-    for (const diff of DIFFS) {
-      const base = enemyCountForDay(day, DIFFICULTIES[diff].count, 1);
-      row.push(`${Math.round(base * (1 - s))}–${Math.round(base * (1 + s))}`);
-    }
-    const coop = enemyCountForDay(day, DIFFICULTIES.medium.count, 2);
-    row.push(`${Math.round(coop * (1 - s))}–${Math.round(coop * (1 + s))}`);
-    countRows.push(row);
-  }
-
-  // How often each type comes: many runs with fixed seeds, so the page is the same every time.
-  const runs = 300;
-  const planner = new EndlessPlanner(e, DIFFICULTIES.medium.count);
-  const share: number[][] = Array.from({ length: maxDay }, () => ENEMY_TYPES.map(() => 0));
-  const present: number[][] = Array.from({ length: maxDay }, () => ENEMY_TYPES.map(() => 0));
-  for (let seed = 1; seed <= runs; seed++) {
-    for (let day = 1; day <= maxDay; day++) {
-      const plan = planner.plan(day, { seed, players: 1 }, new Rng(daySeed(seed, day)));
-      const counts = ENEMY_TYPES.map(() => 0);
-      for (const entry of plan.entries) counts[ENEMY_TYPES.indexOf(entry.type)]++;
-      const total = plan.entries.length || 1;
-      counts.forEach((n, i) => { share[day - 1][i] += n / total; if (n > 0) present[day - 1][i]++; });
-    }
-  }
-  const typeRows = share.map((row, d) => [String(d + 1), ...row.map((v, i) => {
-    const p = present[d][i] / runs;
-    if (p === 0) return '';
-    const [lo, hi] = e.types[ENEMY_TYPES[i]].firstDay;
-    const first = d + 1 >= lo && d + 1 <= hi ? ' first' : '';
-    return `<span class="sh${first}">${num((v / runs) * 100, 1)} %${p < 0.995 ? `<small> in ${pct(p)}</small>` : ''}</span>`;
-  })]);
-  const firstRows = ENEMY_TYPES.map((t) => {
-    const def = e.types[t];
-    return [enemyName(t), `${def.firstDay[0]}–${def.firstDay[1]}`, String(def.firstCount), pct(def.extraChance), num(def.weight), String(def.maxPerDay)];
-  });
-  const miles = DIFFS.map((diff) => [DIFF_DE[diff], e.milestones[diff].map((m) => `Tag ${m.day}: ${m.stars} ★`).join(' · '), String(e.milestones[diff].reduce((a, m) => a + m.stars, 0))]);
-  return `<section id="endlos"><h2>Endlos</h2>
-<p>Die Zahlen kommen aus <code>src/config/worlds/fondue/endless.ts</code> und <code>src/config/waves.ts</code>. Die Räuberzahl eines Tages schwankt um ±${pct(s)}. Endlos nutzt ${e.onlyUnlockedWeapons ? 'nur freigeschaltete Waffen' : 'alle Waffen und alle fünf Slots, egal wie weit die Kampagne ist'}${e.availableFromLevel ? ` und öffnet nach Level ${e.availableFromLevel}` : ' und ist von Anfang an offen'}.</p>
-<h3>Erstauftritte</h3>
-<p class="small">Jeder Lauf würfelt einmal, an welchem Tag ein Räuber zum ersten Mal kommt. An diesem Tag kommen „Anzahl“ Stück, mit der Chance „eins mehr“ einer mehr.</p>
-${table(['Räuber', 'Erster Tag', 'Anzahl', 'eins mehr', 'Gewicht', 'höchstens je Tag'], firstRows)}
-<h3>Räuber je Tag</h3>
-${table(['Tag', 'Easy', 'Medium', 'Hard', 'Medium zu zweit'], countRows)}
-<h3>Anteil jedes Räubers (Medium, allein)</h3>
-<p class="small">Durchschnittlicher Anteil an allen Räubern des Tages aus ${runs} Läufen. „in 40 %“: Der Räuber ist nur in so vielen Läufen an diesem Tag schon da. Gelb: Tag liegt in der Spanne seines Erstauftritts.</p>
-${table(['Tag', ...ENEMY_TYPES.map(enemyName)], typeRows, 'compact shares')}
-<h3>Sterne im Endlos-Modus</h3>
-<p class="small">Einmalig je Schwierigkeit, wenn der Tag zum ersten Mal erreicht wird.</p>
-${table(['Schwierigkeit', 'Meilensteine', 'zusammen'], miles)}</section>`;
-}
-
-function weaponSection(unlocks: CampaignData, art: Record<string, string>): string {
-  const unlockLevel = (id: string) => unlocks.unlocks.find((u) => u.kind === 'weapon' && u.weapon === id)?.level;
-  const cards = WEAPONS.map((w: WeaponDef) => {
+function weaponSection(art: Record<string, string>): string {
+  const overview = SLOTS.map((s) => {
+    const list = WEAPONS.filter((w) => w.slot === s.role);
+    return list.map((w) => [esc(SLOT_DE[s.role] ?? s.role), `<a href="#waffe-${w.id}">${esc(w.name)}</a>`, w.kind, String(w.unlockLevel || 'Start'), String(w.cheesePrice), `× ${num(w.goldScale)}`, w.enabled ? 'ja' : '<strong>nein</strong>']);
+  }).flat();
+  const cards = WEAPONS.map((w) => {
     const rows = (w.tiers as unknown as Record<string, unknown>[]).map((tier, i) => {
-      const stats = Object.entries(tier).filter(([k]) => k !== 'cooldown' && k !== 'note')
-        .map(([k, v]) => `${k} ${typeof v === 'number' ? num(v) : typeof v === 'boolean' ? (v ? 'ja' : 'nein') : esc(String(v))}`).join(' · ');
-      const price = i === 0 ? `${w.buyGold} Gold${w.buyOfferings ? ` + ${w.buyOfferings} Offerings` : ''}` : (() => { const p = upgradePrice(w, i + 1); return `${p.gold} Gold${p.offerings ? ` + ${p.offerings} Offerings` : ''}`; })();
-      return [String(i + 1), `${num(Number(tier.cooldown))} s`, `<span class="small">${stats}</span>`, esc(String(tier.note)), price, i === 0 ? 'Käse' : `${WEAPON_TIER_GOLD[i] ?? 0} Gold × Preisfaktor${i === 6 ? ` + ${CREST_COST} Wappen` : ''}`];
+      const t = i + 1;
+      const stats = Object.entries(tier).filter(([k]) => k !== 'note').map(([k, v]) => `${k} ${fmtVal(v)}`).join(' · ');
+      const price = t === 1 ? `${w.cheesePrice} Käse` : `${weaponTierGold(t, w.goldScale)} Gold${tierCrests(t) ? ` + ${tierCrests(t)} Wappen` : ''}`;
+      return [String(t), esc(String(tier.note ?? '')), `<span class="small">${tierChanges(w, t)}</span>`, `<span class="small">${stats}</span>`, price];
     });
-    const lvl = unlockLevel(w.id);
     const img = art[w.id] ? `<img class="wart" alt="" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(art[w.id])}">` : '';
     return `<article class="card weapon${w.enabled ? '' : ' off'}" id="waffe-${w.id}">
-<header>${img}<div><h3>${esc(w.name)} <code>${w.id}</code>${w.enabled ? '' : ' <span class="tag boss">abgeschaltet</span>'}</h3>
-<p class="small">Slot: ${SLOT_DE[w.slotType] ?? w.slotType} · Art: ${w.kind} · Ziel: ${TARGET_DE[w.target] ?? w.target} · ${lvl === undefined ? 'nicht in der Freischalt-Tabelle' : lvl === 0 ? 'von Anfang an' : `frei nach Level ${lvl}`}</p>
+<header>${img}<div><h3>${esc(w.name)} <code>${w.id}</code></h3>
+<p class="small">Slot: ${esc(SLOT_DE[w.slot] ?? w.slot)} · Art: ${w.kind} · Ziel: ${TARGET_DE[w.target] ?? w.target} · ${w.unlockLevel ? `kaufbar ab Sieg in Level ${w.unlockLevel}` : 'von Anfang an'} · ${w.cheesePrice} Käse · Preisfaktor ${num(w.goldScale)}</p>
 <p>${esc(w.desc)}</p></div></header>
-${table(['Stufe', 'Abklingen', 'Werte', 'Was die Stufe bringt', 'Preis im Endlos-Lauf', 'Sterne im Arsenal'], rows, 'compact wtiers')}</article>`;
+${table(['Stufe', 'Was die Stufe bringt', 'Änderung zur Stufe davor', 'Alle Werte', 'Preis'], rows, 'compact wtiers')}</article>`;
   }).join('\n');
   return `<section id="waffen"><h2>Waffen</h2>
-<p>Alle ${WEAPONS.length} Waffen aus <code>src/config/weapons.ts</code> mit allen ${MAX_TIER} Stufen. In der Kampagne kauft man eine Waffe im Level einmal für Gold (Preis bei Stufe 1) und sie hat ihre dauerhafte Stufe; Stufen kosten dort Sterne. Im Endlos-Lauf kosten Stufen Gold und Offerings.</p>
+<p>Alle ${WEAPONS.length} Waffen aus <code>src/config/weapons.ts</code>, je ${MAX_TIER} Stufen. Stufe 1 wird mit Käse freigeschaltet, Stufen 2 bis 7 kosten Gold, Stufe 7 zusätzlich Wappen. Werte ausprobieren: Entwickler-Menü im Spiel, „Weapon editor“.</p>
+${table(['Slot', 'Waffe', 'Art', 'Freischalt-Level', 'Käse', 'Goldfaktor', 'aktiv'], overview)}
 ${cards}</section>`;
 }
 
-function enemySection(firstLevel: Record<string, number>): string {
+function tierSection(): string {
+  const gold = WEAPON_TIER_GOLD.map((g, i) => [String(i + 1), i === 0 ? 'Käse (Freischalten)' : `${g} Gold × Goldfaktor`, i + 1 === MAX_TIER ? `${CREST_COST} ${CURRENCIES.crests.name}` : '–']);
+  const caps = TIER_CAP_BY_LEVEL.map((c) => [c.afterLevel === 0 ? 'Start' : `nach Level ${c.afterLevel}`, `Stufe ${c.cap}`]);
+  caps.push(['mit dem Eagle Perch', `Stufe ${MAX_TIER}`]);
+  const castle = CASTLE_TIERS.map((c, i) => [String(i + 1), esc(c.name), String(c.hp), `${c.gold} Gold${c.crests ? ` + ${c.crests} Wappen` : ''}`, `<span class="small">${esc(c.desc)}</span>`]);
+  const hands = HANDS.map((h, i) => [String(i + 1), num(h.strength), `${h.gold} Gold${h.crests ? ` + ${h.crests} Wappen` : ''}`, `<span class="small">${esc(h.note)}</span>`]);
+  const stations = STATION_IDS.map((id) => {
+    const s = STATIONS[id];
+    return [esc(s.name), `Level ${s.unlockLevel}`, `${s.cheesePrice} Käse`, s.tiers.map((t, i) => `${i + 1}: ${t.gold} Gold – ${esc(t.note)}`).join('<br>'), `<span class="small">${esc(s.desc)}</span>`];
+  });
+  return `<section id="stufen"><h2>Stufen, Preise, Burg und Hand</h2>
+<h3>Waffenstufen (<code>src/config/tiers.ts</code>)</h3>
+${table(['Stufe', 'Gold', 'Wappen'], gold)}
+<h3>Stufen-Deckel je Kampagnen-Abschnitt</h3>
+<p class="small">Höchste kaufbare Stufe für Waffen, Burg und Hand. So kann Endlos-Gold die Kampagne nicht überrollen.</p>
+${table(['ab', 'höchste Stufe'], caps)}
+<h3>Burg (Tor)</h3>
+${table(['Stufe', 'Name', 'Torleben', 'Preis', 'Beschreibung'], castle)}
+<h3>Hand</h3>
+<p class="small">Ein Yeti braucht zusammen eine Stärke von ${num(HAND_RULES.yetiLift)}; mehrere Hände zählen zusammen.</p>
+${table(['Stufe', 'Stärke', 'Preis', 'Beschreibung'], hands)}
+<h3>Stationen</h3>
+${table(['Station', 'kaufbar ab', 'Freischalten', 'Stufen', 'Beschreibung'], stations)}</section>`;
+}
+
+function enemySection(): string {
   const rows = ENEMY_TYPES.map((t) => {
-    const e = ENEMIES[t];
-    return [`<strong>${esc(e.name)}</strong><br><code>${t}</code>`, String(firstLevel[t] ?? '–'), String(e.hp), String(e.speed), `${e.strike} / ${num(e.strikeEvery)} s`, String(e.range), num(e.mass), String(e.gold), String(e.score), e.grabbable ? 'ja' : 'nein', `<span class="small">${esc(e.tip)}</span>`];
+    const e = ENEMIES[t] as unknown as Record<string, unknown>;
+    const v = (k: string) => (k in e ? fmtVal(e[k]) : '–');
+    return [`<strong>${enemyName(t)}</strong><br><code>${t}</code>`, v('hp'), v('speed'), `${v('strike')} / ${v('strikeEvery')} s`, v('range'), v('mass'), v('gold'), v('grabbable'), `<span class="small">${esc(String(e.tip ?? ''))}</span>`];
   });
   return `<section id="gegner"><h2>Gegner</h2>
-<p>Aus <code>src/config/enemies.ts</code>. Gewicht: 1 = Pothelm; schwerere Räuber fliegen beim gleichen Wisch kürzer. Lebenspunkte zählen nur gegen Waffen; ein Wurf ignoriert sie.</p>
-${table(['Räuber', 'Erstes Level', 'Leben', 'Tempo', 'Schlag / alle', 'Reichweite', 'Gewicht', 'Gold', 'Punkte', 'greifbar', 'Tipp im Spiel'], rows, 'compact')}</section>`;
+<p>Aus <code>src/config/enemies.ts</code>. Gewicht 1 = Pothelm; Lebenspunkte zählen nur gegen Waffen, ein tödlicher Wurf ignoriert sie.</p>
+${table(['Räuber', 'Leben', 'Tempo', 'Schlag / alle', 'Reichweite', 'Gewicht', 'Gold', 'greifbar', 'Tipp im Spiel'], rows, 'compact')}</section>`;
 }
 
-function unlockSection(d: CampaignData): string {
-  let stars = 0;
-  const starsBy: number[] = [0];
-  for (const l of d.levels) { stars += l.stars; starsBy[l.id] = stars; }
-  const rows = [...d.unlocks].sort((a, b) => a.level - b.level).map((u) => [u.level === 0 ? 'Start' : String(u.level), esc(unlockText(u, d)), u.level === 0 ? '0' : String(starsBy[u.level] ?? '')]);
-  const pace = d.levels.filter((l) => l.id % 10 === 0).map((l) => [String(l.id), String(starsBy[l.id])]);
-  const hands = HANDS.map((h, i) => [String(i + 1), num(h.strength), `${h.gold} Gold${h.crests ? ` + ${h.crests} Wappen` : ''}`, esc(h.note)]);
-  const gates = keep.CASTLE_TIERS.map((g, i) => [String(i + 1), esc(g.name), String(g.hp), `${g.gold} Gold${g.crests ? ` + ${g.crests} Wappen` : ''}`]);
-  const caps = TIER_CAP_BY_LEVEL.map((c) => `ab Sieg in Level ${c.afterLevel}: Stufe ${c.cap}`).join(' · ');
-  return `<section id="freischalten"><h2>Freischaltungen, Käse, Gold und Wappen</h2>
-<p>Slots öffnen nach Siegen (Tabelle <code>src/config/worlds/fondue/unlocks.ts</code>), Waffen und Stationen werden ab ihrem Level mit Käse freigeschaltet. Die Spalte rechts ist ein Überbleibsel der alten Sterne und fällt mit F2 weg.</p>
-${table(['Level', 'Freischaltung', 'alt: Sterne bis dahin'], rows)}
-<h3>Wirtschaft v0.3</h3>
-<ul>
-<li>Käse: bis zu 5 je Level, jeder nur einmal, 500 insgesamt; alles, was Käse kostet, kostet zusammen 500.</li>
-<li>Gold: Waffenstufen 2 bis 7 kosten ${WEAPON_TIER_GOLD.slice(1).join(' / ')} Gold × Preisfaktor der Waffe; Stufe 7 zusätzlich ${CREST_COST} Wappen.</li>
-<li>Stufen-Deckel: ${caps}; Stufe 7 erst mit dem Eagle Perch.</li>
-<li>Yeti: zwei Hände heben ihn gemeinsam ab einer Stärke von zusammen ${num(HAND_RULES.yetiLift)}.</li>
-</ul>
-<div class="two">${table(['nach Level', 'Sterne bis dahin'], pace)}
-${table(['Hand', 'Stärke', 'Preis', 'Beschreibung'], hands)}</div>
-<h3>Tore</h3>
-${table(['Stufe', 'Tor', 'Leben', 'Preis im Level'], gates)}</section>`;
+function levelSection(input: DevInput): string {
+  const byLevel = new Map<number, string[]>();
+  for (const u of input.unlocks) byLevel.set(u.level, [...(byLevel.get(u.level) ?? []), u.text]);
+  const unlockRows = [...byLevel.entries()].sort(([a], [b]) => a - b).map(([l, list]) => [l === 0 ? 'Start' : String(l), esc(list.join(', '))]);
+  let levels = `<p>Die Level-Tabelle ist gerade nicht lesbar${input.levelError ? ` (<code>${esc(input.levelError)}</code>)` : ''}.</p>`;
+  if (input.levels) {
+    const L = input.levels;
+    const total = L.reduce((a, l) => a + (l.targetSeconds ?? 0), 0);
+    const hasWaves = L.some((l) => l.waves !== null);
+    const rows = L.map((l) => [String(l.id), `${esc(l.name)}${l.boss ? ' <span class="tag boss">Boss</span>' : ''}`,
+      hasWaves ? String(l.waves ?? '–') : String(l.days ?? '–'), l.raiders === null ? '–' : String(l.raiders), seconds(l.targetSeconds),
+      `<span class="small">${esc(l.challenges.join(' · ') || '–')}</span>`, esc((byLevel.get(l.id) ?? []).join(', '))]);
+    levels = `<p>${L.length} Level, geplante Dauer zusammen ${seconds(total)}. „Nach dem Sieg frei“ gilt ab dem Sieg in diesem Level.</p>
+${table(['Level', 'Name', hasWaves ? 'Wellen' : 'Tage', 'Räuber allein', 'geplante Dauer', 'Challenges', 'nach dem Sieg frei'], rows, 'compact')}`;
+  }
+  return `<section id="level"><h2>Level und Wellen</h2>
+<p>Aus <code>src/config/worlds/fondue/campaign.ts</code>. Die Werte werden beim Bau der Seite gelesen.</p>
+${levels}
+<h3>Freischaltungen</h3>
+<p class="small">Aus <code>src/config/worlds/fondue/unlocks.ts</code>, <code>slots.ts</code>, <code>weapons.ts</code> und <code>keep.ts</code>.</p>
+${table(['nach Level', 'Freischaltung'], unlockRows)}</section>`;
 }
 
-function acceptanceSection(a: Acceptance): string {
-  const all = a.punkte ?? [];
-  const done = all.filter((p) => p.erledigt).length;
-  const groups = new Map<string, typeof all>();
-  for (const p of all) { if (!groups.has(p.abschnitt)) groups.set(p.abschnitt, []); groups.get(p.abschnitt)!.push(p); }
-  const rows = [...groups.entries()].map(([g, list]) => {
-    const n = list.filter((p) => p.erledigt).length;
-    return [esc(g), `${n} / ${list.length}`, `<span class="bar"><span style="width:${list.length ? Math.round((n / list.length) * 100) : 0}%"></span></span>`];
-  });
-  const lists = [...groups.entries()].map(([g, list]) => `<details class="box"><summary>Abschnitt ${esc(g)} (${list.filter((p) => p.erledigt).length} / ${list.length})</summary><ul class="checks">`
-    + list.map((p) => `<li class="${p.erledigt ? 'done' : ''}"><span class="mark">${p.erledigt ? '✓' : '○'}</span> <code>${esc(p.id)}</code> ${inline(p.text)}${p.beleg ? `<br><span class="small">Beleg: ${inline(p.beleg)}</span>` : ''}</li>`).join('')
-    + '</ul></details>').join('\n');
-  return `<section id="abnahme"><h2>Abnahmeliste</h2>
-<p>Aus <code>docs/abnahme-grosses-update.json</code>. Ein Punkt gilt nur mit echtem Beleg als erledigt.</p>
-<p class="big">${done} von ${all.length} erledigt</p>
-<span class="bar wide"><span style="width:${all.length ? Math.round((done / all.length) * 100) : 0}%"></span></span>
-${table(['Abschnitt', 'erledigt', ''], rows)}
-${lists}</section>`;
+function cheeseSection(levelCount: number | null): string {
+  const c = cheeseSum();
+  const ok = c.total === 500;
+  return `<section id="kaese"><h2>Käse-Summe</h2>
+<p class="big ${ok ? 'good' : 'bad'}" id="cheeseSum">${c.total} Käse ${ok ? '✓' : '✗ (muss 500 sein)'}</p>
+${table(['Posten', 'Käse'], [['Alle Waffen', String(c.weapons)], ['Great Cauldron und Eagle Perch', String(c.stations)], ['<strong>Zusammen</strong>', `<strong>${c.total}</strong>`],
+    ['In der Kampagne zu verdienen', levelCount === null ? '–' : `${levelCount} Level × 5 = ${levelCount * 5}`]])}</section>`;
+}
+
+function decisionCard(d: Decision): string {
+  const options = d.options.map((o) => `<label class="opt"><input type="radio" name="dec-${d.id}" value="${esc(o.id)}" data-label="${esc(o.label)}"> ${esc(o.label)}${o.id === d.choice ? ' <span class="tag unlock">gebaut</span>' : ''}</label>`).join('');
+  return `<fieldset class="card decision" data-decision="${d.id}" data-title="${esc(d.title)}">
+<legend><strong>${d.id}</strong> ${esc(d.title)}${d.from ? ` <span class="small">(früher ${d.from})</span>` : ''}${d.choice === null ? ' <span class="tag boss">offen</span>' : ''}</legend>
+<p>${esc(d.question)}</p>
+<p class="small">Wahl der Leitung: ${d.choice === null ? 'noch offen' : esc(d.options.find((o) => o.id === d.choice)?.label ?? d.choice)}. ${inline(d.reason)}</p>
+<div class="opts">${options}</div>
+<textarea class="note" data-note="${d.id}" rows="2" placeholder="Eure Notiz (frei)"></textarea></fieldset>`;
+}
+
+function decisionSection(): string {
+  const legacy = LEGACY_DECISIONS.map((l) => [l.id, esc(l.title), l.verdict === 'kept' ? 'gilt weiter' : l.verdict === 'decided' ? 'entschieden' : 'hinfällig', esc(l.why), l.to ? `<a href="#dec-${l.to}">${l.to}</a>` : '–']);
+  return `<section id="entscheidungen"><h2>Entscheidungen</h2>
+<p>Wählt je Entscheidung eine Möglichkeit und schreibt bei Bedarf eine Notiz. „Issue erstellen“ öffnet ein vorausgefülltes GitHub-Issue mit dem Titel-Präfix <code>[Entscheidungen]</code>; lange Antworten werden auf mehrere Issues verteilt. Künftige Aufträge lesen diese Issues. Entwürfe bleiben in diesem Browser gespeichert. Die Liste steht auch in <code>docs/OFFENE-ENTSCHEIDUNGEN.md</code> und kommt aus <code>src/config/decisions.ts</code>.</p>
+<form id="decisions" onsubmit="return false">
+${DECISIONS_V3.map((d) => `<div id="dec-${d.id}">${decisionCard(d)}</div>`).join('\n')}
+<div class="row"><button type="button" id="makeIssues">Issue erstellen</button> <button type="button" id="clearDrafts" class="secondary">Entwurf leeren</button> <span id="draftState" class="small"></span></div>
+<div id="issueLinks"></div>
+</form>
+<h3>Was aus D-01 bis D-21 wurde</h3>
+${table(['Nr', 'Eintrag', 'Stand', 'Warum', 'jetzt'], legacy, 'compact')}</section>`;
+}
+
+function roadmapSection(): string {
+  const now = `<div class="card"><h3>v${esc(GAME_VERSION)} – dieses Update</h3><p>Dauerhafte Burg, Käse, Gold und Wappen, Wellen statt Tage, 25 Waffen mit 7 Stufen, Shop statt Markt, Entwickler-Werkzeuge. Läuft unter <a href="${NEXT_URL}">/fondue/next/</a>.</p></div>`;
+  return `<section id="fahrplan"><h2>Fahrplan bis v1.0</h2>
+<p>v0.1 Classic (<a href="${CLASSIC_URL}">/fondue/classic/</a>), v0.2 heutiger Live-Stand (<a href="${LIVE_URL}">/fondue/</a>), v0.3 dieses Update. v1.0 ist der Store-Start.</p>
+${now}
+${ROADMAP.map((r) => `<div class="card"><h3>${esc(r.version)} – ${esc(r.title)}</h3><ul>${r.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul></div>`).join('\n')}</section>`;
+}
+
+function acceptanceSection(a: AcceptanceItem[]): string {
+  if (a.length === 0) return '';
+  const done = a.filter((p) => p.status === 'erledigt').length;
+  const rows = a.map((p) => [`<code>${esc(p.id)}</code>`, esc(p.titel), esc(p.status), `<span class="small">${inline(p.pruefung)}</span>`, p.beleg ? `<span class="small">${inline(p.beleg)}</span>` : '']);
+  return `<section id="abnahme"><h2>Abnahmeliste v0.3</h2>
+<p>Aus <code>docs/v0.3/abnahme.json</code>. ${done} von ${a.length} erledigt; ein Punkt gilt nur mit echtem Beleg.</p>
+${table(['Nr', 'Punkt', 'Stand', 'Prüfung', 'Beleg'], rows, 'compact')}</section>`;
 }
 
 function css(f: DevInput['fonts']): string {
   const face = (name: string, data: string | undefined, weight: number) => data ? `@font-face{font-family:"${name}";src:url(data:font/woff2;base64,${data}) format("woff2");font-weight:${weight};font-display:swap}` : '';
   return `${face('Lilita One', f.display, 400)}${face('Nunito', f.body, 400)}${face('Nunito', f.bodyBold, 800)}
-:root{--bg:#fbeed0;--card:#fff6df;--ink:#2b2118;--muted:#6b5a48;--line:#e2cfa6;--accent:#2f7f7a;--gold:#e9b44c;--rust:#c8553d;--wood:#8a5a33;--wood-dark:#5e3b20;--plum:#6a3d6e;--hi:#fbe3a0;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#1d1712;--card:#2a211a;--ink:#f6ecd8;--muted:#bba88f;--line:#4a3a2b;--accent:#5cb8b0;--gold:#e9b44c;--rust:#e88068;--wood:#6b4527;--wood-dark:#3e2715;--plum:#b07ab5;--hi:#5a4720;color-scheme:dark}}
+:root{--bg:#fbeed0;--card:#fff6df;--ink:#2b2118;--muted:#6b5a48;--line:#e2cfa6;--accent:#2f7f7a;--gold:#e9b44c;--rust:#c8553d;--wood:#8a5a33;--wood-dark:#5e3b20;--hi:#fbe3a0;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#1d1712;--card:#2a211a;--ink:#f6ecd8;--muted:#bba88f;--line:#4a3a2b;--accent:#5cb8b0;--gold:#e9b44c;--rust:#e88068;--wood:#6b4527;--wood-dark:#3e2715;--hi:#5a4720;color-scheme:dark}}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:56px}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Nunito,system-ui,-apple-system,"Segoe UI",sans-serif}
-h1,h2,h3,h4{font-family:"Lilita One",Nunito,system-ui,sans-serif;font-weight:400;line-height:1.2;letter-spacing:.01em}
-h2{font-size:1.8rem;margin:2.2rem 0 .6rem;color:var(--accent)}h3{font-size:1.25rem;margin:1.6rem 0 .5rem}h4{font-size:1.05rem;margin:1.2rem 0 .4rem}
+h1,h2,h3{font-family:"Lilita One",Nunito,system-ui,sans-serif;font-weight:400;line-height:1.2}
+h2{font-size:1.8rem;margin:2.2rem 0 .6rem;color:var(--accent)}h3{font-size:1.25rem;margin:1.4rem 0 .5rem}
 a{color:var(--accent)}code{font-family:ui-monospace,Consolas,monospace;font-size:.85em;background:color-mix(in srgb,var(--line) 55%,transparent);padding:.05em .3em;border-radius:4px}
 header.top{background:linear-gradient(var(--wood),var(--wood-dark));color:#fff6df;padding:20px 16px 18px}
-header.top h1{margin:0;font-size:2rem;text-shadow:0 2px 0 rgba(0,0,0,.25)}header.top p{margin:.3rem 0 0;opacity:.9}
-.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.links a{background:var(--gold);color:#2b2118;text-decoration:none;font-weight:800;padding:8px 14px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
-nav{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:2px solid var(--line);display:flex;gap:4px;overflow-x:auto;padding:6px 10px;scrollbar-width:none}
+header.top h1{margin:0;font-size:2rem}header.top p{margin:.3rem 0 0;opacity:.9}
+.version{display:inline-block;background:var(--gold);color:#2b2118;font-weight:800;border-radius:999px;padding:2px 10px}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.links a{background:var(--gold);color:#2b2118;text-decoration:none;font-weight:800;padding:8px 14px;border-radius:999px}
+nav{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:2px solid var(--line);display:flex;gap:4px;overflow-x:auto;padding:6px 10px}
 nav a{white-space:nowrap;text-decoration:none;color:var(--ink);font-weight:800;font-size:.9rem;padding:6px 10px;border-radius:8px}nav a:hover{background:var(--line)}
 main{max-width:1100px;margin:0 auto;padding:0 16px 48px}
-.small{font-size:.85rem;color:var(--muted)}.big{font-size:1.4rem;font-weight:800;margin:.4rem 0}
+.small{font-size:.85rem;color:var(--muted)}.big{font-size:1.4rem;font-weight:800;margin:.4rem 0}.good{color:var(--accent)}.bad{color:var(--rust)}
 .scroll{overflow-x:auto;margin:.6rem 0;border:1px solid var(--line);border-radius:10px;background:var(--card)}
 table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{padding:6px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{position:sticky;top:0;background:color-mix(in srgb,var(--line) 60%,var(--card));font-weight:800;white-space:nowrap}tr:last-child td{border-bottom:0}
-table.compact td,table.compact th{padding:4px 7px}table.days td{white-space:nowrap}.wtiers td:nth-child(3){min-width:15em}.wtiers td:nth-child(4){min-width:13em}.wtiers td:nth-child(5){white-space:nowrap}table.shares td{white-space:nowrap}.sh.first{background:var(--hi);border-radius:4px;padding:0 3px}.sh small{color:var(--muted)}
+th{background:color-mix(in srgb,var(--line) 60%,var(--card));font-weight:800;white-space:nowrap}tr:last-child td{border-bottom:0}
+table.compact td,table.compact th{padding:4px 7px}.wtiers td:nth-child(2){min-width:12em}.wtiers td:nth-child(3){min-width:14em}.wtiers td:nth-child(5){white-space:nowrap}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}.stat b{display:block;font-family:"Lilita One",sans-serif;font-weight:400;font-size:1.7rem;color:var(--accent)}
-.filter{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:.6rem 0}.filter label{display:flex;flex-direction:column;font-size:.85rem;font-weight:800;gap:3px}
-input,select{font:inherit;padding:8px 10px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);min-width:min(260px,80vw)}
-details.lvl{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:6px 0}details.lvl[open]{border-color:var(--accent)}
-details.lvl summary{cursor:pointer;padding:9px 12px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;list-style:none}details summary::-webkit-details-marker{display:none}
-.num{font-family:"Lilita One",sans-serif;font-size:1.25rem;min-width:2.2em;color:var(--accent)}.lname{font-weight:800}.meta{font-size:.85rem;color:var(--muted)}
-details.lvl .body{padding:0 12px 10px}.story{font-style:italic;color:var(--muted)}
-.tag{display:inline-block;font-size:.75rem;font-weight:800;padding:1px 7px;border-radius:999px;background:var(--line);color:var(--ink)}
-.tag.boss{background:var(--rust);color:#fff}.tag.new{background:var(--accent);color:#fff}.tag.twist{background:var(--plum);color:#fff}.tag.unlock{background:var(--gold);color:#2b2118}
-details.box{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:8px 0;padding:0 12px}details.box summary{cursor:pointer;padding:9px 0;font-weight:800}
+.tag{display:inline-block;font-size:.75rem;font-weight:800;padding:1px 7px;border-radius:999px;background:var(--line);color:var(--ink)}.tag.boss{background:var(--rust);color:#fff}.tag.unlock{background:var(--gold);color:#2b2118}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}.card.off{opacity:.6}
 .weapon header{display:flex;gap:12px;align-items:flex-start}.weapon h3{margin:0 0 .2rem}.weapon p{margin:.2rem 0}.wart{width:72px;height:72px;object-fit:contain;flex:none;background:var(--bg);border-radius:12px;padding:4px}
-.two{display:grid;grid-template-columns:1fr;gap:10px}@media (min-width:760px){.two{grid-template-columns:1fr 2fr}}
-.bar{display:inline-block;width:120px;height:10px;border-radius:5px;background:var(--line);overflow:hidden;vertical-align:middle}.bar span{display:block;height:100%;background:var(--accent)}.bar.wide{width:100%;height:14px;border-radius:7px}
-ul.checks{list-style:none;padding:0}ul.checks li{padding:5px 0;border-bottom:1px solid var(--line)}ul.checks li.done .mark{color:var(--accent);font-weight:800}ul.checks .mark{color:var(--muted)}
-.md table{font-size:.85rem}.md td:first-child{white-space:nowrap}footer{text-align:center;color:var(--muted);font-size:.8rem;padding:24px 16px}`;
+fieldset.decision{min-width:0}fieldset.decision legend{padding:0 6px}.opts{display:flex;flex-direction:column;gap:4px;margin:6px 0}.opt{display:flex;gap:6px;align-items:flex-start;cursor:pointer}
+textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+button{font:inherit;font-weight:800;padding:10px 16px;border-radius:999px;border:0;background:var(--accent);color:#fff;cursor:pointer}button.secondary{background:var(--line);color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}#issueLinks a{display:block;margin:4px 0;font-weight:800;word-break:break-all}
+.md table{font-size:.85rem}footer{text-align:center;color:var(--muted);font-size:.8rem;padding:24px 16px}`;
 }
 
-const SCRIPT = `(function(){var q=document.getElementById('q'),k=document.getElementById('kind'),c=document.getElementById('count');var cards=[].slice.call(document.querySelectorAll('details.lvl'));
-function run(){var t=(q.value||'').trim().toLowerCase(),kind=k.value,n=0;var only=/^\\d+$/.test(t)?Number(t):0;cards.forEach(function(d){var ok=(!kind||d.dataset.kinds.indexOf(kind)>=0)&&(only?d.id==='level-'+only:d.dataset.search.indexOf(t)>=0);d.hidden=!ok;if(ok)n++;});c.textContent=n+' von '+cards.length+' Level';if(only){var el=document.getElementById('level-'+only);if(el){el.open=true;}}}
-q.addEventListener('input',run);k.addEventListener('change',run);run();
-function hash(){var m=/^#level-(\\d+)$/.exec(location.hash);if(m){var el=document.getElementById('level-'+m[1]);if(el){el.open=true;el.scrollIntoView();}}}window.addEventListener('hashchange',hash);hash();})();`;
+/** The browser part: drafts in localStorage, issue links from the answers. */
+function script(): string {
+  return `(function(){
+var buildIssueUrls = ${buildIssueUrls.toString()};
+var KEY=${JSON.stringify(DRAFT_KEY)}, BASE=${JSON.stringify(ISSUE_URL)}, MAX=${ISSUE_MAX}, VERSION=${JSON.stringify(`v${GAME_VERSION}`)};
+var cards=[].slice.call(document.querySelectorAll('[data-decision]'));
+var state=document.getElementById('draftState');
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}}
+function save(){var d={};cards.forEach(function(c){var id=c.dataset.decision;var r=c.querySelector('input[type=radio]:checked');var n=c.querySelector('textarea').value;if(r||n)d[id]={choice:r?r.value:'',note:n};});try{localStorage.setItem(KEY,JSON.stringify(d));state.textContent='Entwurf gespeichert';}catch(e){state.textContent='Entwurf kann hier nicht gespeichert werden';}}
+var draft=load();cards.forEach(function(c){var v=draft[c.dataset.decision];if(!v)return;if(v.choice){var r=c.querySelector('input[value="'+CSS.escape(v.choice)+'"]');if(r)r.checked=true;}c.querySelector('textarea').value=v.note||'';});
+document.getElementById('decisions').addEventListener('input',save);document.getElementById('decisions').addEventListener('change',save);
+document.getElementById('clearDrafts').addEventListener('click',function(){try{localStorage.removeItem(KEY);}catch(e){}cards.forEach(function(c){c.querySelectorAll('input[type=radio]').forEach(function(r){r.checked=false;});c.querySelector('textarea').value='';});state.textContent='Entwurf geleert';document.getElementById('issueLinks').innerHTML='';});
+document.getElementById('makeIssues').addEventListener('click',function(){
+  var answers=[];cards.forEach(function(c){var r=c.querySelector('input[type=radio]:checked');var n=c.querySelector('textarea').value.trim();if(!r&&!n)return;answers.push({id:c.dataset.decision,title:c.dataset.title,choice:r?r.dataset.label:'',note:n});});
+  var out=document.getElementById('issueLinks');out.innerHTML='';
+  if(!answers.length){out.textContent='Noch keine Antwort ausgefüllt.';return;}
+  var urls=buildIssueUrls(answers,{base:BASE,version:VERSION,maxLength:MAX});
+  urls.forEach(function(u,i){var a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';a.className='issue-link';a.textContent=urls.length>1?'Issue '+(i+1)+' von '+urls.length+' öffnen':'Issue öffnen';out.appendChild(a);});
+  if(urls.length===1)window.open(urls[0],'_blank','noopener');
+});
+})();`;
+}
 
 /** The whole page. Pure: the same input gives the same HTML. */
 export function renderDevPage(input: DevInput): string {
-  const d = input.campaign;
-  const bosses = d.levels.filter((l) => l.boss).length;
-  const totalStars = d.levels.reduce((a, l) => a + l.stars, 0);
-  const done = input.acceptance.punkte.filter((p) => p.erledigt).length;
+  const c = cheeseSum();
+  const open = DECISIONS_V3.filter((d) => d.choice === null).length;
   const stats = [
-    [String(d.levels.length), 'Level'], [String(bosses), 'Boss-Level'], [String(WEAPONS.filter((w) => w.enabled).length), 'Waffen'],
-    [String(ENEMY_TYPES.length), 'Räuberarten'], [String(totalStars), 'Sterne in der Kampagne'], [`${done}/${input.acceptance.punkte.length}`, 'Abnahme erledigt'],
+    [input.levels ? String(input.levels.length) : '–', 'Level'], [String(WEAPONS.filter((w) => w.enabled).length), 'Waffen'],
+    [String(ENEMY_TYPES.length), 'Räuberarten'], [`${c.total}`, 'Käse-Summe (Soll 500)'], [`${DECISIONS_V3.length} / ${open} offen`, 'Entscheidungen'],
   ].map(([n, l]) => `<div class="stat"><b>${n}</b>${l}</div>`).join('');
-  const nav = [['start', 'Start'], ['kampagne', 'Kampagne'], ['endlos', 'Endlos'], ['waffen', 'Waffen'], ['gegner', 'Gegner'], ['freischalten', 'Freischalten & Sterne'], ['balance', 'Balance'], ['entscheidungen', 'Entscheidungen'], ['abnahme', 'Abnahme']]
+  const nav = [['start', 'Start'], ['waffen', 'Waffen'], ['stufen', 'Stufen & Preise'], ['gegner', 'Gegner'], ['level', 'Level & Wellen'], ['kaese', 'Käse'], ['entscheidungen', 'Entscheidungen'], ['fahrplan', 'Fahrplan'], ['balance', 'Balance'], ['abnahme', 'Abnahme']]
     .map(([id, t]) => `<a href="#${id}">${t}</a>`).join('');
   return `<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex"><title>${esc(GAME_NAME)} – Entwickler-Übersicht</title>
+<meta name="robots" content="noindex"><title>${esc(GAME_NAME)} v${esc(GAME_VERSION)} – Entwickler-Übersicht</title>
 <style>${css(input.fonts)}</style></head><body>
-<header class="top" id="start"><h1>${esc(GAME_NAME)} – Entwickler-Übersicht</h1>
-<p>Automatisch erzeugt aus den Konfigurationsdateien am ${esc(input.generated)}, Stand <code>${esc(input.version)}</code>. Nicht von Hand ändern: <code>npm run dev-page</code>.</p>
-<div class="links"><a href="${LIVE_URL}">Spiel öffnen</a><a href="${CLASSIC_URL}">Classic-Version</a></div></header>
+<header class="top" id="start"><h1>${esc(GAME_NAME)} – Entwickler-Übersicht <span class="version" id="gameVersion">v${esc(GAME_VERSION)}</span></h1>
+<p>Automatisch erzeugt aus den Konfigurationsdateien am ${esc(input.generated)}, Stand <code>${esc(input.version)}</code>. Nicht von Hand ändern: <code>node scripts/dev-page.ts &lt;Ordner&gt;</code>.</p>
+<div class="links"><a href="${NEXT_URL}">v${esc(GAME_VERSION)} spielen</a><a href="${LIVE_URL}">Live-Stand</a><a href="${CLASSIC_URL}">Classic</a></div></header>
 <nav>${nav}</nav>
 <main>
 <div class="cards" style="margin-top:16px">${stats}</div>
-${campaignSection(d)}
-${endlessSection(input.endless)}
-${weaponSection(d, input.weaponArt)}
-${enemySection(d.firstLevel)}
-${unlockSection(d)}
+${weaponSection(input.weaponArt)}
+${tierSection()}
+${enemySection()}
+${levelSection(input)}
+${cheeseSection(input.levels ? input.levels.length : null)}
+${decisionSection()}
+${roadmapSection()}
 <section id="balance" class="md"><h2>Balance</h2>
-<p>Neueste Ergebnisse der Bots${input.balanceDate ? ` vom ${esc(input.balanceDate)}` : ''} (<code>npm run balance</code>, aus <code>docs/balance-latest.md</code>).</p>
+<p>Neueste Ergebnisse der Bots${input.balanceDate ? ` vom ${esc(input.balanceDate)}` : ''} (aus <code>docs/balance-latest.md</code>).</p>
 ${input.balanceMd ? markdown(input.balanceMd, 2) : '<p>Noch kein Balance-Lauf.</p>'}</section>
-<section id="entscheidungen" class="md"><h2>Offene Entscheidungen</h2>
-${input.decisionsMd ? markdown(input.decisionsMd, 2) : '<p>Die Liste fehlt noch.</p>'}</section>
 ${acceptanceSection(input.acceptance)}
 </main>
-<footer>${esc(GAME_NAME)} · erzeugt von <code>scripts/dev-page.ts</code></footer>
-<script>${SCRIPT}</script>
+<footer>${esc(GAME_NAME)} v${esc(GAME_VERSION)} · erzeugt von <code>scripts/dev-page.ts</code></footer>
+<script>${script()}</script>
 </body></html>
 `;
 }
