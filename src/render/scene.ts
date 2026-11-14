@@ -8,6 +8,7 @@ import type { Session } from '../game/session';
 import type { ViewEnemy, ViewHand, ViewProjectile, ViewState, ViewZone } from '../net/snapshot';
 import type { Meta, SimEvent } from '../sim/types';
 import { bindPointer, type PointerTracker } from '../input/pointer';
+import { secondHandSimulated } from '../config/flags';
 import { ShakeDetector } from '../input/shake';
 import { Background } from './background';
 import { CastleView } from './castleView';
@@ -76,6 +77,8 @@ export class GameScene extends Phaser.Scene {
   private flameViews = new Map<number, Phaser.GameObjects.Image[]>();
   private hands: HandView[] = [];
   private tracker!: PointerTracker;
+  /** The second finger, or the right mouse button with the developer switch (C9). */
+  private tracker2!: PointerTracker;
   /** The Keg Hauler my hand holds while it still has its keg, and how far the shake has got. */
   private shake = new ShakeDetector();
   private shakeId = -1;
@@ -113,8 +116,9 @@ export class GameScene extends Phaser.Scene {
     }).setOrigin(0.5);
     this.banner = this.add.container(640, -170, [banner, this.bannerText]).setDepth(95).setScrollFactor(0);
 
-    for (let i = 0; i < 2; i++) {
-      const img = this.add.image(0, 0, propKey('handOpen')).setScale(1 / TEX_SCALE).setDepth(100).setVisible(false).setTint(HAND_COLORS[i]);
+    // Two players, each with a first and a second hand (C9): hand p + players is player p's second.
+    for (let i = 0; i < 4; i++) {
+      const img = this.add.image(0, 0, propKey('handOpen')).setScale(1 / TEX_SCALE).setDepth(100).setVisible(false).setTint(HAND_COLORS[i % 2]);
       const label = this.add.text(0, 0, '', { fontFamily: FONT, fontSize: '18px', color: '#fff6df', stroke: '#2b2118', strokeThickness: 4 }).setOrigin(0.5, 1).setDepth(100).setVisible(false);
       this.hands.push({ img, label });
     }
@@ -170,7 +174,7 @@ export class GameScene extends Phaser.Scene {
 
   private bindInput() {
     const canvas = this.game.canvas;
-    const { tracker } = bindPointer(canvas, {
+    const { tracker, tracker2 } = bindPointer(canvas, {
       onMove: (t) => this.feedShake(t),
       windowMs: () => this.session?.meta()?.tuning.velWindowMs ?? 80,
       view: () => ({ width: this.cam.w, height: this.cam.h, offsetX: this.cam.x, offsetY: this.cam.y }),
@@ -199,8 +203,31 @@ export class GameScene extends Phaser.Scene {
         if (!s) return;
         s.localRelease(vx, vy);
       },
+      // The second hand: a weapon tap works with any finger; grabbing only with a second hand.
+      onDown2: (x, y) => {
+        const s = this.session;
+        if (!s || this.hooks.isInputBlocked()) return true;
+        const slot = this.castle.hitSlot(x, y, s.meta());
+        if (slot >= 0) {
+          if (s.view()?.phase === 'battle') { s.send({ k: 'fireSlot', slot }); this.audio.play('uiClick'); }
+          return true;
+        }
+        if (!s.secondHandReady()) return true;
+        s.setHand(x, y, 1);
+        s.localPress(x, y, 1);
+        return false;
+      },
+      onMove2: (t) => { if (t.pressed) this.session?.setHand(t.x, t.y, 1); },
+      onUp2: (x, y, vx, vy) => {
+        const s = this.session;
+        if (!s) return;
+        s.setHand(x, y, 1);
+        s.localRelease(vx, vy, 1);
+      },
+      mouseSecond: () => secondHandSimulated(this.session?.meta()?.flags),
     });
     this.tracker = tracker;
+    this.tracker2 = tracker2;
 
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
       const s = this.session;
@@ -275,6 +302,7 @@ export class GameScene extends Phaser.Scene {
     this.banner.setVisible(this.marketK === 0 && this.lobbyDive === 0);
 
     s.setHand(this.tracker.x, this.tracker.y);
+    if (this.tracker2.pressed) s.setHand(this.tracker2.x, this.tracker2.y, 1);
     // Alone, a hitstop can stop the world for real; a shared game must keep running for the other player.
     if (s.role !== 'solo' || now >= this.hitstopUntil) s.update(Math.min(100, deltaMs));
     this.fx.resetFloatBudget();
@@ -446,25 +474,33 @@ export class GameScene extends Phaser.Scene {
 
   private renderHands(view: ViewState, s: Session) {
     const meta = s.meta();
+    const players = Math.max(1, meta?.names.length ?? 1);
+    const mine = [s.handSlot(0), s.handSlot(1)];
+    this.hands.forEach((hv, i) => { if (i >= view.hands.length) { hv.img.setVisible(false); hv.label.setVisible(false); } });
     view.hands.forEach((h: ViewHand, i: number) => {
       const hv = this.hands[i];
       if (!hv) return;
-      const isMe = i === s.me;
-      const x = isMe ? this.tracker.x : h.x;
-      const y = isMe ? this.tracker.y : h.y;
+      const own = mine.indexOf(i);
+      const isMe = own >= 0;
+      const second = i >= players;
+      const t = own === 1 ? this.tracker2 : this.tracker;
+      const x = isMe ? t.x : h.x;
+      const y = isMe ? t.y : h.y;
       const blocked = isMe && this.hooks.isInputBlocked();
-      const visible = h.connected && !blocked && (view.phase !== 'gameover' && view.phase !== 'runWon');
+      // A second hand shows only while it is at work.
+      const working = !second || (isMe ? t.pressed : h.down || h.holding >= 0 || h.holdingProj >= 0);
+      const visible = working && h.connected && !blocked && (view.phase !== 'gameover' && view.phase !== 'runWon');
       // On a touch screen the player sees their own finger; only a mouse needs a hand as pointer.
       // The co-op partner's hand always shows: it is the only sign of where they grab.
-      const drawn = visible && !(isMe && this.tracker.touch);
+      const drawn = visible && !(isMe && t.touch);
       hv.img.setVisible(drawn);
-      hv.label.setVisible(drawn && view.hands.length > 1);
+      hv.label.setVisible(drawn && players > 1 && !second);
       if (!drawn) return;
-      const closed = h.down || h.holding >= 0 || h.holdingProj >= 0;
+      const closed = h.down || h.holding >= 0 || h.holdingProj >= 0 || (own === 1 && t.pressed);
       hv.img.setTexture(propKey(closed ? 'handClosed' : 'handOpen'));
-      hv.img.setTint(HAND_COLORS[i]);
+      hv.img.setTint(HAND_COLORS[(i % players) % HAND_COLORS.length]);
       hv.img.setPosition(x, y);
-      if (view.hands.length > 1) hv.label.setText(meta?.names[i] ?? '').setPosition(x, y - 40);
+      if (players > 1 && !second) hv.label.setText(meta?.names[i] ?? '').setPosition(x, y - 40);
     });
   }
 
