@@ -4,6 +4,7 @@
  * A quick tap no longer drops it.
  */
 import { describe, expect, it } from 'vitest';
+import { crestsFor } from '../../src/config/crests';
 import { BEHAVIOUR, ENEMIES } from '../../src/config/enemies';
 import { WORLD, perchX } from '../../src/config/field';
 import type { Sim } from '../../src/sim/sim';
@@ -81,7 +82,7 @@ describe('shaking a Keg Hauler', () => {
     sim.command({ k: 'pause', p: 0, paused: true });
     expect(eventsOf(shake(sim), 'kegLoose')).toHaveLength(0);
     sim.command({ k: 'pause', p: 0, paused: false });
-    sim.s.phase = 'victory';
+    sim.s.phase = 'runWon';
     expect(eventsOf(shake(sim), 'kegLoose')).toHaveLength(0);
     expect(e.armed).toBe(true);
   });
@@ -162,7 +163,8 @@ describe('a Keg Hauler on the eagle hook', () => {
     expect(sim.s.stats.kegBlastKills).toBe(1);
     // The hauler itself still goes to the eagle.
     runUntil(sim, () => e.dead, 300);
-    expect(sim.s.offerings).toBe(1);
+    expect(sim.s.stats.killsByCause.eagle).toBe(1);
+    expect(sim.s.crests).toBe(crestsFor('bomber'));
   });
 
   it('a Keg Hauler without a keg hangs there quietly', () => {

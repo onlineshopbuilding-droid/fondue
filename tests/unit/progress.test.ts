@@ -196,7 +196,7 @@ describe('equip (A1)', () => {
     const setup = CAMPAIGN.buildRun(p, { world: W, level: 1 }, { names: ['A'], fieldW: 1280, handTiers: [1] });
     expect(setup.start.loadout.slotWeapon[0]).toBe('wheel');
     expect(setup.start.loadout.weaponTier.wheel).toBe(3);
-    CAMPAIGN.reward({ runId: setup.rules.runId, won: true, devRun: false, names: ['A'], day: 1, score: 1, kills: 1, stats: setup.start.stats }, setup.rules, p, 'solo');
+    CAMPAIGN.reward({ runId: setup.rules.runId, won: true, devRun: false, names: ['A'], wave: 1, score: 1, kills: 1, gateShare: 1, stats: setup.start.stats }, setup.rules, p, 'solo');
     expect(p.weaponTier('wheel')).toBe(3);
 
     await p.flush();
@@ -259,8 +259,9 @@ describe('cheese (A2)', () => {
     const env = { names: ['A'], fieldW: 1280, handTiers: [1] };
     for (let i = 0; i < 2; i++) {
       const setup = CAMPAIGN.buildRun(p, { world: W, level: 1 }, env);
-      CAMPAIGN.reward({ runId: setup.rules.runId, won: true, devRun: false, names: ['A'], day: 1, score: 1, kills: 1, stats: setup.start.stats }, setup.rules, p, 'solo');
+      CAMPAIGN.reward({ runId: setup.rules.runId, won: true, devRun: false, names: ['A'], wave: 1, score: 1, kills: 1, gateShare: 1, stats: setup.start.stats }, setup.rules, p, 'solo');
     }
-    expect(p.data.wallet.cheese).toBe(1);
+    // Win and both gate cheese (full gate) the first time, nothing the second time.
+    expect(p.data.wallet.cheese).toBe(3);
   });
 });

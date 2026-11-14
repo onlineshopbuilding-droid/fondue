@@ -40,7 +40,7 @@ export class Sim {
     const start = setup.start;
     const fieldW = Math.max(FIELD.min, Math.min(FIELD.max, setup.fieldW ?? FIELD.min));
     this.s = {
-      tick: 0, phase: 'banner', phaseT: 0, wave: 0, waveT: 0, runT: 0, waveDone: false, pauseT: 0, emptyT: 0, pauseAfter: 0,
+      tick: 0, phase: 'banner', phaseT: 0, wave: 0, waveT: 0, runT: 0, waveDone: false, pauseT: 0, emptyT: 0, pauseAfter: 0, wavesFrozen: false,
       gold: start.gold, crests: start.stats.crestsEarned ?? 0,
       gateHp: 0, gateMax: 0, enemies: [], projectiles: [], zones: [],
       hands: Array.from({ length: n }, newHand),
@@ -114,6 +114,12 @@ export class Sim {
   }
 
   spawnEnemy(type: EnemyType, x?: number, big = false): Enemy { return this.ctx.spawner.spawnEnemy(type, x, big); }
+
+  /**
+   * Stops the wave clock: nothing arrives any more and no wave follows, while the fight goes on with
+   * whoever is on the field (tests and developer tools).
+   */
+  freezeWaves() { this.s.wavesFrozen = true; this.s.spawnQueue = []; this.s.spawned = 0; }
 
   /** Freezes or releases everything without a pause window. The tutorial waits like this for the first throw. */
   setHold(hold: boolean) { this.ctx.waves.setHold(hold); }

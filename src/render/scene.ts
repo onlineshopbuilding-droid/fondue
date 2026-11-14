@@ -16,7 +16,6 @@ import { EnemyView } from './enemyView';
 import { Hud } from './hud';
 import { camAt, hookAt, stepMarket, type CamRect } from './marketCamera';
 import { diveRect } from './lobby/dive';
-import { MarketView } from './marketView';
 import { Stations } from './stations';
 import { TutorialView } from './tutorialView';
 import { computeView, renderScale, type GameView } from './viewport';
@@ -55,7 +54,6 @@ export class GameScene extends Phaser.Scene {
   private hud!: Hud;
   private castle!: CastleView;
   private stations!: Stations;
-  private market!: MarketView;
   /** The King, the gesture lesson of the prelude and the pot hint of level 1. */
   tutorial!: TutorialView;
   /** 0 in the fight, 1 in the market at the keep; in between while the camera moves. */
@@ -101,7 +99,6 @@ export class GameScene extends Phaser.Scene {
     this.bg = new Background(this);
     this.castle = new CastleView(this);
     this.stations = new Stations(this);
-    this.market = new MarketView(this);
     this.cheeseGfx = this.add.graphics().setDepth(17);
 
     this.fx = new Effects(this);
@@ -837,18 +834,6 @@ export class GameScene extends Phaser.Scene {
   /** Test hook: CSS position of a slot, for tapping it in browser tests. */
   slotCss(slot: number) { const p = this.castle.slotWorld(slot); return this.worldToCss(p.x, p.y); }
   pauseCss() { const p = this.hud.pausePos(); return this.screenToCss(p.x, p.y); }
-  /** Test hook: how far the camera has moved into the market, 0 (fight) to 1 (market). */
-  marketProgress() { return this.marketK; }
-  /** Test hook: the market's tappable places with their CSS centre and CSS tap radius. */
-  marketSpots() {
-    const r = this.game.canvas.getBoundingClientRect();
-    const perUnit = r.width / this.cam.w;
-    return this.market.list().map((s) => ({ id: s.id, ...this.worldToCss(s.x, s.y), r: s.r * perUnit }));
-  }
-  /** Test hook: CSS centre of one market place ('slot:2', 'gate', 'station:perch'), or null. */
-  marketSpotCss(id: string) { return this.marketSpots().find((s) => s.id === id) ?? null; }
-  /** Test hook: acts as if a market place was tapped, without hunting for its pixels. */
-  tapMarketSpot(id: string) { this.hooks.onKeepTap(id); }
   slotDiameterCss() { return this.castle.diameterCss(); }
   pauseDiameterCss() { return this.hud.pauseDiameterCss(); }
   hudBottomCss() { return this.hud.bottomCss(); }

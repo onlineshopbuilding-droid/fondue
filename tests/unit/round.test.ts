@@ -3,7 +3,8 @@ import { FLAG_DEFS, cleanFlags, defaultFlags } from '../../src/config/flags';
 import { QUICK_STARTS } from '../../src/config/quickstart';
 import { CASTLE_TIERS as GATES, PERCH } from '../../src/config/keep';
 import { SLOTS } from '../../src/config/slots';
-import { DAY } from '../../src/config/waves';
+import { ECONOMY } from '../../src/config/economy';
+import { ENEMIES } from '../../src/config/enemies';
 import { MAX_TIER, weaponById } from '../../src/config/weapons';
 import { FIELD, WORLD, fieldEntry, fieldForAspect, fieldSpeedFactor, fieldWall, perchX } from '../../src/config/field';
 import { decodeSnapshot, encodeSnapshot } from '../../src/net/snapshot';
@@ -12,7 +13,7 @@ import { PROPS } from '../../src/art/props';
 import { slotAt } from '../../src/sim/slots';
 import { Sim } from '../../src/sim/sim';
 import type { SimEvent } from '../../src/sim/types';
-import { PROFILE, arm, battleSim, carryTo, fire, type SimOpts } from './helpers';
+import { PROFILE, arm, battleSim, carryTo, fire, makeSim, wave, type SimOpts } from './helpers';
 
 const battle = (o: SimOpts = {}) => battleSim(o);
 
@@ -22,62 +23,53 @@ function run(sim: Sim, cond: () => boolean, max = 2000): SimEvent[] {
   return out;
 }
 
-describe('end of the day', () => {
-  it('stops new arrivals at nightfall and keeps the field fighting', () => {
-    const sim = battle();
-    sim.s.spawnQueue = [{ t: DAY.seconds + 1, type: 'grunt' }];
-    const e = sim.spawnEnemy('grunt', 900);
-    sim.s.dayT = DAY.seconds - 0.1;
-    const ev = run(sim, () => sim.s.nightfall, 60);
-    expect(ev.some((x) => x.e === 'nightfall')).toBe(true);
-    run(sim, () => false, 200);
-    expect(sim.s.phase).toBe('battle');
+// The end of the day (nightfall, the retreat rule) is gone with v0.3: a level ends after its last wave.
+describe('end of the level', () => {
+  /** A one-wave level whose single raider has already arrived. */
+  const lastWaveSim = (o: SimOpts = {}) => {
+    const sim = makeSim({ waves: [wave(1, 1, 2)], ...o });
+    run(sim, () => sim.s.phase === 'battle' && sim.s.waveDone, 2000);
     expect(sim.s.enemies).toHaveLength(1);
-    expect(e.st).not.toBe('flee');
-  });
+    return { sim, e: sim.s.enemies[0] };
+  };
 
   it('ends only when the last raider is dead', () => {
-    const sim = battle();
-    const e = sim.spawnEnemy('grunt', 900);
-    sim.s.dayT = DAY.seconds + 5;
+    const { sim, e } = lastWaveSim();
     run(sim, () => false, 120);
     expect(sim.s.phase).toBe('battle');
-    carryTo(sim, e, 900, 80, 0, 1400);
-    run(sim, () => sim.s.phase === 'victory', 300);
-    expect(sim.s.phase).toBe('victory');
-    run(sim, () => sim.s.phase === 'intermission', 400);
-    expect(sim.s.meta.lastDay?.kills).toBe(1);
+    carryTo(sim, e, e.x, 80, 0, 1400);
+    run(sim, () => sim.s.phase === 'runWon', 300);
+    expect(sim.s.phase).toBe('runWon');
+    expect(sim.s.meta.result?.kills).toBe(1);
   });
 
-  it('the gate can still fall after nightfall', () => {
-    const sim = battle();
+  it('the gate can still fall after the last wave has arrived', () => {
+    const { sim, e } = lastWaveSim();
     sim.s.gateHp = 1;
-    sim.spawnEnemy('grunt', WORLD.gateX + 30);
-    sim.s.dayT = DAY.seconds + 5;
+    e.x = WORLD.gateX + 30;
     run(sim, () => sim.s.phase === 'gameover', 1500);
     expect(sim.s.phase).toBe('gameover');
+    expect(sim.s.meta.result?.won).toBe(false);
   });
 
   it('a raider being melted or eaten counts as still there, and then pays out', () => {
-    const sim = battle();
+    const { sim, e } = lastWaveSim();
     sim.loadout.stations.cauldron = true;
-    const e = sim.spawnEnemy('grunt', 700);
-    sim.s.dayT = DAY.seconds + 1;
+    const gold = sim.s.gold;
     carryTo(sim, e, WORLD.cauldron.x, WORLD.cauldron.rimY + 40);
     run(sim, () => e.st === 'cooking', 200);
     sim.step();
     expect(sim.s.phase).toBe('battle');
-    run(sim, () => sim.s.phase === 'victory', 200);
-    expect(sim.s.offerings).toBe(1);
+    run(sim, () => sim.s.phase === 'runWon', 400);
+    expect(sim.s.phase).toBe('runWon');
+    expect(sim.s.gold - gold).toBe(ENEMIES.grunt.gold * ECONOMY.cauldronGoldFactor);
   });
 
-  it('the retreat experiment keeps the old rule', () => {
-    const sim = battle({ flags: { dayEnd: 'retreat' } });
-    const e = sim.spawnEnemy('grunt', 900);
-    sim.s.dayT = DAY.seconds;
-    sim.step();
-    expect(sim.s.phase).toBe('victory');
-    expect(e.st).toBe('flee');
+  it('no raider runs away at the end, whatever the old retreat switch says', () => {
+    const { sim, e } = lastWaveSim({ flags: { dayEnd: 'retreat' } });
+    run(sim, () => false, 30);
+    expect(sim.s.phase).toBe('battle');
+    expect(e.st).not.toBe('flee');
   });
 });
 
@@ -95,7 +87,8 @@ describe('cauldron', () => {
     const seen = [...sim.drainEvents(), ...run(sim, () => a.st === 'cooking', 200)];
     expect(seen.some((x) => x.e === 'splash')).toBe(true);
     expect(sim.s.potBusy).toBeGreaterThan(0);
-    expect(sim.s.offerings).toBe(0);
+    // Paid after the melt, not when it goes in.
+    expect(sim.s.gold).toBe(0);
 
     // A second raider finds the pot taken while the first one melts.
     drop(sim, b);
@@ -105,7 +98,7 @@ describe('cauldron', () => {
     seen.push(...run(sim, () => a.dead, 200));
     expect(seen.some((x) => x.e === 'cheese')).toBe(true);
     expect(seen.some((x) => x.e === 'death' && x.cause === 'cauldron')).toBe(true);
-    expect(sim.s.offerings).toBe(1);
+    expect(sim.s.gold).toBe(ENEMIES.grunt.gold * ECONOMY.cauldronGoldFactor);
     expect(sim.s.potBusy).toBe(0);
   });
 
@@ -232,7 +225,7 @@ describe('eagle hook', () => {
     expect(b.st).toBe('air');
     const ev = run(sim, () => a.dead, 300);
     expect(ev.some((x) => x.e === 'eagle')).toBe(true);
-    expect(sim.s.offerings).toBe(1);
+    expect(sim.s.crests).toBe(1);
     expect(sim.s.perchBusy).toBe(0);
     const c = sim.spawnEnemy('grunt', 760);
     carryTo(sim, c, perchX(1280), hookY);
@@ -322,20 +315,19 @@ describe('keep upgrades', () => {
     });
   });
   // "the build stage follows the best gate owned" and "a weapon stands on the keep once owned"
-  // are replaced by shop.test.ts (gate tier and slot weapon in the loadout).
+  // come from the keep of the profile now; a run keeps its loadout (waves.test.ts).
 });
 
 describe('quick start', () => {
-  const quick = (day: number, names = ['A']) => new Sim(ENDLESS.buildRun(PROFILE, { world: 'fondue', difficulty: 'medium', quickStart: day }, {
+  const quick = (wave: number, names = ['A']) => new Sim(ENDLESS.buildRun(PROFILE, { world: 'fondue', difficulty: 'medium', quickStart: wave }, {
     names, fieldW: 1280, handTiers: names.map(() => 1), seed: 3,
   }));
 
   for (const q of QUICK_STARTS) {
-    it(`day ${q.day}: starts there with what a run would own`, () => {
+    it(`wave ${q.day}: starts there with what a run would own`, () => {
       const sim = quick(q.day);
-      expect(sim.s.day).toBe(q.day);
+      expect(sim.s.wave).toBe(q.day);
       expect(sim.s.gold).toBe(q.gold);
-      expect(sim.s.offerings).toBe(q.offerings);
       // A quick start is a developer run: no scores, no stars.
       expect(sim.s.meta.devRun).toBe(true);
       expect(sim.loadout.slotWeapon).toEqual(q.slots);
@@ -345,10 +337,11 @@ describe('quick start', () => {
       expect(sim.loadout.handTier).toEqual([q.hand]);
       expect(sim.s.gateHp).toBe(sim.s.gateMax);
       expect(sim.s.gateMax).toBe(GATES[q.gateTier].hp);
-      expect(sim.s.spawnQueue.length).toBeGreaterThan(50);
+      // A later wave of endless brings a crowd, not the handful of wave 1.
+      expect(sim.s.spawnQueue.length).toBeGreaterThan(10);
     });
 
-    it(`day ${q.day}: every weapon is real, fits its slot and has a tier`, () => {
+    it(`wave ${q.day}: every weapon is real, fits its slot and has a tier`, () => {
       expect(q.slots).toHaveLength(SLOTS.length);
       q.slots.forEach((id, slot) => {
         if (id === null) return;
@@ -364,20 +357,20 @@ describe('quick start', () => {
 
   it('works for two players', () => {
     const sim = quick(20, ['A', 'B']);
-    expect(sim.s.day).toBe(20);
+    expect(sim.s.wave).toBe(20);
     expect(sim.s.hands).toHaveLength(2);
     expect(sim.loadout.handTier).toHaveLength(2);
   });
 
-  it('an unknown day is a normal run', () => {
+  it('an unknown wave is a normal run', () => {
     const sim = quick(13);
-    expect(sim.s.day).toBe(1);
+    expect(sim.s.wave).toBe(1);
     expect(sim.s.meta.devRun).toBe(false);
   });
 
-  it('does not repeat the tips for days that were skipped', () => {
+  it('does not repeat the tips for waves that were skipped', () => {
     const sim = quick(20);
-    expect(sim.s.meta.today.newTypes).toEqual([]);
+    expect(sim.s.meta.wave.newTypes).toEqual([]);
   });
 });
 

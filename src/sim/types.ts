@@ -191,6 +191,8 @@ export interface SimState {
   emptyT: number;
   /** Breath after the current wave, from its plan. */
   pauseAfter: number;
+  /** Tests and developer tools: no arrivals and no next wave; the fight goes on with whoever is there. */
+  wavesFrozen: boolean;
   /** Gold earned in this run (shown in the HUD, credited to the profile at the end). */
   gold: number;
   /** Raider Crests left at the perch in this run. */

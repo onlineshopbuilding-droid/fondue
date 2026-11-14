@@ -71,7 +71,7 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
   {
     id: 'killType',
     make: (level, counts, salt) => {
-      const types = (Object.keys(counts) as EnemyType[]).filter((t) => t !== 'grunt' && (counts[t] ?? 0) >= 2);
+      const types = (Object.keys(counts) as EnemyType[]).filter((t) => t !== 'grunt' && ENEMIES[t].grabbable && (counts[t] ?? 0) >= 2);
       if (types.length === 0) return null;
       const type = types[Math.floor(pick(level, salt) * types.length)];
       // Every raider must fall to win, so the challenge asks for the hand: thrown to death.

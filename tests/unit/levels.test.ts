@@ -10,17 +10,18 @@ const W = 'fondue';
 const LEVELS = worldById(W).campaign;
 const typesIn = (l: LevelDef): Set<EnemyType> => {
   const s = new Set<EnemyType>();
-  for (const d of l.days) for (const [t, n] of Object.entries(d.counts) as [EnemyType, number][]) if (n > 0) s.add(t);
+  for (const w of l.waves) for (const [t, n] of [...Object.entries(w.counts), ...Object.entries(w.big ?? {})] as [EnemyType, number][]) if (n > 0) s.add(t);
   return s;
 };
 
 describe('level generation', () => {
-  it('has 100 levels, numbered 1 to 100, each with at least one day', () => {
+  it('has 100 levels, numbered 1 to 100, each with at least three waves and a planned length', () => {
     expect(LEVELS).toHaveLength(100);
     LEVELS.forEach((l, i) => {
       expect(l.id).toBe(i + 1);
-      expect(l.days.length).toBeGreaterThan(0);
-      expect(l.stars).toBeGreaterThan(0);
+      expect(l.waves.length).toBeGreaterThanOrEqual(3);
+      expect(l.targetSeconds).toBeGreaterThan(0);
+      expect(l.power).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -44,16 +45,19 @@ describe('level generation', () => {
     for (const l of LEVELS) {
       if (l.id % 10 === 0) {
         expect(l.boss, `level ${l.id}`).not.toBeNull();
-        expect(l.stars).toBeGreaterThan(LEVELS[l.id - 2].stars);
+        // v0.2 compared stars; v0.3 has none: the boss level is stronger and longer than the level before.
+        expect(l.power).toBeGreaterThan(LEVELS[l.id - 2].power);
+        expect(l.targetSeconds).toBeGreaterThan(LEVELS[l.id - 2].targetSeconds);
+        expect(l.waves[l.waves.length - 1].boss).toBe(true);
       } else {
         expect(l.boss, `level ${l.id}`).toBeNull();
       }
     }
   });
 
-  it('a boss level\'s last day is bigger than its first', () => {
-    const total = (d: LevelDef['days'][number]) => Object.values(d.counts).reduce((a, b) => a + (b ?? 0), 0);
-    for (const l of LEVELS.filter((x) => x.boss)) expect(total(l.days[l.days.length - 1])).toBeGreaterThan(total(l.days[0]));
+  it('a boss level\'s last wave is bigger than its first', () => {
+    const total = (w: LevelDef['waves'][number]) => Object.values(w.counts).reduce((a, b) => a + (b ?? 0), 0);
+    for (const l of LEVELS.filter((x) => x.boss)) expect(total(l.waves[l.waves.length - 1])).toBeGreaterThan(total(l.waves[0]));
   });
 
   it('twist levels do what their twist says', () => {
@@ -61,10 +65,10 @@ describe('level generation', () => {
     expect(twisted.length).toBeGreaterThan(5);
     for (const l of twisted) {
       const twist = l.twist!;
-      if (twist.kind === 'night') expect(l.days.every((d) => d.night)).toBe(true);
+      if (twist.kind === 'night') expect(l.night).toBe(true);
       if (twist.kind === 'onlyTypes') for (const t of typesIn(l)) expect(twist.types).toContain(t);
       if (twist.kind === 'flood') expect(typesIn(l).has(twist.type)).toBe(true);
     }
-    for (const l of LEVELS.filter((x) => !x.twist || x.twist.kind !== 'night')) expect(l.days.some((d) => d.night)).toBe(false);
+    for (const l of LEVELS.filter((x) => !x.twist || x.twist.kind !== 'night')) expect(l.night).toBe(false);
   });
 });

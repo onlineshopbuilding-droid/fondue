@@ -18,7 +18,8 @@ import { ENDLESS } from '../../src/modes';
 import { CAMPAIGN } from '../../src/modes';
 import type { Sim } from '../../src/sim/sim';
 import type { Enemy } from '../../src/sim/types';
-import { PROFILE, arm, battleSim, denied, eventsOf, fire, firedOk, flingUp, grabAt, place, runFor, runUntil, slotFor } from './helpers';
+import { quote, unlockWeapon } from '../../src/modes/progress';
+import { PROFILE, arm, battleSim, denied, eventsOf, fire, firedOk, flingUp, grabAt, newProfile, place, runFor, runUntil } from './helpers';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tierOf = <T>(id: string, tier: number): T => weaponById(id)!.tiers[tier - 1] as any as T;
@@ -167,24 +168,23 @@ describe('the weapon table', () => {
     const id = 'cuckoo';
     afterEach(() => { weaponById(id)!.enabled = true; });
 
-    it('leaves the slot lists and the rules of both modes', () => {
+    // Runs no longer offer weapons (nothing is bought in a run): a switched-off weapon leaves the
+    // slot lists and the keep's shop instead.
+    it('leaves the slot lists, and both modes still build their runs', () => {
       weaponById(id)!.enabled = false;
       expect(activeWeapons().map((w) => w.id)).not.toContain(id);
       expect(weaponsForSlot('slow').map((w) => w.id)).not.toContain(id);
       const endless = ENDLESS.buildRun(PROFILE, { world: 'fondue' }, { names: ['A'], fieldW: 1280, handTiers: [1], seed: 1 });
-      expect(endless.rules.weapons[id].offered).toBe(false);
-      const sim = battleSim();
-      sim.s.meta.rules.weapons[id].offered = false;
-      expect(sim.quote(`weapon:${slotFor(id)}:${id}`).reason).toBe('locked');
+      expect(endless.start.loadout.slotWeapon).not.toContain(id);
       const campaign = CAMPAIGN.buildRun(PROFILE, { world: 'fondue', level: 1 }, { names: ['A'], fieldW: 1280, handTiers: [1] });
-      expect(campaign.rules.weapons[id].offered).toBe(false);
+      expect(campaign.start.loadout.slotWeapon).not.toContain(id);
     });
 
-    it('cannot be bought even when the rules of a run still offered it', () => {
-      const sim = battleSim();
+    it('cannot be unlocked in the keep', async () => {
+      const profile = await newProfile();
       weaponById(id)!.enabled = false;
-      expect(sim.s.meta.rules.weapons[id].offered).toBe(true);
-      expect(sim.quote(`weapon:${slotFor(id)}:${id}`).reason).toBe('locked');
+      expect(quote(profile, { kind: 'weapon', id }).reason).toBe('unknown');
+      expect(unlockWeapon(profile, id)).toBe(false);
     });
   });
 });
@@ -298,7 +298,7 @@ describe('a tap on a weapon', () => {
     const sim = battleSim();
     const slot = arm(sim, 'mortar', 1);
     place(sim, 'grunt', 700);
-    sim.s.phase = 'intermission';
+    sim.s.phase = 'runWon';
     expect(firedOk(fire(sim, slot))).toBe(false);
     expect(sim.s.cooldowns[slot]).toBe(0);
   });

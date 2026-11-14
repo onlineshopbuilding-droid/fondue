@@ -1,10 +1,9 @@
 /**
- * The three game modes: what run each builds (rules, loadout, last day), what a finished run pays
- * into the profile, and where the game goes next.
+ * The three game modes: what run each builds (rules, loadout, last wave), what a finished run pays
+ * into the profile, and where the game goes next. (Keep, gold and cheese in detail: campaignWaves.test.ts.)
  */
 import { describe, expect, it } from 'vitest';
 import { SLOT_COUNT } from '../../src/config/slots';
-import { activeWeapons } from '../../src/config/weapons';
 import { levelOf, worldById } from '../../src/config/worlds';
 import { CAMPAIGN, ENDLESS, TUTORIAL, completeTutorial, type RunEnv } from '../../src/modes';
 import type { Profile } from '../../src/profile';
@@ -15,7 +14,7 @@ const W = 'fondue';
 const env = (names = ['A'], handTiers = names.map(() => 1)): RunEnv => ({ names, fieldW: 1280, handTiers });
 
 function result(rules: RunRules, won: boolean, extra: Partial<RunResult> = {}): RunResult {
-  return { runId: rules.runId, won, devRun: false, names: ['A'], day: rules.lastDay ?? 1, score: 1000, kills: 10, stats: emptyStats(), ...extra };
+  return { runId: rules.runId, won, devRun: false, names: ['A'], wave: rules.lastWave ?? 1, score: 1000, kills: 10, gateShare: 0.3, stats: emptyStats(), ...extra };
 }
 
 /** Wins every level up to and including `level` in the profile, as the reward would. */
@@ -29,15 +28,14 @@ async function profileAt(level: number): Promise<Profile> {
 }
 
 describe('tutorial mode', () => {
-  it('builds a one-day prelude for one player: no market, no slots, a gate that cannot fall', async () => {
+  it('builds a one-wave prelude for one player: no slots, a gate that cannot fall', async () => {
     const p = await newProfile();
     const setup = TUTORIAL.buildRun(p, { world: W }, env(['A', 'B']));
     expect(setup.rules.mode).toBe('tutorial');
-    expect(setup.rules.lastDay).toBe(1);
+    expect(setup.rules.lastWave).toBe(1);
     expect(setup.rules.players).toBe(1);
     expect(setup.names).toEqual(['A']);
     expect(setup.rules.gateCannotFall).toBe(true);
-    expect(setup.rules.hasMarket).toBe(false);
     expect(setup.rules.slotsOpen.every((open) => !open)).toBe(true);
     expect(setup.start.loadout.slotWeapon.every((w) => w === null)).toBe(true);
   });
@@ -58,23 +56,22 @@ describe('tutorial mode', () => {
 });
 
 describe('campaign mode: building a run', () => {
-  it('ends on the level\'s last day and starts with the permanent keep at its lasting tiers', async () => {
+  it('ends on the level\'s last wave and starts with the permanent keep at its lasting tiers', async () => {
     const p = await newProfile();
     completeTutorial(p, W);
     p.setWeaponTier('wheel', 3);
     const level = levelOf(W, 5)!;
     const setup = CAMPAIGN.buildRun(p, { world: W, level: 5 }, env(['A'], [2]));
-    expect(setup.rules.lastDay).toBe(level.days.length);
-    expect(setup.rules.weapons.wheel).toEqual({ offered: true, fixedTier: 3 });
-    for (const w of activeWeapons().filter((x) => x.id !== 'wheel')) expect(setup.rules.weapons[w.id].offered).toBe(false);
+    expect(setup.rules.lastWave).toBe(level.waves.length);
+    expect(setup.rules.level).toBe(5);
+    expect(setup.rules.maxAlive).toBe(level.maxAlive);
     expect(setup.rules.slotsOpen).toEqual(Array.from({ length: SLOT_COUNT }, (_, i) => i === 0));
-    expect(setup.rules.tierUpgrades).toBe(false);
-    expect(setup.rules.handBuyable).toBe(false);
-    expect(setup.rules.handStart).toEqual([2]);
-    expect(setup.start.loadout.slotWeapon[0]).toBe('wheel');
-    expect(setup.start.loadout.weaponTier.wheel).toBe(3);
-    expect(setup.start.day).toBe(1);
-    expect(setup.start.gold).toBe(level.startGold);
+    // Only what the profile owns and wears comes along; nothing is offered or bought in the run.
+    expect(setup.start.loadout.slotWeapon).toEqual(['wheel', null, null, null, null]);
+    expect(setup.start.loadout.weaponTier).toEqual({ wheel: 3 });
+    expect(setup.start.loadout.handTier).toEqual([2]);
+    expect(setup.start.wave).toBe(1);
+    expect(setup.start.gold).toBe(0);
     expect(setup.devRun).toBe(false);
   });
 
@@ -86,11 +83,11 @@ describe('campaign mode: building a run', () => {
     expect(a.rules.runId).not.toBe(b.rules.runId);
   });
 
-  it('a developer jump to a later day is clamped to the last day and counts as a developer run', async () => {
+  it('a developer jump to a later wave is clamped to the last wave and counts as a developer run', async () => {
     const p = await newProfile();
-    const days = levelOf(W, 2)!.days.length;
-    const setup = CAMPAIGN.buildRun(p, { world: W, level: 2, day: 99 }, env());
-    expect(setup.start.day).toBe(days);
+    const waves = levelOf(W, 2)!.waves.length;
+    const setup = CAMPAIGN.buildRun(p, { world: W, level: 2, wave: 99 }, env());
+    expect(setup.start.wave).toBe(waves);
     expect(setup.devRun).toBe(true);
   });
 
@@ -142,12 +139,19 @@ describe('campaign mode: reward', () => {
     expect(p.data.wallet.cheese).toBe(cheese);
   });
 
-  it('a lost run and a developer run pay nothing', async () => {
+  it('a lost run pays its gold but no cheese and no progress; a developer run pays nothing (E-066)', async () => {
     const p = await newProfile();
     const lost = CAMPAIGN.buildRun(p, { world: W, level: 1 }, env());
-    expect(CAMPAIGN.reward(result(lost.rules, false), lost.rules, p, 'solo').counted).toBe(false);
+    const lostReward = CAMPAIGN.reward(result(lost.rules, false, { stats: { ...emptyStats(), goldEarned: 40 } }), lost.rules, p, 'solo');
+    expect(lostReward.counted).toBe(true);
+    expect(lostReward.gold).toBe(40);
+    expect(lostReward.cheese).toBe(0);
+    expect(lostReward.firstWin).toBe(false);
+    expect(lostReward.nextLevel).toBeNull();
     const dev = CAMPAIGN.buildRun(p, { world: W, level: 1 }, env());
-    expect(CAMPAIGN.reward(result(dev.rules, true, { devRun: true }), dev.rules, p, 'solo').counted).toBe(false);
+    const devReward = CAMPAIGN.reward(result(dev.rules, true, { devRun: true, stats: { ...emptyStats(), goldEarned: 99 } }), dev.rules, p, 'solo');
+    expect(devReward.counted).toBe(false);
+    expect(p.data.wallet.gold).toBe(40);
     expect(p.data.wallet.cheese).toBe(0);
     expect(p.isLevelDone(W, 1)).toBe(false);
   });
@@ -174,39 +178,47 @@ describe('campaign mode: reward', () => {
 });
 
 describe('endless mode', () => {
-  it('never ends, upgrades during the run, and offers every weapon and slot from the start', async () => {
+  it('never ends and is played with the permanent keep of the profile: its open slots and worn weapons, nothing bought', async () => {
     const p = await newProfile();
-    const setup = ENDLESS.buildRun(p, { world: W, difficulty: 'hard' }, env());
-    expect(setup.rules.lastDay).toBeNull();
-    expect(setup.rules.difficulty).toBe('hard');
-    expect(setup.rules.tierUpgrades).toBe(true);
-    expect(setup.rules.handBuyable).toBe(true);
-    for (const w of activeWeapons()) expect(setup.rules.weapons[w.id]).toEqual({ offered: true, fixedTier: null });
+    const fresh = ENDLESS.buildRun(p, { world: W, difficulty: 'hard' }, env());
+    expect(fresh.rules.lastWave).toBeNull();
+    expect(fresh.rules.level).toBeNull();
+    expect(fresh.rules.difficulty).toBe('hard');
+    expect(fresh.rules.slotsOpen.every((open) => !open)).toBe(true);
+    expect(fresh.start.loadout.slotWeapon.every((w) => w === null)).toBe(true);
+    expect(fresh.start.wave).toBe(1);
+    expect(fresh.start.gold).toBe(0);
+    expect(fresh.devRun).toBe(false);
+    // Endless opens with the fifth slot (E1); see campaignWaves.test.ts for the exact level.
+    expect(ENDLESS.isAvailable(p, W)).toBe(false);
+    const won = await profileAt(11);
+    won.setWeaponTier('wheel', 4);
+    const setup = ENDLESS.buildRun(won, { world: W, difficulty: 'medium' }, env());
+    expect(ENDLESS.isAvailable(won, W)).toBe(true);
     expect(setup.rules.slotsOpen.every((open) => open)).toBe(true);
-    expect(setup.start.day).toBe(1);
-    expect(setup.devRun).toBe(false);
-    expect(ENDLESS.isAvailable(p, W)).toBe(true);
+    expect(setup.start.loadout.slotWeapon[0]).toBe('wheel');
+    expect(setup.start.loadout.weaponTier.wheel).toBe(4);
   });
 
-  it('the developer menu\'s free day starts a developer run on that day; belongings come from the latest quick start before it', async () => {
+  it('the developer menu\'s free wave starts a developer run at that wave; belongings come from the latest quick start before it', async () => {
     const p = await newProfile();
     const late = ENDLESS.buildRun(p, { world: W, devDay: 45 }, env());
-    expect(late.start.day).toBe(45);
+    expect(late.start.wave).toBe(45);
     expect(late.devRun).toBe(true);
     expect(late.start.loadout.slotWeapon.some((w) => w !== null)).toBe(true);
     const early = ENDLESS.buildRun(p, { world: W, devDay: 5 }, env());
-    expect(early.start.day).toBe(5);
+    expect(early.start.wave).toBe(5);
     expect(early.devRun).toBe(true);
     expect(early.start.loadout.slotWeapon.every((w) => w === null)).toBe(true);
-    expect(ENDLESS.buildRun(p, { world: W, devDay: 500 }, env()).start.day).toBe(99);
+    expect(ENDLESS.buildRun(p, { world: W, devDay: 500 }, env()).start.wave).toBe(99);
   });
 
   it('pays no cheese, remembers the best wave and adds the run to the score list', async () => {
     const p = await newProfile();
-    const run = (daysCleared: number) => {
+    const run = (wavesCleared: number) => {
       const setup = ENDLESS.buildRun(p, { world: W, difficulty: 'medium' }, env());
-      const stats = { ...emptyStats(), daysCleared };
-      return ENDLESS.reward(result(setup.rules, false, { stats, day: daysCleared + 1 }), setup.rules, p, 'solo');
+      const stats = { ...emptyStats(), wavesCleared };
+      return ENDLESS.reward(result(setup.rules, false, { stats, wave: wavesCleared + 1 }), setup.rules, p, 'solo');
     };
     const first = run(5);
     expect(first.counted).toBe(true);
@@ -222,7 +234,7 @@ describe('endless mode', () => {
   it('a developer run pays nothing and stays off the score list; endless leads back to the lobby', async () => {
     const p = await newProfile();
     const setup = ENDLESS.buildRun(p, { world: W }, env());
-    const reward = ENDLESS.reward(result(setup.rules, false, { devRun: true, stats: { ...emptyStats(), daysCleared: 30 } }), setup.rules, p, 'solo');
+    const reward = ENDLESS.reward(result(setup.rules, false, { devRun: true, stats: { ...emptyStats(), wavesCleared: 30 } }), setup.rules, p, 'solo');
     expect(reward.counted).toBe(false);
     expect(p.data.wallet.cheese).toBe(0);
     expect(p.scores(W)).toHaveLength(0);

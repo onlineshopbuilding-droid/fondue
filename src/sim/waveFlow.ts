@@ -115,6 +115,7 @@ export class WaveFlow {
   private stepWaves() {
     const s = this.ctx.s;
     s.runT += DT;
+    if (s.wavesFrozen) return;
     s.waveT += DT;
     this.ctx.spawner.spawn();
     const alive = s.enemies.length;

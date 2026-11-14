@@ -1,14 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { ENEMIES, BEHAVIOUR } from '../../src/config/enemies';
-import { COOP, DAY, DIFFICULTIES } from '../../src/config/waves';
+import { COOP, DIFFICULTIES, WAVES } from '../../src/config/waves';
+import { crestsFor } from '../../src/config/crests';
+import { ECONOMY } from '../../src/config/economy';
 import { WEAPONS, SHELL_FLIGHT, weaponById, type RollTier, type VolleyTier } from '../../src/config/weapons';
 import { WORLD, perchX } from '../../src/config/field';
 import { SLOTS } from '../../src/config/slots';
 import { TUNING_DEFAULT } from '../../src/config/tuning';
-import { enemyCountForDay } from '../../src/sim/spawn';
+import { enemyCountForWave } from '../../src/sim/spawn';
 import { decodeSnapshot, encodeSnapshot } from '../../src/net/snapshot';
 import { PROPS } from '../../src/art/props';
-import { arm, battleSim, eventsOf, fire, flingUp, grabAt, makeSim, place, runUntil, slotFor } from './helpers';
+import { arm, battleSim, clearWave, eventsOf, fire, flingUp, grabAt, makeSim, place, runFor, runUntil, slotFor, wave } from './helpers';
+
+/** How far a Pothelm walks while a strong upward fling is in the air (about 0.89 s). */
+const WALK_IN_FLIGHT = ENEMIES.grunt.speed * 0.885;
 
 describe('throwing and impacts', () => {
   it('a strong upward flick kills on landing and pays gold', () => {
@@ -57,8 +62,8 @@ describe('throwing and impacts', () => {
       const sim = battleSim();
       sim.s.meta.tuning.knockOthers = knock;
       const a = place(sim, 'grunt', 700);
-      // b walks about 85 px during the flight, so it arrives where a lands.
-      const b = place(sim, 'grunt', 785);
+      // b walks during the flight, so it arrives where a lands.
+      const b = place(sim, 'grunt', 700 + WALK_IN_FLIGHT);
       flingUp(sim, a, 1500);
       runUntil(sim, () => a.dead);
       expect(b.st === 'air').toBe(knock);
@@ -85,16 +90,19 @@ describe('throwing and impacts', () => {
   });
 });
 
-describe('day flow', () => {
-  it('starts with a banner, then battle, then victory after the day length', () => {
-    const sim = makeSim({ seed: 1 });
+describe('wave flow', () => {
+  it('starts with a banner, then battle, then wave after wave until the last one is cleared', () => {
+    const sim = makeSim({ seed: 1, waves: [wave(2, 1, 2), wave(2, 1, 2)] });
     expect(sim.s.phase).toBe('banner');
+    expect(sim.s.wave).toBe(1);
     runUntil(sim, () => sim.s.phase === 'battle');
-    sim.s.spawnQueue = [];
-    runUntil(sim, () => sim.s.phase === 'victory', 4000);
-    expect(sim.s.dayT).toBeCloseTo(DAY.seconds, 0);
-    runUntil(sim, () => sim.s.phase === 'intermission');
-    expect(sim.s.meta.lastDay?.day).toBe(1);
+    expect(sim.s.runT).toBeCloseTo(WAVES.bannerSeconds, 1);
+    const ev = runUntil(sim, () => sim.s.wave === 2, 2000);
+    expect(eventsOf(ev, 'waveStart')).toHaveLength(1);
+    expect(sim.s.phase).toBe('battle');
+    for (let i = 0; i < 2000 && sim.s.phase !== 'runWon'; i++) { clearWave(sim); sim.step(); }
+    expect(sim.s.phase).toBe('runWon');
+    expect(sim.s.meta.result?.wave).toBe(2);
   });
 
   it('falls to defeat when the gate breaks and reaches game over', () => {
@@ -105,35 +113,31 @@ describe('day flow', () => {
     expect(ev.some((x) => x.e === 'defeat')).toBe(true);
   });
 
-  it('refills the gate for the next day and needs all players ready', () => {
-    const sim = battleSim({ names: ['A', 'B'] });
+  it('the gate is not refilled between waves', () => {
+    const sim = makeSim({ names: ['A', 'B'], waves: [wave(1, 1, 1), wave(1, 1, 1)] });
+    runUntil(sim, () => sim.s.phase === 'battle');
     sim.s.gateHp = 100;
-    sim.s.dayT = DAY.seconds;
-    runUntil(sim, () => sim.s.phase === 'intermission', 400);
-    sim.command({ k: 'ready', p: 0, ready: true });
-    expect(sim.s.phase).toBe('intermission');
-    sim.command({ k: 'ready', p: 1, ready: true });
-    expect(sim.s.phase).toBe('banner');
-    expect(sim.s.day).toBe(2);
-    expect(sim.s.gateHp).toBe(sim.s.gateMax);
+    runUntil(sim, () => sim.s.wave === 2, 2000);
+    expect(sim.s.wave).toBe(2);
+    expect(sim.s.gateHp).toBeLessThanOrEqual(100);
+    expect(sim.s.gateHp).toBeLessThan(sim.s.gateMax);
   });
 
-  it('the host can force the next day', () => {
-    const sim = battleSim({ names: ['A', 'B'] });
-    sim.s.dayT = DAY.seconds;
-    runUntil(sim, () => sim.s.phase === 'intermission', 400);
-    sim.command({ k: 'forceStart', p: 1 });
-    expect(sim.s.phase).toBe('intermission');
-    sim.command({ k: 'forceStart', p: 0 });
-    expect(sim.s.day).toBe(2);
+  it('the next wave needs nobody to press anything', () => {
+    const sim = makeSim({ names: ['A', 'B'], waves: [wave(1, 1, 1), wave(1, 1, 1), wave(1, 1, 1)] });
+    // No command at all: the waves follow one another on their own.
+    runUntil(sim, () => sim.s.wave === 3, 3000);
+    expect(sim.s.wave).toBe(3);
   });
 
   it('pause stops time and names who paused', () => {
     const sim = battleSim({ names: ['Anna', 'Ben'] });
     sim.command({ k: 'pause', p: 1, paused: true });
-    const t = sim.s.dayT;
+    const t = sim.s.runT;
+    const tick = sim.s.tick;
     for (let i = 0; i < 30; i++) sim.step();
-    expect(sim.s.dayT).toBe(t);
+    expect(sim.s.runT).toBe(t);
+    expect(sim.s.tick).toBe(tick);
     expect(sim.s.meta.pausedBy).toBe('Ben');
   });
 
@@ -153,30 +157,31 @@ describe('day flow', () => {
 
 describe('spawning', () => {
   it('produces more enemies later, on harder settings, and in co-op', () => {
-    const c = (d: number, diff: 'easy' | 'medium' | 'hard', pl: number) => enemyCountForDay(d, DIFFICULTIES[diff].count, pl);
-    expect(c(1, 'medium', 1)).toBeGreaterThanOrEqual(20);
-    expect(c(1, 'medium', 1)).toBeLessThanOrEqual(50);
-    expect(c(7, 'medium', 1)).toBeGreaterThanOrEqual(70);
-    expect(c(7, 'medium', 1)).toBeLessThanOrEqual(145);
+    const c = (w: number, diff: 'easy' | 'medium' | 'hard', pl: number) => enemyCountForWave(w, DIFFICULTIES[diff].count, pl);
+    // v0.3: fewer raiders per wave, but waves follow one another without a break.
+    expect(c(1, 'medium', 1)).toBeGreaterThanOrEqual(4);
+    expect(c(1, 'medium', 1)).toBeLessThanOrEqual(12);
+    expect(c(7, 'medium', 1)).toBeGreaterThan(c(1, 'medium', 1));
+    expect(c(21, 'medium', 1)).toBeGreaterThan(c(7, 'medium', 1));
     expect(c(5, 'hard', 1)).toBeGreaterThan(c(5, 'medium', 1));
     expect(c(5, 'medium', 1)).toBeGreaterThan(c(5, 'easy', 1));
-    expect(c(5, 'medium', 2)).toBe(Math.round(c(5, 'medium', 1) * COOP.countFactor));
+    expect(Math.abs(c(5, 'medium', 2) - c(5, 'medium', 1) * COOP.countFactor)).toBeLessThanOrEqual(1);
   });
 
-  // Replaced "introduces each type on its day and guarantees it appears" (firstDay left ENEMIES):
-  // see plan.test.ts, "a type always appears on its first day" and "day 1 brings only Pothelms".
+  // Replaced "introduces each type on its day": the endless planner decides the first wave of each type (endlessRandom.test.ts).
 
-  it('announces a new type once, on the day it first comes', () => {
-    const sim = makeSim({ seed: 3, days: [{ counts: { grunt: 4 } }, { counts: { grunt: 4, bomber: 2 } }, { counts: { grunt: 4, bomber: 2 } }] });
-    expect(sim.s.meta.today.newTypes).toEqual(['grunt']);
-    sim.s.day = 1;
-    sim.s.phase = 'intermission';
-    sim.command({ k: 'ready', p: 0, ready: true });
-    expect(sim.s.meta.today.newTypes).toEqual(['bomber']);
-    sim.s.phase = 'intermission';
-    sim.command({ k: 'ready', p: 0, ready: true });
-    expect(sim.s.day).toBe(3);
-    expect(sim.s.meta.today.newTypes).toEqual([]);
+  it('announces a new type once, in the wave it first comes', () => {
+    const sim = makeSim({ seed: 3, waves: [
+      { counts: { grunt: 2 }, spawnSeconds: 1, packs: 1, pauseAfter: 1 },
+      { counts: { grunt: 2, bomber: 1 }, spawnSeconds: 1, packs: 1, pauseAfter: 1 },
+      { counts: { grunt: 2, bomber: 1 }, spawnSeconds: 1, packs: 1, pauseAfter: 1 },
+    ] });
+    expect(sim.s.meta.wave.newTypes).toEqual(['grunt']);
+    runUntil(sim, () => sim.s.wave === 2, 2000);
+    expect(sim.s.meta.wave.newTypes).toEqual(['bomber']);
+    runUntil(sim, () => sim.s.wave === 3, 2000);
+    expect(sim.s.wave).toBe(3);
+    expect(sim.s.meta.wave.newTypes).toEqual([]);
   });
 });
 
@@ -195,7 +200,7 @@ describe('enemy behaviours', () => {
     const sim = battleSim();
     const e = place(sim, 'bomber', 700);
     // The neighbour walks into the (smaller) blast while the hauler is in the air.
-    const n = place(sim, 'grunt', 790);
+    const n = place(sim, 'grunt', 700 + WALK_IN_FLIGHT);
     flingUp(sim, e, 1500);
     runUntil(sim, () => e.dead);
     expect(n.dead).toBe(true);
@@ -305,14 +310,14 @@ describe('enemy behaviours', () => {
     const ev = runUntil(sim, () => e.crow, 400);
     expect(ev.some((x) => x.e === 'crow')).toBe(true);
     expect(e.dead).toBe(false);
-    expect(sim.s.dayKills).toBe(0);
+    expect(sim.s.stats.kills).toBe(0);
     expect(e.st).toBe('float');
     grabAt(sim, 0, e);
     for (let i = 0; i < 4; i++) sim.step();
     sim.command({ k: 'release', p: 0, x: e.x, y: e.y - 60, vx: 0, vy: -900 });
     runUntil(sim, () => e.dead, 400);
     expect(e.dead).toBe(true);
-    expect(sim.s.dayKills).toBe(1);
+    expect(sim.s.stats.kills).toBe(1);
   });
 
   it('yeti: one hand only tugs, two hands can throw it', () => {
@@ -340,8 +345,9 @@ describe('enemy behaviours', () => {
   });
 });
 
-describe('offerings', () => {
-  it('cauldron consumes a dropped enemy for one offering and gold', () => {
+// Offerings are gone with v0.3: the cauldron pays double gold, the eagle leaves crests.
+describe('stations', () => {
+  it('cauldron consumes a dropped enemy for double gold', () => {
     const sim = battleSim();
     sim.loadout.stations.cauldron = true;
     const e = place(sim, 'grunt', WORLD.cauldron.x);
@@ -350,7 +356,7 @@ describe('offerings', () => {
     sim.command({ k: 'release', p: 0, x: WORLD.cauldron.x, y: 300, vx: 0, vy: 0 });
     const ev = runUntil(sim, () => e.dead, 400);
     expect(ev.some((x) => x.e === 'death' && x.cause === 'cauldron')).toBe(true);
-    expect(sim.s.offerings).toBe(1);
+    expect(sim.s.gold).toBe(ENEMIES.grunt.gold * ECONOMY.cauldronGoldFactor);
   });
 
   // Replaced "snap assist steers a near miss into the cauldron" (it belonged to the pot on the road):
@@ -368,17 +374,18 @@ describe('offerings', () => {
     sim.command({ k: 'release', p: 0, x: hx, y: hy, vx: 0, vy: 0 });
     expect(e.st).toBe('cooking');
     runUntil(sim, () => e.dead, 400);
-    expect(sim.s.offerings).toBe(1);
+    expect(sim.s.stats.killsByCause.cauldron).toBe(1);
   });
 
-  it('no offering without the cauldron', () => {
+  it('no pot and no double gold without the cauldron', () => {
     const sim = battleSim();
     const e = place(sim, 'grunt', WORLD.cauldron.x);
     grabAt(sim, 0, e);
     sim.step();
     sim.command({ k: 'release', p: 0, x: WORLD.cauldron.x, y: 200, vx: 0, vy: 0 });
-    runUntil(sim, () => e.dead, 400);
-    expect(sim.s.offerings).toBe(0);
+    const ev = runUntil(sim, () => e.dead, 400);
+    expect(sim.s.stats.killsByCause.cauldron ?? 0).toBe(0);
+    for (const d of eventsOf(ev, 'death')) expect(d.gold).toBe(ENEMIES.grunt.gold);
   });
 
   it('eagle perch hangs an enemy, the eagle takes it, one at a time', () => {
@@ -396,11 +403,11 @@ describe('offerings', () => {
     expect(b.st).toBe('air');
     const ev = runUntil(sim, () => a.dead, 300);
     expect(ev.some((x) => x.e === 'eagle')).toBe(true);
-    expect(sim.s.offerings).toBe(1);
+    expect(sim.s.crests).toBe(crestsFor('grunt'));
   });
 });
 
-// The old "shop" block (22 shop items, tiers as items, equip) is replaced by shop.test.ts.
+// The old "shop" block is gone: nothing is bought in a run (waves.test.ts, "the keep in a run"); buying happens in the keep (progress.test.ts).
 
 describe('weapons', () => {
   it('cannot use what is not owned', () => {
@@ -632,24 +639,23 @@ describe('regressions from the first playtest', () => {
     expect(e.vy).toBe(0);
   });
 
-  it('with the retreat experiment, pogo bandits stop attacking once the day is over', () => {
+  it('the old retreat switch no longer sends raiders away', () => {
     const sim = battleSim();
     sim.setFlags({ dayEnd: 'retreat' });
     const e = place(sim, 'pogo', 300);
     for (let i = 0; i < 40; i++) sim.step();
-    sim.s.dayT = DAY.seconds;
-    sim.step();
-    expect(e.st).toBe('flee');
+    expect(e.st).not.toBe('flee');
   });
 
-  it('counts gold from enemies that land after the day ended', () => {
-    const sim = battleSim();
-    const e = place(sim, 'grunt', 700);
+  it('counts gold from enemies that land after the last wave has arrived', () => {
+    const sim = makeSim({ waves: [wave(1, 1, 2)] });
+    runUntil(sim, () => sim.s.phase === 'battle' && sim.s.waveDone, 2000);
+    const e = sim.s.enemies[0];
     flingUp(sim, e, 2200);
-    sim.s.dayT = DAY.seconds;
-    runUntil(sim, () => sim.s.phase === 'intermission', 400);
+    runUntil(sim, () => sim.s.phase === 'runWon', 400);
     expect(e.dead).toBe(true);
-    expect(sim.s.meta.lastDay?.goldEarned).toBe(sim.s.gold);
+    expect(sim.s.gold).toBeGreaterThan(0);
+    expect(sim.s.meta.result?.stats.goldEarned).toBe(sim.s.gold);
   });
 
   it('short drops daze, drops from well up kill', () => {
@@ -664,9 +670,9 @@ describe('regressions from the first playtest', () => {
     expect(heightKills(140)).toBe(true);
   });
 
-  it('siege carts break in the same number of clicks on later days', () => {
+  it('siege carts break in the same number of clicks in later waves', () => {
     const sim = battleSim();
-    sim.s.day = 9;
+    sim.s.wave = 9;
     const e = place(sim, 'siegeCart', 700);
     for (let i = 0; i < BEHAVIOUR.siegeCartTaps; i++) sim.command({ k: 'press', p: 0, x: e.x, y: e.y - 40 });
     expect(e.dead).toBe(true);
@@ -721,23 +727,26 @@ describe('disconnect handling', () => {
     expect(e.st).toBe('air');
   });
 
-  it('dropping out clears ready, and starts the day if only that player was missing', () => {
-    const sim = battleSim({ names: ['A', 'B'] });
-    sim.s.dayT = DAY.seconds;
-    runUntil(sim, () => sim.s.phase === 'intermission', 400);
-    sim.command({ k: 'ready', p: 0, ready: true });
-    expect(sim.s.day).toBe(1);
+  // Ready and forceStart are gone with v0.3: nobody has to agree to the next wave.
+  it('the waves go on without a player who dropped out', () => {
+    const sim = makeSim({ names: ['A', 'B'], waves: [wave(1, 1, 1), wave(1, 1, 1), wave(1, 1, 1)] });
+    runUntil(sim, () => sim.s.phase === 'battle');
     sim.setConnected(1, false);
-    expect(sim.s.day).toBe(2);
+    runUntil(sim, () => sim.s.wave === 2, 2000);
+    expect(sim.s.wave).toBe(2);
+    expect(sim.s.paused).toBe(false);
   });
 
-  it('a disconnected player does not block ready', () => {
+  it('a player who returns plays on in the same wave', () => {
     const sim = battleSim({ names: ['A', 'B'] });
-    sim.s.dayT = DAY.seconds;
-    runUntil(sim, () => sim.s.phase === 'intermission', 400);
+    const w = sim.s.wave;
     sim.setConnected(1, false);
-    sim.command({ k: 'ready', p: 0, ready: true });
-    expect(sim.s.day).toBe(2);
+    runFor(sim, 0.5);
+    sim.setConnected(1, true);
+    const e = place(sim, 'grunt');
+    grabAt(sim, 1, e);
+    expect(e.heldBy).toEqual([1]);
+    expect(sim.s.wave).toBe(w);
   });
 });
 
