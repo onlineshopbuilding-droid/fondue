@@ -205,7 +205,8 @@ Spieltexte sind Englisch. Story, König, Level-Sätze, Popups, Storybuch: `src/c
 | Raum eröffnen, beitreten, Wiedereinstieg | `CoopRoom` in `src/ui/coop/room.ts` |
 | Spielerliste im Raum | `src/ui/screens/roomParts.ts` |
 | Snapshot-Takt, Abbruchzeit | `SNAPSHOT_EVERY_STEPS`, `SILENCE_LIMIT_MS`, `OWN_STALL_MS` in `src/game/session.ts` |
-| Glättung beim Gast | `INTERP_DELAY_MS`, `EVENT_DELAY_MS` in `src/game/session.ts` |
+| Glättung beim Gast | `PlayoutBuffer` (`PLAYOUT_MIN_MS`, `PLAYOUT_MAX_MS`, `EXTRAPOLATE_MAX_MS`) in `src/net/interp.ts` |
+| Verbindung wählen (Relay oder eigener Server später) | `pickTransport` in `src/net/choose.ts` |
 | STUN-Server, PeerJS | `src/net/peer.ts` |
 
 ## 5. Rezepte
