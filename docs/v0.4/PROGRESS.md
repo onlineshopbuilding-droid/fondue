@@ -48,7 +48,6 @@ Stand 17.11.2026, 20:35 Uhr, aus `git log --stat a77caee..HEAD -- tests/` und de
 - `tests/unit/campaignWaves.test.ts`: Endlos-Grenze von Level 11 auf Level 10; der Challenge-Test „jede Challenge ist erfüllbar“ bleibt und benutzt die neue Regel `weaponUsableIn` (Slot erst `CHALLENGE_SLOT_MARGIN` Level nach dem Kauf-Level der Burg-Stufe).
 - `tests/unit/tutorial.test.ts`: `pendingIntros` folgt der Burg-Stufe statt gewonnenen Leveln (später in Commit edd3f8d um Tests der Königs-Sätze und Hilfetexte erweitert).
 - `tests/unit/modes.test.ts`: Vorbereitung auf die neue Freischaltung.
-- `tests/unit/economy.test.ts`: Käse-Summe 500 unverändert.
 
 **Speicher `fondue.v4.` (Commit 07d2d9a):** `tests/unit/profile-data.test.ts`, `profile.test.ts`, `profile-save.test.ts` und `tests/e2e/dev-tools.spec.ts` prüfen jetzt das Präfix `fondue.v4.` statt `fondue.v3.`, weil v0.4 unter eigenem Schlüssel speichert (Versionsregel). Neu: `profile-v3import.test.ts`, `tests/e2e/storage.spec.ts`, später `castleImport.test.ts` (Commit 19745a3).
 
