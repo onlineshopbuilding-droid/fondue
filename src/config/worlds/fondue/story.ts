@@ -3,6 +3,10 @@
  * Every text in this file can be changed freely; the game only reads it.
  */
 import type { EnemyType } from '../../enemies';
+import { CASTLE_TIER_FOR_SLOT, CASTLE_TIER_LEVEL } from '../../slotTiers';
+
+/** The won level from which the castle tier that opens this slot can be built (lines about its weapons wait for it). */
+const slotLevel = (role: keyof typeof CASTLE_TIER_FOR_SLOT): number => CASTLE_TIER_LEVEL[CASTLE_TIER_FOR_SLOT[role] - 1] ?? 0;
 
 /** The King who summoned the player and owns all the cheese. */
 export const KING: { name: string; title: string } = {
@@ -419,7 +423,7 @@ export const KING_LOBBY_LINES: { minLevel: number; maxLevel: number; text: strin
   { minLevel: 15, maxLevel: 45, text: "The canyon echoes so nicely. Fondue! Fondue! Fondue! Lovely." },
   { minLevel: 15, maxLevel: 100, text: "You are the best helper I ever summoned. The only one, actually." },
   { minLevel: 14, maxLevel: 60, text: "Use the forks if you must, but bring them back clean." },
-  { minLevel: 4, maxLevel: 60, text: "The Gate Mortar is older than the cheese. Treat it gently." },
+  { minLevel: slotLevel('gate'), maxLevel: 60, text: "The Gate Mortar is older than the cheese. Treat it gently." },
   { minLevel: 20, maxLevel: 50, text: "Autumn already? The pot needs to be bigger. Much bigger." },
   { minLevel: 25, maxLevel: 50, text: "Rain, rain, rain. At least the fondue stays warm." },
   { minLevel: 32, maxLevel: 100, text: "The cuckoo clock was a gift. Nobody remembers who gave it." },
@@ -442,7 +446,7 @@ export const KING_LOBBY_LINES: { minLevel: number; maxLevel: number; text: strin
   { minLevel: 61, maxLevel: 80, text: "A Yeti! The mice promised it cheese. My cheese! The cheek." },
   { minLevel: 62, maxLevel: 100, text: "Lift a Yeti together, or find a stronger hand. I believe in you." },
   { minLevel: 67, maxLevel: 90, text: "It almost took the spoon. Imagine a Yeti on our side!" },
-  { minLevel: 7, maxLevel: 100, text: "The Golden Fondue shines so brightly. Almost as bright as my smile." },
+  { minLevel: slotLevel('support'), maxLevel: 100, text: "The Golden Fondue shines so brightly. Almost as bright as my smile." },
   // Late: the King softens
   { minLevel: 72, maxLevel: 99, text: "That Duchess has a very fine spyglass. And very fine manners, I hear." },
   { minLevel: 75, maxLevel: 100, text: "You have been here so long. Do you miss home? Wherever that is." },
