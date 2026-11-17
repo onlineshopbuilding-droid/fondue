@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
+import { GAME_VERSION } from '../../src/config/game';
+import { STORAGE_PREFIX } from '../../src/profile/schema';
 import { GAME_WAIT, startSolo, waitForGame } from './helpers';
 
 /**
@@ -128,7 +130,7 @@ test('developer overview: version, cheese sum, roadmap, and a decision becomes a
     execFileSync(process.execPath, ['scripts/dev-page.ts', dir], { stdio: 'pipe', timeout: 150_000 });
     await page.addInitScript(() => { (window as any).open = () => null; });
     await page.goto(pathToFileURL(join(dir, 'index.html')).href);
-    await expect(page.locator('#gameVersion')).toHaveText('v0.3');
+    await expect(page.locator('#gameVersion')).toHaveText(`v${GAME_VERSION}`);
     await expect(page.locator('#cheeseSum')).toContainText('500');
     await expect(page.locator('#fahrplan')).toContainText('v1.0');
     await expect(page.locator('#waffen')).toContainText('Rolling Wheel');
@@ -147,11 +149,11 @@ test('developer overview: version, cheese sum, roadmap, and a decision becomes a
     expect(body).toContain('### D3-09 Replayed levels give gold');
     expect(body).toContain('Weniger Gold beim Wiederholen');
 
-    // The draft survives a reload (only under fondue.v3.dev.*).
+    // The draft survives a reload (only under the build's own prefix, fondue.v4.dev.*).
     await page.reload();
     await expect(page.locator('[data-decision="D3-09"] textarea')).toHaveValue('Weniger Gold beim Wiederholen, bitte testen.');
     const keys = await page.evaluate(() => Object.keys(localStorage));
-    expect(keys.every((k) => k.startsWith('fondue.v3.dev.'))).toBe(true);
+    expect(keys.every((k) => k.startsWith(`${STORAGE_PREFIX}dev.`))).toBe(true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

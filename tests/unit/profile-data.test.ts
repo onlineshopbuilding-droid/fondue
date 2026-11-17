@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultFlags } from '../../src/config/flags';
 import { TUNING_DEFAULT } from '../../src/config/tuning';
 import {
-  LocalProfileStore, MIGRATION_STEPS, PROFILE_KEY, PROFILE_VERSION, STORAGE_PREFIX, exportCode, freshProfile, importCode, migrate,
+  LocalProfileStore, MIGRATION_STEPS, PROFILE_KEY, PROFILE_VERSION, STORAGE_PREFIX, V3_IMPORT_KEY, exportCode, freshProfile, importCode, migrate,
   type MigrationStep, type ProfileData,
 } from '../../src/profile';
 
@@ -240,10 +240,11 @@ describe('migrate', () => {
 });
 
 describe('storage keys', () => {
-  it('every key of v0.3 starts with fondue.v3.', () => {
-    expect(STORAGE_PREFIX).toBe('fondue.v3.');
-    expect(PROFILE_KEY).toBe('fondue.v3.profile');
+  it('every key of v0.4 starts with fondue.v4.', () => {
+    expect(STORAGE_PREFIX).toBe('fondue.v4.');
+    expect(PROFILE_KEY).toBe('fondue.v4.profile');
     expect(PROFILE_KEY.startsWith(STORAGE_PREFIX)).toBe(true);
+    expect(V3_IMPORT_KEY.startsWith(STORAGE_PREFIX)).toBe(true);
   });
 });
 

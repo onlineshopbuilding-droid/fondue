@@ -5,21 +5,23 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { addGold } from '../../src/modes/progress';
 import {
-  LocalProfileStore, MemoryProfileStore, PROFILE_KEY, Profile, SAVE_DELAY_MS, SAVE_FAILED_NOTICE,
+  LocalProfileStore, MemoryProfileStore, PROFILE_KEY, Profile, SAVE_DELAY_MS, SAVE_FAILED_NOTICE, STORAGE_PREFIX, V3_PROFILE_KEY,
 } from '../../src/profile';
 
 /** A fake localStorage that can be made full; it records every key that is touched. */
 function fakeLocalStorage(initial: Record<string, string> = {}) {
   const memory = new Map(Object.entries(initial));
   const touched = new Set<string>();
+  /** Keys that were written or removed. */
+  const changed = new Set<string>();
   const state = { full: false };
   const fake = {
     getItem: (key: string) => { touched.add(key); return memory.get(key) ?? null; },
-    setItem: (key: string, value: string) => { touched.add(key); if (state.full) throw new Error('QuotaExceededError'); memory.set(key, value); },
-    removeItem: (key: string) => { touched.add(key); memory.delete(key); },
+    setItem: (key: string, value: string) => { touched.add(key); changed.add(key); if (state.full) throw new Error('QuotaExceededError'); memory.set(key, value); },
+    removeItem: (key: string) => { touched.add(key); changed.add(key); memory.delete(key); },
   };
   (globalThis as { localStorage?: unknown }).localStorage = fake;
-  return { memory, touched, state };
+  return { memory, touched, changed, state };
 }
 
 afterEach(() => {
@@ -114,6 +116,8 @@ describe('the old save of v0.2 (fondue.profile)', () => {
     expect(ls.memory.get('fondue.profile')).toBe(sentinel);
     expect(ls.memory.get('fondue.settings.v1')).toBe('{"muted":true}');
     expect(ls.memory.get('fondue.scores.v1')).toBe('[]');
-    for (const key of ls.touched) expect(key.startsWith('fondue.v3.')).toBe(true);
+    // v0.4 writes only its own keys; outside them it only reads the v0.3 profile for the import.
+    for (const key of ls.changed) expect(key.startsWith(STORAGE_PREFIX)).toBe(true);
+    for (const key of ls.touched) expect(key.startsWith(STORAGE_PREFIX) || key === V3_PROFILE_KEY).toBe(true);
   });
 });

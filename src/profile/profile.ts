@@ -5,10 +5,11 @@ import type { Flags } from '../config/flags';
 import type { StationId } from '../config/keep';
 import type { Tuning } from '../config/tuning';
 import { exportCode, importCode } from './codec';
-import { migrate } from './migrations';
+import { V3_PROFILE_KEY } from './fromV3';
+import { migrate, migrateV3ToV4 } from './migrations';
 import { asTier, isRecord, sanitizeProfile, sanitizeRating, sanitizeSettings } from './sanitize';
 import {
-  CLAIMED_RUNS_LIMIT, HAND_TIER_MAX, HAND_TIER_MIN, PROFILE_KEY, SCORES_LIMIT,
+  CLAIMED_RUNS_LIMIT, HAND_TIER_MAX, HAND_TIER_MIN, PROFILE_KEY, SCORES_LIMIT, V3_IMPORT_KEY,
   WEAPON_TIER_MAX, WEAPON_TIER_MIN, freshProfile, freshRating, freshWorld,
   type DevRating, type ProfileData, type ProfileSettings, type ScoreEntry, type WorldProgress,
 } from './schema';
@@ -73,19 +74,27 @@ export class Profile {
   }
 
   /**
-   * Reads the profile from the store. Without a stored profile, it starts fresh; keys of earlier
-   * game versions are never read. A damaged profile is set aside under its own key and replaced. Never throws.
+   * Reads the profile from the store. A damaged profile is set aside under its own key and replaced.
+   * Without a stored profile, the v0.3 save is imported once (read only, never changed or removed;
+   * V3_IMPORT_KEY remembers that the import was done), otherwise it starts fresh. The v0.2 save is
+   * never read. Never throws.
    */
   static async load(store: ProfileStore): Promise<Profile> {
     const text = await readQuietly(store, PROFILE_KEY);
     const stored = text === null ? null : parseStored(text);
     if (stored) return new Profile(store, migrate(stored));
 
-    const profile = new Profile(store, freshProfile());
+    // The import runs only when there never was a v0.4 profile and it was not done before.
+    const importNow = text === null && (await readQuietly(store, V3_IMPORT_KEY)) === null;
+    const old = importNow ? await readQuietly(store, V3_PROFILE_KEY) : null;
+    const oldData = old === null ? null : parseStored(old);
+    const profile = new Profile(store, oldData ? migrateV3ToV4(oldData) : freshProfile());
     if (text !== null) await profile.setAside(text);
     profile.dirty = true;
     profile.saving = profile.saveNow();
     await profile.flush();
+    // The mark comes after the profile, so a failed profile write leaves the import for the next start.
+    if (importNow && !profile.failed) await profile.markV3Imported(oldData !== null);
     return profile;
   }
 
@@ -426,6 +435,15 @@ export class Profile {
     } else {
       this.failed = false;
       this.noticeShown = false;
+    }
+  }
+
+  /** Remembers that the v0.3 import was done, so a later start never imports again. */
+  private async markV3Imported(imported: boolean): Promise<void> {
+    try {
+      await this.store.write(V3_IMPORT_KEY, JSON.stringify({ imported, at: new Date().toISOString() }));
+    } catch {
+      // Without the mark the import only runs again while no v0.4 profile is stored.
     }
   }
 

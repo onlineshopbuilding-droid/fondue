@@ -1,6 +1,7 @@
 // Packs a profile into one line of text and back, as a backup and for moving to another device.
+// A FONDUE3 code of v0.3 (profile version 1) is imported into v0.4 through the migration steps.
 // Format: FONDUE3.<base64url of the JSON in UTF-8>.<FNV-1a checksum of those bytes, 8 hex digits>
-import { GAME_NAME } from '../config/game';
+import { GAME_NAME, GAME_VERSION } from '../config/game';
 import { migrate } from './migrations';
 import { isRecord } from './sanitize';
 import { PROFILE_FORMAT, type ProfileData } from './schema';
@@ -63,7 +64,7 @@ function decodeJson(bytes: Uint8Array): unknown {
 /** The profile inside a code, brought to the current version. Throws an Error if the code is broken. */
 export function importCode(code: string): ProfileData {
   const parts = String(code).replace(/\s+/g, '').split('.');
-  if (OLD_PREFIXES.includes(parts[0])) throw new Error('This code is from an older version of the game and cannot be used in v0.3.');
+  if (OLD_PREFIXES.includes(parts[0])) throw new Error(`This code is from an older version of the game and cannot be used in v${GAME_VERSION}.`);
   if (parts[0] !== PREFIX) throw new Error(`This is not a ${GAME_NAME} profile code.`);
   if (parts.length !== 3 || !parts[1] || !parts[2]) throw new Error('Profile code is incomplete.');
   const bytes = fromBase64Url(parts[1]);

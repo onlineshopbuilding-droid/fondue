@@ -18,6 +18,7 @@ import { GAME_NAME, GAME_VERSION } from '../../src/config/game';
 import { HAND_RULES, HANDS } from '../../src/config/hand';
 import { CASTLE_TIERS, STATIONS, STATION_IDS } from '../../src/config/keep';
 import { SLOTS } from '../../src/config/slots';
+import { STORAGE_PREFIX } from '../../src/profile/schema';
 import { CREST_COST, TIER_CAP_BY_LEVEL, WEAPON_TIER_GOLD, tierCrests, weaponTierGold } from '../../src/config/tiers';
 import { MAX_TIER, WEAPONS, type WeaponDef } from '../../src/config/weapons';
 import { buildIssueUrls } from './issues';
@@ -29,8 +30,8 @@ export const CLASSIC_URL = 'https://onlineshopbuilding-droid.github.io/fondue/cl
 export const ISSUE_URL = 'https://github.com/onlineshopbuilding-droid/fondue/issues/new';
 /** Upper bound of one issue address. */
 export const ISSUE_MAX = 7000;
-/** Browser storage of the decision drafts (only this key, prefix fondue.v3.). */
-export const DRAFT_KEY = 'fondue.v3.dev.decisions';
+/** Browser storage of the decision drafts (only this key, under the build's own storage prefix). */
+export const DRAFT_KEY = `${STORAGE_PREFIX}dev.decisions`;
 
 interface AcceptanceItem { id: string; titel: string; pruefung: string; status: string; beleg?: string }
 

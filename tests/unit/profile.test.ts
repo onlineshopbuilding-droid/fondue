@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { defaultFlags } from '../../src/config/flags';
 import { TUNING_DEFAULT } from '../../src/config/tuning';
 import {
-  MemoryProfileStore, PROFILE_KEY, PROFILE_VERSION, Profile,
+  MemoryProfileStore, PROFILE_KEY, PROFILE_VERSION, Profile, STORAGE_PREFIX, V3_PROFILE_KEY,
   type ProfileStore, type ScoreEntry,
 } from '../../src/profile';
 import { addCrests, addGold } from '../../src/modes/progress';
@@ -151,7 +151,12 @@ class RecordingStore extends MemoryProfileStore {
 }
 
 describe('Profile: save data of earlier game versions', () => {
-  // v0.2 (/fondue/) and classic (/fondue/classic/) share one browser storage with v0.3 (/fondue/next/).
+  // v0.2, v0.3 and classic share one browser storage with v0.4. v0.4 only reads the v0.3 profile (import).
+  /** Every touched key is v0.4's own, apart from reading the v0.3 profile once. */
+  const ownOrV3Read = (store: RecordingStore) => {
+    for (const key of [...store.writes, ...store.removes]) expect(key.startsWith(STORAGE_PREFIX)).toBe(true);
+    for (const key of store.reads) expect(key.startsWith(STORAGE_PREFIX) || key === V3_PROFILE_KEY).toBe(true);
+  };
   const OLD_PROFILE = JSON.stringify({ version: 1, name: 'Tim', stars: 120, unlockedWeapons: ['crossbow'], handTier: 3 });
   const OLD: Record<string, string> = {
     'fondue.profile': OLD_PROFILE,
@@ -181,16 +186,17 @@ describe('Profile: save data of earlier game versions', () => {
     for (const [key, value] of Object.entries(OLD)) expect(store.entries.get(key)).toBe(value);
     expect(store.reads).toContain(PROFILE_KEY);
     expect(store.writes).toContain(PROFILE_KEY);
-    for (const key of store.touched()) expect(key.startsWith('fondue.v3.')).toBe(true);
+    ownOrV3Read(store);
     for (const key of Object.keys(OLD)) expect(store.touched()).not.toContain(key);
   });
 
-  it('sets a damaged v0.3 profile aside under a fondue.v3. key, still without touching old keys', async () => {
+  it('sets a damaged v0.4 profile aside under a fondue.v4. key, still without touching old keys', async () => {
     const store = new RecordingStore({ ...OLD, [PROFILE_KEY]: '{oops' });
     const profile = await Profile.load(store);
     expect(profile.data.name).toBe('');
     for (const [key, value] of Object.entries(OLD)) expect(store.entries.get(key)).toBe(value);
-    for (const key of store.touched()) expect(key.startsWith('fondue.v3.')).toBe(true);
+    ownOrV3Read(store);
+    for (const key of Object.keys(OLD)) expect(store.touched()).not.toContain(key);
     expect(brokenKeys(store)).toHaveLength(1);
   });
 });

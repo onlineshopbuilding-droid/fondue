@@ -7,15 +7,22 @@ import type { Difficulty } from '../config/waves';
 import type { StationId } from '../config/keep';
 import { TIER_MAX, TIER_MIN } from '../config/tiers';
 
-export const PROFILE_VERSION = 1;
+/** 1 = v0.3, 2 = v0.4 (castle tier raised to keep every slot open in v0.3, see fromV3.ts). */
+export const PROFILE_VERSION = 2;
 
 /**
- * Prefix of every storage key of v0.3. All builds on the site (/fondue/, /fondue/next/, /fondue/classic/)
- * share one browser storage, so v0.3 never reads or writes a key outside this prefix.
+ * Prefix of every storage key of v0.4, the only place of it. All builds on the site (/fondue/,
+ * /fondue/next/, /fondue/vX.Y/) share one browser storage, so v0.4 never writes or removes a key outside
+ * this prefix. It reads one key outside it, once: the v0.3 profile for the import (fromV3.ts).
  */
-export const STORAGE_PREFIX = 'fondue.v3.';
+export const STORAGE_PREFIX = 'fondue.v4.';
 /** Storage key of the profile. A damaged profile is set aside under `${PROFILE_KEY}.broken.<time>`. */
 export const PROFILE_KEY = `${STORAGE_PREFIX}profile`;
+/**
+ * Marks that the one-time import of the v0.3 save was done (with or without a v0.3 save). While it
+ * exists, a missing v0.4 profile starts fresh instead of importing again.
+ */
+export const V3_IMPORT_KEY = `${STORAGE_PREFIX}importedV3`;
 
 export const WEAPON_TIER_MIN = TIER_MIN;
 export const WEAPON_TIER_MAX = TIER_MAX;
