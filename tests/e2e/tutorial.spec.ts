@@ -115,7 +115,7 @@ for (const d of DEVICES) {
     expect((await gameState(page))!.level).toBe(2);
     await endLevel(page);
     await waitScreen(page, 'won');
-    await expect(page.locator('#continue')).toHaveText('Continue');
+    await expect(page.locator('#continue')).toHaveText('Back');
     await expect(page.locator('#kingSays', { hasText: 'slot' })).toHaveCount(0);
     expect(await page.evaluate(() => (window as any).__fondue.profile.data.seen.slotIntros as number[])).toEqual([]);
     expect(await page.evaluate(() => (window as any).__fondue.profile.data.keep.castleTier as number)).toBe(1);
