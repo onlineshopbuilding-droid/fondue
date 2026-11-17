@@ -129,6 +129,13 @@ export class TuningPanel {
     el.addEventListener('input', (ev) => this.onInput(ev));
     el.addEventListener('change', (ev) => this.onChange(ev));
     el.addEventListener('click', (ev) => this.onClick(ev));
+    // A tapped number field marks its value, so typing replaces it instead of adding digits to it.
+    // Selected a frame later, because a tap's mouseup would otherwise clear the selection again.
+    el.addEventListener('focusin', (ev) => {
+      const t = ev.target as HTMLInputElement;
+      if (t.tagName !== 'INPUT' || t.type !== 'number') return;
+      requestAnimationFrame(() => { if (document.activeElement === t) t.select(); });
+    });
     this.root.appendChild(el);
     el.scrollTop = scroll;
   }
