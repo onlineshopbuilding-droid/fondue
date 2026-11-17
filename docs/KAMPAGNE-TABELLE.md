@@ -1,25 +1,24 @@
 # Kampagne: alle 100 Level
 
-Diese Tabelle zeigt jedes Level der Kampagne so, wie das Spiel es wirklich spielt. Sie wird aus dem Code erzeugt und darf nicht von Hand geändert werden. Ein Test (`tests/unit/campaignTable.test.ts`) schlägt fehl, sobald sie nicht mehr zum Code passt. Neu erzeugen: `node scripts/campaign-table.ts`. Dieselben Daten, mit allen Räubern je Tag, stehen auch auf der Entwickler-Übersicht unter `/fondue/dev/`.
+Diese Tabelle zeigt jedes Level der Kampagne so, wie das Spiel es wirklich spielt. Sie wird aus dem Code erzeugt und darf nicht von Hand geändert werden. Ein Test (`tests/unit/campaignTable.test.ts`) schlägt fehl, sobald sie nicht mehr zum Code passt. Neu erzeugen: `node scripts/campaign-table.ts`. Dieselben Daten, mit allen Räubern je Welle, stehen auch auf der Entwickler-Übersicht unter `/fondue/dev/`.
 
 ## Wie die Level entstehen
 
 Die 100 Level werden aus Regeln gebaut, alle in `src/config/worlds/fondue/campaign.ts`:
 
-- **Die Kurve (`CURVE`)** legt fest, wie viele Räuber kommen und wie stark sie sind. Sie wächst über alle 100 Level und innerhalb eines Levels von Tag zu Tag. Wer das ganze Spiel leichter oder schwerer machen will, ändert hier eine Zahl.
+- **Die Kurve (`CURVE`)** legt fest, wie viele Räuber kommen und wie stark sie sind. Sie wächst über alle 100 Level und innerhalb eines Levels von Welle zu Welle. Wer das ganze Spiel leichter oder schwerer machen will, ändert hier eine Zahl.
 - **`FIRST_LEVEL`** sagt, in welchem Level jeder Räuber zum ersten Mal kommt. In diesem Level erscheint auch das Fenster „New enemy“.
 - **Boss-Level** sind jedes zehnte Level. Namen und Sätze der Bosse stehen in `story.ts`, die Riesen und Zusatz-Räuber in `BOSS_BIG` und `BOSS_EXTRA`.
 - **Besonderheiten (`TWISTS`)** wie Nacht, „nur Reiter“ oder viele Schwere machen einzelne Level anders als ihre Nachbarn.
 - **Landschaften (`LANDSCAPE_FROM`)** wechseln ungefähr alle 12 Level.
 - **Freischaltungen** stehen in `src/config/worlds/fondue/unlocks.ts`: eine Zeile je Freischaltung, mit dem Level, dessen Sieg sie bringt.
-- **Sterne** je Level stehen in `src/config/stars.ts` (normal, besonders, Boss).
+- **Burg-Stufen** werden mit dem Sieg eines Levels kaufbar (`CASTLE_TIER_LEVEL` in `src/config/slotTiers.ts`, Preise in `src/config/keep.ts`); die Tabelle „Burg-Stufen“ unten zeigt alle.
 
 ## Ein einzelnes Level ändern
 
 Ganz unten in `campaign.ts` steht `LEVEL_OVERRIDES`. Dort trägt man das Level ein und nur die Felder, die anders sein sollen. Alles andere kommt weiter aus den Regeln. Beispiele:
 
-- Level 37 soll 5 Sterne geben: `37: { stars: 5 },`
-- Level 12 soll genau festgelegte Tage haben: die Tage von Hand aufschreiben, ein Eintrag je Tag, zum Beispiel `12: { days: [{ counts: { grunt: 30, bomber: 4 }, night: false, seconds: 50, big: {} }, …] },`.
+- Level 12 soll genau festgelegte Wellen haben: die Wellen von Hand aufschreiben, ein Eintrag je Welle (Feld `waves`, Form wie `WaveDef` in `src/config/worlds/types.ts`).
 - Level 25 soll anders heißen: `25: { name: 'Cheese Bridge' },` (Spieltexte bleiben Englisch).
 
 Danach `node scripts/campaign-table.ts` ausführen, damit diese Tabelle wieder stimmt, und `npm run balance`, damit man sieht, ob das Level noch fair ist. Level, die von Hand geändert sind, haben in der Tabelle ein ✎.
@@ -74,6 +73,20 @@ Stand: 100 Level, 1989 Wellen, 10 Boss-Level, geplant zusammen 498 Minuten. Jede
 | Shade | 44 |
 | Crowcaller | 52 |
 | Yeti | 61 |
+
+### Burg-Stufen
+
+Jede Burg-Stufe ab 2 wird mit dem Sieg im genannten Level kaufbar und kostet dann Gold (Stufe 7 zusätzlich Raider Crests). Sie öffnet den genannten Slot; die Stufen 6 und 7 geben nur mehr Torleben.
+
+| Burg-Stufe | Name | kaufbar ab Level | Gold | Raider Crests | öffnet |
+|---|---|---|---|---|---|
+| 1 | Oak Gate | Start | 0 | 0 | Damage |
+| 2 | Iron-Bound Gate | 6 | 400 | 0 | Slow |
+| 3 | Stone Keep | 12 | 1200 | 0 | Gate |
+| 4 | Bannered Keep | 20 | 4000 | 0 | Support |
+| 5 | Gilded Keep | 28 | 10000 | 0 | Passive |
+| 6 | Runic Fortress | 50 | 24000 | 0 | mehr Torleben |
+| 7 | Alpine Citadel | 75 | 50000 | 50 | mehr Torleben |
 
 Von Anfang an da: Waffe Rolling Wheel.
 

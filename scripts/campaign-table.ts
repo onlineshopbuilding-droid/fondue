@@ -36,6 +36,8 @@ export interface CampaignData {
   stationNames: Record<string, string>;
   gateNames: string[];
   slotNames: string[];
+  /** v0.4: the castle tiers, from which won level each can be built, its price and the slot it opens. */
+  castle: { tier: number; name: string; level: number; gold: number; crests: number; opens: string[] }[];
 }
 
 export function campaignData(s: CampaignSources, worldId = s.worlds.DEFAULT_WORLD): CampaignData {
@@ -58,6 +60,11 @@ export function campaignData(s: CampaignSources, worldId = s.worlds.DEFAULT_WORL
     stationNames: Object.fromEntries(Object.entries(s.keep.STATIONS).map(([id, st]) => [id, st.name])),
     gateNames: s.keep.CASTLE_TIERS.map((g) => g.name),
     slotNames: s.slots.SLOTS.map((sl) => sl.name),
+    castle: s.keep.CASTLE_TIERS.map((c, i) => ({
+      tier: i + 1, name: c.name, gold: c.gold, crests: c.crests,
+      level: world.unlocks.find((u) => u.kind === 'castle' && u.tier === i + 1)?.level ?? 0,
+      opens: s.slots.SLOTS.filter((sl) => sl.castleTier === i + 1).map((sl) => sl.name),
+    })),
   };
 }
 
@@ -149,6 +156,10 @@ export function campaignTable(d: CampaignData): string {
 
   out.push('', '### Erster Auftritt der Räuber (`FIRST_LEVEL`)', '', '| Räuber | Level |', '|---|---|');
   for (const [t, n] of Object.entries(d.firstLevel).sort((a, b) => a[1] - b[1])) out.push(`| ${d.enemyNames[t] ?? t} | ${n} |`);
+
+  out.push('', '### Burg-Stufen', '', 'Jede Burg-Stufe ab 2 wird mit dem Sieg im genannten Level kaufbar und kostet dann Gold (Stufe 7 zusätzlich Raider Crests). Sie öffnet den genannten Slot; die Stufen 6 und 7 geben nur mehr Torleben.', '');
+  out.push('| Burg-Stufe | Name | kaufbar ab Level | Gold | Raider Crests | öffnet |', '|---|---|---|---|---|---|');
+  for (const c of d.castle) out.push(`| ${c.tier} | ${c.name} | ${c.tier === 1 ? 'Start' : c.level} | ${c.gold} | ${c.crests} | ${c.opens.join(', ') || 'mehr Torleben'} |`);
 
   const start = d.unlocks.filter((u) => u.level === 0).map((u) => unlockText(u, d));
   if (start.length) out.push('', `Von Anfang an da: ${start.join(', ')}.`);
