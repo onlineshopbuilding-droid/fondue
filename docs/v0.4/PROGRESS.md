@@ -68,3 +68,12 @@ Stand 17.11.2026, 20:35 Uhr, aus `git log --stat a77caee..HEAD -- tests/` und de
 **Balance (Commits 5137729, e4c4759):** `tests/balance/balance.test.ts` meldet das Kampagnen-Level jedes Burg-Kaufs und die Versuche je Level 1 bis 15; Käufe zwischen Farm-Läufen werden mitgezählt. `tests/unit/campaignTable.test.ts` prüft die neue Spalte „Burg-Stufe kaufbar“ der Level-Tabelle.
 
 Neu hinzugekommen ohne Ersatz: `tests/unit/versionsAndDecisionsV4.test.ts`, `campaignCastle.test.ts`, Erweiterungen in `tests/e2e/dev-tools.spec.ts` (Entwickler-Übersicht, Cheat Burg-Stufe).
+
+## 22:30 Uhr – v0.4 ist live
+
+- **Verbrauch (21:58):** 5-Stunden-Fenster 31 %, Woche alle Modelle 2 %, Woche Fable 2 % (das Wochenfenster hat sich um 20:59 Uhr zurückgesetzt).
+- **Prüfung auf GitHub:** Der Lauf für Commit 361cdb1 hatte sechs rote Browser-Tests (`tutorial.spec`, `won.spec` auf drei Formaten), weil sie die alte Beschriftung „Continue“ des Sieg-Bildschirms erwarteten. Korrektur ad5952b (21:58 Uhr), danach alles grün (22:29 Uhr).
+  - Ersetzte Test-Erwartungen: `tutorial.spec.ts` erwartet nach Level 2 links „Back“ statt „Continue“; `won.spec.ts` prüft nach Level 1 „Back“ links und genau eine Hauptaktion rechts. Grund: Die Sieg-Bildschirme haben seit beb072b den Weg zurück links und die Hauptaktion rechts.
+- **Merge:** Pull Request 14 nach `main`, Merge-Commit 82cee21, um 22:29 Uhr und damit neun Minuten nach der Grenze von 22:20 Uhr. Die Korrektur lag vor der Grenze, das grüne Ergebnis danach. Tag `v0.4` auf 82cee21 gesetzt und gepusht. Pull Request 12 hat GitHub als gemergt markiert, dort steht ein Hinweis auf `/v0.3/`.
+- **Auslieferung:** Deploy-Lauf 44180351277 erfolgreich. `/fondue/` (App-Name „Fondue v0.4“), `/v0.1/`, `/classic/`, `/v0.2/`, `/v0.3/`, `/next/`, `/next/dev/`, `/dev/` antworten mit 200 und laden im Testbrowser ohne Konsolenfehler.
+- **Nicht geschafft:** die unabhängige Schlussprüfung der Etappe 5 als eigenes Durchspielen; vollständige Durchspiel-Prüfungen bis Level 8; eine aussagekräftige Messung der Bildrate; die Korrektur für den schwachen Bot (scheitert zuerst an Level 16). In `abnahme.json` stehen A6, C1, C3 und C4 deshalb auf offen.
