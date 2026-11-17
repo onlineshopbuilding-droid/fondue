@@ -9,7 +9,7 @@ import { QUICK_STARTS, QUICK_START_MAX_WAVE } from '../config/quickstart';
 import { TUNING_PRESETS, TUNING_SLIDERS, type Tuning } from '../config/tuning';
 import { MAX_TIER, WEAPONS, weaponById } from '../config/weapons';
 import { ENEMY_POPUPS } from '../config/worlds/fondue/story';
-import { campaignLength, cheatBadge, giveCheese, giveCrests, giveGold, setCastleTier, setStationTier, unlockLevels } from '../modes/cheats';
+import { campaignLength, cheatBadge, cheatCastleTier, giveCheese, giveCrests, giveGold, setStationTier, unlockLevels } from '../modes/cheats';
 import type { DevRating, Profile } from '../profile';
 import {
   editableFields, importOverrides, overrideCount, overrideOf, overridesAsText, resetWeaponOverrides, setWeaponOverride,
@@ -92,6 +92,8 @@ export class TuningPanel {
   private editTier = 1;
   private editorOpen = false;
   private editorNote = '';
+  /** True while the panel is being removed (see detach). */
+  private detaching = false;
   private unlockTo = 10;
 
   constructor(private root: HTMLElement, private host: TuningPanelHost) {}
@@ -99,13 +101,27 @@ export class TuningPanel {
   get open() { return this.el !== null; }
 
   toggle() {
-    if (this.el) { this.el.remove(); this.el = null; this.confirmReset = false; this.view = 'main'; return; }
+    if (this.el) { this.detach(); this.confirmReset = false; this.view = 'main'; return; }
     this.render();
   }
 
+  /**
+   * Takes the panel out of the page. Removing a focused field makes the browser fire blur and
+   * change on it while it is being removed; a handler that re-rendered then removed the same node
+   * a second time ("node to be removed is no longer a child"). Events during the removal are ignored.
+   */
+  private detach() {
+    const el = this.el;
+    this.el = null;
+    if (!el) return;
+    this.detaching = true;
+    try { if (el.isConnected) el.remove(); } finally { this.detaching = false; }
+  }
+
   private render() {
+    if (this.detaching) return;
     const scroll = this.el?.scrollTop ?? 0;
-    this.el?.remove();
+    this.detach();
     const el = document.createElement('div');
     el.id = 'tuning';
     this.el = el;
@@ -249,7 +265,7 @@ export class TuningPanel {
           <label class="dev-num">Win levels 1 to <input type="number" id="devUnlockTo" min="1" max="${campaignLength(t.world)}" value="${this.unlockTo}"></label>
           <button class="small secondary" data-act="unlockLevels" id="devUnlockLevels">Unlock</button>
         </div>
-        <div class="dev-label" style="margin-top:6px">Castle tier</div>
+        <div class="dev-label" style="margin-top:6px">Castle tier (opens the slots of that tier at once)</div>
         <div class="row dev-options">${castle}</div>
         ${stations}
       </div>`;
@@ -365,6 +381,7 @@ export class TuningPanel {
   refresh() { if (this.el) this.render(); }
 
   private onInput(ev: Event) {
+    if (this.detaching) return;
     const target = ev.target as HTMLInputElement;
     if (target.id === 'devLevel') {
       this.jumpLevel = clampInt(target.value, 1, this.host.levelCount());
@@ -398,6 +415,7 @@ export class TuningPanel {
 
   /** Selects and the ticks of the rating list report here, once per change. */
   private onChange(ev: Event) {
+    if (this.detaching) return;
     const target = ev.target as HTMLInputElement & HTMLSelectElement;
     if (target.id === 'devTierWeapon') { this.tierWeapon = target.value; this.render(); return; }
     if (target.id === 'devEditWeapon') { this.editWeapon = target.value; this.editTier = 1; this.editorOpen = true; this.render(); return; }
@@ -412,6 +430,7 @@ export class TuningPanel {
   }
 
   private onClick(ev: Event) {
+    if (this.detaching) return;
     const b = (ev.target as HTMLElement).closest('button');
     if (!b || b.disabled) return;
     if (b.dataset.flag && b.dataset.value) {
@@ -435,7 +454,7 @@ export class TuningPanel {
       return;
     }
     if (b.dataset.gold) { this.withCheat((t) => giveGold(t.profile, Number(b.dataset.gold))); return; }
-    if (b.dataset.castletier) { this.withCheat((t) => setCastleTier(t.profile, Number(b.dataset.castletier))); return; }
+    if (b.dataset.castletier) { this.withCheat((t) => cheatCastleTier(t.profile, Number(b.dataset.castletier))); return; }
     if (b.dataset.station && b.dataset.stationtier) {
       const id = b.dataset.station as StationId;
       const tier = Number(b.dataset.stationtier);
