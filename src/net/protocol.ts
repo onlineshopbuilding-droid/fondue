@@ -20,11 +20,14 @@ export type ClientCommand = Command extends infer C ? (C extends { p: number } ?
 export type NetMessage =
   // Handshake
   // `addr` is the page address (origin and path) the player opened; older builds do not send it.
-  | { k: 'hello'; ver: string; name: string; handTier: number; addr?: string }
-  | { k: 'welcome'; names: string[]; inGame: boolean; plan: RoomPlan }
+  // `castleTier` (v0.4) is the castle tier of the player's own profile, only shown in the room: a co-op
+  // run is always played with the host's castle. Optional, so older builds still understand the message.
+  | { k: 'hello'; ver: string; name: string; handTier: number; addr?: string; castleTier?: number }
+  | { k: 'welcome'; names: string[]; inGame: boolean; plan: RoomPlan; castleTiers?: number[] }
   | { k: 'reject'; reason: 'version' | 'full'; hostVer: string; hostAddr?: string }
   // Lobby
-  | { k: 'lobby'; names: string[]; plan: RoomPlan }
+  // `castleTiers`: one per name, the castle tier of each player's own profile (shown next to the names).
+  | { k: 'lobby'; names: string[]; plan: RoomPlan; castleTiers?: number[] }
   // The guest's hand may have grown between two runs in the same room.
   | { k: 'hand'; handTier: number }
   | { k: 'start' }

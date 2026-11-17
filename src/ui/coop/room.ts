@@ -77,6 +77,8 @@ export class CoopRoom {
   plan: RoomPlan;
   /** Guest side: the names in the room as the host sent them, and whether the guest is inside. */
   roomNames: string[] = [];
+  /** Guest side: the castle tier of each name in `roomNames`, as the host sent them (0 = unknown). */
+  roomCastles: number[] = [];
   joined = false;
 
   private room: RoomHost | null = null;
@@ -85,6 +87,8 @@ export class CoopRoom {
   private lastGuestName = '';
   /** The guest's hand tier as it last told the host. */
   private guestHand = 1;
+  /** Host side: the castle tier of the guest's own profile, only shown in the room (0 = unknown, an older build). */
+  private guestCastle = 0;
   /** Bumped whenever the room is left, so that slow connection attempts know they are stale. */
   private token = 0;
   private joining = false;
@@ -104,6 +108,25 @@ export class CoopRoom {
     const list: (string | null)[] = [me, ...others];
     while (list.length < ROOM_SEATS) list.push(null);
     return list;
+  }
+
+  /**
+   * The castle tier next to each seat of `members()`: own first, then the others (0 = unknown or a
+   * free seat). Only shown; a co-op run is always played with the host's castle.
+   */
+  memberCastles(): number[] {
+    const mine = this.app.profile.data.keep.castleTier;
+    let others: number[];
+    if (this.isHosting()) others = this.guestName ? [this.guestCastle] : [];
+    else others = this.joined ? this.roomNames.map((_, i) => this.roomCastles[i] ?? 0).filter((_, i) => i !== 1) : [];
+    const list = [mine, ...others];
+    while (list.length < ROOM_SEATS) list.push(0);
+    return list;
+  }
+
+  /** The castle tiers of the room as the host sends them, in the order of the names. */
+  private roomCastleTiers(): number[] {
+    return [this.app.profile.data.keep.castleTier, this.guestCastle];
   }
 
   /** True while this device has a room open as host. */
@@ -170,7 +193,7 @@ export class CoopRoom {
 
   private sendLobby() {
     if (!this.lobbyLink || this.app.session) return;
-    this.lobbyLink.send({ k: 'lobby', names: [this.app.playerName(), this.guestName], plan: this.plan });
+    this.lobbyLink.send({ k: 'lobby', names: [this.app.playerName(), this.guestName], plan: this.plan, castleTiers: this.roomCastleTiers() });
   }
 
   // Leaving ---------------------------------------------------------------------
@@ -268,14 +291,15 @@ export class CoopRoom {
     this.guestName = name;
     this.lastGuestName = this.guestName;
     this.guestHand = m.handTier;
+    this.guestCastle = m.castleTier ?? 0;
     this.lobbyLink = link;
     if (s instanceof HostSession && s.role === 'host') {
-      link.send({ k: 'welcome', names: s.sim.s.meta.names, inGame: true, plan: this.plan });
+      link.send({ k: 'welcome', names: s.sim.s.meta.names, inGame: true, plan: this.plan, castleTiers: this.roomCastleTiers() });
       this.attachToSession(s, link);
       this.app.toast(`${this.guestName} is back`);
       return;
     }
-    link.send({ k: 'welcome', names: [this.app.playerName(), this.guestName], inGame: false, plan: this.plan });
+    link.send({ k: 'welcome', names: [this.app.playerName(), this.guestName], inGame: false, plan: this.plan, castleTiers: this.roomCastleTiers() });
     this.watchLobbyLink(link);
     this.status = `${this.guestName} joined!`;
     this.error = false;
@@ -369,7 +393,7 @@ export class CoopRoom {
       if (token !== this.token) { link.close(); return; }
       this.joining = false;
       this.listenAsGuest(link, code);
-      link.send({ k: 'hello', ver: BUILD, name: this.app.playerName(), handTier: this.app.profile.data.keep.handTier, addr: ADDRESS });
+      link.send({ k: 'hello', ver: BUILD, name: this.app.playerName(), handTier: this.app.profile.data.keep.handTier, addr: ADDRESS, castleTier: this.app.profile.data.keep.castleTier });
     } catch (err) {
       this.joining = false;
       if (token !== this.token) return;
@@ -400,6 +424,7 @@ export class CoopRoom {
     switch (m.k) {
       case 'welcome':
         this.roomNames = m.names;
+        this.roomCastles = m.castleTiers ?? [];
         this.plan = m.plan;
         this.joined = true;
         if (m.inGame) { this.enterGuest(link); return; }
@@ -409,6 +434,7 @@ export class CoopRoom {
         break;
       case 'lobby':
         this.roomNames = m.names;
+        this.roomCastles = m.castleTiers ?? [];
         this.plan = m.plan;
         this.joined = true;
         this.sendHand(link);
