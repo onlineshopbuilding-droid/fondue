@@ -222,7 +222,8 @@ function weaponRow(ctx: ScreenContext, def: WeaponDef, slot: number): string {
       ? worn ? `<button class="small secondary" data-a="unequip" data-slot="${slot}" id="unequip-${def.id}">Take off</button>`
         : `<button class="small secondary" data-a="equip" data-slot="${slot}" data-id="${def.id}" id="equip-${def.id}">Wear</button>`
       : '';
-    acts = `${wear}${buyBlock(ctx, q, `Tier ${q.toTier}`)}`;
+    // The upgrade is the main action (first, large); wearing or taking off comes second and smaller (I-10).
+    acts = `<div class="sw-main-act">${buyBlock(ctx, q, `Tier ${q.toTier}`)}</div>${wear}`;
   }
   return `<div class="sw-row ${owned ? 'owned' : 'locked'} ${worn ? 'worn' : ''}" data-weapon-card="${def.id}">
       <img class="sw-pic" src="${weaponUri(def.id, tier || 1)}" alt="">
