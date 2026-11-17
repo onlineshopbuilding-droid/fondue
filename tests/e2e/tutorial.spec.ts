@@ -7,7 +7,8 @@ import { DEVICES, GAME_WAIT, endLevel, gameState, openGame, pointer, station, wa
 /**
  * The first minutes of a new player (D4, C2, C4) on the three devices: the prelude teaches the throw
  * and the Rolling Wheel, level 1 follows, the King explains cheese and gold and leads into the shop,
- * where the first upgrade is bought; winning level 2 opens the Slow slot and the King introduces it.
+ * where the first upgrade is bought. Winning level 2 opens no slot any more (v0.4): slots open with the
+ * castle tier, and the Slow slot's introduction after building castle tier 2 is in castleUpgrade.spec.ts.
  */
 
 const SHOTS = 'docs/screenshots/v0.3';
@@ -35,7 +36,7 @@ async function press(page: Page, d: Device, selector: string) {
 }
 
 for (const d of DEVICES) {
-  test(`${d.name}: a fresh profile plays the prelude, level 1 and the first upgrade, then meets the Slow slot`, async ({ browser }) => {
+  test(`${d.name}: a fresh profile plays the prelude, level 1 and the first upgrade; level 2 opens no slot`, async ({ browser }) => {
     test.setTimeout(process.env.CI ? 600_000 : 240_000);
     // No ?menu: a new player lands in the prelude, not in a menu.
     const { context, page, errors } = await openGame(browser, d, '?seed=3');
@@ -103,7 +104,7 @@ for (const d of DEVICES) {
     expect(await page.evaluate(() => (window as any).__fondue.profile.data.seen.tips.includes('firstUpgrade'))).toBe(true);
     await page.screenshot({ path: `${SHOTS}/tutorial-upgraded-${d.name}.png` });
 
-    // Level 2 won: the Slow slot opens, and the King introduces it on the win screen (C2).
+    // Level 2 won: no slot opens and no slot is introduced (v0.4: slots open with the castle tier).
     await press(page, d, '#shop [data-a="main"]');
     await station(page, 'campaign');
     await press(page, d, '.cm-st[data-level="2"]');
@@ -112,10 +113,10 @@ for (const d of DEVICES) {
     expect((await gameState(page))!.level).toBe(2);
     await endLevel(page);
     await waitScreen(page, 'won');
-    await expect(page.locator('#kingSays')).toContainText('This is your Slow slot.');
     await expect(page.locator('#continue')).toHaveText('Continue');
-    expect(await page.evaluate(() => (window as any).__fondue.profile.data.seen.slotIntros as number[])).toEqual([1]);
-    await page.screenshot({ path: `${SHOTS}/slot-intro-${d.name}.png` });
+    await expect(page.locator('#kingSays', { hasText: 'slot' })).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__fondue.profile.data.seen.slotIntros as number[])).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__fondue.profile.data.keep.castleTier as number)).toBe(1);
     expect(errors).toEqual([]);
     await context.close();
   });
