@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { DEVICES, openGame, tapStation, waitFor, waitForLobby, waitScreen, type Device } from './helpers';
+import { DEVICES, openGame, setCastleTier, tapStation, waitFor, waitForLobby, waitScreen, type Device } from './helpers';
 
 /**
  * The Keep Shop (D1), the loadout before a level (D2) and the level card (D3), on all three devices:
@@ -71,7 +71,8 @@ for (const d of DEVICES) {
     const forks = page.locator('[data-weapon-card="forks"]');
     await expect(forks.locator('button[data-a="buy"]')).toContainText('Unlock');
     await tap(page, d, '[data-weapon-card="forks"] button[data-a="buy"]');
-    await expect(page.locator('#walletCheese')).toHaveText('32');
+    // 40 cheese minus the Fondue Forks' price (5 since v0.4 sorted the cheese prices by unlock level).
+    await expect(page.locator('#walletCheese')).toHaveText('35');
     expect((await keep(page)).weapons.forks.tier).toBe(1);
     // A locked weapon says when it comes.
     await expect(page.locator('[data-weapon-card="comet"]')).toContainText('Unlocks after winning level 44');
@@ -100,12 +101,13 @@ for (const d of DEVICES) {
     await page.screenshot({ path: `${SHOTS}/shop-upgrade-${d.name}.png` });
     await tap(page, d, '#shopSide button[data-a="buy"]');
     expect((await keep(page)).castleTier).toBe(2);
-    // The cap: after level 14 the castle goes up to tier 4; tier 5 needs a later level, and the shop says which.
+    // Each castle tier needs its won level (v0.4): after level 14 the castle goes up to tier 3; tier 4
+    // needs level 20, and the shop says which.
     await tap(page, d, '#shopSide button[data-a="buy"]');
     expect((await keep(page)).castleTier).toBe(3);
-    await tap(page, d, '#shopSide button[data-a="buy"]');
-    expect((await keep(page)).castleTier).toBe(4);
-    await expect(page.locator('#shopSide')).toContainText('Win level 25 to build tier 5');
+    await expect(page.locator('#shopSide button[data-a="buy"]')).toBeDisabled();
+    expect((await keep(page)).castleTier).toBe(3);
+    await expect(page.locator('#shopSide')).toContainText('Win level 20 to build this');
     // Locked slot and locked station explain themselves.
     await tap(page, d, '#spot-perch');
     await expect(page.locator('#shopSide')).toContainText('after winning level 70');
@@ -124,6 +126,8 @@ for (const d of DEVICES) {
   test(`${d.name}: level card: facts, cheese and loadout; two taps from the map to the battle`, async ({ browser }) => {
     const { context, page, errors } = await openGame(browser, d, '?menu=1');
     await grant(page, 3, { cheese: 10, gold: 0, crests: 0 });
+    // The slow slot opens with castle tier 2 (v0.4).
+    await setCastleTier(page, 2);
     await page.evaluate(() => {
       const a = (window as any).__fondue;
       a.profile.edit((d: any) => { d.keep.weapons.cheese = { tier: 2 }; d.worlds[a.world].cheese['2'] = 0b00111; });
