@@ -1,6 +1,7 @@
 // Spending between runs for a scripted player, through the progress API only (nothing is bought during a run):
-// unlocks with cheese (weapons for open slots, then stations), then tiers with gold (hand, castle, the weapons it
-// plays or plans to play), and the weapon it likes best in each open slot is worn.
+// unlocks with cheese (weapons for open slots, then stations), then the next castle tier as soon as the campaign
+// unlocks it (v0.4: the castle opens the slots, so a planning player saves gold for it), then tiers with gold
+// (hand, the weapons it plays or plans to play), and the weapon it likes best in each open slot is worn.
 // Etappe 4 (balance): every bot has a personality (a taste per weapon from a seed), so different runs build
 // different keeps and several weapons per slot get played (C3). A "no upgrades" player never spends gold.
 import { STATION_IDS } from '../config/keep';
@@ -90,9 +91,24 @@ export function equipPreferred(profile: Profile, skill: BotSkill, world = 'fondu
 const label = (t: Target): string => (t.kind === 'weapon' || t.kind === 'station' ? t.id : t.kind);
 
 /**
+ * Is the player saving gold for the next castle tier? True when that tier is already unlocked by the campaign
+ * and only gold is missing (for tier 7 the crests must be there already, or saving gold would not help).
+ * The castle is the measure of progress (v0.4): it opens the next slot, so a player who plans (Mid, Great)
+ * buys nothing else with gold until it is built. A Poor player does not plan ahead: it builds the castle as
+ * soon as it can pay for it, but spends on whatever is cheapest in between.
+ */
+export function savingForCastle(profile: Profile, skill: BotSkill, world = 'fondue', style: SpendStyle = DEFAULT_STYLE): boolean {
+  if (!style.upgrades || skill.shop === 'random') return false;
+  const q = quote(profile, { kind: 'castle' }, world);
+  return q.reason === 'gold' && profile.data.wallet.crests >= q.price.crests;
+}
+
+/**
  * Spends cheese, gold and crests of a profile and returns what was bought.
  *   Cheese: every weapon and station it can unlock, cheapest first.
- *   Gold (unless style.upgrades is off): the cheapest step among hand, castle and the weapons it plays or plans, until nothing fits.
+ *   Gold (unless style.upgrades is off): the next castle tier first, as soon as the campaign unlocks it; while
+ *   only gold is missing for it, a planning player saves (savingForCastle). Otherwise the cheapest step among
+ *   hand and the weapons it plays or plans, until nothing fits.
  */
 export function spendProgress(profile: Profile, skillArg: string | BotSkill, world = 'fondue', style: SpendStyle = DEFAULT_STYLE): ArmouryBuy[] {
   const skill = skillOf(skillArg);
@@ -106,7 +122,11 @@ export function spendProgress(profile: Profile, skillArg: string | BotSkill, wor
     const options = targets.map((t) => quote(profile, t, world)).filter((q) => q.allowed && (style.upgrades || q.action === 'unlock'));
     if (options.length === 0) break;
     options.sort((a, b) => (a.price.cheese - b.price.cheese) || (a.price.gold - b.price.gold));
-    const pick = options.find((q) => q.price.cheese > 0) ?? options[0];
+    const castle = options.find((q) => q.target.kind === 'castle');
+    const cheese = options.find((q) => q.price.cheese > 0);
+    // Cheese unlocks cost no gold and come first; then the castle; then, unless saving for it, the cheapest step.
+    if (!cheese && !castle && savingForCastle(profile, skill, world, style)) break;
+    const pick = cheese ?? castle ?? options[0];
     const done = buy(profile, pick.target, world);
     if (!done.allowed) break;
     bought.push({ item: label(pick.target), tier: done.toTier, price: done.price });
@@ -117,10 +137,14 @@ export function spendProgress(profile: Profile, skillArg: string | BotSkill, wor
   return bought;
 }
 
-/** Gold still wanted: the cheapest step the player would buy that only lacks gold (0 when gold is not what holds it back). */
+/**
+ * Gold still wanted: the cheapest step the player would buy that only lacks gold (0 when gold is not what holds
+ * it back). While saving for the castle, that is the castle's price.
+ */
 export function goldWanted(profile: Profile, skillArg: string | BotSkill, world = 'fondue', style: SpendStyle = DEFAULT_STYLE): number {
   if (!style.upgrades) return 0;
   const skill = skillOf(skillArg);
+  if (savingForCastle(profile, skill, world, style)) return quote(profile, { kind: 'castle' }, world).price.gold;
   const targets: Target[] = [{ kind: 'hand' }, { kind: 'castle' }, ...weaponsInUse(profile, skill, world, style).map((id): Target => ({ kind: 'weapon', id }))];
   const short = targets.map((t) => quote(profile, t, world)).filter((q) => q.reason === 'gold');
   return short.length ? Math.min(...short.map((q) => q.price.gold)) : 0;
