@@ -45,10 +45,18 @@ export function castleTierForSlots(roles: readonly SlotRole[]): number {
   return Math.min(CASTLE_TIER_MAX, needed);
 }
 
-/** The profile with its castle tier raised, if needed, so every slot open in v0.3 stays open. A copy. */
+/**
+ * The profile with its castle tier raised, if needed, so every slot open in v0.3 stays open. A copy.
+ * Every slot the imported castle tier opens counts as introduced: a v0.3 castle bought high early
+ * would otherwise queue several of King Fridolin's slot introductions at once.
+ */
 export function liftCastleForV3Slots(data: ProfileData): ProfileData {
   const next = sanitizeProfile(JSON.parse(JSON.stringify(data)));
   next.keep.castleTier = Math.max(next.keep.castleTier, castleTierForSlots(v3OpenSlots(next)));
+  V3_SLOTS.forEach(({ role }, slot) => {
+    if (slot > 0 && CASTLE_TIER_FOR_SLOT[role] <= next.keep.castleTier && !next.seen.slotIntros.includes(slot)) next.seen.slotIntros.push(slot);
+  });
+  next.seen.slotIntros.sort((a, b) => a - b);
   return next;
 }
 

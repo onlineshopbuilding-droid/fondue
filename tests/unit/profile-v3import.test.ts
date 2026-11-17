@@ -85,7 +85,8 @@ describe('migrateV3ToV4', () => {
     expect(data.keep.handTier).toBe(2);
     expect(data.worlds.fondue.levelsDone).toEqual(range(11));
     expect(data.worlds.fondue.cheese).toEqual({ 1: 31 });
-    expect(data.seen.slotIntros).toEqual([1, 2]);
+    // Seen intros stay; the slots the imported castle opens count as introduced too (tests/unit/castleImport.test.ts).
+    expect(data.seen.slotIntros).toEqual([1, 2, 3, 4]);
     expect(data.settings.difficulty).toBe('hard');
     expect(data.settings.muted).toBe(true);
     expect(data.name).toBe('Tim');
