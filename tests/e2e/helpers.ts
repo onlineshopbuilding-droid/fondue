@@ -153,8 +153,20 @@ export async function closePopups(page: Page) {
   }
 }
 
-/** Campaign levels a profile must have won before endless opens (it opens with the fifth slot). */
-export const ENDLESS_AFTER_LEVEL = 11;
+/** Campaign levels a profile must have won before endless opens (TABLE_UNLOCK_LEVEL.endless in src/config/slotTiers.ts). */
+export const ENDLESS_AFTER_LEVEL = 10;
+
+/**
+ * Sets the castle tier (1..7) of this page's profile, without gold, won levels or a cheat mark: the
+ * slots of that tier open (damage 1, slow 2, gate 3, support 4, passive 5). Marks the tutorial as seen.
+ */
+export async function setCastleTier(page: Page, tier: number) {
+  await page.evaluate((t) => {
+    const a = (window as any).__fondue;
+    a.profile.edit((d: any) => { d.keep.castleTier = t; d.seen.tutorial = true; });
+    a.profile.flushSync();
+  }, tier);
+}
 
 /** Gives the profile of this page the progress that opens endless, and marks the tutorial as seen. */
 export async function unlockEndless(page: Page) {
