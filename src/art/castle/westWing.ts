@@ -1,6 +1,6 @@
 /**
- * The keep's west wing: everything left of the keep, which only the market shows when the camera
- * pulls back (world x -400 to 0; the fight never looks there). One picture per build stage, in that
+ * The keep's west wing: everything left of the keep (world x -400 to 0). Not drawn in v0.3: the
+ * fight never looks there; the art stays for a later view of the keep. One picture per build stage, in that
  * stage's materials: a corner tower where it meets the keep, a back wall with the yard in front of it
  * (the dairy and its cheese wheels), a low front wall and an end tower. Plus night glow, snow and the
  * landscape's ground along the wall foot.
@@ -48,6 +48,9 @@ const STAGES: Stage[] = [
   { stone: ASHLAR, footing: 0, cap: '#bfb9a6', roof: RUST, roofLine: RUSTD, band: 'none', frame: '#bfb9a6', flags: [TEAL, RUST], wallTop: 386, endTop: 268, jointTop: 184, crown: false },
   { stone: SLATE, footing: 0, cap: '#9aa2af', roof: TEALD, roofLine: '#163f42', band: 'none', frame: '#bcc3cd', flags: [RUST, TEAL], wallTop: 374, endTop: 238, jointTop: 128, crown: true },
   { stone: MARBLE, footing: 0, cap: '#f6f1e6', roof: TEAL, roofLine: TEALD, band: 'gold', frame: MUST, flags: [RUST, TEAL], wallTop: 368, endTop: 222, jointTop: 124, crown: true },
+  // Tiers 6 and 7: the same marble, with gilded roofs like the keep's.
+  { stone: MARBLE, footing: 0, cap: '#f6f1e6', roof: MUST, roofLine: GOLDD, band: 'gold', frame: MUST, flags: [TEAL, RUST], wallTop: 362, endTop: 214, jointTop: 118, crown: true },
+  { stone: MARBLE, footing: 0, cap: '#f6f1e6', roof: MUST, roofLine: GOLDD, band: 'gold', frame: MUST, flags: [TEAL, RUST], wallTop: 356, endTop: 206, jointTop: 112, crown: true },
 ];
 
 /** Where the parts stand (west art x). */

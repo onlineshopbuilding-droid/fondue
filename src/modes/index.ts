@@ -23,3 +23,4 @@ export const modeOf = (id: string): GameMode => MODES[id] ?? ENDLESS;
 
 export * from './mode';
 export * from './unlocks';
+export * from './progress';

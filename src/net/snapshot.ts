@@ -20,7 +20,7 @@ export interface ViewEnemy {
   armed: boolean;
   crow: boolean;
   frozen: boolean;
-  /** An oversized raider of a boss day. */
+  /** An oversized raider of a boss wave. */
   big: boolean;
   /** Who holds it: empty for nobody. */
   heldBy: number[];
@@ -54,10 +54,13 @@ export interface ViewState {
   paused: boolean;
   /** Everything stands still for the tutorial's gesture. */
   hold: boolean;
-  day: number;
-  dayT: number;
+  /** Current wave, seconds since it began, seconds since the level started. */
+  wave: number;
+  waveT: number;
+  runT: number;
+  /** Gold and Raider Crests earned in this run. */
   gold: number;
-  offerings: number;
+  crests: number;
   gateHp: number;
   gateMax: number;
   /** Per slot: seconds until ready, and the full reload time of the last shot. */
@@ -71,7 +74,6 @@ export interface ViewState {
   /** Seconds the Golden Fondue and the Ember Beacon still last. */
   goldRushT: number;
   beaconT: number;
-  nightfall: boolean;
   enemies: ViewEnemy[];
   projectiles: ViewProjectile[];
   zones: ViewZone[];
@@ -79,9 +81,9 @@ export interface ViewState {
 }
 
 const STATES: EnemyState[] = ['walk', 'attack', 'hop', 'float', 'held', 'air', 'stun', 'frozen', 'hooked', 'cooking', 'flee'];
-const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt', 'shell', 'frostShell', 'fireShell'];
-const PHASES: Phase[] = ['banner', 'battle', 'victory', 'intermission', 'defeat', 'gameover', 'runWon'];
-const ZONES: Zone['kind'][] = ['fire', 'cheese'];
+const KINDS: ProjectileKind[] = ['bomb', 'stone', 'bolt', 'wheel', 'comet', 'slab', 'roofBolt', 'shell', 'frostShell', 'fireShell', 'snowball', 'pinecone', 'hornet'];
+const PHASES: Phase[] = ['banner', 'battle', 'defeat', 'gameover', 'runWon'];
+const ZONES: Zone['kind'][] = ['fire', 'cheese', 'snow', 'hotCheese'];
 
 const F_HIDDEN = 1;
 const F_SHIELD = 2;
@@ -95,10 +97,11 @@ export interface WireSnapshot {
   t: number;
   ph: number;
   pa: number;
-  d: number;
-  dt: number;
+  w: number;
+  wt: number;
+  rt: number;
   g: number;
-  o: number;
+  c: number;
   hp: number;
   hm: number;
   cd: number[];
@@ -108,7 +111,6 @@ export interface WireSnapshot {
   pm: number;
   gr: number;
   bt: number;
-  nf: number;
   e: number[][];
   q: number[][];
   z: number[][];
@@ -123,10 +125,11 @@ export function encodeSnapshot(s: SimState): WireSnapshot {
     t: s.tick,
     ph: PHASES.indexOf(s.phase),
     pa: (s.paused ? 1 : 0) | (s.hold ? 2 : 0),
-    d: s.day,
-    dt: r2(s.dayT),
+    w: s.wave,
+    wt: r2(s.waveT),
+    rt: r1(s.runT),
     g: s.gold,
-    o: s.offerings,
+    c: s.crests,
     hp: Math.ceil(s.gateHp),
     hm: s.gateMax,
     cd: s.cooldowns.map(r2),
@@ -136,14 +139,14 @@ export function encodeSnapshot(s: SimState): WireSnapshot {
     pm: r2(s.potMax),
     gr: r1(s.goldRushT),
     bt: r1(s.beaconT),
-    nf: s.nightfall ? 1 : 0,
     e: s.enemies.map((e) => {
       const flags = (e.hidden ? F_HIDDEN : 0) | (e.shieldOn ? F_SHIELD : 0) | (e.armed ? F_ARMED : 0)
         | (e.crow ? F_CROW : 0) | (e.big ? F_BIG : 0) | (e.frozenHeld || e.st === 'frozen' ? F_FROZEN : 0);
+      // Holders go last and take as many entries as there are: two players with two hands each
+      // can all hold the same raider, so the list must not be cut to a fixed length.
       return [
         e.id, ENEMY_TYPES.indexOf(e.type), STATES.indexOf(e.st), r1(e.x), r1(e.y), r2(e.rot), Math.round(e.lane), flags,
-        e.heldBy.length > 0 ? e.heldBy[0] : -1, e.heldBy.length > 1 ? e.heldBy[1] : -1,
-        r2(e.hp / e.maxHp),
+        r2(e.hp / e.maxHp), ...e.heldBy,
       ];
     }),
     q: s.projectiles.map((q) => [q.id, KINDS.indexOf(q.kind), r1(q.x), r1(q.y), r2(q.rot), r1(q.size), q.heldBy]),
@@ -158,10 +161,11 @@ export function decodeSnapshot(w: WireSnapshot): ViewState {
     phase: PHASES[w.ph],
     paused: (w.pa & 1) !== 0,
     hold: (w.pa & 2) !== 0,
-    day: w.d,
-    dayT: w.dt,
+    wave: w.w,
+    waveT: w.wt,
+    runT: w.rt,
     gold: w.g,
-    offerings: w.o,
+    crests: w.c,
     gateHp: w.hp,
     gateMax: w.hm,
     cooldowns: w.cd,
@@ -171,12 +175,11 @@ export function decodeSnapshot(w: WireSnapshot): ViewState {
     potMax: w.pm,
     goldRushT: w.gr,
     beaconT: w.bt,
-    nightfall: w.nf === 1,
     enemies: w.e.map((a) => ({
       id: a[0], type: ENEMY_TYPES[a[1]], st: STATES[a[2]], x: a[3], y: a[4], rot: a[5], lane: a[6],
       hidden: (a[7] & F_HIDDEN) !== 0, shield: (a[7] & F_SHIELD) !== 0, armed: (a[7] & F_ARMED) !== 0,
       crow: (a[7] & F_CROW) !== 0, big: (a[7] & F_BIG) !== 0, frozen: (a[7] & F_FROZEN) !== 0,
-      heldBy: [a[8], a[9]].filter((p) => p >= 0), hpFrac: a[10],
+      hpFrac: a[8], heldBy: a.slice(9),
     })),
     projectiles: w.q.map((a) => ({
       id: a[0], kind: KINDS[a[1]], x: a[2], y: a[3], rot: a[4], size: a[5], heldBy: a[6],
@@ -193,7 +196,8 @@ export function interpolateViews(a: ViewState, b: ViewState, f: number): ViewSta
   const prevQ = new Map(a.projectiles.map((q) => [q.id, q]));
   return {
     ...b,
-    dayT: lerp(a.dayT, b.dayT),
+    waveT: lerp(a.waveT, b.waveT),
+    runT: lerp(a.runT, b.runT),
     enemies: b.enemies.map((e) => {
       const p = prevE.get(e.id);
       if (!p) return e;

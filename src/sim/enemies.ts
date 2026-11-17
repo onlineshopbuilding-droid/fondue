@@ -1,6 +1,6 @@
 // Part of the simulation: how raiders act on their own (walking, attacking, hopping, floating, recovering).
 import { BEHAVIOUR, ENEMIES } from '../config/enemies';
-import { DT, FIELD, WORLD, fieldEntry } from '../config/field';
+import { DT, FIELD, WORLD } from '../config/field';
 import type { Enemy, Projectile, ProjectileKind } from './types';
 import type { SimContext } from './context';
 
@@ -36,7 +36,7 @@ export class EnemyBehaviour {
 
   updateEnemy(e: Enemy) {
     // Out of sight beyond the field's edge, raiders hurry to their starting line.
-    const entry = fieldEntry(this.ctx.s.meta.fieldW);
+    const entry = this.ctx.entryX;
     if (e.x > entry && (e.st === 'walk' || e.st === 'hop' || e.st === 'float')) {
       e.x = Math.max(entry, e.x - FIELD.offstageSpeed * DT);
       return;

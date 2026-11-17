@@ -1,8 +1,14 @@
-// The storybook from the shelf in the lobby: a simple window with the pages unlocked so far,
-// one page at a time. Previous page on the left, next page on the right, Close below.
+// The storybook: a simple window with the pages unlocked so far, one page at a time. Previous page on
+// the left, next page on the right, Close below. Since v0.4 it opens from the small book in the corner
+// of the campaign map (src/ui/screens/campaign.ts), no longer from a shelf in the hall.
 import { esc } from '../html';
 
 export interface StoryPage { id: string; title: string; text: string }
+
+/** Storybook pages open once their level is beaten. */
+export function pagesFor<T extends { unlockLevel: number }>(book: readonly T[], levelDone: number): T[] {
+  return book.filter((p) => levelDone >= p.unlockLevel);
+}
 
 export class StorybookWindow {
   private el: HTMLDivElement | null = null;

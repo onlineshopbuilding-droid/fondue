@@ -1,11 +1,12 @@
 /**
- * Gate leaves for the five stages and the three crack overlays drawn over them.
+ * Gate leaves for the seven castle tiers (`gate0` = tier 1 ... `gate6` = tier 7) and the three crack overlays drawn over them.
  * Each body fills a 74x150 canvas, the size of the gate frame.
  */
 import { INK, TEALD, RUST, RUSTD, MUST, MUSTL, CREAM, WOOD, WOODD, WOODL, IRON, IRONL, RED, GOLD, GOLDD, ink, e, n, hl, starPoints, litPath, litRect, litBall, rivets, grain, crescentFast as crescent, tubeFast as litTube } from '../draw';
 import { tone, linear as lin, radial as rad, glint } from '../shade';
 import { rand, fx, rect, clip, SHADOW, SHADE_DEFS, form, shade } from './kit';
 import { GILT } from './keepStages';
+import { cheeseWheel } from './keepStagesGrand';
 
 // ---------------------------------------------------------------------------------------------
 // Gate leaves (74x150, they fill the gate frame) and the crack overlays drawn over them.
@@ -170,6 +171,60 @@ export function gate4(): string {
         glint(28, 52, 1.4) +
         litPath('M2 22H26L20 30H2ZM72 22H48L54 30H72ZM2 128H26L20 120H2ZM72 128H48L54 120H72Z', MUSTL, { outline: 3, shadow: 1.5, light: 0.8 }) +
         rivets([[10, 26], [64, 26], [10, 124], [64, 124], [37, 14], [37, 136]], 2.2, GOLD, GOLDD),
+    )
+  );
+}
+
+/** Tier 6: a gilded leaf with teal panels and a great cheese wheel as its boss. */
+export function gate5(): string {
+  const panelT = 'M12 10H62Q64 10 64 12V52H10V12Q10 10 12 10Z';
+  const panelB = 'M10 98H64V138Q64 140 62 140H12Q10 140 10 138Z';
+  return (
+    SHADE_DEFS +
+    `<defs>${GILT.def}</defs>` +
+    ink(
+      `<path d="${LEAF_D}" fill="${GILT.url}"/>` +
+        clip(LEAF_D, form(2, 2, 70, 146, 0.8) + shade('sU', 2, 2, 70, 14, 0.6)) +
+        `<path d="${LEAF_D}" fill="none"/>` +
+        hl('M6 6H68V144H6Z', '#fff1c0', 1.6, 0.8) +
+        recess(panelT, TEALD, 2) +
+        recess(panelB, TEALD, 2) +
+        clip(panelT, hl('M10 52L37 14L64 52', MUST, 2.5)) +
+        clip(panelB, hl('M10 98L37 136L64 98', MUST, 2.5)) +
+        litTube('M4 75H70', 4, GOLDD, { outline: 2.5 }) +
+        cheeseWheel(37, 75, 21, 61) +
+        rivets([[10, 60], [64, 60], [10, 90], [64, 90], [37, 6], [37, 144]], 2.4, MUSTL, GOLDD) +
+        glint(10, 14, 1.4),
+    )
+  );
+}
+
+/** Tier 7: deep teal enamel in a gold frame, the snowy Alps in relief under a crown. */
+export function gate6(): string {
+  const panel = 'M10 8H64Q66 8 66 10V140Q66 142 64 142H10Q8 142 8 140V10Q8 8 10 8Z';
+  const peaks = 'M12 104L28 72L36 84L46 62L62 104Z';
+  const snow = 'M22.4 84.8L28 72L32.5 79.2L29 82L26.5 79.5ZM41.5 71.5L46 62L51 72.5L47.5 70.5L45 74Z';
+  const crownD = 'M24 44L22 28L30 36L37 24L44 36L52 28L50 44Z';
+  return (
+    SHADE_DEFS +
+    `<defs>${GILT.def}</defs>` +
+    ink(
+      `<path d="${LEAF_D}" fill="${GILT.url}"/>` +
+        clip(LEAF_D, form(2, 2, 70, 146, 0.8)) +
+        `<path d="${LEAF_D}" fill="none"/>` +
+        recess(panel, '#1d4f52', 2.2) +
+        clip(panel, gatePlanks(8, 8, 66, 142, 3, '#1f5a5c', 561) + `<g opacity=".45">${crescent(panel, 3, 3.3, SHADOW)}</g>`) +
+        `<path d="${panel}" fill="none" stroke-width="2.5"/>` +
+        litPath(peaks, '#9aa2af', { outline: 2.6, shadow: 3, light: 1.2, lightColor: '#d6dbe0' }) +
+        `<path d="${snow}" fill="#fbfaf6" stroke-width="1.6"/>` +
+        litPath(crownD, MUSTL, { outline: 2.6, shadow: 2.5, light: 1.2, lightColor: '#fff3c0' }) +
+        litBall(37, 24, 3, RED, 2.2) +
+        litBall(22, 28, 2.4, MUSTL, 2) +
+        litBall(52, 28, 2.4, MUSTL, 2) +
+        cheeseWheel(37, 120, 13, 62) +
+        litPath('M2 22H26L20 30H2ZM72 22H48L54 30H72ZM2 128H26L20 120H2ZM72 128H48L54 120H72Z', MUSTL, { outline: 3, shadow: 1.5, light: 0.8 }) +
+        rivets([[5, 5], [69, 5], [5, 145], [69, 145], [37, 5], [37, 145], [5, 75], [69, 75]], 2.8, MUSTL, GOLDD) +
+        glint(12, 14, 1.4),
     )
   );
 }

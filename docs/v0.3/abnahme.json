@@ -1,0 +1,240 @@
+[
+  {
+    "id": "A1",
+    "titel": "Dauerhafte Burg",
+    "pruefung": "Test, dass eine Waffe nach Ablegen, Anlegen, Levelwechsel und Neuladen ihre Stufe behält; im Spiel gibt es keinen Kauf mehr während eines Levels.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Unit-Tests progress.test.ts „a weapon keeps its tier after taking it off, wearing it again, a level change and a reload“ und campaignWaves.test.ts „a weapon keeps its tier after unequip and equip, in another level and after a reload“ grün (npm test 575/575); waves.test.ts „there is no buy command: an unknown command does nothing“; Browser: shop.spec „keep shop: unlock, upgrade, wear and take off; the wallet follows and a reload keeps it“ auf allen drei Formaten grün, flow.spec „campaign level: no market in the level“ grün. Durchspielen (tests/check/playthrough.spec.ts): Stufen bleiben über zehn Level erhalten, nie ein Kauf im Level."
+  },
+  {
+    "id": "A2",
+    "titel": "Käse",
+    "pruefung": "automatischer Test, dass die Summe aller Käse-Preise 500 ist und dass ein Käse nicht doppelt vergeben wird; Test, dass jede Challenge im jeweiligen Level erfüllbar ist (benötigte Waffen und Gegner sind dort verfügbar).",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). economy.test.ts „all cheese prices (weapons, Great Cauldron, Eagle Perch) add up to exactly 500“, progress.test.ts „pays each of the five cheese of a level only once“ und „a replayed campaign level pays no cheese twice“, campaignWaves.test.ts „every challenge can be met in its own level (A2)“ (benötigte Waffen, Slots, Stationen und Gegner sind im Level verfügbar) grün. Durchspielen: Level 1 bis 11 zahlen je 3 Käse (Sieg, Tor über 50 % und 90 %), Wallet-Summe stimmt."
+  },
+  {
+    "id": "A3",
+    "titel": "Gold",
+    "pruefung": "Gold bleibt nach Levelende und Neuladen erhalten; Bot-Lauf zeigt, dass ein Spieler, der nur farmt, die späte Kampagne nicht mühelos schafft.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Gold bleibt nach Levelende und Neuladen: modes.test.ts „a lost run pays its gold but no cheese and no progress“, profile-save.test.ts „save, reload: everything comes back the same“, campaign.spec „a lost level keeps its gold“ grün. Bot-Lauf npm run balance (Exit 0, 214 s): Farmer-Zeile (Endlos-Gold) Level 76 bis 100: 3,48 Versuche je Level, Tor im Median 5 %, 12 Level nie geschafft; der Stufen-Deckel verhindert das Überrollen (progress.test.ts „endless gold cannot build past the cap of the campaign section“)."
+  },
+  {
+    "id": "A4",
+    "titel": "Räuberwappen",
+    "pruefung": "Bot-Lauf zeigt den Median der Runden bis zum ersten Stufe-7-Upgrade im Bereich 20 bis 30.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Bot-Lauf npm run balance (Wiederholung durch pruefer): Median 25 Runden bis 50 Wappen, Mid und Great, Kampagne und Endlos (Ziel 20 bis 30); economy.test.ts „every raider type leaves 1 to 5, the Yeti and bosses the most“, waves.test.ts „the eagle leaves crests, but never more than the limit of one run“ grün."
+  },
+  {
+    "id": "A5",
+    "titel": "Stufen 1 bis 7, jede spürbar",
+    "pruefung": "Tabelle in der Entwickler-Übersicht zeigt für jede Waffe, was sich je Stufe ändert; kein Stufensprung ändert nur eine Zahl um weniger als 15 % (Startwert).",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). weapons.test.ts „rule A5: every tier step changes a switch, or at least one number by 15 % or more“ grün (alle 25 Waffen, alle sechs Sprünge); Hand-Stufen nachgerechnet aus src/config/hand.ts: Stärke 1 / 1,25 / 1,55 / 2 / 2,4 / 2,8 / 3,3, kleinster Sprung +16,7 %; Burg 800 / 1250 / 1900 / 2800 / 4000 / 5600 / 7800, kleinster Sprung +39 %. Die Entwickler-Übersicht (scripts/dev-page/page.ts, Abschnitt „Waffen“) hat je Waffe eine Tabelle „Änderung zur Stufe davor“; dev-tools.spec „developer overview“ grün."
+  },
+  {
+    "id": "A6",
+    "titel": "Spielstand",
+    "pruefung": "Tests für Speichern, Laden, Migration und den Fall „Speicher voll oder gesperrt“; Test, dass fondue.profile unberührt bleibt; Prüfung im Browser-Test mit Neuladen.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). profile-save.test.ts („a full or blocked storage keeps the game running from memory and says so exactly once“, „a storage blocked from the start … still loads and plays“, „save, reload: everything comes back the same“, „flushSync writes at once“), profile.test.ts (Test, dass fondue.profile und die alten Schlüssel nie gelesen und byte-genau unverändert bleiben; beschädigtes v0.3-Profil wird beiseitegelegt), Browser mit Neuladen: shop.spec (Neuladen behält Käufe), campaign.spec „an interrupted level continues …“ und „the code from Options loads on another device“ grün. Ungeprüft: echter iPhone-Home-Bildschirm-Speicher (Gerät)."
+  },
+  {
+    "id": "B1",
+    "titel": "Level ohne Tage",
+    "pruefung": "Level-Tabelle zeigt für alle 100 Level die geplante Dauer; Messung der tatsächlichen Dauer mit dem mittleren Bot liegt je Abschnitt im Zielbereich.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). campaignTable.test.ts „has one row per level“ und „docs/KAMPAGNE-TABELLE.md shows the levels as they are now“, campaignWaves.test.ts Längen je Abschnitt (Level 1 bis 5: 60 bis 120 s, Mitte 180 bis 300 s, Boss und Sonder 360 bis 600 s) grün. Bot-Messung (npm run balance, Mid solo, Wiederholung): Median früh 89 s, Mitte 203 s, Boss und Sonder 364 s; im Zielbereich liegen früh 7 von 8, Mitte 52 von 61, Boss und Sonder nur 10 von 19 (Median knapp über der Untergrenze 360 s)."
+  },
+  {
+    "id": "B2",
+    "titel": "Wellen",
+    "pruefung": "In keinem Level gibt es eine Pause ohne lebenden Gegner von mehr als 5 Sekunden (Startwert), gemessen über alle 100 Level.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). waves.test.ts „a level is never more than 5 s without a living raider (B2)“ und campaignWaves.test.ts „by the plan and the WaveFlow rules, no level of 100 has a stretch over … without a raider“ grün; Bot-Lauf über alle 100 Level und alle Zeilen: längste Strecke ohne lebenden Räuber 2,6 s (Grenze 5 s)."
+  },
+  {
+    "id": "B3",
+    "titel": "Schneller Start",
+    "pruefung": "Messung der Zeit bis zum ersten sichtbaren Gegner in den Leveln 1 bis 5, im Endlos-Modus und im Koop, jeweils auf iPhone 16 quer, OnePlus 8T quer und Laptop; alle Werte höchstens 2,0 Sekunden, Werte stehen im Bericht.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Gemessen von pruefer auf der gebauten App, Spielzeit in Ticks (1/60 s) vom Levelstart bis ein Räuber im sichtbaren Feld steht (tests/e2e/firstRaider.spec.ts und tests/check/coopStartDevices.spec.ts): Laptop L1 0,82 / L2 0,43 / L3 0,50 / L4 0,47 / L5 0,42 / Endlos 0,45 s; iPhone 16 quer 0,80 / 0,45 / 0,50 / 0,55 / 0,42 / 0,42 s; OnePlus 8T quer 0,82 / 0,48 / 0,53 / 0,42 / 0,48 / 0,43 s; Koop (Host und Gast im Format) Kampagne / Endlos: Laptop 1,18 / 1,03 s, iPhone 0,92 / 0,98 s, OnePlus 1,20 / 1,12 s. Alle höchstens 2,0 s. Tabelle in docs/v0.3/PRUEFUNG.md."
+  },
+  {
+    "id": "B4",
+    "titel": "Weniger, aber schnellere Gegner",
+    "pruefung": "Konfigurationswerte dokumentiert; Browser-Test auf dem Handy-Format zeigt, dass schnelle Gegner im Lauf greifbar sind (Trefferbereich groß genug).",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Werte dokumentiert: docs/GDD.md Abschnitt Level („2,5-mal so hoch“, Slinger, Keg Hauler, Siege Cart, Balloonist 1,4-mal, etwa 40 % der Räuber, doppeltes Gold, GRAB_SPEED_BONUS) und docs/balance.md. waves.test.ts „a fast raider on the move can be caught a little further away than one standing still“ grün; Browser auf dem Handy-Format: mobile.spec „a run by finger“ (iPhone 16 und OnePlus 8T, Finger greift und schleudert) und touch.spec grün, Durchspielen mit echtem Wisch in der Vorrunde auf allen drei Formaten. Ungeprüft: Gefühl auf echten Handys."
+  },
+  {
+    "id": "B5",
+    "titel": "Schwierigkeit über die Kampagne",
+    "pruefung": "Bot-Läufe zeigen: ohne Ausbau bleibt der mittlere Bot vor Level 30 stecken (Startwert); mit Ausbau kommt er weiter; der sehr gute Bot braucht in späten Leveln und Boss-Leveln spürbar mehr Versuche als in frühen.",
+    "status": "erledigt",
+    "beleg": "Nachprüfung durch pruefer am 14.11.2026 (Stand 5727958, gebaute App dist). Wiederholung npm run balance (Exit 0, 83 s), Tabelle „Ziele auf einen Blick“: B5 ohne Ausbau: Mid ohne Ausbau scheitert zuerst an Level 15 (Soll vor Level 30), erfüllt; B5 mit Ausbau: Mid scheitert zuerst an Level 70, nie geschafft 12, erfüllt; B5/G1 Great spät: Versuche je Level 1–25 / 26–50 / 51–75 / 76–100 = 1 / 1 / 1 / 1,4, Boss 2 gegen 1 sonst, erfüllt (Schwelle mindestens +0,3). Der frühere Befund 1,28 / Boss 1,7 ist durch bossPowerLate 0,2 (Commit 10875e5) behoben und deckt sich mit docs/balance.md. Alle weiteren Zeilen der Tabelle (A3, E2, B1, B2, C3, E1, A4) erfüllt."
+  },
+  {
+    "id": "C1",
+    "titel": "Die fünf Slots",
+    "pruefung": "Konfiguration ordnet jede Waffe genau einem Slot zu; Screenshot der Burg mit allen fünf belegten Slots auf allen drei Formaten.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). weapons.test.ts „every weapon sits in exactly one slot role, five per role, and every role has a slot“ und unlocks.test.ts „every weapon fits exactly one slot role, and every slot has weapons“ grün; Screenshots der Burg mit allen fünf belegten Slots (nach Level 11, Level 12 im Kampf): docs/screenshots/v0.3/check-laptop-battle-l12-five-slots.png, check-iphone-16-battle-l12-five-slots.png, check-oneplus-8t-battle-l12-five-slots.png."
+  },
+  {
+    "id": "C2",
+    "titel": "Slots über die Kampagne freischalten",
+    "pruefung": "Level-Tabelle zeigt die Slot-Freischaltungen bis spätestens Level 15; Browser-Test sieht die Einführung.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). unlocks.test.ts „all five slots open within the first 15 levels, in rising order, each with an introduction“ (Slots öffnen nach Level 0, 2, 4, 7, 11); docs/KAMPAGNE-TABELLE.md nennt die Freischaltungen; Browser: tutorial.spec (Einführung des Slow-Slots) auf allen drei Formaten grün; im Durchspielen sehen Laptop und OnePlus die Einführungen von Gate (Level 4), Support (Level 7) und Passive (Level 11) auf dem Sieg-Bildschirm (docs/screenshots/v0.3/check-*-won-l2/l4/l7/l11.png)."
+  },
+  {
+    "id": "C3",
+    "titel": "Große Waffen-Palette",
+    "pruefung": "Liste aller Waffen mit Slot, Freischalt-Level und Käse-Preis in der Entwickler-Übersicht; Bot-Auswertung zeigt, dass in jedem Slot mindestens 3 Waffen von Bots genutzt werden; Browser-Test für Antippen ohne Fehlgriff.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Entwickler-Übersicht (scripts/dev-page/page.ts, Abschnitt „Waffen“): Tabelle aller 25 Waffen mit Slot, Freischalt-Level und Käse-Preis; Bot-Auswertung (npm run balance, Wiederholung): Schaden 4, Bremsen 4, Tor 3, Support 4, Passiv 4 genutzte Waffen (Tor knapp, nur Gate Mortar, Hedgehog Gate, Alphorn); Browser: keep.spec „every weapon fires with one tap and never grabs“ auf allen drei Formaten grün."
+  },
+  {
+    "id": "C4",
+    "titel": "Rolling Wheel zuerst",
+    "pruefung": "frisches Profil hat nach der Vorrunde genau das Rolling Wheel.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). progress.test.ts „a fresh profile owns nothing; after the tutorial exactly the Rolling Wheel, worn in slot 0, free“, tutorial.test.ts „a fresh profile owns exactly the Rolling Wheel after the prelude“; Durchspielen auf Laptop, iPhone 16 und OnePlus 8T nach der Vorrunde: Gold 0, Käse 0, Waffen {wheel: 1}, Ausrüstung [wheel, null, null, null, null]."
+  },
+  {
+    "id": "C5",
+    "titel": "Great Cauldron",
+    "pruefung": "Test für doppeltes Gold; Level-Tabelle zeigt den Freischaltzeitpunkt.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). sim.test.ts „cauldron consumes a dropped enemy for double gold“, waves.test.ts „the Great Cauldron pays double gold“, hand.test.ts „a raider thrown into it pays double gold“ grün; docs/KAMPAGNE-TABELLE.md (Level 16, Station Great Cauldron) und GDD: ab Level 16 für 12 Käse."
+  },
+  {
+    "id": "C6",
+    "titel": "Eagle Perch",
+    "pruefung": "Suche im Code und in den Texten findet kein „Offering“ mehr; Bot-Messung der Trefferquote steht im Bericht.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). grep -rniE \"offering\" src liefert keinen Treffer (pruefer, Stand 5a137ce); lobby.spec „player texts of help, tips and the King speak of waves, cheese and gold only“ grün. Bot-Messung der Trefferquote am Haken (docs/balance.md): etwa 22 % (Mid) und 23 % (Great). Hinweis: Der Browser-Test keep.spec „a keg is shaken loose, a raider melts in the pot …, the eagle takes one“ scheitert auf allen drei Formaten, weil er den Räuber nur trägt und loslässt; der Haken verlangt jetzt einen gezielten Wurf (Fehler im Test, siehe PRUEFUNG.md)."
+  },
+  {
+    "id": "C7",
+    "titel": "Burg-Stufen 1 bis 7 und Issue 1",
+    "pruefung": "Screenshots aller sieben Burg-Stufen auf allen drei Formaten; Kommentar in Issue 1.",
+    "status": "erledigt",
+    "beleg": "Nachprüfung durch pruefer am 14.11.2026 (Stand 5727958, gebaute App dist). Alle sieben Burg-Stufen auf allen drei Formaten belegt (castle-tiers.spec grün im vollen Lauf: docs/screenshots/v0.3/castle-tier1..7-laptop/iphone-16/oneplus-8t.png). Kommentar in Issue 1 steht jetzt (gh issue view 1 --comments: Kommentar von onlineshopbuilding-droid mit Stufe 1 und 7, Landschaften Wiese Tag, Canyon Abend, Schneewald Nacht, breitem Bildschirm und dem Verweis auf alle sieben Stufen je Gerät; Schließen erst über Fixes #1 im Pull Request)."
+  },
+  {
+    "id": "C8",
+    "titel": "Hand bis Stufe 7",
+    "pruefung": "Test der Yeti-Regel für eine Hand der Stufe 3 und 4 und für zwei Hände.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). weight.test.ts „one hand of tier 1, 2 or 3 only pulls it“, „one hand of tier 4 lifts it alone (C8)“, „two hands of tier 1 lift it together“, hand.test.ts „a hand of tier 3 alone cannot lift a Yeti“, „a hand of tier 4 alone lifts a Yeti“, „two tier-1 hands of two players lift it together“ und sim.test.ts „yeti: one hand only tugs, two hands can throw it“ grün."
+  },
+  {
+    "id": "C9",
+    "titel": "Zweite Hand",
+    "pruefung": "Browser-Test mit zwei gleichzeitigen Berührungen auf beiden Handy-Formaten.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). multitouch.spec auf iPhone 16 und OnePlus 8T: „two fingers grab two raiders at once with the second hand of tier 7, without zoom or scroll“ und „without a second hand a second finger does nothing“ grün (4 von 4); Screenshots docs/screenshots/v0.3/multitouch-iphone-16.png und multitouch-oneplus-8t.png; hand.test.ts „two fingers each grab their own raider at the same time“. Der Vergleich der beiden zweiten Hände (Gefühl) braucht Menschen."
+  },
+  {
+    "id": "D1",
+    "titel": "Dauerhafter Shop an der Burg",
+    "pruefung": "Screenshots auf allen drei Formaten; pruefer prüft mit frischem Blick, ob ein neuer Spieler ohne Erklärung ein Upgrade findet und kauft, und hält das Ergebnis fest.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Screenshots auf allen drei Formaten: docs/screenshots/v0.3/shop-overview-*.png, shop-slot-*.png, shop-upgrade-*.png, tutorial-shop-*.png (laptop, iphone-16, oneplus-8t); Durchspielen-Screenshots check-*-shop-l*.png. Frischer Blick von pruefer, siehe Absatz „D1“ in docs/v0.3/PRUEFUNG.md: Nach Level 1 führt der Knopf „To the Keep Shop“ direkt in den Shop, der König nennt den nächsten Schritt und der Knopf „Tier 2“ leuchtet; Preis und Vorher/Nachher stehen am Knopf; ein neuer Spieler findet und kauft das erste Upgrade ohne Erklärung. Schwäche: ab Level 2 führt „Continue“ in die Lobby, der Shop ist dort nur über den Rüstungsständer „Shop“ erreichbar."
+  },
+  {
+    "id": "D2",
+    "titel": "Bildschirm vor jedem Level",
+    "pruefung": "Browser-Test: vom Tippen auf ein Level bis zum Spielstart sind höchstens zwei Tipps nötig.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). shop.spec „level card: facts, cheese and loadout; two taps from the map to the battle“ auf allen drei Formaten grün; Durchspielen: Level antippen, „Play“ antippen, Kampf beginnt (zwei Tipps)."
+  },
+  {
+    "id": "D3",
+    "titel": "Lobby, Texte und Hilfe",
+    "pruefung": "Suche in allen Spieltexten nach „star“, „day“ im Sinne von Spieltag, „market“ und „offering“ findet keine veralteten Stellen.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). grep in src (pruefer, Stand 5a137ce): „offering“ und „market“ 0 Treffer; „star“ nur Grafik-Code und Zeichnungen (Sterne als Form), „day“ nur Landschaftstageszeit, Story-Sätze und alte Kurvenkommentare; keine Spieltextstelle im Sinne von Spieltag, Markt oder Sterne-Währung. lobby.spec „player texts … speak of waves, cheese and gold only“, tutorial.test.ts „say nothing of stars, markets, offerings, game days or clicks“ grün. Hinweis: Das Tipp-Pop-up für Passiv-Waffen sagt „Just tap it to fire“ (src/ui/content.ts:29), siehe PRUEFUNG.md."
+  },
+  {
+    "id": "D4",
+    "titel": "Tutorial",
+    "pruefung": "Browser-Test spielt mit frischem Profil Vorrunde, Level 1 und das erste Upgrade durch.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). tutorial.spec auf Laptop, iPhone 16 und OnePlus 8T grün: frisches Profil, Vorrunde, Level 1, erstes Upgrade, danach Slow-Slot; campaign.spec „first start on a phone“ grün; zusätzlich Durchspielen tests/check/playthrough.spec.ts mit echtem Wisch in der Vorrunde."
+  },
+  {
+    "id": "E1",
+    "titel": "Endlos-Modus",
+    "pruefung": "Test, dass Endlos vor dem fünften Slot gesperrt ist; Bot-Lauf zeigt Gold pro Minute je Schwierigkeit.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). campaignWaves.test.ts „is locked until the fifth slot opens: not after 10 won levels, open after 11“, coop.spec „a host without the fifth slot cannot open an endless room“, lobby.spec „endless is locked with a hint until the fifth slot, then opens“ grün. Bot-Lauf: Gold je Minute (Mid, Burg nach Level 20): Easy 6230, Medium 7944, Hard 10260; (Burg nach Level 60): 6565 / 10153 / 16379."
+  },
+  {
+    "id": "E2",
+    "titel": "Koop",
+    "pruefung": "Koop-Test mit zwei Browsern; Messwerte zum Ruckeln vorher und nachher; Bot-Lauf zu zweit gegen allein.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Koop-Tests mit zwei Browsern grün (coop.spec: Endlos, Verbindungsabbruch und Wiedereinstieg, Kampagne Level 1, Host-Burg, Versionsabgleich, Einladungslink, Gold für den Gast; relay.spec; coopStart.spec und tests/check/coopStartDevices.spec). Messwerte vorher/nachher: docs/v0.3/MESSUNGEN-KOOP.md; Wiederholung durch pruefer (coopLag.spec, Rechner ausgelastet): Geschwindigkeitsfehler je Bild (Mittel / 95 %): ohne Netz 51 % / 116 %, mit 60 ms Latenz, 25 ms Jitter, 2 % Verlust 68 % / 127 %; nur die Richtung, Bildzeit des Gasts 138 bis 154 ms, weil der Rechner wegen der Software-Grafik ausgelastet war und der Host nur 5,8 bis 6,6 Snapshots je Sekunde schickte. Bot-Lauf zu zweit gegen allein: Mid zu zweit 1,86 Versuche je Level (82 im ersten Versuch), Mid allein 1,72 (85). Ungeprüft: echte Geräte über das Internet."
+  },
+  {
+    "id": "F1",
+    "titel": "Waffen-Editor im Entwickler-Menü",
+    "pruefung": "Browser-Test ändert einen Wert und sieht die Wirkung im Spiel.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). dev-tools.spec „weapon editor: a shorter cooldown reaches the running game and the run becomes a developer run“ und cheats.weaponEditor.test.ts grün."
+  },
+  {
+    "id": "F2",
+    "titel": "Cheats im Entwickler-Menü",
+    "pruefung": "Test für jeden Cheat und für die Kennzeichnung.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). cheats.test.ts (jeder Cheat: Gold, Käse, Wappen, Level, Stufen, Alles freischalten, Zurücksetzen, zweite Hand; Kennzeichnung „a fresh profile carries no cheat mark“, „the mark survives saving“) und dev-tools.spec „cheats: gold, cheese, crests, levels, tiers, second hand and reset, with the visible mark“ grün."
+  },
+  {
+    "id": "F3",
+    "titel": "Entwickler-Übersicht und offene Entscheidungen",
+    "pruefung": "Browser-Test füllt eine Entscheidung aus und erhält eine gültige Issue-Adresse.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). dev-tools.spec „developer overview: version, cheese sum, roadmap, and a decision becomes a valid issue address“ grün; decisions.test.ts („one short answer gives one valid address with the prefix“, „long answers are split over several issues, each address under the limit“, „says what became of each of D-01 .. D-21“) grün."
+  },
+  {
+    "id": "F4",
+    "titel": "Versionen und Fahrplan",
+    "pruefung": "Versionsnummer in Screenshots sichtbar; Fahrplan auf der Entwickler-Übersicht.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). flow.spec „the version shows small in the lobby, clear of every station, and in the Options“ auf allen drei Formaten grün; Versionszeile „v0.3 · build 5a137ce“ im Screenshot docs/screenshots/v0.3/check-oneplus-8t-lobby-end.png; decisions.test.ts „has a roadmap to v1.0“; Fahrplan in scripts/dev-page/page.ts (Abschnitt „Fahrplan bis v1.0“)."
+  },
+  {
+    "id": "G1",
+    "titel": "Tests und Balance",
+    "pruefung": "npm test, npm run test:e2e und npm run balance grün, Ergebnisse im Bericht.",
+    "status": "erledigt",
+    "beleg": "Nachprüfung durch pruefer am 14.11.2026 (Stand 5727958, gebaute App dist). npx tsc --noEmit sauber (Exit 0); npm test 577 von 577 grün (39 Dateien); npm run build grün; npx playwright test --config tests/playwright.dist.config.ts: 92 Tests, 88 bestanden, 0 fehlgeschlagen, 4 übersprungen (look.spec, nur mit ALL_SCREENS), 30,9 min; der frühere rote keep.spec-Test (Adlerhaken) ist durch den echten Wurf ersetzt und läuft auf allen drei Formaten grün; npm run balance Exit 0, alle Zeilen „Ziele auf einen Blick“ erfüllt (siehe B5)."
+  },
+  {
+    "id": "G2",
+    "titel": "Handy zuerst",
+    "pruefung": "Screenshots jedes neuen Bildschirms auf allen drei Formaten in docs/screenshots/v0.3/.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Screenshots der neuen Bildschirme auf allen drei Formaten in docs/screenshots/v0.3/: Lobby (lobby-*), Shop (shop-overview/slot/upgrade-*), Level-Karte (level-card-*), Sieg-Bildschirm (won-*, won-level1-*), Slot-Einführung (slot-intro-*), Tutorial (tutorial-*), Endlos-Seite (lobby-endless-*), Burg-Stufen (castle-tier1..7-*), Zweite Hand (multitouch-*, zwei Handys), dazu die Durchspiel-Bilder check-*.png."
+  },
+  {
+    "id": "G3",
+    "titel": "Bereit für App Store und Google Play",
+    "pruefung": "Liste im Bericht, was für den Store-Bau später noch nötig ist.",
+    "status": "erledigt",
+    "beleg": "Nachprüfung durch pruefer am 14.11.2026 (Stand 5727958, gebaute App dist). docs/v0.3/BERICHT.md enthält den Abschnitt „Was für den Store-Bau später noch nötig ist (G3)“ (ProfileStore für den App-Speicher, lockerere Versionsprüfung, App-Icon, Name, Datenschutzerklärung, Altersfreigabe, Store-Texte und Bilder, Zugang nur über Store-Testkanäle)."
+  },
+  {
+    "id": "G4",
+    "titel": "Dokumente",
+    "pruefung": "pruefer gleicht die Dokumente stichprobenartig mit Code und Konfiguration ab.",
+    "status": "erledigt",
+    "beleg": "Prüfung durch pruefer am 14.11.2026 (Stand 5a137ce, gebaute App dist per vite preview). Stichprobe durch pruefer: GDD.md, HANDBUCH.md, ARCHITEKTUR.md und AGENTS.md gegen Konfiguration abgeglichen und stimmig: Burg-Stufen 800 bis 7800 und Preise (keep.ts), Hand-Stärke 1 bis 3,3 und Preise (hand.ts), 50 Wappen (CREST_COST), Kessel Level 16 für 12 Käse und Adlerhaken Level 70 für 28 Käse (keep.ts), Slots öffnen nach Level 0/2/4/7/11 (slots.ts), Stufen-Deckel, Endlos ab fünftem Slot, 25 Waffen. Kleinigkeit: GDD nennt Boss-Level 7 bis 10 Minuten, der Test und das Bot-Ziel 6 bis 10 Minuten."
+  }
+]

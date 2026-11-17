@@ -10,7 +10,7 @@ import type { ScreenId } from './screen';
 
 /** An interrupted campaign level, as the app keeps it in the profile. */
 export interface PendingRun {
-  v: 1;
+  v: 2;
   rules: RunRules;
   seed: number;
   start: RunStart;
@@ -29,8 +29,8 @@ export interface ScreenContext {
   readonly audio: AudioEngine;
   /** Lobby state and the co-op connection. */
   readonly coop: CoopRoom;
-  /** Day the next endless game starts on; above 1 only through the developer menu. */
-  readonly startDay: number;
+  /** Wave the next endless game starts at; above 1 only through the developer menu. */
+  readonly startWave: number;
   /** The tip picked for the current results screen. */
   readonly loadingTip: string;
   /** What the run that just ended brought, and how it ended. Null before the first run ends. */

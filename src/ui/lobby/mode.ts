@@ -6,4 +6,4 @@ export function htmlMenuWanted(search: string = typeof location === 'undefined' 
 }
 
 /** Screens that are shown over the lobby: the main menu itself and everything it opens. */
-export const OVER_LOBBY: ReadonlySet<string> = new Set(['main', 'play', 'coop', 'campaign', 'armoury', 'options', 'scores', 'help', 'credits', 'host', 'join']);
+export const OVER_LOBBY: ReadonlySet<string> = new Set(['main', 'play', 'coop', 'campaign', 'armoury', 'options', 'host', 'join']);

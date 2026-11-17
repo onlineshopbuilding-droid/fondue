@@ -2,7 +2,7 @@
  * The throw and hold maths that host and guest must compute identically (handbook, trap 4).
  * Pure functions: `Hands` and `Flight` use them for the real game, `GuestSession` for its prediction.
  */
-import { BEHAVIOUR, ENEMIES, type EnemyType } from '../config/enemies';
+import { BEHAVIOUR, ENEMIES, GRAB_SPEED_BONUS, type EnemyType } from '../config/enemies';
 import { HANDS, HAND_RULES } from '../config/hand';
 import type { Tuning } from '../config/tuning';
 
@@ -14,7 +14,29 @@ export function massOfType(type: EnemyType, big: boolean, crow: boolean): number
   return ENEMIES[type].mass * (big ? BEHAVIOUR.big.mass : 1);
 }
 
+/**
+ * Extra grab reach for a raider on the move (B4): fast raiders are hard to hit with a finger, so
+ * their grab area grows with their walk speed. Only while walking or hopping.
+ */
+export function grabBonus(type: EnemyType, state: string): number {
+  if (state !== 'walk' && state !== 'hop') return 0;
+  const g = GRAB_SPEED_BONUS;
+  return clamp((ENEMIES[type].speed - g.from) * g.perSpeed, 0, g.max);
+}
+
 export const handStrength = (tier: number): number => HANDS[clamp(Math.round(tier), 1, HANDS.length) - 1].strength;
+
+/**
+ * Hands are numbered so that host and guest agree: player p's own hand is p, their second hand
+ * (C9) is p + players. `which` is 0 for the first hand, 1 for the second.
+ */
+export const handIndex = (player: number, which: number, players: number): number => (which > 0 ? player + players : player);
+/** The player a hand belongs to. */
+export const playerOfHand = (hand: number, players: number): number => hand % Math.max(1, players);
+/** True for a player's second hand. */
+export const isSecondHand = (hand: number, players: number): boolean => hand >= players;
+/** A hand tier that brings the second hand for good. */
+export const hasPermanentSecondHand = (tier: number): boolean => tier >= HAND_RULES.secondHandTier;
 
 /** Share of the swipe speed that reaches a raider of this mass: 1 for light ones, less for heavy ones. */
 export function throwFactor(mass: number, strength: number): number {

@@ -1,0 +1,89 @@
+/* Keep Shop (v0.4): the castle as the shop's main goal and the short rise of the keep when a castle
+   tier is built. Imported from keep.ts; the rest of the shop's look stays in style.css. */
+
+.castle-goal {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; padding: 6px 10px;
+  border-radius: 12px; background: #fff6df; border: 3px solid rgba(138, 90, 51, 0.55); box-shadow: inset 0 2px 0 #fff;
+  font-size: 15px;
+}
+.castle-goal.ready { border-color: var(--mustard); background: #fff1c4; box-shadow: 0 0 0 2px var(--ink), 0 0 14px 3px rgba(255, 214, 110, 0.8); }
+.cg-now { font-family: 'Lilita One', sans-serif; font-size: 18px; color: var(--plum); }
+.cg-now b { font-weight: normal; }
+.cg-next { font-weight: 700; }
+.cg-why { flex-basis: 100%; color: var(--rust); font-weight: 800; font-size: 14px; }
+.cg-build { flex-basis: 100%; }
+.cg-bar {
+  position: relative; flex: 1 1 160px; min-width: 140px; height: 22px; border-radius: 11px; overflow: hidden;
+  background: rgba(43, 33, 24, 0.14); border: 2px solid var(--ink);
+}
+.cg-bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(180deg, #ffe58a, #e9b44c); }
+.cg-bar b { position: relative; display: block; text-align: center; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 13px; line-height: 18px; }
+.sh-lead .cg-bar { display: block; max-width: 280px; margin-top: 2px; }
+
+/* The castle spot breathes gold while a castle tier can be built. */
+.sh-spot.ready#spot-castle { border-color: var(--mustard); }
+
+/* A slot the castle tier just opened. */
+.sh-spot.fresh { border: 4px solid #7fe3a2; background: rgba(127, 227, 162, 0.25); }
+.sh-spot.fresh::after { box-shadow: 0 0 22px 7px rgba(127, 227, 162, 0.95); opacity: 1; animation: sh-fresh 0.9s ease-in-out infinite; }
+@keyframes sh-fresh { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+
+/* The rise of the keep: the picture lifts and glows, dust rolls along the ground, sparkles twinkle. */
+.sh-keep.building .sh-svg { animation: cb-rise 1.1s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+@keyframes cb-rise {
+  0% { transform: translateY(9%) scale(0.94); filter: brightness(0.7); }
+  55% { transform: translateY(-1.5%) scale(1.02); filter: brightness(1.35); }
+  100% { transform: none; filter: none; }
+}
+.castle-build {
+  position: absolute; inset: 0; z-index: 5; width: 100%; height: 100%; padding: 0; margin: 0; border: 0; border-radius: 0;
+  background: radial-gradient(circle at 50% 70%, rgba(255, 236, 160, 0.45), rgba(255, 236, 160, 0) 60%); box-shadow: none;
+  cursor: pointer; overflow: hidden; animation: cb-flash 1.2s ease-out both;
+}
+@keyframes cb-flash { 0% { background-color: rgba(255, 250, 230, 0.75); } 40% { background-color: rgba(255, 250, 230, 0); } }
+.cb-dust {
+  position: absolute; bottom: 4%; width: 22%; aspect-ratio: 1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(225, 205, 170, 0.95) 0%, rgba(225, 205, 170, 0) 70%);
+  animation: cb-dust 1s ease-out both;
+}
+@keyframes cb-dust { 0% { transform: translate(-50%, 30%) scale(0.3); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(-50%, -60%) scale(1.5); opacity: 0; } }
+.cb-star { position: absolute; font-style: normal; font-size: 26px; color: #fff4b0; text-shadow: 0 0 8px #ffd34d; pointer-events: none; animation: cb-star 0.8s ease-out both; }
+@keyframes cb-star { 0% { transform: scale(0) rotate(0); opacity: 0; } 50% { transform: scale(1.3) rotate(40deg); opacity: 1; } 100% { transform: scale(0.6) rotate(90deg); opacity: 0; } }
+.cb-name {
+  position: absolute; left: 50%; top: 10%; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
+  padding: 6px 14px; border-radius: 12px; background: rgba(43, 33, 24, 0.82); border: 2px solid var(--mustard);
+  color: var(--cream); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px; text-align: center;
+  animation: cb-name 1.2s ease-out both;
+}
+.cb-name b { display: block; font-family: 'Lilita One', sans-serif; font-weight: normal; font-size: 22px; color: #ffe58a; }
+@keyframes cb-name { 0% { transform: translate(-50%, -30%) scale(0.6); opacity: 0; } 25% { transform: translate(-50%, 0) scale(1.08); opacity: 1; } 40% { transform: translate(-50%, 0) scale(1); } }
+.cb-skip {
+  position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); pointer-events: none; white-space: nowrap;
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12px; color: var(--cream); text-shadow: 0 1px 0 var(--ink), 0 0 3px var(--ink);
+}
+
+@media (max-height: 500px) {
+  .castle-goal { font-size: 13px; padding: 4px 8px; margin-bottom: 5px; }
+  .cg-now { font-size: 15px; }
+  .cb-name b { font-size: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sh-keep.building .sh-svg, .cb-dust, .cb-star, .cb-name, .castle-build { animation-duration: 0.35s; }
+  .cb-dust, .cb-star { display: none; }
+}
+
+/* A weapon row (I-10): its upgrade button is the main action, large and first; "Wear" / "Take off"
+   comes second, smaller and set apart. On short landscape phones the actions sit in their own line
+   under the text, so the price line is never cut off. */
+.shop .sw-acts { gap: 6px; }
+.shop .sw-main-act { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+.shop .sw-main-act button.buy { min-height: 48px; font-size: 16px; box-shadow: 0 0 0 2px var(--ink), 0 0 10px 2px rgba(255, 214, 110, 0.75); }
+.shop .sw-main-act button.buy:disabled { box-shadow: none; }
+.shop .sw-acts > button.secondary { min-height: 44px; font-size: 13px; padding: 2px 10px; align-self: flex-end; opacity: 0.92; }
+@media (max-height: 500px) {
+  .shop .sw-row { flex-wrap: wrap; }
+  .shop .sw-acts { flex: 1 1 100%; max-width: none; flex-direction: row; align-items: flex-start; gap: 10px; }
+  .shop .sw-main-act { flex: 1 1 auto; }
+  .shop .sw-acts > button.secondary { flex: none; align-self: flex-start; margin-left: auto; }
+}

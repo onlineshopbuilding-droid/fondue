@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { clearField, gameState, pointer, spawn, startEndless, waitFor, waitForGame } from './helpers';
+import { ENEMIES } from '../../src/config/enemies';
+import { clearField, gameState, pointer, spawn, startEndless, waitFor, waitForGame, waitGame } from './helpers';
 
 // A laptop with a touch screen: the same window takes mouse and finger.
 test.use({ hasTouch: true });
@@ -10,13 +11,16 @@ test('a touch screen laptop: a finger grabs and flings, the mouse still works to
   await startEndless(page);
   await clearField(page);
   await spawn(page, 'grunt', 700);
-  const e = (await waitFor(() => gameState(page), (s) => s!.enemies.length === 1, 3000))!.enemies[0];
+  const seen = (await waitGame(page, () => gameState(page), (s) => s!.enemies.length === 1, 3))!;
+  const e = seen.enemies[0];
   const finger = await pointer(page, true);
   await finger.down(e.x, e.y - 44);
-  await waitFor(() => gameState(page), (v) => v!.enemies[0].st === 'held', 3000);
+  await waitGame(page, () => gameState(page), (v) => v!.enemies[0].st === 'held', 3);
   await finger.glide(e.x, e.y - 44, e.x, 60, 10, 8);
   await finger.up();
-  await waitFor(() => gameState(page), (v) => v!.gold === 10, 8000);
+  // The run pays exactly one Pothelm once it has flown and fallen: game time, slower than real time where frames are slow.
+  const scale = await page.evaluate(() => (window as any).__fondue.session.meta().rules.scaling.gold as number);
+  await waitGame(page, () => gameState(page), (v) => v!.gold === seen.gold + Math.round(ENEMIES.grunt.gold * scale), 8);
   // On a touch the finger is the hand, so no hand is drawn; the mouse brings it back.
   expect(await page.evaluate(() => (window as any).__fondue.scene.ownHandVisible())).toBe(false);
   await page.mouse.move(640, 300);

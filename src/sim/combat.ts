@@ -1,5 +1,6 @@
 // Part of the simulation: damage and death of raiders, blasts, freezing, and damage to the gate.
 import { BEHAVIOUR, ENEMIES, type EnemyType } from '../config/enemies';
+import { crestsFor, CRESTS } from '../config/crests';
 import { ECONOMY } from '../config/economy';
 import { COOP } from '../config/waves';
 import type { DeathCause, Enemy } from './types';
@@ -7,7 +8,7 @@ import type { SimContext } from './context';
 
 /**
  * Damage and death: hurting raiders, blasts, freezing, and damage to the gate.
- * A kill pays its gold and offerings here and is counted for the statistics.
+ * A kill pays its gold here (double in the Great Cauldron, crests at the Eagle Perch) and is counted for the statistics.
  */
 export class Combat {
   /** True while a keg blast is being resolved, so its kills are counted as such. */
@@ -61,6 +62,7 @@ export class Combat {
     this.ctx.emit({ e: 'explosion', x, y, radius });
     const outer = this.kegBlast;
     this.kegBlast = outer || keg;
+    if (keg && !outer) this.ctx.stats.kegBlast();
     for (const e of [...this.ctx.s.enemies]) {
       if (e.dead) continue;
       const d = Math.hypot(e.x - x, e.y - ENEMIES[e.type].height * 0.5 - y);
@@ -80,7 +82,7 @@ export class Combat {
   goldFor(e: Enemy): number {
     const s = this.ctx.s;
     const rules = this.ctx.rules;
-    let gold = ENEMIES[e.type].gold * rules.scaling.gold * (rules.players > 1 ? COOP.goldFactor : 1);
+    let gold = ENEMIES[e.type].gold * rules.scaling.gold * (rules.players > 1 ? COOP.goldPerKill : 1);
     if (e.big) gold *= BEHAVIOUR.big.gold;
     if (s.goldRushT > 0) gold *= s.goldRushFactor;
     return Math.round(gold);
@@ -94,16 +96,21 @@ export class Combat {
     e.heldBy = [];
     const def = ENEMIES[e.type];
     let gold = this.goldFor(e);
-    const score = Math.round(def.score * (e.big ? BEHAVIOUR.big.gold : 1) * (1 + (s.day - 1) * 0.1));
-    if (cause === 'cauldron' || cause === 'eagle') {
-      gold += ECONOMY.offeringGold;
-      s.offerings += 1;
-      s.dayOfferings += 1;
+    const score = Math.round(def.score * (e.big ? BEHAVIOUR.big.gold : 1) * (1 + (s.wave - 1) * 0.03));
+    // The Great Cauldron pays double gold for what melts in it (C5).
+    if (cause === 'cauldron') gold = Math.round(gold * ECONOMY.cauldronGoldFactor);
+    // The eagle leaves the raider's crest, up to the limit of a run (A4).
+    if (cause === 'eagle') {
+      const crests = Math.min(crestsFor(e.type, e.big), CRESTS.perRun - s.crests);
+      if (crests > 0) {
+        s.crests += crests;
+        this.ctx.stats.crests(crests);
+        this.ctx.emit({ e: 'crest', x: e.x, y: e.y, amount: crests });
+      }
     }
     s.gold += gold;
-    s.dayGold += gold;
-    s.dayKills += 1;
-    s.dayScore += score;
+    s.meta.totalKills += 1;
+    s.meta.totalScore += score;
     this.ctx.stats.kill(e.type, cause, this.kegBlast);
     this.ctx.stats.gold(gold);
     this.ctx.emit({ e: 'death', id: e.id, x: e.x, y: e.y, etype: e.type, cause, gold, p });

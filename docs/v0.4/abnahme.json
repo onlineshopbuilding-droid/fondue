@@ -1,0 +1,177 @@
+[
+  {
+    "id": "V1",
+    "titel": "Versionsregel festhalten",
+    "pruefung": "Regel aus Abschnitt 1 steht in AGENTS.md (Abschnitt „Veröffentlichen“ ersetzt) und in docs/HANDBUCH.md; Entwickler-Übersicht und Options zeigen eine Liste aller spielbaren Versionen mit Link. Beleg: Text in beiden Dateien; Screenshot der Versionsliste.",
+    "status": "erledigt",
+    "beleg": "Text in AGENTS.md (Abschnitt „Veröffentlichen: die Versionsregel“) und docs/HANDBUCH.md (Abschnitt 7, mit Rezept). Versionsliste: tests/unit/versionsAndDecisionsV4.test.ts (grün); Screenshot docs/screenshots/v0.4/options-versions-laptop.png angesehen (Liste v0.4 bis v0.1, „this one“ an v0.4), dazu -iphone-16.png und -oneplus-8t.png vorhanden. Entwickler-Übersicht: tests/e2e/dev-tools.spec.ts vorhanden, nicht gestartet."
+  },
+  {
+    "id": "V2",
+    "titel": "Speicher für v0.4",
+    "pruefung": "Eigener Schlüssel fondue.v4.*; einmalige Übernahme eines v0.3-Spielstands, umgerechnet auf die neuen Regeln. Beleg: Unit-Test der Übernahme; Test, dass fondue.v3.* und fondue.profile danach unverändert sind.",
+    "status": "erledigt",
+    "beleg": "tests/unit/profile-v3import.test.ts (u. a. „leaves fondue.v3.* and fondue.profile byte for byte unchanged through load, import, save, reset and reload“) und tests/unit/castleImport.test.ts, beide grün (Unit-Tests am 17.11.2026 21:07 gezielt gelaufen: 14 Dateien, 265 Tests bestanden (unlocks, progress, weapons, campaignWaves, cheats, tutorial, castleImport, profile-v3import, lobby, versionsAndDecisionsV4, campaignCastle, campaignTable, economy, assets)). Zusätzlich tests/e2e/storage.spec.ts vorhanden, nicht gestartet."
+  },
+  {
+    "id": "V3",
+    "titel": "Versionsnummer",
+    "pruefung": "„v0.4“ steht sichtbar in den Options und klein in der Lobby. Beleg: Screenshot.",
+    "status": "erledigt",
+    "beleg": "Screenshot docs/screenshots/v0.4/lobby-tier1-laptop.png angesehen: klein „v0.4 · build 14c40b0“ in der Lobby; docs/screenshots/v0.4/options-versions-laptop.png angesehen: Kennzeichen „v0.4“ im Kopf der Options."
+  },
+  {
+    "id": "A1",
+    "titel": "Slots über Burg-Stufen",
+    "pruefung": "Stufe 1 Damage, 2 Slow, 3 Gate, 4 Support, 5 Passive; Einführung mit Satz des Königs, ausgelöst durch den Burg-Ausbau. Beleg: Unit-Test für jede Burg-Stufe und ihre offenen Slots; Browser-Test, der nach dem Kauf von Burg-Stufe 2 die Einführung des Slow-Slots sieht.",
+    "status": "offen",
+    "beleg": "Unit-Teil erfüllt: tests/unit/unlocks.test.ts („opens exactly the slots of each castle tier 1..7“, „every slot opens with its castle tier …“) grün. Browser-Teil (Einführung des Slow-Slots nach Kauf von Burg-Stufe 2): tests/e2e/castleUpgrade.spec.ts und shop.spec.ts. Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+  },
+  {
+    "id": "A2",
+    "titel": "Burg-Stufen brauchen Gold und ein Kampagnen-Level",
+    "pruefung": "Stufe 2 ab Level 6, Stufe 7 ab Level 75 (mit Crests), 3–6 dazwischen; Shop nennt in einem klaren Satz, was fehlt. Beleg: Unit-Test für Sperre und Kauf; Level-Tabelle der Entwickler-Übersicht zeigt, ab welchem Level jede Burg-Stufe kaufbar ist.",
+    "status": "erledigt",
+    "beleg": "Sperre und Kauf: tests/unit/progress.test.ts und tests/unit/unlocks.test.ts („castle tiers become buildable at their won level: 2 at 6 and 7 at 75 …“) grün. Level-Tabelle: tests/unit/campaignTable.test.ts („shows from which level every castle tier can be built, with its price and the slot it opens“) grün; docs/KAMPAGNE-TABELLE.md, Abschnitt „Burg-Stufen“. Shop-Satz: src/ui/screens/keep.ts („Win level N to build this.“, „You need N more gold.“), Screenshots docs/screenshots/v0.4/shop-castle-*.png vorhanden. Werte: Konfiguration (slotTiers.ts, keep.ts), E-079."
+  },
+  {
+    "id": "A3",
+    "titel": "Kampagne und Endlos passen dazu",
+    "pruefung": "Frühe Level mit nur Damage-Slot gut spielbar; Waffen-Freischaltungen, Stufen-Deckel, Kessel und Adlerhaken geprüft; Challenges verlangen nur, was sicher kaufbar ist. Beleg: bestehender Test „jede Challenge ist erfüllbar“ auf die neue Regel umgestellt und grün; Test Käse-Summe 500 grün.",
+    "status": "offen",
+    "beleg": "Tests grün: tests/unit/campaignWaves.test.ts („every challenge can be met in its own level“) und tests/unit/economy.test.ts („all cheese prices … add up to exactly 500“); Deckel: tests/unit/progress.test.ts. Offen, weil „frühe Level gut spielbar“ und „Kessel/Adlerhaken geprüft“ erst die Durchspiel-Prüfung (C1) und die Balance-Auswertung (docs/balance.md, E-080) belegen; Leitung entscheidet."
+  },
+  {
+    "id": "A4",
+    "titel": "Das Burg-Level ist überall sichtbar",
+    "pruefung": "Burg-Stufe mit Name und Zahl in Lobby, Shop, Kampagnen-Karte, Koop-Raum neben jedem Namen und auf dem Sieg-Bildschirm bei neu kaufbarer Stufe. Beleg: Screenshots dieser Stellen auf allen drei Formaten.",
+    "status": "offen",
+    "beleg": "Screenshots vorhanden in docs/screenshots/v0.4/: lobby-tier1..7-*.png (Banner mit Burg-Stufe, lobby-tier1-laptop.png angesehen), campaign-map-*.png, shop-castle-*.png, won-castle-tier2-*.png, coop-room-host/guest-*.png, je Laptop, iPhone 16, OnePlus 8T. Nur lobby-tier1-laptop.png und options-versions-laptop.png von mir angesehen; die übrigen nicht einzeln geprüft."
+  },
+  {
+    "id": "A5",
+    "titel": "Burg-Ausbau ist ein Ereignis",
+    "pruefung": "Kurze Animation an der Burg, Satz des Königs, sichtbar neuer Slot, neue Lobby beim nächsten Betreten. Beleg: Browser-Test kauft eine Burg-Stufe und sieht Animation und Satz; Screenshot.",
+    "status": "offen",
+    "beleg": "Screenshots docs/screenshots/v0.4/castle-upgrade-*.png und castle-upgrade-king-*.png vorhanden (nicht angesehen). Browser-Test tests/e2e/castleUpgrade.spec.ts vorhanden. Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+  },
+  {
+    "id": "A6",
+    "titel": "Tutorial und Texte",
+    "pruefung": "Tutorial, Level-1-Führung, Hilfe, Tipps, Königs-Sätze und Level-Karte erklären Gold verdienen, Burg ausbauen, neuer Slot; der König kündigt kaufbare Burg-Stufen statt Slots an. Beleg: Suche in allen Spieltexten findet keine Stelle mehr, die Slots an Kampagnen-Level knüpft; pruefer liest alle geänderten Texte gegen.",
+    "status": "offen",
+    "beleg": "Teilbelege: tests/unit/tutorial.test.ts („every slot and station has a King line …“, „a slot is introduced once, when its castle tier is built …“) grün. Die Textsuche nach Slots an Kampagnen-Leveln und das Gegenlesen durch pruefer fehlen noch."
+  },
+  {
+    "id": "A7",
+    "titel": "Koop",
+    "pruefung": "Gespielt wird mit der Burg des Hosts; im Koop-Raum sieht jeder die Burg-Stufe des anderen. Beleg: Koop-Browser-Test sieht beide Burg-Stufen.",
+    "status": "offen",
+    "beleg": "tests/e2e/coopCastle.spec.ts (Burg-Stufe im Raum) vorhanden, Screenshots docs/screenshots/v0.4/coop-room-host/guest-*.png vorhanden. Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+  },
+  {
+    "id": "A8",
+    "titel": "Balance mit Bots",
+    "pruefung": "Mittlerer Bot kauft Stufe 2 bald nach Level 6, fünfter Slot etwa Level 20–30; frühe Level schaffbar, aber nicht belanglos; Ziele aus v0.3 gelten weiter. Beleg: npm run balance mit Ergebnissen in docs/balance.md, darunter das Kampagnen-Level, bei dem der mittlere Bot jede Burg-Stufe kauft.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "B1",
+    "titel": "Aufbau der Halle",
+    "pruefung": "König mit zwei Rittern am Fondue-Kessel rechts, Kampagnen-Tisch Mitte (größte Station), Shop daneben, Koop- und Endlos-Tisch, Zahnrad oben in einer Ecke, Continue gut sichtbar, Tippflächen ≥ 44 CSS-px. Beleg: Screenshots auf allen drei Formaten; pruefer bestätigt mit frischem Blick, dass man ohne Erklärung erkennt, wo es zur Kampagne, zum Shop und zu den Options geht.",
+    "status": "offen",
+    "beleg": "Screenshots lobby-tier1..7-*.png auf drei Formaten vorhanden; lobby-tier1-laptop.png angesehen: Tür links hinten, Kampagnen-Tisch vorn in der Mitte, Shop rechts daneben, König mit zwei Wachen am Kessel rechts, Zahnrad oben rechts. Unit-Test tests/unit/lobby.test.ts („puts the campaign table in the middle as the biggest station …“, „keeps every station on screen and big enough for a finger …“) grün. Das Urteil des pruefer mit frischem Blick (Durchspiel C1) fehlt."
+  },
+  {
+    "id": "B2",
+    "titel": "Was aus der Lobby verschwindet",
+    "pruefung": "Storybook, Help, Credits, Scores und der Endlos-Topf in der Mitte sind keine Stationen mehr. Beleg: Unit-Test der Stationsliste; Screenshot.",
+    "status": "erledigt",
+    "beleg": "tests/unit/lobby.test.ts („has exactly the v0.4 stations: continue, campaign, shop, co-op and endless tables, options“) grün; Screenshot docs/screenshots/v0.4/lobby-tier1-laptop.png angesehen: keine Stationen für Storybook, Help, Credits, Scores, kein Topf in der Mitte."
+  },
+  {
+    "id": "B3",
+    "titel": "Koop-Tisch",
+    "pruefung": "Kaputter Tisch mit kurzem Satz, bis Level 3 gewonnen ist, danach aufgebaut und öffnet den Koop. Beleg: Unit-Test der Sperre; Screenshots kaputt und aufgebaut.",
+    "status": "erledigt",
+    "beleg": "tests/unit/lobby.test.ts („shows broken tables until their level is won“) und tests/unit/unlocks.test.ts („the endless table opens once level 10 is won, the coop table once level 3 is won …“) grün; Screenshots docs/screenshots/v0.4/lobby-tables-broken-*.png und lobby-tables-built-*.png vorhanden, lobby-tier1-laptop.png (kaputter Koop-Tisch mit Schloss) angesehen."
+  },
+  {
+    "id": "B4",
+    "titel": "Endlos-Tisch",
+    "pruefung": "Wie B3, aufgebaut ab gewonnenem Level 10; Endlos mit eigener Burg. Beleg: Unit-Test, dass Endlos vor Level 10 gesperrt und danach offen ist; Screenshots kaputt und aufgebaut.",
+    "status": "erledigt",
+    "beleg": "tests/unit/unlocks.test.ts („the endless table opens once level 10 is won …“) grün; Screenshots docs/screenshots/v0.4/lobby-tables-broken-*.png und lobby-tables-built-*.png vorhanden; im angesehenen lobby-tier1-laptop.png steht „Endless“ mit Schloss. Das Aufgebaut-Bild selbst nicht angesehen."
+  },
+  {
+    "id": "B5",
+    "titel": "Die Halle wächst mit der Burg-Stufe",
+    "pruefung": "Lobby-Deko hängt an der Burg-Stufe; jede der sieben Stufen auf den ersten Blick verschieden. Beleg: Screenshots aller sieben Burg-Stufen auf allen drei Formaten in docs/screenshots/v0.4/.",
+    "status": "offen",
+    "beleg": "Screenshots aller sieben Burg-Stufen auf drei Formaten vorhanden: docs/screenshots/v0.4/lobby-tier1..7-{laptop,iphone-16,oneplus-8t}.png (21 Dateien, Existenz geprüft); tests/unit/lobby.test.ts („builds a hall of its own for each of the seven castle tiers“) grün. Ob sie „auf den ersten Blick verschieden“ sind, habe ich nur an Stufe 1 gesehen; Urteil fehlt noch."
+  },
+  {
+    "id": "B6",
+    "titel": "Options mit Tabs",
+    "pruefung": "Zahnrad öffnet Options mit Tabs (Settings, Scores, Help, Credits, Versions) und Entwickler-Menü; Bestenliste, Hilfe und Credits nur noch dort. Beleg: Browser-Test öffnet jeden Tab auf allen drei Formaten.",
+    "status": "offen",
+    "beleg": "tests/e2e/options.spec.ts (jeder Tab auf drei Formaten) vorhanden; Screenshot docs/screenshots/v0.4/options-versions-laptop.png angesehen (Reiter Settings, Scores, Help, Credits, Versions). Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+  },
+  {
+    "id": "B7",
+    "titel": "Storybook auf der Kampagnen-Karte",
+    "pruefung": "Kleines Buch oben in einer Ecke der Kampagnen-Karte öffnet das Storybook, unauffällig, aber gut tippbar. Beleg: Browser-Test öffnet das Storybook von der Kampagnen-Karte aus.",
+    "status": "offen",
+    "beleg": "tests/e2e/storybook.spec.ts vorhanden, Screenshots docs/screenshots/v0.4/storybook-*.png und campaign-map-*.png vorhanden. Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+  },
+  {
+    "id": "C1",
+    "titel": "Durchspiel-Prüfungen mit frischem Blick",
+    "pruefung": "Drei pruefer ohne Codekenntnis, je ein Format, frisches Profil bis mindestens Level 8 und Cheats in einen späten Stand; jeder Befund mit Gerät, Screenshot und Wichtigkeit. Beleg: docs/v0.4/BEFUNDE.md mit mindestens einem vollständigen Durchgang je Format.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C2",
+    "titel": "Befunde abarbeiten",
+    "pruefung": "Befunde nach Wichtigkeit behoben (mit Commit) oder bewusst offen (mit Grund). Beleg: Alle Befunde der Stufe „stört stark“ sind behoben oder begründet offen.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C3",
+    "titel": "Einfache, einheitliche Bedienung",
+    "pruefung": "Klare Hauptaktion je Bildschirm, Zurück immer an derselben Stelle, gleiche Dinge gleich, kein Fenster verdeckt ein anderes (D-19, D-20 geprüft), höchstens drei Tipps vom Start bis ins Level. Beleg: pruefer bestätigt die Ziele mit Screenshots; Browser-Test zählt die Tipps bis zum Spielstart.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C4",
+    "titel": "Flüssig",
+    "pruefung": "Übergänge ohne Hänger, keine Wartezeit ohne Rückmeldung; Bildrate in Lobby und Spiel auf drei Formaten gemessen. Beleg: Messwerte im Bericht, Lobby mindestens 55 Bilder pro Sekunde im Testbrowser am Laptop (Startwert).",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "C5",
+    "titel": "Bekannte offene Punkte aus v0.3",
+    "pruefung": "Leerlauf im Shop in Level 6–9, ungleiche Waffenstärken, Boss-Level-Länge geprüft, Leichtes behoben. Beleg: Abschnitt im Bericht.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "D1",
+    "titel": "Dokumente",
+    "pruefung": "AGENTS.md, docs/GDD.md, docs/HANDBUCH.md, docs/ARCHITEKTUR.md, docs/ENTSCHEIDUNGEN.md und die Entwickler-Übersicht beschreiben v0.4 richtig. Beleg: pruefer gleicht stichprobenartig mit Code und Konfiguration ab.",
+    "status": "offen",
+    "beleg": ""
+  },
+  {
+    "id": "D2",
+    "titel": "Tests und Auslieferung",
+    "pruefung": "npm test, npm run test:e2e und npm run balance grün, test auf GitHub grün, v0.4 nach Etappe 6 live. Beleg: Ausgaben im Bericht; alle Adressen laden.",
+    "status": "offen",
+    "beleg": ""
+  }
+]

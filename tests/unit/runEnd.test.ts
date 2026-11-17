@@ -1,57 +1,68 @@
 /**
- * How a run ends and what it counted: surviving the last day wins, a fallen gate loses, and the
+ * How a run ends and what it counted: clearing the last wave wins, a fallen gate loses, and the
  * statistics of the run travel in the result.
  */
 import { describe, expect, it } from 'vitest';
-import { arm, battleSim, eventsOf, fire, firedOk, flingUp, makeSim, place, runUntil, skipToMarket, toBattle } from './helpers';
+import { arm, battleSim, clearWave, eventsOf, fire, firedOk, flingUp, makeSim, place, runUntil, toBattle, wave } from './helpers';
 
-const DAYS = [{ counts: { grunt: 1 } }, { counts: { grunt: 1 } }];
+const WAVES2 = [wave(1, 1, 2), wave(1, 1, 2)];
+
+/** Clears the field wave after wave until the run is over or the ticks run out. */
+function clearAll(sim: ReturnType<typeof makeSim>, maxTicks = 3000) {
+  for (let i = 0; i < maxTicks && sim.s.phase !== 'runWon' && sim.s.phase !== 'gameover'; i++) {
+    clearWave(sim);
+    sim.step();
+  }
+}
 
 describe('win state', () => {
-  it('surviving the last day ends the run as won, with a result', () => {
-    const sim = makeSim({ rules: { lastDay: 1 }, days: DAYS });
+  it('clearing the last wave ends the run as won, with a result', () => {
+    const sim = makeSim({ waves: [wave(1, 1, 2)] });
+    expect(sim.rules.lastWave).toBe(1);
     expect(sim.s.meta.result).toBeNull();
-    skipToMarket(sim);
+    clearAll(sim);
     expect(sim.s.phase).toBe('runWon');
     const result = sim.s.meta.result!;
     expect(result.won).toBe(true);
     expect(result.runId).toBe(sim.rules.runId);
-    expect(result.day).toBe(1);
-    expect(result.stats.daysCleared).toBe(1);
+    expect(result.wave).toBe(1);
+    expect(result.stats.wavesCleared).toBe(1);
   });
 
-  it('a day before the last one leads to the market, not to the end', () => {
-    const sim = makeSim({ rules: { lastDay: 2 }, days: DAYS });
-    skipToMarket(sim);
-    expect(sim.s.phase).toBe('intermission');
+  it('a wave before the last one leads to the next wave, not to the end', () => {
+    const sim = makeSim({ waves: WAVES2 });
+    const ev = runUntil(sim, () => sim.s.wave === 2, 2000);
+    expect(eventsOf(ev, 'waveStart').map((e) => e.wave)).toContain(2);
     expect(sim.s.meta.result).toBeNull();
-    sim.command({ k: 'forceStart', p: 0 });
-    skipToMarket(sim);
+    expect(sim.s.phase).not.toBe('runWon');
+    clearAll(sim);
     expect(sim.s.phase).toBe('runWon');
-    expect(sim.s.meta.result!.stats.daysCleared).toBe(2);
+    expect(sim.s.meta.result!.stats.wavesCleared).toBe(2);
   });
 
-  it('a run without a last day never ends by surviving', () => {
-    const sim = makeSim({ days: DAYS });
-    expect(sim.rules.lastDay).toBeNull();
-    skipToMarket(sim);
-    expect(sim.s.phase).toBe('intermission');
+  it('a run without a last wave never ends by surviving', () => {
+    const sim = makeSim({ waves: WAVES2, rules: { lastWave: null } });
+    expect(sim.rules.lastWave).toBeNull();
+    for (let i = 0; i < 1200; i++) { clearWave(sim); sim.step(); }
+    expect(sim.s.phase).toBe('battle');
+    expect(sim.s.wave).toBeGreaterThan(2);
+    expect(sim.s.meta.result).toBeNull();
   });
 
   it('a fallen gate ends the run as lost', () => {
-    const sim = makeSim({ rules: { lastDay: 3 }, days: DAYS });
+    const sim = makeSim({ waves: [wave(3), wave(3), wave(3)] });
     toBattle(sim);
     sim.s.gateHp = 0;
     const ev = runUntil(sim, () => sim.s.phase === 'gameover', 1000);
     expect(eventsOf(ev, 'defeat')).toHaveLength(1);
     expect(sim.s.phase).toBe('gameover');
     expect(sim.s.meta.result!.won).toBe(false);
-    expect(sim.s.meta.result!.stats.daysCleared).toBe(0);
+    expect(sim.s.meta.result!.stats.wavesCleared).toBe(0);
   });
 
   it('a developer run says so in its result', () => {
-    const sim = makeSim({ rules: { lastDay: 1 }, days: DAYS, devRun: true });
-    skipToMarket(sim);
+    const sim = makeSim({ waves: [wave(1, 1, 2)], devRun: true });
+    clearAll(sim);
     expect(sim.s.meta.result!.devRun).toBe(true);
   });
 });
@@ -68,7 +79,7 @@ describe('run statistics', () => {
     expect(st.killsByType.grunt).toBe(1);
     expect(st.killsByCause.impact).toBe(1);
     expect(st.goldEarned).toBe(sim.s.gold);
-    expect(st.offerings).toBe(0);
+    expect(st.crestsEarned).toBe(0);
   });
 
   it('weapon shots are counted per weapon, and gate damage adds up', () => {
@@ -84,8 +95,8 @@ describe('run statistics', () => {
   });
 
   it('the result keeps its own copy of the statistics', () => {
-    const sim = makeSim({ rules: { lastDay: 1 }, days: DAYS });
-    skipToMarket(sim);
+    const sim = makeSim({ waves: [wave(1, 1, 2)] });
+    clearAll(sim);
     const result = sim.s.meta.result!;
     sim.s.stats.kills += 5;
     expect(result.stats.kills).not.toBe(sim.s.stats.kills);

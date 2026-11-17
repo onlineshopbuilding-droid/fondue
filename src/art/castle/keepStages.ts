@@ -1,5 +1,6 @@
 /**
- * The keep in its five build stages, from a wooden palisade to the white-and-gold fortress, plus its ground shadow.
+ * Castle tiers 1 to 5 (`tier0` to `tier4`), from a wooden palisade to the white-and-gold fortress, plus the
+ * ground shadow. Tiers 6 and 7 build on tier 5 in keepStagesGrand.ts.
  * Keep art coordinates are world + (40, 20); the window lists (`WINS0` to `WINS4`) also feed the night glow.
  */
 import { INK, TEAL, TEALD, RUST, RUSTD, MUST, MUSTL, WOOD, WOODD, WOODL, STONE, STONED, STONEL, IRON, IRONL, WHITE, GOLD, GOLDD, ink, r, l, n, hl, art, starPoints, LIGHT, litPath, litRect, litBall, rivets, grain, litFast as lit, tubeFast as litTube } from '../draw';
@@ -243,7 +244,7 @@ export function tier2(): string {
 }
 
 /** Segmental voussoir arch and jamb quoins over the opening. */
-function archGate(light: string, mid: string, dark: string, stoneKey: string): string {
+export function archGate(light: string, mid: string, dark: string, stoneKey: string): string {
   const jamb = (x: number) =>
     [0, 1, 2, 3, 4].map((i) => litRect(x, 494 + i * 30, 14, i === 4 ? 30 : 30, i % 2 ? mid : light, 3, { shadow: 3, light: 1.4, outline: 3 })).join('');
   // Tympanum, carved panel between arch and the rectangular opening.
@@ -360,13 +361,13 @@ export const WINS4: Win[] = [
   { x: 140, y: 160, w: 18, h: 40, arch: true },
   { x: 207, y: 182, w: 20, h: 40, arch: true },
 ];
-const GOLDEN = MUST;
+export const GOLDEN = MUST;
 
 /** Polished gold: bright upper edge, deep lower edge. */
 export const GILT = lin([[0, '#ffe39a'], [0.35, MUSTL], [0.7, GOLDEN], [1, GOLDD]], 90);
 
 /** Gold string course with little studs. */
-function goldBand(x0: number, x1: number, y: number): string {
+export function goldBand(x0: number, x1: number, y: number): string {
   const studs: [number, number][] = [];
   for (let x = x0 + 10; x < x1; x += 20) studs.push([x, y + 4]);
   return (
@@ -378,7 +379,7 @@ function goldBand(x0: number, x1: number, y: number): string {
 }
 
 /** A fluted marble pilaster with gilded capital and base. */
-function pilaster(x: number, y0: number, y1: number): string {
+export function pilaster(x: number, y0: number, y1: number): string {
   return (
     litRect(x, y0, 12, y1 - y0, '#f6f1e6', 2, { shadow: 3, light: 1.2 }) +
     hl(`M${x + 4} ${y0 + 6}V${y1 - 6}M${x + 8} ${y0 + 6}V${y1 - 6}`, '#cfc5ae', 1.4, 0.9) +
@@ -392,7 +393,7 @@ function pilaster(x: number, y0: number, y1: number): string {
 }
 
 /** A recessed stone panel carrying solid carved medallions in gold. */
-function carvedPanel(x: number, y: number, w: number, h: number, count: number): string {
+export function carvedPanel(x: number, y: number, w: number, h: number, count: number): string {
   let medals = '';
   for (let i = 0; i < count; i++) {
     const cx = fx(x + ((i + 0.5) * w) / count);
@@ -411,14 +412,14 @@ function carvedPanel(x: number, y: number, w: number, h: number, count: number):
   );
 }
 
-function goldStuds(x0: number, x1: number, y: number, step: number): string {
+export function goldStuds(x0: number, x1: number, y: number, step: number): string {
   const pts: [number, number][] = [];
   for (let x = x0; x < x1; x += step) pts.push([x, y]);
   return rivets(pts, 2.6, MUSTL, GOLDD);
 }
 
 /** A small corner turret standing on the keep's crown. */
-function bartizan(cx: number): string {
+export function bartizan(cx: number): string {
   const d = rect(cx - 16, 122, 32, 28);
   return (
     `<path d="${d}" fill="#f6f1e6"/>` +

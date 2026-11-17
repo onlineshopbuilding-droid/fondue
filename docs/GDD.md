@@ -2,176 +2,216 @@
 
 Fondue ist das eigene Spiel von Tim und Lenny. Welt, Figuren, Regeln, Namen, Texte, Grafik, Sound und Bildschirmaufbau sind eigen (siehe ENTSCHEIDUNGEN E-001).
 
-Dieses Dokument beschreibt die Regeln, wie sie nach dem großen Update im Code stehen. Die Zahlen kommen aus den Tabellen in `src/config/`; wo eine Tabelle lang ist, steht hier nur der Weg dorthin. Vollständige Tabellen:
-- alle 100 Level Tag für Tag: `docs/KAMPAGNE-TABELLE.md` (erzeugt von `node scripts/campaign-table.ts`),
-- alle Waffen mit allen fünf Stufen, Gegnerwerte, Endlos-Spannen, Freischaltungen und Balance: Entwickler-Übersicht unter https://onlineshopbuilding-droid.github.io/fondue/dev/ (erzeugt von `npm run dev-page`).
+Dieses Dokument beschreibt die Regeln von **v0.4** („Burg als Fortschritt“), wie sie im Code stehen (Branch `v0.4-dev`, Testadresse `/fondue/next/`, nach der Veröffentlichung `/fondue/`). Die Zahlen kommen aus den Tabellen in `src/config/`; wo eine Tabelle lang ist, steht hier nur der Weg dorthin. Zahlen, die die Balance noch verschieben kann (Kauf-Level der Burg-Stufen 3 bis 6, Preise, Freischalt-Level und Käse-Preise der Waffen), stehen hier bewusst nicht doppelt, sondern nur in der Konfiguration. Fest sind nur die Vorgaben von Tim: Burg-Stufe 2 ab Level 6, Burg-Stufe 7 ab Level 75, Koop-Tisch ab Level 3, Endlos-Tisch ab Level 10. Vollständige Tabellen:
+- alle 100 Level Welle für Welle: `docs/KAMPAGNE-TABELLE.md` (erzeugt von `node scripts/campaign-table.ts`),
+- alle Waffen mit allen sieben Stufen, Gegnerwerte, Freischaltungen, Burg-Stufen mit Kauf-Level und Preis, Käse-Summe und Balance: Entwickler-Übersicht unter `/fondue/next/dev/` (erzeugt von `npm run dev-page`),
+- Messungen und geänderte Startwerte: `docs/balance.md`.
 
-Fondue ist ein Handyspiel im Querformat. Geprüft wird auf iPhone 16, OnePlus 8T und Laptop.
+Fondue ist ein Handyspiel im Querformat. Geprüft wird auf iPhone 16 (852 × 393), OnePlus 8T (915 × 412) und Laptop (1280 × 720).
 
 ## Welt und Story
 - **Welt 1, Fondue:** König Fridolin, ein liebenswert-gieriger Schweizer, hat allen Käse des Landes für das größte Fondue aller Zeiten in seine Alpenburg geschafft. Die Mäuse und Ratten des Landes wollen ihn zurück und kommen als Ritterarmee über die Passstraße von rechts. Die Burg steht links.
 - Die elf Gegner sind Mäuse und Ratten in Ritterkostümen (Schwanz, Ohren am Helm, Schnurrhaare). Yeti und Krähen sind Verbündete, die die Mäuse herbeiholen.
 - Der Spieler ist weder der König noch dessen Hand: Der König hat ihn gerufen. Das erklärt erst das Storybuch.
-- Erzählt wird nur in kurzen Sätzen: der König in der Vorrunde, ein Satz je Level, Einwürfe des Königs in der Lobby, die Popups neuer Gegner, das Storybuch in der Lobby. In Level 100 ist die Armee besiegt. Alle Texte: `src/config/worlds/fondue/story.ts`.
+- Erzählt wird nur in kurzen Sätzen: der König in der Vorrunde und im ersten Shop-Besuch, ein Satz je Level, Einführungen neuer Slots und Stationen, Einwürfe des Königs in der Lobby, die Popups neuer Gegner, das Storybuch in der Lobby. In Level 100 ist die Armee besiegt. Alle Texte: `src/config/worlds/fondue/story.ts`.
 
 ## Begriffe
 | Begriff | Bedeutung |
 |---|---|
 | Welt | Paket aus König, Story, Gegnern, Landschaften und Kampagne (`src/config/worlds/`). Fondue ist Welt 1. |
-| Level | Ein Kampagnen-Level, 1 bis 100. |
-| Tag | Ein Tag innerhalb eines Levels oder eines Endlos-Laufs. |
-| Stufe | Ausbaustand einer Waffe (1 bis 5) oder der Hand (1 bis 3). Nie „Level“. |
-| Slot | Ein Waffenplatz an der Burg. |
-| Sterne | Dauerhafte Währung zwischen den Leveln (vorläufiger Name). |
-| Gold, Offerings | Währungen innerhalb eines Levels oder Laufs. |
+| Level | Ein Kampagnen-Level, 1 bis 100. Für Waffen, Burg und Hand nie „Level“. Gewonnene Level machen Burg-Stufen kaufbar und schalten Waffen, Stationen, den Koop-Tisch und den Endlos-Tisch frei; Slots öffnen sie nicht. |
+| Welle | Ein Angriffsabschnitt eines Levels oder eines Endlos-Laufs (`wave`, Spieltext „Wave“). |
+| Stufe | Ausbaustand einer Waffe, der Burg (zugleich das Tor) oder der Hand, 1 bis 7 (`tier`, Spieltext „Tier“). Die Burg-Stufe ist das Maß für den Fortschritt: „Burg-Stufe 4“ („Castle tier 4“). |
+| Slot | Ein Waffenplatz an der Burg. Fünf, jeder mit fester Aufgabe: Damage, Slow, Gate, Support, Passive. Ein Slot öffnet mit einer Burg-Stufe (Stufe 1 Damage, 2 Slow, 3 Gate, 4 Support, 5 Passive), nie mit einem Level. |
+| Käse | Dauerhafte Währung für Freischaltungen. Spieltext „Cheese“. |
+| Gold | Dauerhafte Währung für Stufen. Spieltext „Gold“. |
+| Räuberwappen | Sonderwährung für Stufe 7, nur vom Adlerhaken. Spieltext „Raider Crests“ (E-064). |
+
+## Das Grundprinzip: die dauerhafte Burg
+- Die **Burg** gehört dem Spieler dauerhaft und steht im Profil (`keep` in `fondue.v4.profile`): Burg-Stufe (das Tor), Hand-Stufe, alle freigeschalteten Waffen mit ihren Stufen, die Stationen und was in welchem Slot liegt (`loadout`).
+- Sie gilt in Kampagne, Endlos und Koop (im Koop die des Hosts). Waffen lassen sich an- und ablegen und behalten dabei ihre Stufe.
+- **Im Level wird nichts gekauft und nichts verbessert.** Ein Level beginnt immer mit der aktuellen dauerhaften Burg. Gold, Käse und Wappen werden am Ende gutgeschrieben, ausgegeben wird zwischen den Leveln im Shop.
+- Was sich aus dem Fortschritt ergibt (offene Slots aus der Burg-Stufe, kaufbare Burg-Stufen, kaufbare Waffen, höchste erlaubte Stufe von Waffen und Hand, offener Koop-Tisch und Endlos-Tisch), wird aus Burg-Stufe und gewonnenen Leveln berechnet und nicht gespeichert (`src/modes/unlocks.ts`).
+
+## Währungen
+| Währung | Wofür | Woher |
+|---|---|---|
+| **Käse** | Waffen, Great Cauldron und Eagle Perch freischalten | Nur Kampagne: 1 bis 5 je Level, jeder nur einmal. Insgesamt höchstens 500. |
+| **Gold** | Stufe 2 bis 6 von Waffen, Burg und Hand, Stufen des Kessels | Kampagne (auch bei Niederlage und beim Wiederholen), Endlos, Koop |
+| **Räuberwappen** | Stufe 7 von Waffe, Burg und Hand (je 50 zusätzlich zum Gold) | Nur am Eagle Perch, höchstens 2 je Runde |
+
+- **Käse (A2, `CHEESE` in `src/config/currencies.ts`):** Die fünf Käse eines Levels sind (1) Level gewonnen, (2) Tor am Ende über 50 % Leben, (3) Tor am Ende über 90 % Leben, (4) Challenge 1, (5) Challenge 2. Jeder Käse hat ein Bit in einer Maske je Level; er zählt nur, wenn sein Bit neu gesetzt wird. Wer 3 von 5 hat, holt beim Wiederholen nur die fehlenden. Alles, was Käse kostet, kostet zusammen genau 500 (Test); wer alle 500 hat, hat alles freigeschaltet. Im Endlos-Modus gibt es keinen Käse.
+- **Challenges:** Jedes Level hat zwei (`src/config/worlds/fondue/challenges.ts`, beurteilt in `src/modes/challenges.ts` nur an den Zählern des Laufs), zum Beispiel Keg Haulers explodieren lassen, Räuber werfen, eine Waffe einsetzen. Eine Challenge verlangt nur, was man an dieser Stelle der Kampagne haben kann (kein Kessel-Wurf vor dem Kessel). Ein Test prüft, dass jede in ihrem Level erfüllbar ist.
+- **Gold:** Das in der Runde verdiente Gold wird dauerhaft gutgeschrieben, **auch bei einer Niederlage** (E-066) und beim Wiederholen eines Levels (E-071, noch von Tim zu bestätigen). Käse gibt es nur beim Sieg.
+- **Wappen (A4):** Ein am Haken geopferter Räuber lässt sein Wappen: leichte Räuber 1, mittlere 2, schwere 3, Yeti und Boss-Räuber 5 (`CRESTS` in `src/config/crests.ts`), aber höchstens 2 Wappen je Runde in Kampagne und Endlos. Gemessen: Median 25 Runden bis 50 Wappen (`docs/balance.md`, Ziel 20 bis 30).
 
 ## Modi
 | Modus | Klasse | Kurz |
 |---|---|---|
 | Tutorial (Vorrunde) | `TutorialMode` (`src/modes/tutorial.ts`) | Nur beim ersten Start. Danach Level 1. |
-| Kampagne | `CampaignMode` (`src/modes/campaign.ts`) | 100 feste Level, dauerhafte Stufen, Sterne beim ersten Sieg. |
-| Endlos | `EndlessMode` (`src/modes/endless.ts`) | Ohne Ende, Easy/Medium/Hard, alles wird im Lauf gekauft, Bestenliste. |
-| Vorgehalten | `RESERVED_MODES` in `src/modes/index.ts` | `coopCampaign`, `quickPlay`, `madness` (nicht gebaut, siehe `docs/uebergabe/IDEEN.md`). |
+| Kampagne | `CampaignMode` (`src/modes/campaign.ts`) | 100 feste Level aus Wellen, mit der dauerhaften Burg, Käse und Gold. |
+| Endlos | `EndlessMode` (`src/modes/endless.ts`) | Wellen ohne Ende mit der eigenen Burg, vor allem zum Gold-Verdienen, Bestenliste. Offen ab gewonnenem Kampagnen-Level 10 (Endlos-Tisch), auch wenn noch nicht alle Slots offen sind. |
+| Koop | Kampagne oder Endlos mit zwei Spielern | Burg des Hosts, Gast bringt seine Hand. Einen Raum eröffnet man am Koop-Tisch, der ab gewonnenem Level 3 offen ist. |
+| Vorgehalten | `RESERVED_MODES` in `src/modes/index.ts` | `coopCampaign`, `quickPlay`, `madness` (nicht gebaut). |
 
 ## Erster Start und Tutorial
-- **Vorrunde:** Man sieht sofort das Schlachtfeld, ohne Menü. Der König läuft von links herein und sagt seine Sätze (`PRELUDE_LINES`), während die ersten Pothelms kommen. Dann friert das Bild ein, eine gezeichnete Hand zeigt an einem Gegner das Packen und Hochschleudern. Der eigene Griff lässt die Welt weiterlaufen; der erste echte Wurf beendet die Übung, der König lobt und geht.
-- Ein Wurf zählt, wenn man mit mindestens 550 Einheiten pro Sekunde loslässt, einen Gegner mindestens 150 über der Straße fallen lässt oder ein eigener Wurf tödlich aufschlägt (`GUIDE` in `src/render/tutorialGuide.ts`).
-- 13 Pothelms in 34 Sekunden (`PRELUDE` in `src/modes/tutorial.ts`), Tempo 90 %, Torschaden 50 %, kein Markt, das Tor kann nicht fallen. Die erste Berührung schaltet den Ton frei.
-- **Level 1** ist der Rest des Tutorials: zwei Tage zu 40 Sekunden, 60 Startgold. Im ersten Markt ist nur der Great Cauldron (250 Gold) kaufbar, der König sagt in einem Satz, wofür er gut ist. An Tag 2 erklärt der König den Kesselwurf, ein Pfeil zeigt den Weg. Danach Sieg-Bildschirm und Kamerafahrt in die Lobby.
-- Das Tutorial läuft nur, solange `tutorialDone` im Profil fehlt. Erneut starten: Entwickler-Menü „Replay tutorial“ oder `?tutorial=1`. Wer über einen Einladungslink kommt, tritt direkt bei; das Tutorial kommt beim nächsten Solo-Start (E-051).
+- **Vorrunde:** Man sieht sofort das Schlachtfeld, ohne Menü. Das Rolling Wheel steht von Anfang an im Damage-Slot (C4). Der König läuft von links herein und sagt seine Sätze (`PRELUDE_LINES`), während die ersten Pothelms kommen. Dann friert das Bild ein, eine gezeichnete Hand zeigt an einem Gegner das Packen und Hochschleudern. Der eigene Griff lässt die Welt weiterlaufen; der erste echte Wurf beendet die Übung, der König lobt. Danach zeigt er das Rolling Wheel: Ring und Pfeil zeigen auf das Rad, „Tap the wheel!“; nach dem Antippen lobt er und geht (spätestens nach 18 s ohne Tippen).
+- Ein Wurf zählt, wenn man mit mindestens 550 Einheiten pro Sekunde loslässt, einen Gegner mindestens 150 über der Straße fallen lässt oder ein eigener Wurf tödlich aufschlägt (`GUIDE` in `src/config/tutorial.ts`).
+- 13 Pothelms in 34 Sekunden (`PRELUDE`), Tempo 90 %, Torschaden 50 %, das Tor kann nicht fallen. Die Vorrunde zahlt nichts; danach besitzt ein frisches Profil genau das Rolling Wheel (Stufe 1, angelegt). Die erste Berührung schaltet den Ton frei.
+- **Level 1** folgt sofort (etwa 70 Sekunden, Wellen, Pothelms). Es bringt genug Gold für das erste Upgrade (Rolling Wheel Stufe 2, Test in `tests/unit/tutorial.test.ts`). Auf dem Sieg-Bildschirm erklärt der König Käse und Gold in drei Sätzen (`FIRST_WIN_LINES`), der Knopf heißt „To the Keep Shop“. Im Shop ist der Damage-Slot gewählt, Slot und Upgrade-Knopf leuchten, der König sagt, was zu tun ist (`FIRST_UPGRADE_LINES`). Der erste Kauf beendet die Führung (`seen.tips` „firstUpgrade“, `FIRST_UPGRADE` in `src/config/tutorial.ts`).
+- **Einführungen später an ihrer Stelle:** Baut man im Shop eine Burg-Stufe aus, die einen Slot öffnet (Stufe 2 Slow, 3 Gate, 4 Support, 5 Passive), erscheint erst ein Satz des Königs zum Ausbau (`CASTLE_BUILT_LINES`) und danach die Einführung des neuen Slots (`SLOT_INTROS` in `story.ts`; gemerkt in `seen.slotIntros`, jede nur einmal und nur im Shop). Macht ein Sieg eine neue Burg-Stufe kaufbar, sagt das der Sieg-Bildschirm mit einem Satz des Königs (`CASTLE_READY_LINES`) und, allein gespielt, einem Knopf in den Shop. Macht ein Sieg Great Cauldron (16) oder Eagle Perch (70) freischaltbar, stellt der König die Station auf dem Sieg-Bildschirm vor (`STATION_INTROS`; gemerkt in `seen.tips`). Der erste Einsatz einer Station im Kampf zeigt zusätzlich einen kurzen Tipp. Level 2 öffnet keinen Slot mehr; der Slow-Slot kommt mit Burg-Stufe 2.
+- Das Tutorial läuft nur, solange `seen.tutorial` im Profil fehlt. Erneut starten: Entwickler-Menü „Replay tutorial“ oder `?tutorial=1`. Wer über einen Einladungslink kommt, tritt direkt bei; das Tutorial kommt beim nächsten Solo-Start (E-051).
+- Wer v0.3 gespielt hat, behält seinen Stand: Beim ersten Start von v0.4 wird `fondue.v3.profile` einmal gelesen und übernommen (siehe „Profil“). Der Stand von v0.3 bleibt unverändert.
 
 ## Lobby in der Burg
 - Die Lobby ist das Hauptmenü: eine Halle im Inneren der Burg als eigene Szene (`src/render/lobby/`). Die Kamera taucht nach einem Lauf in 0,9 s durch das Tor hinein und beim Start wieder heraus; ein Tipp überspringt die Fahrt.
-- Stationen zum Antippen: Campaign (Kartentisch), Endless (Topf), Co-op (Festtafel), Armoury (Rüstungsständer), Storybook (unauffällig im Regal), Options, Scores, Help, Credits; „Continue“, wenn ein unterbrochenes Level wartet. Sterne und Kampagnen-Fortschritt sind sichtbar.
-- Der König sitzt auf dem Thron und wirft gelegentlich einen Satz ein (`KING_LOBBY_LINES`, je nach Fortschritt).
-- Die Halle wird mit dem Kampagnen-Fortschritt prächtiger (Teppich, Banner, Trophäen, Kronleuchter, Käsestapel, goldener Thron, Girlande nach Level 100; `DECOR` in `src/render/lobby/layout.ts`). Freigeschaltete Waffen hängen an der Wand.
+- **Stationen zum Antippen** (`STATIONS` in `src/config/lobby.ts`): Campaign (der Kampagnen-Tisch, vorn in der Mitte und die größte Station), Shop (direkt rechts daneben), Co-op (Koop-Tisch links vorn), Endless (Endlos-Tisch dahinter), Options (kleines Zahnrad oben rechts) und „Continue“ (die Tür links hinten, wenn ein unterbrochenes Level wartet). Storybook, Help, Credits und Scores sind keine Stationen mehr: Help, Credits und Scores liegen als Reiter in den Options, das Storybook als kleines Buch oben rechts auf der Kampagnen-Karte. Käse, Gold, Wappen und Kampagnen-Fortschritt sind sichtbar.
+- **Koop-Tisch und Endlos-Tisch** stehen bis Level 3 beziehungsweise Level 10 kaputt (umgekippt, gebrochenes Bein, Staub). Ein Tipp darauf bringt einen Satz des Königs (`TABLE_LOCKED_LINES`: „Win level N and the carpenters will fix this table …“); danach sind die Tische gedeckt und öffnen Koop und Endlos.
+- Der König sitzt rechts am dampfenden Fondue-Kessel auf dem Thron, mit zwei Wachen (Berghunde in Helm und Wappenrock mit Käse-Zeichen; sie sind keine Räuber). Ein Tipp auf ihn bringt einen Satz (`KING_LOBBY_LINES`, je nach Fortschritt). Über ihm hängt ein Banner mit Name und Zahl der Burg-Stufe („Castle tier N“).
+- **Die Halle wächst mit der Burg-Stufe, nicht mit dem Kampagnen-Level** (`HALL_LOOK` in `src/config/lobby.ts`, Bilder in `src/art/lobby/`): Jede der sieben Burg-Stufen hat ein erkennbar eigenes Aussehen, von der schlichten Holzhalle mit Stroh und Fässern (Oak Gate) über Steinhalle mit Bannern und Wimpelkette (Stone Keep, Bannered Keep) bis zur Festungshalle mit goldenem Thron, Kronleuchtern, Glasbannern, Gold und Käse-Schätzen (Gilded Keep, Runic Fortress, Alpine Citadel). Wände, Boden, Fenster, Kessel und Tische ändern sich mit. Freigeschaltete Waffen hängen an der Wand.
+- Die Versionsnummer („v0.4 · build …“) steht klein in der Lobby und in den Options (`VERSION_LABEL`).
 - `?menu=html` zeigt stattdessen das einfache HTML-Menü mit denselben Aktionen.
+
+## Shop an der Burg
+Der Shop ersetzt die frühere Waffenkammer (E-065). Er ist die Burg von außen (`src/ui/screens/keep.ts`, Bildschirm-Kennung `armoury`), gebaut aus denselben Bildern wie das Schlachtfeld: die Burgstufe, das Tor und die Waffe in jedem der fünf Slots an ihrem Platz.
+- Fünf Slots, die Burg (Tor), die Hand, Kessel und Adlerhaken sind große Flächen zum Antippen. Ein Slot zeigt alle Waffen seiner Aufgabe mit Bild, Stufe und Kurzbeschreibung. Dort schaltet man mit Käse frei, verbessert mit Gold (Stufe 7 mit Wappen) und legt Waffen an oder ab. Beim Upgrade steht vorher und nachher.
+- Käse, Gold und Wappen sind immer sichtbar. **Die Burg ist das Hauptziel des Shops:** Er zeigt die nächste Burg-Stufe mit Name und Zahl und in einem klaren Satz, was fehlt („Win level 6 to build this.“, „You need 400 more gold.“, „You need N more Raider Crests.“; ein Goldbalken erscheint nur, solange Gold fehlt). Bei Waffen und Hand sagt der Shop, was fehlt: Käse, Gold, Wappen oder der Stufen-Deckel („Win level N to build tier T.“). Eine Waffe eines noch geschlossenen Slots zeigt, mit welcher Burg-Stufe der Slot öffnet. Der Ausbau einer Burg-Stufe ist ein Ereignis: Die Burg wächst kurz, der König sagt einen Satz, die Einführung des neuen Slots folgt, und der neue Slot ist markiert.
+- Im Koop benutzt jeder den Shop für sich, außerhalb einer Runde.
+- **Bildschirm vor jedem Level (D2):** Vor jedem Level und jeder Endlos-Runde zeigt eine Leiste die fünf Slots mit den angelegten Waffen; ein Tipp auf einen Slot öffnet die passenden Waffen zum Wechseln (`src/ui/screens/prelevel.ts`). „Play“ bleibt einen Tipp entfernt.
 
 ## Kampagne
 - **100 Level** in Welt 1, erzeugt aus Regeln und einzeln überschreibbar (`src/config/worlds/fondue/campaign.ts`, `LEVEL_OVERRIDES`). Festgelegt, nicht zufällig: Jedes Level hat einen festen Startwert, jeder Versuch läuft gleich an.
-- **Länge:** Level 1 zwei Tage, Level 2 bis 9 fünf, ab Level 10 fünf bis zehn Tage, Boss-Level einen Tag mehr (höchstens zehn). Ein Tag dauert 50 Sekunden Kampf.
-- **Feste Schwierigkeit**, keine Auswahl. Räuber je Tag: 24 an Tag 1 von Level 1, je weiterem Tag 14 % mehr, dazu ein Anteil, der mit (Level − 1) hoch 0,75 wächst. Die Stärke (Lebenspunkte, Torschaden, etwas Tempo, Gold) wächst um 5 % je Level. Weil jedes Level frisch beginnt, haben die Räuber an Tag 1 bis 3 nur 20 %, 55 % und 85 % der zusätzlichen Levelstärke (`CAMPAIGN_SCALING` in `src/modes/campaign.ts`).
-- **Jedes Level beginnt frisch:** Gold 0 (Level 1: 60), Offerings 0, Holztor, leere Slots. Im Level verdient man Gold und Offerings, baut Tor und Burg aus und kauft Waffen in die Slots.
-- **Gegner kommen Stück für Stück** (`FIRST_LEVEL`): Pothelm 1, Keg Hauler 3, Goat Rider 7, Pogo Bandit 12, Hexer 17, Slinger 23, Siege Cart 29, Balloonist 36, Shade 44, Crowcaller 52, Yeti 61. Ein neuer Gegner kommt in seinem ersten Level ab Tag 2 sicher und mit wachsendem Anteil in den folgenden Leveln. Beim ersten Auftreten erscheint das Popup „New enemy“ mit Bild, Name und ein bis zwei Sätzen (`ENEMY_POPUPS`).
-- **Boss-Level:** 10, 20, … 100. Am letzten Tag 1,8-mal so viele Räuber, alle 12 % stärker, dazu übergroße Räuber (14-fache Lebenspunkte, 2,4-faches Gewicht, 1,75-fach gezeichnet) und teils ein Massenansturm (zum Beispiel Level 30: 14 Goat Rider, Level 70: zwei Yetis). Jeder Boss hat Namen und Satz (`BOSSES`).
-- **Besonderheiten:** nur Reiter (9), nur Springer (14), Nachtangriffe (18, 27, 38, 47, 66, 80, 85), Keg-Parade (22), schwerer Tag mit Siege Carts (34), Luftangriff (43), Tag der Krähen (56), Hüpfen und Galopp (73), alle auf einmal (95).
+- **Ein Level ist ein durchgehender Kampf aus Wellen.** Es gibt keine Tage und keinen Markt dazwischen. Geplante Länge: Level 1 etwa 70 Sekunden, die ersten fünf Level 1 bis 2 Minuten, die Mitte meist 3 bis 5 Minuten, Boss- und Sonderlevel 7 bis 10 Minuten (`CURVE` in `campaign.ts`; zusammen gut 8 Stunden für alle 100 Level, genaue Werte in `docs/KAMPAGNE-TABELLE.md`).
+- **Wellen (`WAVES` in `src/config/waves.ts`):** Ein kurzes Banner (1,2 s), in dem die Räuber schon loslaufen; die erste Welle kommt 0,3 s nach dem Start (Ziel: erster sichtbarer Räuber nach höchstens 2 Sekunden auf allen drei Formaten). Wellen sind klein, groß, mittel, Spitze in Folge. Nach einer Welle folgt eine Atempause von 2 bis 4 Sekunden; sind alle Räuber tot, kommt die nächste Welle nach höchstens 1,5 Sekunden. So gibt es nie mehr als 5 Sekunden ohne lebenden Räuber (gemessen höchstens 2,6 s). Höchstens 12 (frühe Level) bis 30 (späte Level) Räuber leben gleichzeitig.
+- **Weniger, aber schnellere Räuber (B4):** Das Tempo ist 2,5-mal so hoch wie in v0.2 (Slinger, Keg Hauler, Siege Cart und Balloonist 1,4-mal), dafür kommen etwa 40 % der Räuber, und jeder zahlt doppelt Gold (`V3_SPEED`, `V3_GOLD`, `CURVE.countShare`). Schnelle Räuber haben eine größere Greiffläche (`GRAB_SPEED_BONUS`).
+- **Stärke:** wächst um 5 % je Level, ab Level 40 zusätzlich mit dem Quadrat (`CURVE.powerPerLevel`, `powerLate`); Boss-Level 1,45-mal, ab Level 40 wachsend bis 1,65-mal in Level 100 (`bossPower`, `bossPowerLate`). Innerhalb eines Levels steigen Torschaden, Tempo und Lebenspunkte von Welle zu Welle, und in den ersten drei Wellen gilt nur ein Teil der Levelstärke (`CAMPAIGN_SCALING` in `src/config/campaignScaling.ts`).
+- **Gegner kommen Stück für Stück** (`FIRST_LEVEL`): Pothelm 1, Keg Hauler 3, Goat Rider 7, Pogo Bandit 12, Hexer 17, Slinger 23, Siege Cart 29, Balloonist 36, Shade 44, Crowcaller 52, Yeti 61. Beim ersten Auftreten erscheint das Popup „New enemy“ mit Bild, Name und ein bis zwei Sätzen (`ENEMY_POPUPS`).
+- **Boss-Level:** 10, 20, … 100. In der letzten Welle kommen übergroße Räuber (14-fache Lebenspunkte, 2,4-faches Gewicht, 1,75-fach gezeichnet) und teils ein Massenansturm (zum Beispiel Level 30: sechs Goat Rider mehr, Level 70: ein Yeti mehr). Jeder Boss hat Namen und Satz (`BOSSES`). Ein Boss-Level schaltet nichts Eigenes frei; es ist das Tor zum nächsten Abschnitt mit höherem Stufen-Deckel (E-071).
+- **Besonderheiten:** nur Reiter (9), nur Springer (14), Nachtangriffe (18, 27, 38, 47, 66, 80, 85), Keg-Parade (22), schwerer Angriff mit Siege Carts (34), Luftangriff (43), Krähensturm (56), Hüpfen und Galopp (73), alle auf einmal (95).
 - **Landschaften:** Meadow (ab Level 1), Canyon (13), Marsh (26), Snowpine (39), Canyon (51), Marsh (63), Meadow (76), Snowpine (89).
-- **Sieg:** Der letzte Tag ist überstanden (Phase `runWon`). Sieg-Bildschirm: Sterne, neue Freischaltungen, ein Story-Satz, dann Kamerafahrt in die Burg.
-- **Niederlage:** Das Tor fällt. „Try again“ oder zurück zur Karte; es beginnt wieder bei Tag 1.
-- **Fortsetzen:** Allein geht ein unterbrochenes Level am Beginn des Tages weiter, an dem die App geschlossen wurde (Station „Continue“). Koop und Entwickler-Läufe werden nicht fortgesetzt.
-- **Kampagnen-Karte:** ein Pfad durch die Landschaften mit allen 100 Leveln als Stationen, seitlich scrollbar, startet beim aktuellen Level. Geschaffte, aktuelle, Boss- und Freischalt-Stationen sind markiert. Ein Tipp öffnet eine Level-Karte mit Tagen, Landschaft, Besonderheit, Sternen und „Play“. Geschaffte Level lassen sich erneut spielen.
+- **Sieg:** Die letzte Welle ist vollständig erschienen und alle Räuber sind besiegt (Phase `runWon`). Sieg-Bildschirm: die fünf Käse (die neuen hervorgehoben), Gold, Wappen, neue Freischaltungen, ein Story-Satz, dann Kamerafahrt in die Burg.
+- **Niederlage:** Das Tor fällt. Das verdiente Gold bleibt (E-066), Käse gibt es nicht. „Try again“ oder zurück zur Karte; es beginnt wieder bei Welle 1.
+- **Fortsetzen (E-070):** Allein geht ein unterbrochenes Level am Beginn der Welle weiter, in der die App geschlossen wurde (Torleben, Gold und Statistik von damals; Station „Continue“). Koop, Endlos und Entwickler-Läufe werden nicht fortgesetzt.
+- **Schwierigkeit über die Kampagne (B5):** Wer nichts ausbaut, bleibt stecken (der mittlere Bot ohne Ausbau scheitert zuerst an Level 15); mit Ausbau kommt man weit, späte Level und Boss-Level verlangen Stufe 6 und 7. **Die frühen Level 1 bis 6 spielt man nur mit dem Damage-Slot:** Level 1 bis 3 sind ruhig, Level 4 bis 6 sind dichter gebaut (mehr Räuber, mehr Keg Hauler, Ansturm-Wellen), und Waffen und Hand lassen sich bis Level 6 nur bis Stufe 2 ausbauen. Nach Level 6 kommen Burg-Stufe 2, der Slow-Slot und Stufe 3 zusammen. Messungen und Gründe: `docs/balance.md`, E-079 und E-080.
+- **Kampagnen-Karte:** ein Pfad durch die Landschaften mit allen 100 Leveln als Stationen, seitlich scrollbar, startet beim aktuellen Level. Neben dem Kampagnen-Fortschritt steht die Burg-Stufe („Castle tier N · Name“, `castleTierName` in `src/ui/screens/campaign.ts`); die Level, deren Sieg eine neue Burg-Stufe kaufbar macht, tragen ein kleines Burg-Zeichen (gelesen aus `CASTLE_TIER_LEVEL`). Ein kleines Buch oben rechts öffnet das Storybook. Ein Tipp auf ein Level öffnet die Level-Karte mit geplanter Dauer, Landschaft, Besonderheit, beiden Challenges, den schon geholten Käsen (0 bis 5), der Ausrüstungsleiste und „Play“. Geschaffte Level lassen sich erneut spielen.
 
-## Sterne, Freischaltungen, Stufen
-- **Sterne** (`src/config/stars.ts`): erster Sieg eines Levels 3, eines besonderen Levels (neuer Gegner, Freischaltung oder Besonderheit) 4, eines Boss-Levels 8. Wiederholen bringt nichts (`replayShare` 0). Endlos: einmalige Sterne je Meilenstein-Tag und Schwierigkeit (siehe Endlos).
-- **Freischaltungen** (`UNLOCKS` in `src/config/worlds/fondue/unlocks.ts`): Kessel von Anfang an; mit dem Sieg in Level 1 Slot Mauerfuß und Rolling Wheel; Slot Mauer mit 9, Torarm mit 19, Schrein mit 29, Turmdach mit 39; Adlerhaken mit 32; Hand-Stufe 2 mit 14, Stufe 3 mit 47; Torstufen 1 bis 4 mit 2, 8, 21, 42; Waffen siehe Tabelle unten. Ab Level 69 ist alles freigeschaltet.
-- **Sterne ausgeben** in der Waffenkammer (Armoury): Waffenstufe 2/3/4/5 kostet 5/12/21/32 Sterne (`STARS.weaponTier`), Hand-Stufe 2/3 kostet 12/30 Sterne (`HANDS`), sobald die Kampagne sie freigibt. Das erste Freischalten einer Waffe kostet nichts.
-- **Im Level:** Eine Waffe in einen Slot zu setzen kostet einmal Gold (Kaufpreis der Waffe), sie hat sofort ihre dauerhafte Stufe aus dem Profil. Im Level wird nichts verbessert, die Hand ist nur Anzeige.
-- Läufe mit Entwickler-Eingriffen (verändertes Tuning oder Schalter, Schnellstart, Sprung auf einen späteren Tag) bringen weder Sterne noch Fortschritt noch Bestenliste.
+## Freischaltungen und Stufen
+- **Slots öffnen mit der Burg-Stufe, nie mit einem Level** (`CASTLE_TIER_FOR_SLOT` in `src/config/slotTiers.ts`, gelesen von `SLOTS` in `src/config/slots.ts`): Burg-Stufe 1 öffnet Damage (nach der Vorrunde das Rolling Wheel), 2 Slow, 3 Gate, 4 Support, 5 Passive. Die Burg-Stufen 6 und 7 öffnen keinen Slot, geben aber mehr Torleben und eine prächtigere Burg und Halle.
+- **Burg-Stufen brauchen Gold und ein gewonnenes Level.** Jede Burg-Stufe ab 2 kostet Gold (`CASTLE_TIERS` in `src/config/keep.ts`, Stufe 7 zusätzlich 50 Räuberwappen) und ist erst kaufbar, wenn ihr Level gewonnen ist (`CASTLE_TIER_LEVEL` in `src/config/slotTiers.ts`). Fest sind Stufe 2 ab Level 6 und Stufe 7 ab Level 75; die Level der Stufen 3 bis 6 und die Preise sind Startwerte der Balance und können noch verschoben werden, die Quelle ist die Konfiguration. Die Quote des Shops (`quote` in `src/modes/progress.ts`) sperrt eine Stufe mit dem Grund „level“, wenn das Level fehlt, sonst mit „gold“ oder „crests“.
+- **Koop-Tisch und Endlos-Tisch** in der Lobby öffnen ab gewonnenem Level 3 und Level 10 (`TABLE_UNLOCK_LEVEL`, fest). Endlos spielt man mit der eigenen Burg, auch wenn noch nicht alle Slots offen sind.
+- **Waffen** werden an einem bestimmten Level kaufbar und mit Käse freigeschaltet (`unlockLevel`, `cheesePrice` in `src/config/weapons.ts`, Tabelle unten). Eine Waffe ist nur kaufbar, wenn ihr Slot offen ist, und nie vor dem Kauf-Level der Burg-Stufe ihres Slots (Test). Alle 25 Waffen plus Kessel und Adlerhaken kosten zusammen genau 500 Käse. Zu jedem Slot gehört eine erste, billige Waffe, damit er nach dem Öffnen nicht leer bleibt.
+- **Stationen** (`STATIONS` in `src/config/keep.ts`): Great Cauldron ab Level 16 für 12 Käse, Eagle Perch ab Level 70 für 28 Käse.
+- **Stufen 2 bis 6** kosten Gold (`WEAPON_TIER_GOLD` in `src/config/tiers.ts`: 300 / 900 / 3000 / 9000 / 24000 / 50000 für Stufe 2 bis 7, jeweils mal dem `goldScale` der Waffe zwischen 0,8 und 1,4). Burg und Hand haben eigene Preise (siehe unten). **Stufe 7** kostet zusätzlich 50 Räuberwappen (`CREST_COST`).
+- **Stufen-Deckel für Waffen und Hand (E-067, `TIER_CAP_BY_LEVEL`):** Die höchste kaufbare Stufe hängt vom Kampagnen-Fortschritt ab: Stufe 2 von Anfang an, 3 nach Level 6, 4 nach Level 10, 5 nach Level 25, 6 nach Level 45 (Startwerte der Balance, E-080). **Stufe 7 gibt es erst, wenn der Eagle Perch freigeschaltet ist.** Gold aus dem Endlos-Modus hilft so beim Feststecken, kann aber nicht über den Abschnitt hinaus ausbauen. Die Burg hat keinen Deckel, sondern ihr eigenes Kauf-Level je Stufe; kein Kauf-Level einer Burg-Stufe liegt unter dem Level, ab dem der Deckel dieselbe Stufe erlaubt (Test).
+- **Jede Stufe zählt (A5):** Von einer Stufe zur nächsten ändert sich ein Schalter (zum Beispiel ein zusätzlicher Effekt) oder mindestens eine Zahl um 15 % oder mehr (Test). Stufe 7 ist immer ein Höhepunkt. Alle Werte je Stufe: `WEAPONS` und Entwickler-Übersicht.
+- Läufe mit Entwickler-Eingriffen (verändertes Tuning, Schalter oder Waffenwerte, Schnellstart, Sprung auf eine spätere Welle) bringen weder Gold noch Käse noch Fortschritt noch Bestenliste. Die Cheats im Entwickler-Menü ändern das Profil dagegen bewusst dauerhaft und kennzeichnen es („Cheats used“).
 
 ## Endlos
-- Von Anfang an offen (`availableFromLevel` 0). Easy, Medium, Hard wählbar (`DIFFICULTIES` in `src/config/waves.ts`: Anzahl 0,8 / 1 / 1,3, Tempo 0,92 / 1 / 1,12, Torschaden 0,8 / 1 / 1,35, Gold 1 / 1 / 0,9).
-- Alle 16 Waffen, alle fünf Slots, Kessel und Haken sind verfügbar, egal wie weit die Kampagne ist (Schalter `onlyUnlockedWeapons`, steht auf `false`).
-- Jede Waffe startet auf Stufe 1 und wird zwischen den Tagen mit Gold und Offerings bis Stufe 5 verbessert (Preis: Kaufpreis mal 1,4 / 2,8 / 5,5 / 10, dazu 4 / 10 / 18 / 30 Offerings). Die Hand kostet 2500 Gold und 10 Offerings (Stufe 2) und 9000 Gold und 20 Offerings (Stufe 3). Nach dem Lauf ist alles weg.
-- **Räuber je Tag (Medium, allein):** 40 an Tag 1, je Tag 7 mehr bis Tag 18, danach 18 mehr je Tag. Torschaden +20 %, Tempo +3 %, Lebenspunkte +9 % je Tag (`DAY` in `src/config/waves.ts`). Höchstens 200 lebende Räuber. Etwas mehr als die Hälfte kommt in Rudeln.
-- **Leichter Zufall** (`ENDLESS` in `src/config/worlds/fondue/endless.ts`): Die Tageszahl schwankt um ±10 %. Jeder Gegner kommt zuerst an einem gewürfelten Tag in seinem Fenster (zum Beispiel Keg Hauler Tag 2 bis 3, Shade 10 bis 13, Yeti 13 bis 17) und an diesem Tag mit einer Chance einer mehr (Yeti 20 %: einmal in fünf Läufen zwei Yetis). Danach hat jeder Typ ein Gewicht und eine Höchstzahl je Tag, die um 15 % je Tag wächst. Gleicher Startwert, gleicher Lauf.
-- **Meilensteine:** einmalige Sterne für geschaffte Tage je Schwierigkeit. Easy: Tag 10, 20, 30 (1, 2, 2 Sterne). Medium: Tag 5, 10, 15, 20, 25, 30, 40, 50 (1, 2, 2, 3, 3, 4, 5, 6). Hard: Tag 5, 10, 15, 20, 30, 40 (2, 3, 4, 5, 6, 8).
-- Kein eingebautes Ende. Niederlage: Game Over mit Punkten, Eintrag in die Bestenliste im Profil.
-
-## Tagesablauf
-| Punkt | Wert |
-|---|---|
-| Banner vor dem Tag | 2,6 s |
-| Kampf | 50 s (Level 1: 40 s); in Endlos-Tagen 7 bis 18 neue Räuber je Tag mehr |
-| Ende des Tages | Nach Sonnenuntergang kommen keine neuen Räuber mehr. Der Tag endet, wenn alle tot sind oder das Tor fällt. |
-| Tor zwischen den Tagen | voll aufgefüllt (`ECONOMY.gateRefill` 1) |
-| Markt zwischen den Tagen | ja (außer in der Vorrunde) |
-| Landschaft im Endlos | wechselt alle 3 Tage (Meadow, Canyon, Marsh, Snowpine) |
+- Offen ab gewonnenem Kampagnen-Level 10 (Endlos-Tisch in der Lobby), mit der eigenen Burg, auch wenn noch nicht alle Slots offen sind. Easy, Medium, Hard wählbar (`DIFFICULTIES` in `src/config/waves.ts`): Anzahl 0,8 / 1 / 1,3, Tempo 0,92 / 1 / 1,12, Torschaden 0,8 / 1 / 1,35, **Gold je Räuber 0,8 / 1 / 1,3** (höhere Schwierigkeit zahlt mehr).
+- Endlos läuft mit der **eigenen dauerhaften Burg**. Man kauft nichts im Lauf und beginnt nicht bei null. Er ist vor allem zum Gold-Verdienen da, besonders wenn man in der Kampagne feststeckt. Gold bleibt dauerhaft, Käse gibt es nicht. Am Adlerhaken holt man auch hier Wappen, mit derselben Grenze von 2 je Runde.
+- **Räuber je Welle (`ENDLESS_WAVES`):** 6 in Welle 1, je Welle 1,1 mehr, ab Welle 30 2,2 mehr. Jede vierte Welle ist eine Spitze (1,7-fach). Eine Welle braucht 9 Sekunden zum Eintreffen, dazu 3 Sekunden Pause. Torschaden +3,5 %, Tempo +0,4 %, Lebenspunkte +1,6 % je Welle. Die Höchstzahl lebender Räuber wächst von 12 auf 30.
+- **Leichter Zufall** (`ENDLESS` in `src/config/worlds/fondue/endless.ts`): Die Wellengröße schwankt um ±15 %. Jeder Gegner kommt zuerst in einer gewürfelten Welle seines Fensters (zum Beispiel Keg Hauler Welle 3 bis 5, Shade 19 bis 25, Yeti 25 bis 33) und in dieser Welle mit einer Chance einer mehr (Yeti 20 %). Danach hat jeder Typ ein Gewicht und eine Höchstzahl je Welle, die um 8 % je Welle wächst. Gleicher Startwert, gleicher Lauf.
+- Die Landschaft wechselt alle 8 Wellen (Meadow, Canyon, Marsh, Snowpine).
+- Kein eingebautes Ende. Niederlage: Game Over mit Punkten, Eintrag in die Bestenliste im Profil (Feld `wave`). Die beste Welle je Schwierigkeit steht in `endlessBest`.
 
 ## Werfen, Gewicht und Hand
 - Packen und Wegschleudern ist das Herz des Spiels. Schwerkraft 3400, stärkster Wurf 1700 Einheiten pro Sekunde, tödlich ab einem Aufprall von 900 (`TUNING_DEFAULT` in `src/config/tuning.ts`). Ein kurzes Hochschnippen reicht für einen Pothelm.
 - **Gewicht** (`mass` in `src/config/enemies.ts`): Pothelm 1, Shade 0,9, Slinger 1, Crowcaller 1,1, Pogo Bandit 1,15, Hexer 1,2, Balloonist 1,25, Keg Hauler 1,3, Goat Rider 2, Yeti 5, Siege Cart 9 (nicht greifbar), Krähe 0,4.
 - Ein schwerer Gegner fliegt bei gleichem Wisch kürzer und flacher: Tempo mal (Handstärke / Gewicht) hoch 0,5, höchstens 1, mindestens 0,45. Er folgt der Hand auch träger. Ein kräftiger Wisch tötet jeden greifbaren Gegner.
-- **Hand-Stufen** (`HANDS` in `src/config/hand.ts`): Stärke 1, 1,5, 2,2. Kampagne: mit Sternen zwischen den Leveln; Endlos: im Lauf mit Gold.
-- **Yeti-Regel:** Ein Yeti hebt nur ab, wenn die Hände an ihm zusammen Stärke 2 haben. Allein schafft das nur Hand-Stufe 3; zu zweit genügen zwei Hände der Stufe 1. Schwächere Hände ziehen ihn nur ein Stück zurück. Ein übergroßer Boss-Yeti braucht das 2,4-Fache.
+- **Hand-Stufen 1 bis 7** (`HANDS` in `src/config/hand.ts`): Stärke 1 / 1,25 / 1,55 / 2 / 2,4 / 2,8 / 3,3. Gold für Stufe 2 bis 7: 500 / 1500 / 3500 / 8000 / 16000 / 30000, Stufe 7 zusätzlich 50 Wappen. Gekauft im Shop.
+- **Yeti-Regel:** Ein Yeti hebt nur ab, wenn die Hände an ihm zusammen Stärke 2 haben. Allein schafft das ab Hand-Stufe 4; zu zweit zählen die Stärken beider Hände zusammen. Schwächere Hände ziehen ihn nur ein Stück zurück. Ein übergroßer Boss-Yeti braucht das 2,4-Fache.
+- **Zweite Hand (C9):** Am Handy greift man mit beiden Daumen gleichzeitig je einen Räuber; der zweite Finger ist die zweite Hand, ein dritter tut nichts, und das Spiel zoomt und scrollt nicht. Greifen beide eigenen Hände denselben Gegner, zählen ihre Stärken zusammen. Zwei Wege: **Hand-Stufe 7** schaltet die zweite Hand dauerhaft frei (Variante 1); die Support-Waffe **Helping Hand** leiht sie für 5 bis 14 Sekunden, je Stufe stärker (Variante 2). Am Laptop simuliert der Entwickler-Schalter „Second hand on the laptop“ die zweite Hand mit der rechten Maustaste.
 - **Hand-Anzeige:** Am Touchscreen wird die eigene Hand nicht gezeichnet, man sieht seinen Finger. Die Hand des Mitspielers bleibt sichtbar. Mit der Maus bleibt die eigene Hand als Zeiger.
 
 ## Gegner
-| Gegner | Kampagne ab Level | Endlos erstmals Tag | Verhalten |
+| Gegner | Kampagne ab Level | Endlos erstmals Welle | Verhalten |
 |---|---|---|---|
 | Pothelm | 1 | 1 | läuft, schlägt aufs Tor |
-| Keg Hauler | 3 | 2–3 | wirft Bomben aus der Distanz. Hochheben und schütteln (4 Richtungswechsel in 1,6 s), dann fällt das Fass und explodiert unten; ebenso am Adlerhaken. Ein geworfener Träger platzt schwächer. Eine geworfene Bombe kann man zurückwerfen. |
-| Goat Rider | 7 | 3–4 | sehr schnell, samt Reittier greifbar, schwer |
-| Pogo Bandit | 12 | 4–6 | springt in Bögen, in der Luft greifbar |
-| Hexer | 17 | 5–7 | Schutzblase (3,2 s an, 3,4 s aus) verhindert Greifen |
-| Slinger | 23 | 6–8 | schießt aus der Distanz |
-| Siege Cart | 29 | 7–10 | nicht greifbar, mit 7 Tipps zerstörbar |
-| Balloonist | 36 | 8–11 | schwebt, wirft Bomben |
-| Shade | 44 | 10–13 | zeitweise unsichtbar (2,2 s) und dann nicht greifbar |
-| Crowcaller | 52 | 11–15 | kommt nach dem ersten Tod als Krähe zurück |
-| Yeti | 61 | 13–17 | sehr schwer, siehe Yeti-Regel |
+| Keg Hauler | 3 | 3–5 | wirft Bomben aus der Distanz. Hochheben und schütteln (4 Richtungswechsel in 1,6 s), dann fällt das Fass und explodiert unten; ebenso am Adlerhaken. Ein geworfener Träger platzt schwächer. Eine geworfene Bombe kann man zurückwerfen. |
+| Goat Rider | 7 | 5–8 | sehr schnell, samt Reittier greifbar, schwer |
+| Pogo Bandit | 12 | 7–11 | springt in Bögen, in der Luft greifbar |
+| Hexer | 17 | 9–13 | Schutzblase (3,2 s an, 3,4 s aus) verhindert Greifen |
+| Slinger | 23 | 11–15 | schießt aus der Distanz |
+| Siege Cart | 29 | 13–19 | nicht greifbar, mit 7 Tipps zerstörbar |
+| Balloonist | 36 | 15–21 | schwebt, wirft Bomben |
+| Shade | 44 | 19–25 | zeitweise unsichtbar (2,2 s) und dann nicht greifbar |
+| Crowcaller | 52 | 21–29 | kommt nach dem ersten Tod als Krähe zurück |
+| Yeti | 61 | 25–33 | sehr schwer, siehe Yeti-Regel |
 
 Lebenspunkte, Tempo, Torschaden, Gold und Punkte stehen in `ENEMIES` (`src/config/enemies.ts`) und auf der Entwickler-Übersicht.
 
 ## Burg, Slots und Waffen
-- **Fünf Slots** (`SLOTS` in `src/config/slots.ts`): Mauerfuß, Mauer, Torarm, Schrein, Turmdach. In jeden Slot passt genau eine Waffe seines Typs.
-- **Bedienung: nur antippen.** Jede Waffe wählt ihr Ziel selbst (`target`): nächster am Tor, dichteste Gruppe (zähe Gegner zählen mehrfach: Yeti 5, Siege Cart 3, Goat Rider 1,5, Boss 6), zähester Gegner oder die ganze Straße. Findet eine angreifende Waffe kein Ziel, feuert sie nicht und lädt nicht nach. Ein Ring zeigt das Nachladen. Ein Tipp auf eine Waffe greift nie einen Gegner, ein Gegner am Tor bleibt greifbar.
-- **16 Waffen mit je fünf Stufen** (`WEAPONS` in `src/config/weapons.ts`). Jede Stufe bringt etwas Spürbares (Wirkung, Zusatzeffekt, Nachladezeit) und sieht mächtiger aus. Jede Waffe lässt sich mit `enabled: false` abschalten.
+- **Fünf Slots** mit fester Aufgabe und festem Ort (`SLOTS` in `src/config/slots.ts`): **Damage** (links unten) räumt die Straße, **Slow** (links Mitte) bremst oder hält an, **Gate** (über dem Tor) schützt die letzten Schritte, **Support** (links oben) hilft Hand und Tor, **Passive** (rechts oben) wirkt von selbst. In jeden Slot passt genau eine Waffe seiner Aufgabe.
+- **Bedienung: nur antippen.** Damage-, Slow-, Support- und Gate-Waffen werden angetippt und wählen ihr Ziel selbst (`target`): nächster am Tor, dichteste Gruppe (zähe Gegner zählen mehrfach: Yeti 5, Siege Cart 3, Goat Rider 1,5, Boss 6), zähester Gegner oder die ganze Straße. **Passive Waffen feuern allein**, sobald sie nachgeladen sind und ein Ziel haben; ein Ring zeigt das Nachladen. Findet eine angreifende Waffe kein Ziel, feuert sie nicht und lädt nicht nach. Ein Tipp auf eine Waffe greift nie einen Gegner, ein Gegner am Tor bleibt greifbar.
+- **25 Waffen, fünf je Slot, mit je sieben Stufen** (`WEAPONS` in `src/config/weapons.ts`, E-068). Freischalt-Level (`unlockLevel`) und Käse-Preis (`cheesePrice`) jeder Waffe stehen nur dort und in der Entwickler-Übersicht, weil die Balance sie noch verschiebt:
 
-| Slot | Waffe | Ziel | Was sie tut | Kaufpreis (Gold / Offerings) | Kampagne ab Level |
+| Slot | Waffe | Was sie tut |
+|---|---|---|
+| Damage | Rolling Wheel | Steinrad rollt die ganze Straße hinunter (erste Waffe, schon in der Vorrunde) |
+| Damage | Fondue Forks | Gabeln aus der Straße halten die dickste Gruppe fest |
+| Damage | Stomper | Block fällt auf die dickste Gruppe |
+| Damage | Comet | Komet fällt auf die Gruppe und hinterlässt Feuer |
+| Damage | Dragon Bellows | setzt die Straße unter der Gruppe in Brand |
+| Slow | Sticky Fondue | Käsepfütze bremst die Räuber |
+| Slow | Frost Horn | friert die Gruppe ein, antippen zerschlägt Gefrorene |
+| Slow | Cuckoo Clock | alle Räuber auf der Straße stehen kurz still |
+| Slow | Snowdrift Cannon | Schneebälle türmen Schneewehen auf der Straße |
+| Slow | Cowbell Toll | Glockenschlag betäubt alle im Kreis |
+| Gate | Gate Mortar | Granate auf den Räuber, der dem Tor am nächsten ist |
+| Gate | Hedgehog Gate | Stacheln am Tor verletzen Angreifer, antippen schießt sie nach außen |
+| Gate | Alphorn | ein Ton wirft alle nahen Räuber zurück |
+| Gate | Cheese Cascade | heißer Käse vom Torbogen verbrüht, wer vor dem Tor steht |
+| Gate | Battering Log | ein Baumstamm schwingt aus dem Tor und schleudert Räuber zurück |
+| Support | Golden Fondue | kurze Zeit mehr Gold je Kill |
+| Support | Ember Beacon | solange es brennt, explodiert jeder geworfene Räuber beim Aufprall |
+| Support | Mending Horn | heilt das Tor (nur wenn es beschädigt ist) |
+| Support | Iron Grip | Hände greifen kurz fester, Würfe töten leichter |
+| Support | Helping Hand | zweite Hand für einige Sekunden |
+| Passive | Marmot Sentry | schießt von selbst, antippen gibt eine Salve |
+| Passive | Roof Bolter | Bolzenfächer über die ganze Höhe: Ballons oben, Läufer unten |
+| Passive | Storm Bell | Blitz auf den zähesten Räuber springt auf Nachbarn über |
+| Passive | Pinecone Catapult | wirft Tannenzapfen auf die dickste Gruppe |
+| Passive | Hornet Hive | ein Schwarm sticht die Räuber nahe am Tor |
+
+Summe der Käse-Preise der Waffen 460, dazu Great Cauldron 12 und Eagle Perch 28: genau 500. Jede Stufe jeder Waffe: `note` in `src/config/weapons.ts` und Entwickler-Übersicht.
+
+## Burg-Stufen
+Die Burg ist zugleich das Tor. Sieben Stufen (`CASTLE_TIERS` in `src/config/keep.ts`), jede mit eigener Grafik (`src/art/castle/`, vom Holztor bis zur Alpenfestung):
+
+| Stufe | Name | Öffnet | Torleben | Gold | Wappen |
 |---|---|---|---|---|---|
-| Mauerfuß | Rolling Wheel | Straße | Steinrad rollt die Straße hinunter; ab Stufe 4 Feuerspur, Stufe 5 zwei Räder | 600 / 0 | 1 |
-| Mauerfuß | Sticky Fondue | vorne | Käsepfütze bremst, ab Stufe 3 brennt sie | 500 / 1 | 5 |
-| Mauerfuß | Fondue Forks | Gruppe | Gabeln aus der Straße, halten fest, mehrfach | 800 / 2 | 15 |
-| Mauer | Stomper | Gruppe | Block fällt auf die Gruppe; ab Stufe 2 Beben, ab 3 zwei, auf 5 drei Schläge | 900 / 3 | 9 |
-| Mauer | Alphorn | Straße | Ton wirft Räuber nahe der Burg zurück, ab Stufe 3 auch Flieger | 700 / 2 | 12 |
-| Mauer | Cuckoo Clock | Straße | alle Räuber stehen kurz still; ab Stufe 4 platzen Blasen und Shades werden sichtbar | 1200 / 4 | 27 |
-| Schrein | Comet | Gruppe | Komet mit Feuer, ab Stufe 3 Splitter | 700 / 4 | 29 |
-| Schrein | Storm Bell | zähester | Blitz springt auf Nachbarn über | 1100 / 5 | 44 |
-| Schrein | Golden Fondue | – | kurze Zeit mehr Gold je Kill | 900 / 3 | 69 |
-| Torarm | Gate Mortar | vorne | Granate auf den Räuber, der dem Tor am nächsten ist; mehr Granaten je Stufe | 1000 / 0 | 19 |
-| Torarm | Frost Horn | Gruppe | friert ein, antippen zerschlägt gefrorene Räuber | 1500 / 3 | 23 |
-| Torarm | Dragon Bellows | Gruppe | setzt die Straße in Brand | 1800 / 6 | 34 |
-| Torarm | Hedgehog Gate | – | Stacheln verletzen Angreifer am Tor, antippen schießt sie nach außen | 1100 / 2 | 54 |
-| Turmdach | Roof Bolter | Straße | breiter Bolzenfächer über die ganze Höhe: Ballons oben, Läufer unten | 1400 / 0 | 39 |
-| Turmdach | Marmot Sentry | vorne | schießt von selbst, antippen gibt eine Salve | 1300 / 3 | 49 |
-| Turmdach | Ember Beacon | – | solange es brennt, explodiert jeder geworfene Räuber beim Aufprall | 1200 / 3 | 59 |
+| 1 | Oak Gate | Damage | 800 | – | – |
+| 2 | Iron-Bound Gate | Slow | 1250 | 8000 | – |
+| 3 | Stone Keep | Gate | 1900 | 15000 | – |
+| 4 | Bannered Keep | Support | 2800 | 24000 | – |
+| 5 | Gilded Keep | Passive | 4000 | 26000 | – |
+| 6 | Runic Fortress | kein Slot | 5600 | 80000 | – |
+| 7 | Alpine Citadel | kein Slot | 7800 | 150000 | 50 |
 
-Werte und Nachladezeiten aller Stufen: `src/config/weapons.ts` und Entwickler-Übersicht.
+Torleben, Goldpreise und Wappen stehen in `CASTLE_TIERS` (`src/config/keep.ts`), das gewonnene Level, ab dem jede Stufe kaufbar ist, in `CASTLE_TIER_LEVEL` (`src/config/slotTiers.ts`). Die Goldpreise stammen aus der Balance (Stand 17.11.2026, E-079) und können sich noch ändern; die Konfiguration gilt. Fest: Stufe 2 ab Level 6, Stufe 7 ab Level 75. Was welche Stufe öffnet, ist fest (`CASTLE_TIER_FOR_SLOT`).
 
-## Markt an der Burg
-- Zwischen den Tagen fährt die Kamera in 0,7 s näher an die Burg und zeigt auch ihren Westflügel links von x = 0.
-- Man tippt direkt auf einen Slot: Ein Fenster zeigt mit Bildern die Waffen, die dort passen, zum Kaufen, Wechseln und (nur Endlos) Verbessern. Leere und gesperrte Slots sind markiert („ab Level N“).
-- Eigener Knopf am Tor für Tor und Ausbaustufe; Kessel und Adlerhaken kauft man an ihrem Ort; die Hand hat einen eigenen Eintrag (Endlos kaufbar, Kampagne nur Anzeige).
-- Gold und Offerings bleiben groß sichtbar, dazu Ergebnis des Tages und „Ready“. Im Koop erscheinen Kaufmeldungen des anderen. Alle Flächen mindestens 44 Pixel.
-- In Level 1 ist im ersten Markt nur der Kessel kaufbar (`marketOnly`).
-
-## Tor und Ausbaustufen
-Jedes Tor ist zugleich eine Ausbaustufe der ganzen Burg (`GATES` in `src/config/keep.ts`):
-
-| Tor | Gold | Offerings | Torleben | Kampagne ab |
-|---|---|---|---|---|
-| Oak Gate | – | – | 800 | Start |
-| Iron-Bound Gate | 900 | 0 | 1400 | Level 2 |
-| Gilded Gate | 2200 | 6 | 2200 | Level 8 |
-| Runic Gate | 6000 | 14 | 3400 | Level 21 |
-| Adamant Gate | 24000 | 30 | 5200 | Level 42 |
-
-## Offering-Stationen
-- **Great Cauldron** (250 Gold): steht auf einem kleinen Hügel hinter der Burg. Hinein kommt ein Gegner nur durch einen Wurf (ein Wurf in seine Richtung wird sanft hingelenkt). Er schmilzt in 1,4 s zu Käse (`cauldronSeconds`), währenddessen ist der Kessel belegt. +1 Offering und 10 Gold extra.
-- **Eagle Perch** (12.000 Gold, Kampagne ab Level 32): Haken oben rechts. Ein dorthin geworfener Gegner hängt 1,1 s, der Adler frisst ihn. +1 Offering und 10 Gold extra. Ein Keg Hauler am Haken verliert sein Fass, das unten explodiert.
-
-## Wirtschaft
-- Gold je Gegner 10 (Pothelm) bis 120 (Yeti), in der Kampagne mit der Levelstärke etwas mehr. Ein Gegner im Kessel oder am Haken: +1 Offering und +10 Gold (`ECONOMY.offeringGold`).
-- Gold pro Tag laut Bots (Endlos Medium, Mid allein): etwa 400 an Tag 1, 900 an Tag 5, 1650 an Tag 10, 3400 an Tag 20.
+## Stationen
+- **Great Cauldron** (ab Level 16, 12 Käse): steht auf einem kleinen Hügel hinter der Burg. Hinein kommt ein Gegner nur durch einen Wurf (ein Wurf in seine Richtung wird sanft hingelenkt). Er schmilzt zu Käse, währenddessen ist der Kessel belegt. Der Kessel zahlt **doppeltes Gold** für den Räuber (`ECONOMY.cauldronGoldFactor`). Stufen mit Gold (2500, 8000) kürzen die Schmelzzeit: 2,4 s, 1,6 s, 1 s (`CAULDRON_SECONDS`).
+- **Eagle Perch** (ab Level 70, 28 Käse): Haken oben rechts. Er ist klein: Nur ein gezielter Wurf mit Tempo (mindestens 450) trifft; ein hochgetragener und losgelassener Räuber zählt nicht. Ein dorthin geworfener Gegner hängt 1,1 s, der Adler frisst ihn und lässt sein **Räuberwappen** zurück (`CRESTS`). Die Zielhilfe ist schwach (Haken-Radius 34, Hilfe 40); gemessen trifft etwa jeder fünfte Wurf in Hakennähe. Ein Keg Hauler am Haken verliert sein Fass, das unten explodiert. Der Haken ist die einzige Quelle für Wappen und schaltet damit Stufe 7 frei.
 
 ## Koop
-- Host-autoritativ mit 30 Snapshots pro Sekunde, Interpolation, Vorhersage von Griff und Wurf beim Gast. Gemeinsame Kasse, gemeinsames Tor, Markt mit „Ready“ für beide.
-- **Endlos zu zweit:** 2,3-mal so viele Räuber, zwischen Tag 22 und 36 sinkend auf 2,1-mal, an Tag 1 bis 3 etwas weniger (−8, −6, −3). 50 % Gold je Kill (`COOP` in `src/config/waves.ts`).
-- **Kampagne zu zweit: Host-Kampagne mit Helfer.** Der Host spielt sein Level mit seinem Profil (Freischaltungen, Stufen, Hand), der Gast bringt nur seine Hand-Stufe mit. 1,7-mal so viele Räuber, 50 % Gold je Kill. Level-Fortschritt bekommt nur der Host. Der Gast bekommt einmal je Level die Hälfte der Sterne, aufgerundet. Jeder schreibt die eigene Belohnung ins eigene Profil.
-- **Koop-Raum:** Ein kleines Fenster zeigt live, wer im Raum ist (eigener Name, darunter der Mitspieler oder ein freier Platz). In Dialogen steht „weiter“ rechts und „zurück“ links, im Join-Bildschirm „Join“ rechts und „Back“ links.
-- Host und Gast brauchen denselben Build und dieselbe Adresse (zum Beispiel beide `/fondue/` oder beide `/fondue/classic/`).
+- Host-autoritativ mit 30 Snapshots pro Sekunde. Der Gast zeichnet leicht hinter dem Host (selbst einstellender Puffer, `src/net/interp.ts`) und sagt Griff und Wurf voraus; seine eigene Hand zeichnet er sofort an der Fingerstelle. Messwerte vorher und nachher: `docs/v0.3/MESSUNGEN-KOOP.md`.
+- **Gespielt wird mit der Burg des Hosts** (Tor, Slots, Waffen, Stufen). Der Gast bringt seine Hand und seine Hand-Stufe mit (und ob er eine zweite Hand hat).
+- **Gold (E-069):** Jeder Spieler bekommt das ganze in der Runde verdiente Gold in sein eigenes Profil; dafür zahlt ein Kill im Koop nur 60 % (`COOP.goldPerKill`). **Käse und Kampagnen-Fortschritt bekommt nur der Host.** Wappen schreibt jeder für sich gut.
+- **Koop-Faktor:** 2,4-mal so viele Räuber wie allein (`COOP.countFactor`, Startwert 1,8, mit Bots angehoben: zu zweit soll es nicht leichter sein als allein). Die Höchstzahl gleichzeitig lebender Räuber wächst mit der Wurzel dieses Faktors.
+- **Endlos zu zweit** gibt es ebenfalls; er ist wählbar, sobald der Endlos-Tisch offen ist (Level 10).
+- **Einladungslink (E-076):** Wer über einen Einladungslink kommt, tritt auch ohne gewonnenes Level 3 bei. Die Sperre gilt nur für das Eröffnen eines Raums am Koop-Tisch.
+- **Koop-Raum:** Ein kleines Fenster zeigt live, wer im Raum ist (eigener Name, darunter der Mitspieler oder ein freier Platz), mit der Burg-Stufe jedes Spielers neben dem Namen („Castle tier N · Name“; die Nachrichten `hello`, `welcome` und `lobby` tragen dafür `castleTier` beziehungsweise `castleTiers`, optional, damit ältere Stände sie überlesen). Gespielt wird mit der Burg des Hosts. In Dialogen steht „weiter“ rechts und „zurück“ links, im Join-Bildschirm „Join“ rechts und „Back“ links.
+- **Version und Adresse:** Host und Gast brauchen denselben Build und dieselbe Adresse (zum Beispiel beide `/fondue/next/`). Passt es nicht, sehen beide eine klare Meldung mit beiden Versionen.
+- Die Verbindung ist austauschbar (`src/net/choose.ts`): ein gemieteter Relay- oder Matchmaking-Server könnte später einspringen. Heute ist keiner eingerichtet.
 
 ## Profil
-- Dauerhafter Spielstand im Browser unter `fondue.profile`: Name, Sterne, geschaffte Level je Welt, freigeschaltete Waffen, Slots und Offering-Stationen, Waffen- und Hand-Stufen, Tutorial gesehen, gesehene Gegner und Tipps, gelesene Story-Seiten, Endlos-Meilensteine, Bestenliste, Einstellungen, Entwickler-Bewertungen, unterbrochenes Level, Platz für eine Koop-Kampagne.
-- Export und Import als Textcode in den Options. Homescreen-App und Browser-Tab haben getrennte Speicher: immer über dasselbe Symbol öffnen.
+- Dauerhafter Spielstand im Browser unter dem Schlüssel **`fondue.v4.profile`** (Format `fondue-profile`, `PROFILE_VERSION` 2). Alle Schlüssel von v0.4 beginnen mit `fondue.v4.` (`STORAGE_PREFIX`). `fondue.v3.*` (v0.3) und `fondue.profile` (v0.2) werden von v0.4 nie geändert oder gelöscht.
+- **Übernahme aus v0.3:** Gibt es noch kein v0.4-Profil und wurde noch nicht übernommen, liest v0.4 `fondue.v3.profile` einmal (Merker `fondue.v4.importedV3`) und rechnet es um (`src/profile/fromV3.ts`). Weil Slots jetzt der Burg folgen, wird die Burg-Stufe kostenlos so weit angehoben, dass jeder in v0.3 offene Slot offen bleibt; niemand verliert etwas (E-074). Die dadurch offenen Slots gelten als eingeführt. Entwurfs-Entscheidungen der Entwickler-Übersicht werden nicht übernommen (E-075). Ein v0.2-Stand wird nie gelesen.
+- Inhalt: Name, Einstellungen, Geldbeutel (`wallet`: Käse, Gold, Wappen) und das je Verdiente (`earned`), die Burg (`keep`: Burg-Stufe, Hand-Stufe, Stationen, Waffen mit Stufe, angelegte Waffen je Slot), je Welt gewonnene Level, Käse-Masken je Level, gelesene Story-Seiten, Bestenliste und beste Welle je Schwierigkeit; gesehenes Tutorial, gesehene Gegner, Tipps und Slot-Einführungen; die letzten 200 eingelösten Läufe; Entwickler-Bewertungen; Cheat-Markierung; unterbrochenes Level; Platz für eine Koop-Kampagne.
+- **Speichern:** nach jeder Änderung (entprellt höchstens 250 ms (`SAVE_DELAY_MS`)), sofort nach jedem Kauf und Level, und synchron beim Wegwechseln oder Schließen der Seite. Ist der Speicher voll oder gesperrt, läuft das Spiel weiter und zeigt einmal einen Hinweis.
+- Export und Import als Textcode in den Options (ein v0.3-Code wird in das neue Format übernommen, ein v0.2-Code abgelehnt). Homescreen-App und Browser-Tab haben getrennte Speicher: immer über dasselbe Symbol öffnen.
 - Zurücksetzen im Entwickler-Menü mit Sicherheitsabfrage.
+
+## Entwickler-Werkzeuge
+Im Entwickler-Menü (Options, F1 am Laptop): Waffen-Editor (jede Waffe und Stufe live änderbar, Zurücksetzen, Export als Text; solche Läufe zählen nicht), Cheats für Gold, Käse und Wappen, Level freischalten, **Burg-Stufe setzen** (öffnet sofort alle Slots dieser Stufe, `cheatCastleTier`), Stufen von Waffen, Hand und Stationen setzen, Profil zurücksetzen und der Schalter für die zweite Hand am Laptop (die Cheats wirken dauerhaft und kennzeichnen das Profil), außerdem Tuning-Regler, Entscheidungsliste und Tutorial erneut abspielen. Die Options haben fünf Reiter: Settings, Scores, Help, Credits und Versions (Liste aller spielbaren Versionen, `src/config/versions.ts`); die Bestenliste öffnet auch nach einem Game Over den Reiter Scores.

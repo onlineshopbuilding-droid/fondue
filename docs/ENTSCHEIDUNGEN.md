@@ -214,3 +214,74 @@ Mit `?fresh=1` startet die Seite mit einem leeren Profil, das nur im Speicher le
 
 ## E-062 – Level 2 bis 9 haben fünf Tage
 Der Auftrag verlangt 5 bis 15 Tage je Level. Nur Level 1 bleibt als geführtes Lern-Level bei zwei Tagen, die Level 2 bis 9 haben jetzt fünf Tage statt drei oder vier (`dayCountOf` in `src/config/worlds/fondue/campaign.ts`). Die Level ab 10 haben 5 bis 10 Tage. Warum: Erst ab fünf Tagen lohnt sich ein Kauf im Markt innerhalb eines Levels.
+
+## E-063 – v0.3: Arbeitsweg B, Leitung an Opus übergeben (14.11.2026)
+Der Auftrag v0.3 sah Claude Fable als Leitung vor. Tims Fable-Wochenkontingent stand beim Start schon bei 85 %, deshalb hat Tim angewiesen, sparsam zu sein. Agent-Teams wurden nicht genutzt (Arbeitsweg B): Claude Opus 5.5 übernimmt die Leitung im Sinne des Auftrags und vergibt Pakete an Subagents mit ausdrücklichem Modell (Bauen: Opus, Prüfen: Sonnet). Die Fable-Sitzung wird nur am Ende oder bei einem echten Blocker geweckt.
+
+## E-064 – Name der Sonderwährung: „Raider Crests“
+Im Spiel heißen die Räuberwappen „Raider Crests“, im Code `crests`. Kurz, verständlich, passt zur Ritter-Räuberarmee.
+
+## E-065 – Der Shop ersetzt die Armoury
+Der dauerhafte Shop an der Burg ersetzt die bisherige Waffenkammer. Die Lobby-Station heißt „Shop“ und öffnet die Burg von außen (`src/ui/screens/keep*.ts`). Zwei Orte für dieselbe Sache würden verwirren.
+
+## E-066 – Verdientes Gold bleibt auch nach einer Niederlage
+Gold aus einem verlorenen Level wird trotzdem gutgeschrieben. Wer feststeckt, soll durch Wiederholen stärker werden können (A3); Käse gibt es nur beim Sieg.
+
+## E-067 – Stufen-Deckel je Kampagnen-Abschnitt gegen Überrollen mit Endlos-Gold
+Die höchste kaufbare Stufe von Waffen, Burg und Hand hängt vom Kampagnen-Fortschritt ab (`src/config/tiers.ts`, `tierCap` in `src/modes/unlocks.ts`). Endlos-Gold hilft beim Feststecken, kann aber nicht über den aktuellen Abschnitt hinaus ausbauen. Stufe 7 braucht zusätzlich Wappen vom Adlerhaken.
+
+## E-068 – Waffen, Slots und Freischaltungen
+25 Waffen, fünf je Slot (Zuordnung `docs/v0.3/BAUPLAN.md` Abschnitt 7). Keine alte Waffe wurde entfernt: Dragon Bellows wechselt zu Damage, Alphorn zu Gate, Ember Beacon zu Support, Storm Bell und Roof Bolter werden passiv. Slots öffnen nach Vorrunde (Damage), Level 2 (Slow), 4 (Gate), 7 (Support), 11 (Passive); Endlos öffnet mit dem fünften Slot. Kessel ab Level 16 für 12 Käse (doppeltes Gold), Adlerhaken ab Level 70 für 28 Käse. Freischalt-Level und Käse-Preise je Waffe stehen in `src/config/weapons.ts`; Summe aller Käse-Preise genau 500 (Test). (Hinweis: Die Slot-Freischaltung über Level wurde in v0.4 durch E-073 ersetzt.)
+
+## E-069 – Koop: jeder bekommt das ganze Gold, Kill bringt 60 %
+Im Koop schreibt jeder Spieler das gesamte in der Runde verdiente Gold in sein eigenes Profil; dafür zahlt ein Kill im Koop 60 % (`COOP` in `src/config/waves.ts`). Käse und Fortschritt bekommt nur der Host. Koop-Faktor der Gegnerzahl Startwert 1,8, mit Bots angepasst (`docs/balance.md`).
+
+## E-070 – Fortsetzen am Beginn der aktuellen Welle
+Ein unterbrochenes Solo-Kampagnen-Level geht am Beginn der Welle weiter, in der die App geschlossen wurde (Torleben, Gold und Statistik von damals). Koop, Endlos und Entwickler-Läufe werden nicht fortgesetzt.
+
+## E-071 – Wiederholte Level bringen Gold, Boss-Level schalten nichts extra frei
+Wiederholte Level zahlen normales Gold (im Vorgespräch gesetzt, von Tim noch zu bestätigen). Boss-Level schalten nichts Eigenes frei; sie sind das Tor zum nächsten Abschnitt mit höherem Stufen-Deckel.
+
+## E-072 – Versionsregel: ältere Versionen dauerhaft spielbar, die neueste darf direkt nach main (Tim, 17.11.2026)
+Tim hat am 17.11.2026 festgelegt, wie Fondue ab jetzt veröffentlicht wird. Die Regel steht in `AGENTS.md` (Abschnitt „Veröffentlichen: die Versionsregel“) und mit Rezept im Handbuch (Abschnitt 7).
+- Versionen heißen v0.1, v0.2, v0.3, v0.4 … v1.0, v1.1 und so weiter. Jede ältere Version bleibt unter `/fondue/vX.Y/` spielbar und hat einen Tag `vX.Y` und einen eingefrorenen Branch `vX.Y` (bei v0.1 heißt der Branch `classic`). Eingefrorene Branches und Tags werden nie verändert, verschoben oder gelöscht.
+- Die neueste Version darf ohne Freigabe von Tim oder Lenny direkt nach `main` und ist damit unter `/fondue/` live. Die Pflichtprüfung `test` muss grün sein.
+- Jede Version hat einen eigenen Speicher-Schlüssel im Browser. Eine neue Version liest den Stand der Vorgängerin einmal, rechnet ihn um und ändert oder löscht ihn nie.
+- `/fondue/classic/` zeigt dasselbe wie `/fondue/v0.1/`; `/fondue/next/` ist die Testadresse der Version im Bau.
+Warum: Weil die älteren Versionen gesichert sind, ist eine große Prüfung vor jedem Veröffentlichen nicht mehr nötig. Wer eine neue Version nicht mag, spielt die alte weiter, und kein Spielstand geht verloren. Das ersetzt die frühere Regel, dass Tim oder Lenny jeden Merge nach `main` freigeben.
+
+## E-073 – Slots öffnen mit der Burg-Stufe, nicht mit Kampagnen-Leveln (Tim, 17.11.2026)
+Die Burg wird das Maß für den Fortschritt: Auf „Wie weit bist du?“ soll man „Level 34 in der Kampagne“ oder „Burg-Stufe 4“ antworten können. Deshalb öffnen die Burg-Stufen die Slots: Stufe 1 Damage, Stufe 2 Slow, Stufe 3 Gate, Stufe 4 Support, Stufe 5 Passive; die Stufen 6 und 7 öffnen keinen Slot, geben aber mehr Torleben und eine prächtigere Burg. Jede Burg-Stufe ab 2 kostet Gold (Stufe 7 zusätzlich Raider Crests) und ist erst kaufbar, wenn ein bestimmtes Kampagnen-Level gewonnen ist. Fest vorgegeben sind Stufe 2 ab Level 6 und Stufe 7 ab Level 75; der Koop-Tisch ist ab Level 3 offen, der Endlos-Tisch ab Level 10 (Endlos öffnet damit nicht mehr mit dem fünften Slot und läuft mit der eigenen Burg). Alle Zahlen liegen in `src/config/slotTiers.ts` und `src/config/keep.ts`; die Level der Stufen 3 bis 6 und die Preise sind Startwerte, die die Balance festlegt (eigener Eintrag). Das ersetzt die Slot-Freischaltung über Level 2, 4, 7 und 11 aus E-068; der Rest von E-068 gilt weiter.
+
+## E-074 – Ein v0.3-Spielstand bekommt bei der Übernahme kostenlos eine höhere Burg-Stufe (KI-Entscheidung, offen zur Bestätigung)
+Wer in v0.3 mehr Slots offen hatte, als seine Burg-Stufe nach den neuen Regeln erlaubt (zum Beispiel Slow, Gate und Support durch gewonnene Level, aber Burg-Stufe 1), behält diese Slots: Beim einmaligen Übernehmen von `fondue.v3.profile` hebt `src/profile/fromV3.ts` die Burg-Stufe kostenlos auf die niedrigste Stufe, die alle in v0.3 offenen Slots öffnet. Die Slots, die die angehobene Burg öffnet, gelten als eingeführt, damit nach der Übernahme nicht mehrere Einführungen des Königs auf einmal kommen. Warum: Niemand verliert etwas, und die Regel „Slots folgen der Burg“ bleibt im Code ohne Ausnahme. Die Alternative, Slots zu behalten und die Burg-Stufe niedrig zu lassen, hätte eine Sonderregel in `slotOpen` gebraucht. Der v0.3-Stand selbst bleibt unverändert. Wenn Tim und Lenny das anders wollen, ist nur `liftCastleForV3Slots` zu ändern.
+
+## E-075 – Entwürfe der Entwickler-Entscheidungen werden nicht übernommen (KI-Entscheidung)
+Die Übernahme aus v0.3 nimmt den Spielstand mit, nicht die Entwürfe auf der Entwickler-Übersicht (`fondue.v3.dev.decisions`). Warum: Diese Entwürfe gehören zur Liste der v0.3-Entscheidungen (D3-01 bis D3-19), und v0.4 hat eine eigene Liste (`DECISIONS_V4` in `src/config/decisions.ts`). Ein Entwurf zu einer Frage, die es in v0.4 so nicht mehr gibt, würde nur verwirren. Die Entwürfe bleiben im Browser-Speicher von v0.3 unverändert liegen und werden nicht gelöscht.
+
+## E-076 – Ein Gast darf per Einladungslink auch ohne gewonnenes Level 3 beitreten (KI-Entscheidung, Vorschlag aus dem Gespräch mit Tim)
+Der Koop-Tisch in der Lobby ist bis Level 3 kaputt, aber diese Sperre gilt nur für das Eröffnen eines Raums. Wer von einem Freund per Einladungslink eingeladen wird, tritt sofort bei. Warum: Wer eingeladen wird, soll sofort mitspielen können. Die Sperre soll das Spiel im Anfang schützen, nicht Freunde aussperren. Gespielt wird ohnehin mit der Burg des Hosts.
+
+## E-077 – Options mit Reitern: Settings, Scores, Help, Credits, Versions (KI-Entscheidung)
+Die Options bekommen Reiter in dieser Reihenfolge: Settings, Scores, Help, Credits, Versions. Das Entwickler-Menü bleibt wie bisher ein Knopf in den Options. Warum: Scores, Help und Credits sind keine Stationen der Lobby mehr (die Halle soll aufgeräumt sein), und die Versionsliste der Versionsregel (E-072) braucht einen Platz im Spiel. Settings steht vorn, weil man die Options meistens deshalb öffnet; die Versionsliste steht hinten, weil man sie am seltensten braucht.
+
+## E-078 – v0.4: Arbeitsweg B, Leitung auf Fable 5.2 (17.11.2026)
+Der Auftrag v0.4 sah Agent-Teams vor (Weg A). Die Umgebungsvariable dafür war gesetzt, die Sitzung hatte aber kein Werkzeug, um Teammitglieder zu starten. Deshalb lief Weg B: Die Leitung (Claude Fable 5.2) vergibt alles an Subagents mit den Definitionen `bauer` (Opus 5.5) und `pruefer` (Sonnet 5.5), jeweils mit ausdrücklicher Modellangabe. Der Wochenverbrauch von Fable lag beim Start bei 91 % und damit über der Schwelle von 85 %, ab der der Auftrag einen Wechsel der Leitung auf Opus erlaubt. Der Wechsel war aus der Sitzung heraus nicht möglich (eine Sitzung kann ihr eigenes Modell nicht umstellen). Die Leitung hielt ihre eigenen Schritte deshalb so kurz wie möglich. Anders als in v0.3 (E-063) blieb Fable also die Leitung.
+
+## E-079 – Kampagnen-Level und Goldpreise der Burg-Stufen (KI-Entscheidung der Leitung, offen zur Bestätigung durch Tim und Lenny)
+Kauf-Level (`CASTLE_TIER_LEVEL` in `src/config/slotTiers.ts`): Stufe 2 ab Level 6 (fest), Stufe 3 ab 12, Stufe 4 ab 20, Stufe 5 ab 28, Stufe 6 ab 50, Stufe 7 ab 75 (fest). Goldpreise (`CASTLE_TIERS` in `src/config/keep.ts`): Stufe 2 8000, Stufe 3 15000, Stufe 4 24000, Stufe 5 26000, Stufe 6 80000, Stufe 7 150000 und 50 Raider Crests. Warum: Gold soll der Engpass sein, nicht das Level. Mit den ersten Startwerten (400 bis 50000 Gold) kauften alle Bots jede Stufe genau am Kauf-Level, und der mittlere Bot hatte bei Level 9 schon 21000 Gold übrig. Mit den neuen Preisen schluckt Stufe 2 das bis Level 6 gesammelte Gold, und auf die Stufen 3 bis 5 spart man über ein bis zwei Level. Gemessen (`docs/balance.md`, Abschnitt v0.4): Der mittlere Bot kauft Stufe 2 bei Level 6 und Stufe 5 bei Level 28 bis 29 (Ziel: Stufe 2 bald nach Level 6, fünfter Slot um Level 20 bis 30). Offen: Der schwache Bot scheitert zuerst an Level 16 (v0.3: 44), weil Gate, Support und Passive später kommen; ob echte Spieler im Abschnitt 12 bis 30 hängen bleiben, zeigt nur echtes Spielen. Stellschraube wären die Kauf-Level der Stufen 3 bis 5.
+
+## E-080 – Frühe Level mit nur einem Slot (KI-Entscheidung der Leitung, offen zur Bestätigung)
+Bis Level 6 spielt man nur mit dem Damage-Slot. Level 1 bis 3 bleiben ruhig (Tutorial, erste Keg Hauler). Level 4 bis 6 sind dichter gebaut: mehr Räuber, doppelt so viele Keg Hauler, Spitzenwellen als Ansturm (`CURVE.early…` in `src/config/worlds/fondue/campaign.ts`). Waffen und Hand lassen sich bis Level 6 nur bis Stufe 2 ausbauen, nach Level 6 bis Stufe 3 (`TIER_CAP_BY_LEVEL` in `src/config/tiers.ts`). Nach Level 6 kommen Burg-Stufe 2, der Slow-Slot und Stufe 3 zusammen. Warum: Ohne zweiten Slot und mit Stufe 3 ab Level 3 waren die Level 1 bis 6 für den mittleren Bot ohne Gefahr (Torleben 100 %), und bis Level 10 gab es im Shop nichts zu kaufen. Ein Versuch mit stärkeren Leveln 3 bis 8 ließ den schwachen Bot hängen; Level 4 bis 6 mit Faktor 0,6 nicht. Einzelheiten und Messwerte: `docs/balance.md`.
+
+## E-081 – Anordnung der Halle und die sieben Hallen-Stufen (KI-Entscheidung der Leitung, offen zur Bestätigung)
+Die Halle ist so angeordnet (`STATIONS` und `KING_GROUP` in `src/config/lobby.ts`): Die Tür mit „Continue“ liegt links hinten, der Koop-Tisch links vorn und der Endlos-Tisch dahinter. Der Kampagnen-Tisch steht vorn in der Mitte und ist als größte Station die auffälligste. Der Shop steht direkt rechts daneben. Rechts sitzt König Fridolin mit zwei Wachen am dampfenden Kessel; die Wachen sind Berghunde in Helm und Wappenrock mit Käse-Zeichen, keine Räuber. Das Zahnrad für die Options sitzt oben rechts. Es wurde nur diese eine Anordnung gebaut und auf drei Formaten (iPhone 16, OnePlus 8T, Laptop) geprüft. Der Auftrag wollte zwei bis drei Varianten im Vergleich; dafür fehlte die Zeit. Die sieben Hallen (`HALL_LOOK`, dazu eigene Wand-, Boden-, Fenster-, Kessel- und Tisch-Bilder je Stufe): Stufe 1 (Oak Gate) schlichte Holzhalle mit Stroh, Heuballen und Fässern; Stufe 2 (Iron-Bound Gate) Fässer, Heuballen, Wappenschild; Stufe 3 (Stone Keep) Steinhalle mit Schilden und Bannern; Stufe 4 (Bannered Keep) Banner an allen Wänden und Wimpelkette; Stufe 5 (Gilded Keep) goldener Thron, Kronleuchter, Kerzenständer, Gold und Käsestapel; Stufe 6 (Runic Fortress) dazu bunte Glasbanner und Runensteine; Stufe 7 (Alpine Citadel) Käsetruhen, goldene Gabeln, Glasbanner, Kronleuchter und Wimpelkette. Warum so: Der Kampagnen-Tisch soll das Hauptspiel sein, der Shop liegt wegen des Weges „Sieg, Gold ausgeben, nächstes Level“ gleich daneben, und die Tische mit Bedingungen (Koop, Endlos) stehen in einer Gruppe links, weg vom Hauptweg.
+
+## E-082 – Die Slot-Einführung kommt im Shop nach dem Burg-Kauf, nicht mehr am Sieg-Bildschirm (KI-Entscheidung der Leitung)
+Der Sieg-Bildschirm sagt nur noch, dass eine neue Burg-Stufe kaufbar geworden ist (Satz des Königs aus `CASTLE_READY_LINES`, solo ein Knopf in den Shop). Die Einführung eines Slots (`SLOT_INTROS`) erscheint im Shop direkt nach dem Ausbau der Burg-Stufe, die den Slot öffnet, nach der kurzen Animation und dem Satz des Königs (`CASTLE_BUILT_LINES`); jede Einführung nur einmal. Warum: Der Slot öffnet erst mit dem Kauf der Burg-Stufe, nicht mit dem Sieg. Eine Einführung am Sieg würde einen Slot erklären, den man noch nicht hat.
+
+## E-083 – Die Bestenliste nach einem Game Over öffnet den Scores-Reiter der Options (KI-Entscheidung der Leitung)
+Scores ist keine Lobby-Station mehr. Der Knopf „Scores“ nach einem Game Over führt deshalb in die Options auf den Reiter Scores. Warum: Es gibt nur noch diesen einen Ort für die Bestenliste, und wer gerade verloren hat, will sie gleich sehen.
+
+## E-084 – Mending Horn um 20 % abgeschwächt (KI-Entscheidung der Leitung, offen zur Bestätigung)
+Heilung und Nachheilen des Mending Horn sind in allen sieben Stufen mit 0,8 multipliziert, die Abklingzeit bleibt (`src/config/weapons.ts`). Warum: Im Vergleich der Support-Waffen hielt das Horn das Tor bei 69 % Torleben gegenüber 20 bis 34 % bei den anderen. Nach der Änderung sind es 63 %, das Horn bleibt vorn. Die Regel, dass jede Stufe einen Wert um mindestens 15 % ändert, bleibt erfüllt (Unit-Test). Einzelheiten: `docs/balance.md`, Abschnitt „C5“.

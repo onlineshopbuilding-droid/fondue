@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { expect, test } from '@playwright/test';
-import { GAME_WAIT, gameState, station, waitFor, waitForGame } from './helpers';
+import { GAME_WAIT, gameState, station, unlockCoop, waitFor, waitForGame } from './helpers';
 
 let server: ChildProcess;
 const PORT = 8799;
@@ -19,6 +19,8 @@ test('plan B relay carries a co-op game', async ({ browser }) => {
   const q = `?menu=1&relay=ws://localhost:${PORT}`;
   await host.goto(`/${q}`);
   await waitForGame(host);
+  // v0.4: the co-op table opens once levels 1 to 3 are won.
+  await unlockCoop(host);
   await station(host, 'coop');
   await host.fill('#name', 'Tim');
   await host.click('button[data-a="openRoom"]');

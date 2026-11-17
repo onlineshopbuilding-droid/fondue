@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { WEAPONS } from '../../src/config/weapons';
 import { KING_LOBBY_LINES, STORYBOOK } from '../../src/config/worlds/fondue/story';
 import { DIVE_END, KEEP_GATE, LOBBY_SECONDS, diveOf, diveRect, fadeOf, stepLobby } from '../../src/render/lobby/dive';
-import { DECOR, ROOM, STATIONS, WEAPON_PEGS, decorFor, fitRoom, linesFor, pagesFor, pickLine } from '../../src/render/lobby/layout';
+import {
+  HALL_LOOK, ROOM, STATIONS, WEAPON_PEGS, bannerText, decorFor, fitRoom, hallArtNames, hallLook, linesFor, pickLine, stationArt, stationPos,
+} from '../../src/render/lobby/layout';
+import { LOBBY_ART, LOBBY_HALL_ART } from '../../src/art/lobby';
+import { CASTLE_TIERS } from '../../src/config/keep';
+import { TABLE_UNLOCK_LEVEL } from '../../src/config/slotTiers';
+import { coopTableOpen, endlessOpen } from '../../src/modes';
+import { pagesFor } from '../../src/ui/lobby/storybook';
 import { htmlMenuWanted, OVER_LOBBY } from '../../src/ui/lobby/mode';
 
 const SCREENS: [number, number][] = [[852, 393], [915, 412], [1280, 720]];
@@ -45,21 +52,37 @@ describe('lobby camera move', () => {
 });
 
 describe('lobby layout', () => {
-  it('has a station for every action of the old main menu, plus the storybook', () => {
+  it('has exactly the v0.4 stations: continue, campaign, shop, co-op and endless tables, options', () => {
     const ids = STATIONS.map((s) => s.id).sort();
-    expect(ids).toEqual(['armoury', 'campaign', 'continueLevel', 'coop', 'credits', 'help', 'options', 'play', 'scores', 'storybook']);
+    expect(ids).toEqual(['armoury', 'campaign', 'continueLevel', 'coop', 'options', 'play']);
+    // Storybook, help, credits and scores live in the options and on the campaign map now.
+    for (const gone of ['storybook', 'help', 'credits', 'scores']) expect(ids).not.toContain(gone);
     for (const s of STATIONS) expect(s.label.length).toBeLessThanOrEqual(10);
+  });
+
+  it('puts the campaign table in the middle as the biggest station, with the shop right beside it', () => {
+    const by = (id: string) => STATIONS.find((s) => s.id === id)!;
+    const campaign = by('campaign');
+    for (const s of STATIONS) if (s.id !== 'campaign') expect(campaign.r, s.id).toBeGreaterThan(s.r);
+    expect(Math.abs(campaign.x - ROOM.w / 2)).toBeLessThan(200);
+    const shop = by('armoury');
+    // In the same front row as the campaign table, nothing stands between it and the shop.
+    expect(Math.abs(shop.y - campaign.y)).toBeLessThan(60);
+    const others = STATIONS.filter((s) => s.id !== 'campaign' && s.id !== 'armoury' && Math.abs(s.y - campaign.y) < 60);
+    for (const s of others) expect(Math.abs(shop.x - campaign.x), s.id).toBeLessThanOrEqual(Math.abs(s.x - campaign.x));
+    expect(by('options').corner).toBe(true);
   });
 
   it('keeps every station on screen and big enough for a finger on phones and laptops', () => {
     for (const [w, h] of SCREENS) {
       const f = fitRoom(w, h);
       for (const s of STATIONS) {
+        const p = stationPos(s, f);
         expect(s.r * f.zoom, `${s.id} on ${w}x${h}`).toBeGreaterThanOrEqual(44);
-        expect(s.x - 70, s.id).toBeGreaterThanOrEqual(f.x);
-        expect(s.x + 70, s.id).toBeLessThanOrEqual(f.x + f.w);
-        expect(s.ly + 22, s.id).toBeLessThanOrEqual(Math.min(ROOM.h, f.y + f.h));
-        expect(s.ly - 22, s.id).toBeGreaterThanOrEqual(Math.max(0, f.y));
+        expect(p.x - 50, s.id).toBeGreaterThanOrEqual(f.x);
+        expect(p.x + 50, s.id).toBeLessThanOrEqual(f.x + f.w);
+        expect(p.ly + 20, s.id).toBeLessThanOrEqual(Math.min(ROOM.h, f.y + f.h));
+        expect(p.ly - 20, s.id).toBeGreaterThanOrEqual(Math.max(0, f.y));
       }
       // The room fills the whole canvas: nothing outside it shows.
       expect(f.x).toBeGreaterThanOrEqual(0);
@@ -67,16 +90,41 @@ describe('lobby layout', () => {
     }
   });
 
-  it('makes the hall grander with the campaign, from a plain hall to a victory garland', () => {
-    const ids = (lvl: number) => decorFor(lvl).map((d) => d.id);
-    expect(ids(0)).toEqual(['throne']);
-    expect(ids(10).length).toBeGreaterThan(ids(0).length);
-    expect(ids(70)).toContain('throneGold');
-    expect(ids(70)).not.toContain('throne');
-    expect(ids(99)).not.toContain('garland');
-    expect(ids(100)).toContain('garland');
-    for (let lvl = 1; lvl <= 100; lvl++) expect(decorFor(lvl).length).toBeGreaterThanOrEqual(decorFor(lvl - 1).length - 1);
-    expect(new Set(DECOR.map((d) => d.id)).size).toBe(DECOR.length);
+  it('builds a hall of its own for each of the seven castle tiers', () => {
+    expect(HALL_LOOK.length).toBe(7);
+    for (let t = 1; t <= 7; t++) {
+      expect(hallLook(t).name).toBe(CASTLE_TIERS[t - 1].name);
+      expect(bannerText(t)).toEqual({ name: CASTLE_TIERS[t - 1].name, tier: `Castle tier ${t}` });
+      // Walls, floor, ceiling, windows, door, cauldron and all tables are pictures of that tier.
+      for (const name of hallArtNames(t)) expect(LOBBY_HALL_ART[name], name).toBeTruthy();
+      for (const d of decorFor(t)) expect(LOBBY_ART[d.art], `${d.art} at tier ${t}`).toBeTruthy();
+      if (t > 1) {
+        expect(hallArtNames(t).filter((n) => hallArtNames(t - 1).includes(n))).toEqual([]);
+        expect(decorFor(t).map((d) => d.art).join()).not.toBe(decorFor(t - 1).map((d) => d.art).join());
+      }
+    }
+    // Plain wood and straw at the start, gold and cheese treasures at the top.
+    expect(decorFor(1).map((d) => d.art)).toContain('straw');
+    expect(decorFor(7).map((d) => d.art)).toEqual(expect.arrayContaining(['cheeseChest', 'chandelier', 'goldPile']));
+    expect(hallLook(7).throne).toBe('throneGold');
+    // Out of range falls back to the nearest tier.
+    expect(hallLook(0).name).toBe(hallLook(1).name);
+    expect(hallLook(9).name).toBe(hallLook(7).name);
+  });
+
+  it('shows broken tables until their level is won', () => {
+    const coop = STATIONS.find((s) => s.id === 'coop')!;
+    const endless = STATIONS.find((s) => s.id === 'play')!;
+    expect(stationArt(coop, 3, false)).toBe('coopTableBroken');
+    expect(stationArt(coop, 3, true)).toBe('coopTable3');
+    expect(stationArt(endless, 5, false)).toBe('endlessTableBroken');
+    expect(stationArt(endless, 5, true)).toBe('endlessTable5');
+    const prof = (n: number) => ({ data: { worlds: { fondue: { levelsDone: Array.from({ length: n }, (_, i) => i + 1) } } } });
+    const at = (n: number) => ({ coop: coopTableOpen(prof(n) as never, 'fondue'), endless: endlessOpen(prof(n) as never, 'fondue') });
+    expect(at(TABLE_UNLOCK_LEVEL.coop - 1)).toEqual({ coop: false, endless: false });
+    expect(at(TABLE_UNLOCK_LEVEL.coop)).toEqual({ coop: true, endless: false });
+    expect(at(TABLE_UNLOCK_LEVEL.endless - 1)).toEqual({ coop: true, endless: false });
+    expect(at(TABLE_UNLOCK_LEVEL.endless)).toEqual({ coop: true, endless: true });
   });
 
   it('has a peg on the wall for every weapon', () => {

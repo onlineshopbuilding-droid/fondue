@@ -5,7 +5,7 @@
 import type { Flags } from '../config/flags';
 import type { Tuning } from '../config/tuning';
 import type { EnemyType } from '../config/enemies';
-import type { Loadout, RunResult, RunRules, RunStatsData, TodayInfo } from './rules';
+import type { Loadout, RunResult, RunRules, RunStatsData, WaveInfo } from './rules';
 
 export type EnemyState =
   | 'walk' // moving toward the gate
@@ -18,7 +18,7 @@ export type EnemyState =
   | 'frozen'
   | 'hooked' // hanging on the eagle perch
   | 'cooking' // melting into cheese in the cauldron
-  | 'flee'; // only with the old end-of-day rule
+  | 'flee'; // runs off the field (developer flag)
 
 export interface Enemy {
   id: number;
@@ -56,11 +56,14 @@ export interface Enemy {
   maxHp: number;
   /** How far right a single weak hand may drag a yeti. */
   tugLimit: number;
-  /** An oversized raider of a boss day: more hit points, harder strikes, much heavier. */
+  /** An oversized raider of a boss wave: more hit points, harder strikes, much heavier. */
   big: boolean;
+  /** This throw has already been counted as a try at the Eagle Perch (hit rate, see `Stations`). */
+  perchTry?: boolean;
 }
 
-export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell' | 'frostShell' | 'fireShell';
+export type ProjectileKind = 'bomb' | 'stone' | 'bolt' | 'wheel' | 'comet' | 'slab' | 'roofBolt' | 'shell' | 'frostShell' | 'fireShell'
+  | 'snowball' | 'pinecone' | 'hornet';
 
 export interface Projectile {
   id: number;
@@ -100,7 +103,8 @@ export interface Projectile {
 /** A patch of road that does something to whoever stands in it. */
 export interface Zone {
   id: number;
-  kind: 'fire' | 'cheese';
+  /** fire burns; cheese (Sticky Fondue) slows and may burn; snow (Snowdrift Cannon) slows; hotCheese (Cheese Cascade) scalds before the gate. */
+  kind: 'fire' | 'cheese' | 'snow' | 'hotCheese';
   x: number;
   halfWidth: number;
   /** Seconds left, and how long it lasts in total. */
@@ -126,16 +130,8 @@ export interface Hand {
   connected: boolean;
 }
 
-export type Phase = 'banner' | 'battle' | 'victory' | 'intermission' | 'defeat' | 'gameover' | 'runWon';
-
-export interface DayStats {
-  day: number;
-  kills: number;
-  goldEarned: number;
-  offeringsEarned: number;
-  score: number;
-  gatePct: number;
-}
+/** banner: level start (raiders already walk); battle: the waves; then runWon, or defeat and gameover. */
+export type Phase = 'banner' | 'battle' | 'defeat' | 'gameover' | 'runWon';
 
 export interface SpawnEntry {
   t: number;
@@ -161,8 +157,6 @@ export interface DelayedShot {
 export interface Meta {
   rev: number;
   names: string[];
-  ready: boolean[];
-  lastDay: DayStats | null;
   totalScore: number;
   totalKills: number;
   pausedBy: string | null;
@@ -171,10 +165,13 @@ export interface Meta {
   flags: Flags;
   /** Width of the field in world units, decided by the host. */
   fieldW: number;
+  /** Right edge of the host's visible field in world units; raiders step in here (B3). */
+  viewRight: number;
   rules: RunRules;
   loadout: Loadout;
-  today: TodayInfo;
-  /** A developer tool shaped this run: it reaches neither the scores nor the stars. */
+  /** The wave being fought: landscape, night, boss, newcomers. */
+  wave: WaveInfo;
+  /** A developer tool shaped this run: it reaches neither the scores nor the rewards. */
   devRun: boolean;
   /** Set once the run has ended, won or lost. */
   result: RunResult | null;
@@ -184,10 +181,24 @@ export interface SimState {
   tick: number;
   phase: Phase;
   phaseT: number;
-  day: number;
-  dayT: number;
+  /** Current wave (1-based) and seconds since it began. */
+  wave: number;
+  waveT: number;
+  /** Seconds since the level started. */
+  runT: number;
+  /** All arrivals of the current wave are out; counting the breath before the next one. */
+  waveDone: boolean;
+  pauseT: number;
+  /** Seconds the field has been empty while arrivals are still due (the B2 rule). */
+  emptyT: number;
+  /** Breath after the current wave, from its plan. */
+  pauseAfter: number;
+  /** Tests and developer tools: no arrivals and no next wave; the fight goes on with whoever is there. */
+  wavesFrozen: boolean;
+  /** Gold earned in this run (shown in the HUD, credited to the profile at the end). */
   gold: number;
-  offerings: number;
+  /** Raider Crests left at the perch in this run. */
+  crests: number;
   gateHp: number;
   gateMax: number;
   enemies: Enemy[];
@@ -208,6 +219,19 @@ export interface SimState {
   /** Seconds until the sentry shoots on its own again, and shots left in a burst. */
   sentryT: number;
   sentryBurst: number;
+  /**
+   * Helping Hand: seconds each player still has a second hand (index = player), and that hand's
+   * strength as a share of the player's own hand. Read by the hand code (package P-Hände).
+   */
+  extraHandT: number[];
+  extraHandStrength: number;
+  /** Iron Grip: seconds left, hand strength factor, and factor on the lethal impact speed (below 1 = easier kills). */
+  gripT: number;
+  gripStrength: number;
+  gripLethal: number;
+  /** Mending Horn: seconds the gate still mends, and how much of its full strength per second. */
+  mendT: number;
+  mendRate: number;
   spawnQueue: SpawnEntry[];
   spawned: number;
   /** Seconds until the eagle hook is free. */
@@ -215,17 +239,11 @@ export interface SimState {
   /** Seconds until the cauldron is free, and how long this melt takes in total. */
   potBusy: number;
   potMax: number;
-  /** The sun has set: no more arrivals, the day ends when the field is clear. */
-  nightfall: boolean;
   /** Everything stands still until `resume` (tutorial); not a pause, no pause window. */
   hold: boolean;
   nextId: number;
   seed: number;
   rngState: number;
-  dayKills: number;
-  dayGold: number;
-  dayOfferings: number;
-  dayScore: number;
   paused: boolean;
   seenTypes: EnemyType[];
   stats: RunStatsData;
@@ -263,32 +281,38 @@ export type SimEvent =
   | { e: 'beacon'; seconds: number }
   | { e: 'thorns'; reach: number }
   | { e: 'sentryShot'; x: number; y: number; tx: number; ty: number }
+  | { e: 'toll'; x: number; radius: number }
+  | { e: 'extraHand'; seconds: number }
+  | { e: 'grip'; seconds: number }
+  | { e: 'mend'; amount: number }
+  | { e: 'cascade'; halfWidth: number }
+  | { e: 'logSwing'; reach: number }
+  | { e: 'catapult'; x: number; y: number }
+  | { e: 'hive'; x: number; y: number }
+  | { e: 'snowdrift'; x: number; y: number }
   | { e: 'eagle'; x: number; y: number; id: number }
   | { e: 'splash'; x: number; y: number; etype: EnemyType }
   | { e: 'cheese'; x: number; y: number; etype: EnemyType }
-  | { e: 'nightfall' }
   | { e: 'crow'; x: number; y: number }
   | { e: 'shieldUp'; x: number; y: number }
   | { e: 'shieldBlock'; x: number; y: number }
   | { e: 'tapCart'; x: number; y: number; hp: number }
-  | { e: 'dayStart'; day: number }
-  | { e: 'victory' }
+  | { e: 'waveStart'; wave: number }
   | { e: 'runWon' }
   | { e: 'defeat' }
-  | { e: 'buy'; p: number; item: string; name: string }
+  | { e: 'crest'; x: number; y: number; amount: number }
   | { e: 'denied'; p: number }
   | { e: 'weaponReady'; slot: number };
 
 /**
- * Everything players can ask the simulation to do. `buy` names what is wanted as one text:
- * 'gate', 'station:cauldron', 'weapon:<slot>:<id>' (build or swap), 'upgrade:<id>', 'hand'.
+ * Everything players can ask the simulation to do. Nothing is bought during a run.
+ * `hand` is 1 for the player's second hand (C9); without it the first hand acts.
  */
 export type Command =
-  | { k: 'press'; p: number; x: number; y: number }
-  | { k: 'release'; p: number; x: number; y: number; vx: number; vy: number }
+  | { k: 'press'; p: number; x: number; y: number; hand?: number }
+  | { k: 'release'; p: number; x: number; y: number; vx: number; vy: number; hand?: number }
+  /** The second hand follows its finger (the first hand moves through `Sim.setHand` and the 'h' message). */
+  | { k: 'move'; p: number; x: number; y: number; hand?: number }
   | { k: 'fireSlot'; p: number; slot: number }
-  | { k: 'shake'; p: number }
-  | { k: 'buy'; p: number; item: string }
-  | { k: 'ready'; p: number; ready: boolean }
-  | { k: 'forceStart'; p: number }
+  | { k: 'shake'; p: number; hand?: number }
   | { k: 'pause'; p: number; paused: boolean };

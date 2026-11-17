@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { fling, gameState, station, waitForGame, waitGame, waitPhase } from './helpers';
+import { fling, gameState, station, unlockEndless, waitForGame, waitForLobby, waitGame, waitPhase } from './helpers';
 
 test('single player loads into the lobby, starts endless and a throw kills', async ({ page }) => {
   const errors: string[] = [];
@@ -7,6 +7,9 @@ test('single player loads into the lobby, starts endless and a throw kills', asy
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto('/?menu=1&seed=7');
   await waitForGame(page);
+  // Endless opens after the campaign's eleventh level.
+  await waitForLobby(page);
+  await unlockEndless(page);
   await station(page, 'play');
   await page.screenshot({ path: 'docs/screenshots/menu.png' });
   await page.click('#startEndless');

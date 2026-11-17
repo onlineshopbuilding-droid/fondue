@@ -1,15 +1,40 @@
 // The campaign map: a path through the landscapes with every level as a station. It opens centred on
 // the current level and scrolls sideways with the finger (wheel or drag with a mouse). Tapping a
-// station opens a small card with the level's facts and a Play button; locked stations say what to win first.
-import { STARS } from '../../config/stars';
+// station opens a small card with the level's facts, its five cheese, the loadout of the five slots and a
+// Play button (two taps from the map to the battle); locked stations say what to win first.
+// v0.4: the head shows the castle tier next to the campaign progress; the levels whose win lets the
+// next castle tier be built carry a small castle mark (read from CASTLE_TIER_LEVEL, never typed here);
+// a small book in the top right corner opens the storybook as a window over the map.
+import { CASTLE_TIERS } from '../../config/keep';
+import { CASTLE_TIER_LEVEL } from '../../config/slotTiers';
+import { STORYBOOK } from '../../config/worlds/fondue/story';
+import { CHEESE, cheeseCount } from '../../config/currencies';
 import { levelOf, worldById } from '../../config/worlds';
 import type { LevelDef } from '../../config/worlds/types';
-import { CAMPAIGN, unlocksOfLevel } from '../../modes';
+import { CAMPAIGN, levelCheese, unlocksOfLevel } from '../../modes';
 import { MAP_SYMBOLS, STEP, bandsOf, endsHtml, landName, landscapeHtml, mapWidth, pathSvg, stationX, stationY } from '../campaignArt';
 import { BACK_BUTTON, esc, navRow } from '../html';
+import { walletHtml } from './keep';
 import type { ScreenContext } from './context';
 import type { Screen } from './screen';
+import { loadoutAction, loadoutHtml, resetLoadout } from './prelevel';
 import { unlockName } from './won';
+import { StorybookWindow, pagesFor } from '../lobby/storybook';
+
+/** The castle tier (2..7) that can be built once this level is won, or 0. */
+export function castleTierAtLevel(level: number): number {
+  const i = CASTLE_TIER_LEVEL.indexOf(level);
+  return i >= 1 ? i + 1 : 0;
+}
+
+/** "Castle tier 3 · Stone Keep". */
+export function castleTierName(tier: number): string {
+  const def = CASTLE_TIERS[tier - 1];
+  return def ? `Castle tier ${tier} · ${def.name}` : `Castle tier ${tier}`;
+}
+
+/** The storybook window over the map, while it is open. */
+let book: StorybookWindow | null = null;
 
 /** The station whose card is open, kept so a redraw of the screen keeps the card. */
 let selected: number | null = null;
@@ -25,35 +50,64 @@ function stationHtml(ctx: ScreenContext, l: LevelDef, current: number): string {
   const p = ctx.profile;
   const done = p.isLevelDone(ctx.world, l.id);
   const open = CAMPAIGN.canPlay(p, ctx.world, l.id);
-  const hasUnlock = unlocksOfLevel(ctx.world, l.id).length > 0;
-  const cls = ['cm-st', done ? 'done' : open ? 'open' : 'locked', l.boss ? 'boss' : '', l.id === current ? 'current' : '', hasUnlock ? 'unlock' : '', l.id === selected ? 'sel' : ''].filter(Boolean).join(' ');
+  // The castle tier is no secret: it has its own mark, so the "?" only stands for other unlocks.
+  const hasUnlock = unlocksOfLevel(ctx.world, l.id).some((u) => u.kind !== 'castle');
+  const castle = castleTierAtLevel(l.id);
+  const got = cheeseCount(levelCheese(p, ctx.world, l.id));
+  const cls = ['cm-st', done ? 'done' : open ? 'open' : 'locked', l.boss ? 'boss' : '', l.id === current ? 'current' : '', hasUnlock ? 'unlock' : '', castle ? 'castle' : '', l.id === selected ? 'sel' : ''].filter(Boolean).join(' ');
   const y = stationY(l.id);
   const badges = [
     l.boss ? '<svg class="cm-helm" viewBox="0 0 44 30" aria-hidden="true"><use href="#cm-pothelm"/></svg>' : '',
     hasUnlock && !done ? '<span class="cm-q" aria-hidden="true">?</span>' : '',
+    castle ? `<span class="cm-castle" data-tier="${castle}" aria-hidden="true">🏰${castle}</span>` : '',
     done ? '<span class="cm-check" aria-hidden="true">✓</span>' : '',
+    done || got > 0 ? `<span class="cm-got${got === CHEESE.perLevel ? ' full' : ''}" aria-hidden="true">${got}🧀</span>` : '',
     l.id === current && !done ? '<svg class="cm-mouse" viewBox="0 0 44 40" aria-hidden="true"><use href="#cm-mouse"/></svg>' : '',
   ].join('');
   const state = done ? 'won' : open ? 'open' : 'locked';
-  const label = `Level ${l.id}: ${l.name}${l.boss ? ', boss level' : ''}, ${state}`;
+  const label = `Level ${l.id}: ${l.name}${l.boss ? ', boss level' : ''}, ${state}, ${got} of ${CHEESE.perLevel} cheese${castle ? `, castle tier ${castle} can be built after it` : ''}`;
   const bossName = l.boss ? `<span class="cm-boss-name ${y > 56 ? 'up' : ''}" style="left:${stationX(l.id)}px;top:${y.toFixed(1)}%">${esc(l.boss.name)}</span>` : '';
   return `<button class="${cls}" data-a="${open ? 'level' : 'lockedLevel'}" data-level="${l.id}" style="left:${stationX(l.id)}px;top:${y.toFixed(1)}%" aria-label="${esc(label)}"><span class="cm-num">${l.id}</span>${badges}</button>${bossName}`;
 }
 
-/** The card of one level: facts on top, Close on the left and Play on the right. */
+/** Planned length of a level in words, e.g. "about 2 min". */
+function durationText(l: LevelDef): string {
+  const secs = (l as { targetSeconds?: unknown }).targetSeconds;
+  if (typeof secs !== 'number' || !Number.isFinite(secs) || secs <= 0) return '';
+  const min = Math.max(1, Math.round(secs / 60));
+  return `about ${min} min`;
+}
+
+/** The two challenges of a level, whatever shape the campaign data has. */
+function challengeTexts(l: LevelDef): string[] {
+  const list = (l as { challenges?: unknown }).challenges;
+  if (!Array.isArray(list)) return [];
+  return list.slice(0, 2).map((c) => (typeof c === 'string' ? c : typeof c === 'object' && c ? String((c as Record<string, unknown>).text ?? (c as Record<string, unknown>).label ?? '') : '')).filter(Boolean);
+}
+
+/** The card of one level: facts, the five cheese, the loadout and Play. */
 function cardHtml(ctx: ScreenContext, id: number): string {
   const l = levelOf(ctx.world, id);
   if (!l) return '';
   const p = ctx.profile;
   const done = p.isLevelDone(ctx.world, id);
   const open = CAMPAIGN.canPlay(p, ctx.world, id);
-  const days = l.days.length;
-  const facts = [`${days} ${days === 1 ? 'day' : 'days'}`, landName(l.landscape), l.twist?.label ?? ''].filter(Boolean).map(esc).join(' · ');
-  const replay = Math.floor(l.stars * STARS.replayShare);
-  const stars = done
-    ? `<span class="star">★</span> ${l.stars} won${replay > 0 ? ` · replay pays <span class="star">★</span> ${replay}` : ' · replays pay no stars'}`
-    : `<span class="star">★</span> ${l.stars} for the first win`;
-  const unlocks = unlocksOfLevel(ctx.world, id);
+  const facts = [durationText(l), landName(l.landscape), l.twist?.label ?? ''].filter(Boolean).map(esc).join(' · ');
+  const mask = levelCheese(p, ctx.world, id);
+  const got = cheeseCount(mask);
+  const b = CHEESE.bits;
+  const has = (bit: number) => (mask & (1 << bit)) !== 0;
+  const pip = (bit: number, text: string) => `<li class="${has(bit) ? 'got' : ''}"><span class="cm-ck" aria-hidden="true">${has(bit) ? '🧀' : '○'}</span>${esc(text)}</li>`;
+  const ch = challengeTexts(l);
+  const cheeseList = `<ul class="cm-card-cheese" id="cardCheese">
+      ${pip(b.win, 'Win')}${pip(b.gateHalf, `Gate above ${Math.round(CHEESE.gateHalf * 100)} %`)}${pip(b.gateHigh, `Gate above ${Math.round(CHEESE.gateHigh * 100)} %`)}
+      ${ch[0] ? pip(b.challenge1, ch[0]) : ''}${ch[1] ? pip(b.challenge2, ch[1]) : ''}</ul>`;
+  const cheeseLine = `<span class="cm-cheese-ico" aria-hidden="true">🧀</span> <b id="cardGot">${got}</b>/${CHEESE.perLevel} cheese${done ? ' · replays pay gold' : ''}`;
+  const unlocks = unlocksOfLevel(ctx.world, id).filter((u) => u.kind !== 'castle');
+  const castle = castleTierAtLevel(id);
+  const castleLine = castle
+    ? `<div class="cm-card-castle" id="cardCastle"><span aria-hidden="true">🏰</span> Castle tier ${castle} can be built${done ? '' : ' after this win'}: ${esc(CASTLE_TIERS[castle - 1]?.name ?? '')}</div>`
+    : '';
   let unlockLine = '';
   if (unlocks.length > 0) {
     unlockLine = done
@@ -63,15 +117,28 @@ function cardHtml(ctx: ScreenContext, id: number): string {
   const lock = open ? '' : `<div class="cm-card-lock" id="lockNote">Locked. Win level ${id - 1} first.${id - 1 > CAMPAIGN.nextLevel(p, ctx.world) ? ` You are at level ${CAMPAIGN.nextLevel(p, ctx.world)}.` : ''}</div>`;
   const play = open ? `<button data-a="playLevel" id="playLevel" data-level="${id}">${done ? 'Play again' : 'Play'}</button>` : '';
   return `<div class="cm-card-title"><span class="cm-card-num">Level ${id}</span> <span class="cm-card-name" id="cardName">${esc(l.name)}</span></div>
-    <div class="cm-card-facts">${facts}</div>
+    <div class="cm-card-facts" id="cardFacts">${facts}</div>
     ${l.boss ? `<div class="cm-card-boss" id="cardBoss">Boss: ${esc(l.boss.name)}</div>` : ''}
-    <div class="cm-card-stars" id="cardStars">${stars}</div>
-    ${unlockLine}${lock}
+    <div class="cm-card-total" id="cardCheeseTotal">${cheeseLine}</div>
+    ${cheeseList}
+    ${castleLine}${unlockLine}${lock}
+    ${open ? loadoutHtml(ctx) : ''}
     ${navRow('<button class="secondary" data-a="closeCard" id="closeCard">Close</button>', play)}`;
+}
+
+/** The storybook as a window over the map, opened on the newest page. */
+function openBook(ctx: ScreenContext) {
+  const root = ctx.query<HTMLElement>('#campaignMap');
+  if (!root) return;
+  book?.close();
+  book = new StorybookWindow(root, () => { ctx.audio.resume(); ctx.audio.play('uiClick'); });
+  const pages = pagesFor(STORYBOOK, ctx.profile.highestLevelDone(ctx.world));
+  book.open(pages, STORYBOOK.length - pages.length);
 }
 
 /** Opens (or with null closes) the card without redrawing the 100 stations. */
 function selectStation(ctx: ScreenContext, id: number | null) {
+  if (id !== selected) resetLoadout();
   selected = id;
   const card = ctx.query<HTMLElement>('#levelCard');
   if (!card) return;
@@ -128,11 +195,13 @@ export const campaignScreen: Screen = {
       <div class="cm-head">
         <div class="cm-head-back">${BACK_BUTTON}</div>
         <h2>Campaign</h2>
+        <div class="cm-castle-tier" id="campaignCastle" data-tier="${p.data.keep.castleTier}"><span aria-hidden="true">🏰</span> ${esc(castleTierName(p.data.keep.castleTier))}</div>
         <div class="cm-progress" id="campaignProgress">
           <div class="cm-progress-text"><span id="levelsWon">${won}</span>/${levels.length} won</div>
           <div class="cm-bar"><div class="cm-bar-fill" style="width:${((won / levels.length) * 100).toFixed(1)}%"></div></div>
         </div>
-        <div class="cm-stars"><span class="star">★</span><span id="stars">${p.data.stars}</span></div>
+        ${walletHtml(ctx)}
+        <button class="cm-book" data-a="openBook" id="openStorybook" aria-label="Storybook" title="Storybook"><span aria-hidden="true">📖</span></button>
       </div>
       <div class="cm-scroll" id="mapScroll" data-keep-scroll>
         <div class="cm-world" id="levelList" style="width:${w}px">
@@ -157,6 +226,8 @@ export const campaignScreen: Screen = {
     if (sc) sc.scrollLeft = stationX(CAMPAIGN.nextLevel(ctx.profile, ctx.world)) - sc.clientWidth / 2 + STEP / 4;
   },
   onHide() {
+    book?.close();
+    book = null;
     active = null;
     drag = null;
     window.removeEventListener('wheel', onWheel);
@@ -172,10 +243,16 @@ export const campaignScreen: Screen = {
     return false;
   },
   onAction(action, el, ctx) {
+    if (loadoutAction(action, el, ctx)) {
+      // Only the card is drawn again, so the map keeps its place.
+      if (selected !== null) { const card = ctx.query<HTMLElement>('#levelCard'); if (card) card.innerHTML = cardHtml(ctx, selected); }
+      return;
+    }
     switch (action) {
       case 'level':
       case 'lockedLevel': selectStation(ctx, Number(el.dataset.level)); break;
       case 'closeCard': selectStation(ctx, null); break;
+      case 'openBook': openBook(ctx); break;
       case 'playLevel': {
         const id = Number(el.dataset.level);
         if (!CAMPAIGN.canPlay(ctx.profile, ctx.world, id)) return;

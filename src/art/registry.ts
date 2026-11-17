@@ -8,7 +8,7 @@ import { RIGS } from './characters';
 import { PROPS } from './props';
 import { CLOUDS, LANDSCAPE_ART } from './landscapes';
 import { listWeaponArt, weaponKey } from './weapons';
-import { LOBBY_ART, LOBBY_ROOM, lobbyKey } from './lobby';
+import { LOBBY_ART, LOBBY_HALL_ART, LOBBY_WORLD_SIZE, lobbyKey } from './lobby';
 import { ASSET_OVERRIDES } from '../config/assets';
 
 /** Texture pixels per world pixel. Characters stay sharp when the game is scaled up. */
@@ -36,13 +36,18 @@ export const LAND_LAYERS = ['far', 'mid', 'near', 'ground'] as const;
 export const KEEP_STAGES = 'keepStages';
 /** Group of the weapon pictures of tiers 2 to 5; tier 1 is made at boot. */
 export const WEAPON_TIERS = 'weaponTiers';
+/**
+ * Group of the lobby pictures of each castle tier (walls, floor, tables, …). Not part of the background
+ * queue: the lobby makes the pictures of the tier it shows when it needs them (src/render/lobby/hallTextures.ts).
+ */
+export const LOBBY_HALLS = 'lobbyHalls';
 /** Group of everything that is made before the game starts. */
 export const BOOT = 'boot';
 /**
  * When an asset is turned into a texture: at boot, with a landscape, or with the keep stages. The
  * first landscape of a game is made at boot as well; the other groups follow in the background.
  */
-export type AssetGroup = typeof BOOT | typeof KEEP_STAGES | typeof WEAPON_TIERS | LandName;
+export type AssetGroup = typeof BOOT | typeof KEEP_STAGES | typeof WEAPON_TIERS | typeof LOBBY_HALLS | LandName;
 export type AssetKind = 'rigPart' | 'prop' | 'landscape' | 'cloud' | 'weapon';
 
 export interface AssetEntry {
@@ -106,10 +111,12 @@ export function buildAssets(): Record<string, AssetEntry> {
     }
   }
   for (const [name, art] of Object.entries(PROPS)) add({ name: propKey(name), art, scale: TEX_SCALE, group: groupOfProp(name), kind: 'prop' });
-  // Weapons on the keep: `weapon:<id>:<tier>`. Only tier 1 is needed before the first market.
+  // Weapons on the keep: `weapon:<id>:<tier>`. Only tier 1 is needed before the first upgrade in the Keep Shop.
   for (const w of listWeaponArt()) add({ name: w.name, art: w.art, scale: TEX_SCALE, group: w.tier === 1 ? BOOT : WEAPON_TIERS, kind: 'weapon' });
-  // The lobby inside the keep is the main menu, so its pictures are made at boot.
-  for (const [name, art] of Object.entries(LOBBY_ART)) add({ name: lobbyKey(name), art, scale: name === LOBBY_ROOM ? 1 : TEX_SCALE, group: BOOT, kind: 'prop' });
+  // The lobby inside the keep is the main menu, so its shared pictures are made at boot; the
+  // pictures of each castle tier's hall only when that hall is shown.
+  for (const [name, art] of Object.entries(LOBBY_ART)) add({ name: lobbyKey(name), art, scale: TEX_SCALE, group: BOOT, kind: 'prop' });
+  for (const [name, art] of Object.entries(LOBBY_HALL_ART)) add({ name: lobbyKey(name), art, scale: LOBBY_WORLD_SIZE(name) ? 1 : TEX_SCALE, group: LOBBY_HALLS, kind: 'prop' });
   CLOUDS.forEach((art, i) => add({ name: cloudKey(i), art, scale: CLOUD_SCALE, group: BOOT, kind: 'cloud' }));
   for (const land of LAND_NAMES) {
     for (const layer of LAND_LAYERS) add({ name: landscapeKey(land, layer), art: LANDSCAPE_ART[land][layer], scale: LAND_SCALE[layer], group: land, kind: 'landscape' });

@@ -1,5 +1,5 @@
 /**
- * World 1, Fondue, as one package: the king, the landscapes, the raiders, the offering sites,
+ * World 1, Fondue, as one package: the king, the landscapes, the raiders, the stations,
  * the campaign, what it unlocks, and how endless mode behaves here.
  */
 import { ENEMY_TYPES } from '../../enemies';

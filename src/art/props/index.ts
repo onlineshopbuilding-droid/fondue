@@ -8,8 +8,9 @@ import { CASTLE_ART, KEEP_PROPS } from '../castle';
 import { art } from '../draw';
 import { wheel, slab, comet, bomb, stone, shell, bolt, roofBolt } from './projectiles';
 import { handOpen, handClosed } from './hand';
-import { gibHelmet, gibPlate, gibBoot, gibStick, coin, offering, splat1, splat2, splat3, drop1, dust, spark, star, flame1, flame2, flame3, iceBlock, shieldBubble } from './effects';
+import { gibHelmet, gibPlate, gibBoot, gibStick, coin, crestToken, splat1, splat2, splat3, drop1, dust, spark, star, flame1, flame2, flame3, iceBlock, shieldBubble } from './effects';
 import { banner } from './signboard';
+import { snowball, snowDrift, pinecone, hornet, cheeseStream, cheesePool, swingLog } from './weaponFx';
 import { KING_ART } from '../king';
 import { iconWheel, iconStomper, iconComet, iconMortar, iconFrost, iconBellows, iconBolter, iconPause, iconLocked, iconCastle } from './icons';
 
@@ -40,6 +41,13 @@ export const PROPS: Record<string, Art> = {
   shell,
   bolt,
   roofBolt,
+  snowball,
+  snowDrift,
+  pinecone,
+  hornet,
+  cheeseStream,
+  cheesePool,
+  swingLog,
   handOpen,
   handClosed,
   gibHelmet,
@@ -47,7 +55,7 @@ export const PROPS: Record<string, Art> = {
   gibBoot,
   gibStick,
   coin,
-  offering,
+  crestToken,
   splat1,
   splat2,
   splat3,

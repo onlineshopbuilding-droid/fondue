@@ -20,7 +20,7 @@ export interface Tuning {
   grabRadius: number;
   /** Multiplies every enemy's walk speed. */
   walkSpeed: number;
-  /** Multiplies the number of enemies per day. */
+  /** Multiplies the number of enemies per wave. */
   spawnRate: number;
   /** Seconds a raider takes to melt into cheese; the pot is busy meanwhile. */
   cauldronSeconds: number;

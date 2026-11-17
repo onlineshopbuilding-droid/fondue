@@ -95,7 +95,7 @@ describe('weight of the raiders', () => {
   });
 
   it('a Yeti dies from a hard throw once the hands on it are strong enough to lift it', () => {
-    const alone = battleSim({ handTiers: [3] });
+    const alone = battleSim({ handTiers: [4] });
     expect(hardThrow(alone, place(alone, 'yeti', 700), [0])).toBe(true);
     const pair = battleSim({ names: ['A', 'B'], handTiers: [1, 1] });
     expect(hardThrow(pair, place(pair, 'yeti', 700), [0, 1])).toBe(true);
@@ -110,19 +110,20 @@ describe('the Yeti and the hand', () => {
     return e.st;
   };
 
-  it('one hand of tier 1 or 2 only pulls it', () => {
+  it('one hand of tier 1, 2 or 3 only pulls it', () => {
     expect(tryLift([1])).toBe('walk');
     expect(tryLift([2])).toBe('walk');
+    expect(tryLift([3])).toBe('walk');
   });
 
   it('two hands of tier 1 lift it together', () => {
     expect(tryLift([1, 1])).toBe('held');
   });
 
-  it('one hand of tier 3 lifts it alone', () => {
-    expect(tryLift([3])).toBe('held');
-    expect(HANDS[2].strength).toBeGreaterThanOrEqual(HAND_RULES.yetiLift);
-    expect(HANDS[1].strength).toBeLessThan(HAND_RULES.yetiLift);
+  it('one hand of tier 4 lifts it alone (C8)', () => {
+    expect(tryLift([4])).toBe('held');
+    expect(HANDS[3].strength).toBeGreaterThanOrEqual(HAND_RULES.yetiLift);
+    expect(HANDS[2].strength).toBeLessThan(HAND_RULES.yetiLift);
   });
 
   it('a weak hand that lets go of a pulled Yeti throws nothing', () => {

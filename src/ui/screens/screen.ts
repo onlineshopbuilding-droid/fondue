@@ -5,7 +5,7 @@ import type { ScreenContext } from './context';
 /** Every screen the game knows; `none` means the battlefield is uncovered. Add new screens here. */
 export type ScreenId =
   | 'none' | 'main' | 'play' | 'coop' | 'campaign' | 'armoury' | 'host' | 'join' | 'options' | 'help' | 'scores' | 'credits'
-  | 'results' | 'shop' | 'gameover' | 'won' | 'pause' | 'lostHost' | 'lostGuest';
+  | 'gameover' | 'won' | 'pause' | 'lostHost' | 'lostGuest';
 
 export interface Screen {
   readonly id: Exclude<ScreenId, 'none'>;
@@ -93,7 +93,7 @@ export class ScreenManager {
     const focused = document.activeElement as HTMLInputElement | null;
     const focusId = focused?.id;
     const caret = focused?.selectionStart ?? null;
-    // A purchase redraws the market; the player's place in the lists must survive that.
+    // A purchase redraws the Keep Shop; the player's place in the lists must survive that.
     const list = samePage ? overlay.querySelector('.items') : null;
     const tabs = samePage ? overlay.querySelector('.tabs') : null;
     const panel = samePage ? overlay.querySelector('.panel') : null;
@@ -105,7 +105,15 @@ export class ScreenManager {
     const kept = samePage
       ? [...overlay.querySelectorAll<HTMLElement>('[data-keep-scroll][id]')].map((el) => ({ id: el.id, left: el.scrollLeft, top: el.scrollTop }))
       : [];
+    // Heavy pictures (the keep in the Keep Shop) carry data-keep-node="<signature>" and an id. On a
+    // redraw with the same signature the old node stays: its large images are not decoded and painted
+    // again, which took seconds per tap on software-rendered pages.
+    const reuse = samePage ? [...overlay.querySelectorAll('[data-keep-node][id]')] : [];
     overlay.innerHTML = html;
+    for (const old of reuse) {
+      const now = overlay.querySelector(`#${old.id}`);
+      if (now && now.getAttribute('data-keep-node') === old.getAttribute('data-keep-node')) now.replaceWith(old);
+    }
     for (const k of kept) {
       const el = overlay.querySelector<HTMLElement>(`#${k.id}`);
       if (el) { el.scrollLeft = k.left; el.scrollTop = k.top; }

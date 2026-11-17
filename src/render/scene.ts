@@ -8,15 +8,15 @@ import type { Session } from '../game/session';
 import type { ViewEnemy, ViewHand, ViewProjectile, ViewState, ViewZone } from '../net/snapshot';
 import type { Meta, SimEvent } from '../sim/types';
 import { bindPointer, type PointerTracker } from '../input/pointer';
+import { secondHandSimulated } from '../config/flags';
 import { ShakeDetector } from '../input/shake';
 import { Background } from './background';
 import { CastleView } from './castleView';
 import { Effects } from './effects';
 import { EnemyView } from './enemyView';
 import { Hud } from './hud';
-import { camAt, hookAt, stepMarket, type CamRect } from './marketCamera';
+import { fightRect, hookAt, type CamRect } from './camera';
 import { diveRect } from './lobby/dive';
-import { MarketView } from './marketView';
 import { Stations } from './stations';
 import { TutorialView } from './tutorialView';
 import { computeView, renderScale, type GameView } from './viewport';
@@ -38,13 +38,11 @@ export interface SceneHooks {
   togglePause(): void;
   isInputBlocked(): boolean;
   onBuyNotice(text: string): void;
-  /** A place on the keep was tapped in the market: 'slot:<i>', 'gate', 'station:<id>'. */
-  onKeepTap(spot: string): void;
 }
 
 interface HandView { img: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; }
 
-const PROJ_KEYS = { bomb: 'bomb', stone: 'stone', bolt: 'bolt', wheel: 'wheel', comet: 'comet', slab: 'slab', roofBolt: 'roofBolt', shell: 'shell', frostShell: 'shell', fireShell: 'shell' } as const;
+const PROJ_KEYS = { bomb: 'bomb', stone: 'stone', bolt: 'bolt', wheel: 'wheel', comet: 'comet', slab: 'slab', roofBolt: 'roofBolt', shell: 'shell', frostShell: 'shell', fireShell: 'shell', snowball: 'snowball', pinecone: 'pinecone', hornet: 'hornet' } as const;
 
 export class GameScene extends Phaser.Scene {
   session: Session | null = null;
@@ -55,14 +53,11 @@ export class GameScene extends Phaser.Scene {
   private hud!: Hud;
   private castle!: CastleView;
   private stations!: Stations;
-  private market!: MarketView;
   /** The King, the gesture lesson of the prelude and the pot hint of level 1. */
   tutorial!: TutorialView;
-  /** 0 in the fight, 1 in the market at the keep; in between while the camera moves. */
-  private marketK = 0;
   /** 0 normally; towards 1 the camera dives into the keep's gate, on the way to the lobby (src/ui/lobby). */
   lobbyDive = 0;
-  /** The part of the world on screen right now (the fight view, the market view or between). */
+  /** The part of the world on screen right now (the fight view, or the lobby's dive into the keep). */
   private cam: CamRect = { x: 0, y: 0, w: WORLD.width, h: WORLD.height };
   private banner!: Phaser.GameObjects.Container;
   private bannerText!: Phaser.GameObjects.Text;
@@ -78,6 +73,8 @@ export class GameScene extends Phaser.Scene {
   private flameViews = new Map<number, Phaser.GameObjects.Image[]>();
   private hands: HandView[] = [];
   private tracker!: PointerTracker;
+  /** The second finger, or the right mouse button with the developer switch (C9). */
+  private tracker2!: PointerTracker;
   /** The Keg Hauler my hand holds while it still has its keg, and how far the shake has got. */
   private shake = new ShakeDetector();
   private shakeId = -1;
@@ -86,7 +83,7 @@ export class GameScene extends Phaser.Scene {
   private shakeAmp = 0;
   private lastView: ViewState | null = null;
   private lastPhase = '';
-  private lastDay = 0;
+  private shownWave = 0;
   private lastFrameMs = 16.7;
   /** For the debug overlay and tests. */
   debug = { fps: 60, enemies: 0, frameMs: 16 };
@@ -101,7 +98,6 @@ export class GameScene extends Phaser.Scene {
     this.bg = new Background(this);
     this.castle = new CastleView(this);
     this.stations = new Stations(this);
-    this.market = new MarketView(this);
     this.cheeseGfx = this.add.graphics().setDepth(17);
 
     this.fx = new Effects(this);
@@ -116,8 +112,9 @@ export class GameScene extends Phaser.Scene {
     }).setOrigin(0.5);
     this.banner = this.add.container(640, -170, [banner, this.bannerText]).setDepth(95).setScrollFactor(0);
 
-    for (let i = 0; i < 2; i++) {
-      const img = this.add.image(0, 0, propKey('handOpen')).setScale(1 / TEX_SCALE).setDepth(100).setVisible(false).setTint(HAND_COLORS[i]);
+    // Two players, each with a first and a second hand (C9): hand p + players is player p's second.
+    for (let i = 0; i < 4; i++) {
+      const img = this.add.image(0, 0, propKey('handOpen')).setScale(1 / TEX_SCALE).setDepth(100).setVisible(false).setTint(HAND_COLORS[i % 2]);
       const label = this.add.text(0, 0, '', { fontFamily: FONT, fontSize: '18px', color: '#fff6df', stroke: '#2b2118', strokeThickness: 4 }).setOrigin(0.5, 1).setDepth(100).setVisible(false);
       this.hands.push({ img, label });
     }
@@ -136,7 +133,7 @@ export class GameScene extends Phaser.Scene {
     const w = Math.round(v.width * rs);
     const h = Math.round(v.height * rs);
     if (this.scale.gameSize.width !== w || this.scale.gameSize.height !== h) this.scale.setGameSize(w, h);
-    this.cam = camAt(v, this.marketK);
+    this.cam = fightRect(v);
     this.cameras.main.setSize(w, h).setOrigin(0, 0).setZoom(rs * (v.width / this.cam.w)).setScroll(this.cam.x, this.cam.y);
     this.sharpenText(rs);
     this.bg.layout(v);
@@ -173,19 +170,13 @@ export class GameScene extends Phaser.Scene {
 
   private bindInput() {
     const canvas = this.game.canvas;
-    const { tracker } = bindPointer(canvas, {
+    const { tracker, tracker2 } = bindPointer(canvas, {
       onMove: (t) => this.feedShake(t),
       windowMs: () => this.session?.meta()?.tuning.velWindowMs ?? 80,
       view: () => ({ width: this.cam.w, height: this.cam.h, offsetX: this.cam.x, offsetY: this.cam.y }),
       onDown: (x, y) => {
         this.audio.resume();
         const s = this.session;
-        // The market at the keep: a tap on one of its places opens that place's window, nothing else.
-        if (s && s.view()?.phase === 'intermission') {
-          const spot = this.market.hit(x, y);
-          if (spot) { this.audio.play('uiClick'); this.hooks.onKeepTap(spot); }
-          return true;
-        }
         if (!s || this.hooks.isInputBlocked()) return true;
         const sx = x - this.view.offsetX;
         const sy = y - this.view.offsetY;
@@ -208,8 +199,31 @@ export class GameScene extends Phaser.Scene {
         if (!s) return;
         s.localRelease(vx, vy);
       },
+      // The second hand: a weapon tap works with any finger; grabbing only with a second hand.
+      onDown2: (x, y) => {
+        const s = this.session;
+        if (!s || this.hooks.isInputBlocked()) return true;
+        const slot = this.castle.hitSlot(x, y, s.meta());
+        if (slot >= 0) {
+          if (s.view()?.phase === 'battle') { s.send({ k: 'fireSlot', slot }); this.audio.play('uiClick'); }
+          return true;
+        }
+        if (!s.secondHandReady()) return true;
+        s.setHand(x, y, 1);
+        s.localPress(x, y, 1);
+        return false;
+      },
+      onMove2: (t) => { if (t.pressed) this.session?.setHand(t.x, t.y, 1); },
+      onUp2: (x, y, vx, vy) => {
+        const s = this.session;
+        if (!s) return;
+        s.setHand(x, y, 1);
+        s.localRelease(vx, vy, 1);
+      },
+      mouseSecond: () => secondHandSimulated(this.session?.meta()?.flags),
     });
     this.tracker = tracker;
+    this.tracker2 = tracker2;
 
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
       const s = this.session;
@@ -245,12 +259,11 @@ export class GameScene extends Phaser.Scene {
     this.flameViews.clear();
     this.cheeseGfx.clear();
     this.lastPhase = '';
-    this.lastDay = 0;
+    this.shownWave = 0;
     this.lastView = null;
     this.bannerT = -1;
     this.banner.y = -170;
     this.stations.reset();
-    this.marketK = 0;
     this.veilT = 0;
     this.flashT = 0;
     this.veil.setVisible(false);
@@ -266,8 +279,7 @@ export class GameScene extends Phaser.Scene {
     const realDt = Math.min(0.05, deltaMs / 1000);
     const s = this.session;
     if (!s) {
-      this.marketK = 0;
-      this.cam = diveRect(camAt(this.view, 0), this.lobbyDive);
+      this.cam = diveRect(fightRect(this.view), this.lobbyDive);
       this.hud.setVisible(false);
       this.bg.setLandscape('meadow');
       this.bg.update(8, 50, false, 640, realDt);
@@ -275,15 +287,14 @@ export class GameScene extends Phaser.Scene {
       this.hooks?.onFrame(null);
       return;
     }
-    // The camera glides to the market at the keep between days and back for the fight.
-    this.marketK = stepMarket(this.marketK, s.view()?.phase === 'intermission', realDt);
-    this.cam = diveRect(camAt(this.view, this.marketK), this.lobbyDive);
-    // The bars are screen furniture of the fight; the market shows gold and offerings itself.
+    this.cam = diveRect(fightRect(this.view), this.lobbyDive);
+    // The bars are screen furniture of the fight.
     // While the camera comes out of the keep (lobby) they would be drawn zoomed, so they wait.
-    this.hud.setVisible(this.marketK === 0 && this.lobbyDive === 0);
-    this.banner.setVisible(this.marketK === 0 && this.lobbyDive === 0);
+    this.hud.setVisible(this.lobbyDive === 0);
+    this.banner.setVisible(this.lobbyDive === 0);
 
     s.setHand(this.tracker.x, this.tracker.y);
+    if (this.tracker2.pressed) s.setHand(this.tracker2.x, this.tracker2.y, 1);
     // Alone, a hitstop can stop the world for real; a shared game must keep running for the other player.
     if (s.role !== 'solo' || now >= this.hitstopUntil) s.update(Math.min(100, deltaMs));
     this.fx.resetFloatBudget();
@@ -305,12 +316,15 @@ export class GameScene extends Phaser.Scene {
       this.renderHands(view, s);
       this.hud.update(view, meta, realDt);
       if (meta) {
-        this.bg.setLandscape(meta.today.landscape);
-        this.bg.update(view.dayT, meta.today.seconds, meta.today.night, this.tracker.x, realDt);
+        this.bg.setLandscape(meta.wave.landscape);
+        // The sky follows the level wave by wave (endless: a cycle of eight waves).
+        const last = meta.rules.lastWave;
+        const u = last ? (view.wave - 1) / last : ((view.wave - 1) % 8) / 8;
+        this.bg.update(u * 100, 100, meta.wave.night, this.tracker.x, realDt);
       }
       this.renderKeep(view, meta, realDt, now);
       this.updatePhase(view, meta);
-      this.tutorial.update(s, view, meta, events, realDt, this.view, this.cam, this.marketK);
+      this.tutorial.update(s, view, meta, events, realDt, this.view, this.cam);
     }
 
     this.fx.update(dt);
@@ -355,15 +369,14 @@ export class GameScene extends Phaser.Scene {
 
     this.renderProjectiles(view.projectiles);
     this.renderZones(view.zones, time);
+    this.fx.drawZones(view.zones);
   }
 
   private renderKeep(view: ViewState, meta: Meta | null, dt: number, time: number) {
     if (!meta) return;
-    const k = this.marketK;
-    const hook = hookAt(this.view, meta.fieldW, k);
-    this.castle.update(view, meta, this.bg.shown, this.bg.tint, this.bg.night, dt, time, k);
-    this.stations.update(view, meta, this.bg.tint, dt, time, hook, k);
-    this.market.update(meta, view.gold, view.offerings, k, hook, this.castle.hitRadius(), time);
+    const hook = hookAt(meta.fieldW);
+    this.castle.update(view, meta, this.bg.shown, this.bg.tint, this.bg.night, dt, time);
+    this.stations.update(view, meta, this.bg.tint, dt, time, hook);
   }
 
   private renderProjectiles(list: ViewProjectile[]) {
@@ -395,6 +408,7 @@ export class GameScene extends Phaser.Scene {
     this.cheeseGfx.clear();
     for (const z of zones) {
       if (z.kind === 'cheese') { this.drawCheese(z, time); continue; }
+      if (z.kind === 'snow' || z.kind === 'hotCheese') continue;
       seen.add(z.id);
       let list = this.flameViews.get(z.id);
       if (!list) {
@@ -451,44 +465,66 @@ export class GameScene extends Phaser.Scene {
 
   private renderHands(view: ViewState, s: Session) {
     const meta = s.meta();
+    const players = Math.max(1, meta?.names.length ?? 1);
+    const mine = [s.handSlot(0), s.handSlot(1)];
+    this.hands.forEach((hv, i) => { if (i >= view.hands.length) { hv.img.setVisible(false); hv.label.setVisible(false); } });
     view.hands.forEach((h: ViewHand, i: number) => {
       const hv = this.hands[i];
       if (!hv) return;
-      const isMe = i === s.me;
-      const x = isMe ? this.tracker.x : h.x;
-      const y = isMe ? this.tracker.y : h.y;
+      const own = mine.indexOf(i);
+      const isMe = own >= 0;
+      const second = i >= players;
+      const t = own === 1 ? this.tracker2 : this.tracker;
+      const x = isMe ? t.x : h.x;
+      const y = isMe ? t.y : h.y;
       const blocked = isMe && this.hooks.isInputBlocked();
-      const visible = h.connected && !blocked && (view.phase !== 'intermission' && view.phase !== 'gameover' && view.phase !== 'runWon');
+      // A second hand shows only while it is at work.
+      const working = !second || (isMe ? t.pressed : h.down || h.holding >= 0 || h.holdingProj >= 0);
+      const visible = working && h.connected && !blocked && (view.phase !== 'gameover' && view.phase !== 'runWon');
       // On a touch screen the player sees their own finger; only a mouse needs a hand as pointer.
       // The co-op partner's hand always shows: it is the only sign of where they grab.
-      const drawn = visible && !(isMe && this.tracker.touch);
+      const drawn = visible && !(isMe && t.touch);
       hv.img.setVisible(drawn);
-      hv.label.setVisible(drawn && view.hands.length > 1);
+      hv.label.setVisible(drawn && players > 1 && !second);
       if (!drawn) return;
-      const closed = h.down || h.holding >= 0 || h.holdingProj >= 0;
+      const closed = h.down || h.holding >= 0 || h.holdingProj >= 0 || (own === 1 && t.pressed);
       hv.img.setTexture(propKey(closed ? 'handClosed' : 'handOpen'));
-      hv.img.setTint(HAND_COLORS[i]);
+      hv.img.setTint(HAND_COLORS[(i % players) % HAND_COLORS.length]);
       hv.img.setPosition(x, y);
-      if (view.hands.length > 1) hv.label.setText(meta?.names[i] ?? '').setPosition(x, y - 40);
+      if (players > 1 && !second) hv.label.setText(meta?.names[i] ?? '').setPosition(x, y - 40);
     });
   }
 
   private updatePhase(view: ViewState, meta: Meta | null) {
-    if (view.day !== this.lastDay) this.lastDay = view.day;
+    // The prelude is no official round: no signboard, it just begins.
+    if (view.wave !== this.shownWave) {
+      const first = this.shownWave <= 0 || view.phase === 'banner';
+      this.shownWave = view.wave;
+      if (!this.isPrelude() && !first) {
+        const line = this.waveBanner(view.wave, meta);
+        if (line) this.showBanner(line, 2);
+      }
+    }
     if (view.phase === this.lastPhase) return;
     this.lastPhase = view.phase;
-    // The prelude is no official round: no signboard, it just begins.
     if (this.isPrelude()) return;
-    if (view.phase === 'banner') this.showBanner(this.dayBanner(view.day, meta), 2.4);
+    if (view.phase === 'banner') this.showBanner(this.levelBanner(meta), 1.2);
   }
 
-  /** The line on the signboard when a day begins: the boss of the day, a night, or the plain call. */
-  private dayBanner(day: number, meta: Meta | null): string {
-    const today = meta?.today;
-    const last = meta?.rules.lastDay ?? null;
-    const name = today?.night ? `NIGHT ${day}` : last !== null && day === last ? 'LAST DAY' : `DAY ${day}`;
-    if (today?.boss) return `${name} — ${today.boss.toUpperCase()}!`;
+  /** The signboard at the start of a level: its number, a night, or a boss. */
+  private levelBanner(meta: Meta | null): string {
+    const level = meta?.rules.level ?? null;
+    const name = level !== null ? `LEVEL ${level}` : 'ENDLESS';
+    if (meta?.wave.night) return `${name} — NIGHT RAID!`;
     return `${name} — HOLD THE GATE!`;
+  }
+
+  /** A signboard for a wave that matters: the boss wave and the last wave. Null for ordinary waves. */
+  private waveBanner(wave: number, meta: Meta | null): string | null {
+    if (meta?.wave.boss) return `${meta.wave.boss.toUpperCase()}!`;
+    const last = meta?.rules.lastWave ?? null;
+    if (last !== null && wave === last) return 'LAST WAVE!';
+    return null;
   }
 
   private isPrelude(): boolean { return this.session?.meta()?.rules.mode === 'tutorial'; }
@@ -619,7 +655,7 @@ export class GameScene extends Phaser.Scene {
         if (ev.kind === 'cheese') {
           this.sfx('squelch');
           this.fx.splash(ev.x, WORLD.groundY + 50);
-        } else {
+        } else if (ev.kind === 'fire') {
           this.sfx('fire', 0.7);
         }
         break;
@@ -678,6 +714,45 @@ export class GameScene extends Phaser.Scene {
         this.sfx('thorns');
         this.shakeCam(4);
         break;
+      case 'toll':
+        this.fx.toll(ev.x, ev.radius);
+        this.sfx('horn', 0.6);
+        this.shakeCam(5);
+        break;
+      case 'snowdrift':
+        this.fx.snowPuff(ev.x, ev.y);
+        break;
+      case 'logSwing':
+        this.fx.logSwing(ev.reach);
+        this.sfx('slam', 0.7);
+        this.shakeCam(8);
+        break;
+      case 'cascade':
+        this.fx.cascade(ev.halfWidth);
+        this.sfx('squelch');
+        break;
+      case 'mend':
+        this.fx.mend(ev.amount);
+        this.sfx('horn', 0.4);
+        break;
+      case 'extraHand': {
+        const p = this.slotOf('helper', s);
+        this.fx.floatText(p.x + 40, p.y - 40, 'SECOND HAND!');
+        this.fx.sparks(p.x, p.y - 20, 8);
+        break;
+      }
+      case 'grip': {
+        const p = this.slotOf('grip', s);
+        this.fx.floatText(p.x + 40, p.y - 40, 'IRON GRIP!');
+        this.fx.sparks(p.x, p.y - 20, 8);
+        break;
+      }
+      case 'catapult':
+        this.fx.puff(ev.x, ev.y, 0xc89a5a);
+        break;
+      case 'hive':
+        this.fx.puff(ev.x, ev.y, 0xf3cb5e);
+        break;
       case 'sentryShot':
         this.fx.streak(ev.x, ev.y, ev.tx, ev.ty);
         this.sfx('sentry', 0.6);
@@ -695,9 +770,8 @@ export class GameScene extends Phaser.Scene {
         this.fx.floatText(ev.x, ev.y - 90, 'Cheese!');
         this.fx.fadingProp('cheese', ev.x, ev.y - 34, 0.5, 1);
         break;
-      case 'nightfall':
-        this.showBanner('NIGHT FALLS!', 2.2);
-        this.sfx('dayStart', 0.6);
+      case 'crest':
+        this.fx.floatText(ev.x, ev.y - 90, `+${ev.amount} Crest${ev.amount > 1 ? 's' : ''}`);
         break;
       case 'crow':
         this.sfx('crow');
@@ -715,14 +789,9 @@ export class GameScene extends Phaser.Scene {
         this.fx.sparks(ev.x, ev.y, 7);
         this.shakeCam(3);
         break;
-      case 'dayStart':
-        this.sfx('dayStart');
-        break;
-      case 'victory':
-        // The prelude ends quietly; level 1 follows at once.
-        if (this.isPrelude()) break;
-        this.showBanner('THE GATE HOLDS!', 2.2);
-        this.sfx('victory');
+      case 'waveStart':
+        // The sound of a new wave (its asset still carries the old name).
+        if (ev.wave > 1) this.sfx('waveStart', 0.5);
         break;
       case 'runWon':
         if (this.isPrelude()) break;
@@ -737,10 +806,6 @@ export class GameScene extends Phaser.Scene {
         this.showBanner('THE GATE HAS FALLEN!', 3);
         this.sfx('defeat');
         this.shakeCam(24);
-        break;
-      case 'buy':
-        this.sfx('buy');
-        this.hooks.onBuyNotice(`${s.meta()?.names[ev.p] ?? 'Someone'} bought ${ev.name}`);
         break;
       case 'denied':
         if (ev.p === s.me) this.sfx('uiDenied');
@@ -780,10 +845,11 @@ export class GameScene extends Phaser.Scene {
     this.fx.coin(ev.x, ev.y, purse.x, purse.y);
     if (ev.gold > 0) this.fx.floatText(ev.x, ev.y - 60, `+${ev.gold}`);
     this.sfx('coin', 0.45);
-    if (ev.cause === 'cauldron' || ev.cause === 'eagle') {
-      const pot = this.hud.offeringTarget();
-      this.fx.offering(ev.x, ev.y, pot.x, pot.y);
-      this.sfx('offering');
+    if (ev.cause === 'eagle') {
+      // The crest flies to the counter.
+      const crest = this.hud.crestTarget();
+      this.fx.crestFly(ev.x, ev.y, crest.x, crest.y);
+      this.sfx('crest');
     }
   }
 
@@ -795,18 +861,6 @@ export class GameScene extends Phaser.Scene {
   /** Test hook: CSS position of a slot, for tapping it in browser tests. */
   slotCss(slot: number) { const p = this.castle.slotWorld(slot); return this.worldToCss(p.x, p.y); }
   pauseCss() { const p = this.hud.pausePos(); return this.screenToCss(p.x, p.y); }
-  /** Test hook: how far the camera has moved into the market, 0 (fight) to 1 (market). */
-  marketProgress() { return this.marketK; }
-  /** Test hook: the market's tappable places with their CSS centre and CSS tap radius. */
-  marketSpots() {
-    const r = this.game.canvas.getBoundingClientRect();
-    const perUnit = r.width / this.cam.w;
-    return this.market.list().map((s) => ({ id: s.id, ...this.worldToCss(s.x, s.y), r: s.r * perUnit }));
-  }
-  /** Test hook: CSS centre of one market place ('slot:2', 'gate', 'station:perch'), or null. */
-  marketSpotCss(id: string) { return this.marketSpots().find((s) => s.id === id) ?? null; }
-  /** Test hook: acts as if a market place was tapped, without hunting for its pixels. */
-  tapMarketSpot(id: string) { this.hooks.onKeepTap(id); }
   slotDiameterCss() { return this.castle.diameterCss(); }
   pauseDiameterCss() { return this.hud.pauseDiameterCss(); }
   hudBottomCss() { return this.hud.bottomCss(); }

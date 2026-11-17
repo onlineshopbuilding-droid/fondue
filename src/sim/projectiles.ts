@@ -3,6 +3,10 @@ import { BEHAVIOUR, ENEMIES } from '../config/enemies';
 import { DT, WORLD } from '../config/field';
 import type { Projectile, ProjectileKind } from './types';
 import type { SimContext } from './context';
+import { bodyY, frontTarget, targetable } from './weapons/targeting';
+
+/** Hornets: flying speed, how close they must get to sting, and the pause between two stings. */
+const HORNET = { speed: 760, reach: 26, pause: 0.35, life: 7 };
 
 /** Height at which shells, comets and slabs meet the road. */
 export const LAND_Y = WORLD.groundY + 22;
@@ -60,6 +64,9 @@ export class Projectiles {
         case 'fireShell':
           this.updateShell(q);
           break;
+        case 'snowball': this.updateSnowball(q); break;
+        case 'pinecone': this.updatePinecone(q); break;
+        case 'hornet': this.updateHornet(q); break;
       }
     }
   }
@@ -171,6 +178,71 @@ export class Projectiles {
       if (Math.hypot(e.x - q.x, e.y - ENEMIES[e.type].height * 0.5 - (q.y - 40)) > q.size + ENEMIES[e.type].radius) continue;
       this.ctx.combat.freeze(e, q.owner, q.seconds);
     }
+  }
+
+  /** Falls in an arc like a shell. Returns true on the tick it reaches the road. */
+  private fall(q: Projectile): boolean {
+    q.vy += this.ctx.tuning.gravity * DT;
+    q.x += q.vx * DT;
+    q.y += q.vy * DT;
+    q.rot += 0.3;
+    if (q.y < LAND_Y) return false;
+    q.y = LAND_Y;
+    q.t = -1;
+    return true;
+  }
+
+  /** Snowdrift Cannon: a drift of `size` half width, `seconds` long, slowing to `aux`. */
+  private updateSnowball(q: Projectile) {
+    if (!this.fall(q)) return;
+    this.ctx.emit({ e: 'snowdrift', x: q.x, y: q.y });
+    this.ctx.zones.addSnow(q.x, q.size, q.seconds, q.aux);
+  }
+
+  /** Pinecone Catapult: a blast of `size` and `damage`; survivors are dazed for `seconds`. */
+  private updatePinecone(q: Projectile) {
+    if (!this.fall(q)) return;
+    this.ctx.combat.blast(q.x, q.y, q.size, q.damage, q.owner);
+    if (q.seconds <= 0) return;
+    for (const e of this.ctx.s.enemies) {
+      if (!e.dead && Math.abs(e.x - q.x) <= q.size && this.ctx.enemies.isGrounded(e)) this.ctx.combat.stun(e, q.seconds);
+    }
+  }
+
+  /**
+   * Hornet Hive: flies to its raider (id in `aux`), stings `damage` up to `maxHits` times with a short
+   * pause (`seconds`), and picks the raider closest to the gate when its own one is gone.
+   */
+  private updateHornet(q: Projectile) {
+    q.t += DT;
+    if (q.t > HORNET.life || q.maxHits <= 0) { q.t = -1; return; }
+    let target = this.ctx.s.enemies.find((e) => e.id === q.aux);
+    if (!target || !targetable(this.ctx, target)) {
+      target = frontTarget(this.ctx, true) ?? undefined;
+      if (!target) { q.t = -1; return; }
+      q.aux = target.id;
+    }
+    const tx = target.x;
+    const ty = bodyY(target);
+    const d = Math.hypot(tx - q.x, ty - q.y);
+    if (q.seconds > 0) q.seconds -= DT;
+    if (d <= HORNET.reach) {
+      if (q.seconds <= 0) {
+        this.ctx.combat.hurt(target, q.damage, 'spike', q.owner);
+        q.maxHits--;
+        q.seconds = HORNET.pause;
+      }
+      // Buzz around the raider while waiting for the next sting.
+      q.rot += 0.6;
+      q.x = tx + Math.cos(q.rot) * 14;
+      q.y = ty + Math.sin(q.rot * 1.3) * 10;
+      return;
+    }
+    const step = Math.min(d, HORNET.speed * DT);
+    q.vx = ((tx - q.x) / d) * HORNET.speed;
+    q.vy = ((ty - q.y) / d) * HORNET.speed;
+    q.x += ((tx - q.x) / d) * step;
+    q.y += ((ty - q.y) / d) * step;
   }
 
   private updateRoofBolt(q: Projectile) {

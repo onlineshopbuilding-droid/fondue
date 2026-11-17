@@ -14,9 +14,10 @@ test('every landscape renders at day, dusk and night', async ({ page }) => {
     for (const [name, share, night] of times) {
       await page.evaluate(([l, k, n]) => {
         const sim = (window as any).__fondue.session.sim;
-        const today = sim.s.meta.today;
-        sim.s.meta.today = { ...today, landscape: l, night: n };
-        sim.s.dayT = today.seconds * (k as number);
+        // The sky follows the waves: in endless one cycle of eight waves runs from day to night.
+        sim.freezeWaves();
+        sim.s.wave = Math.floor((k as number) * 8) + 1;
+        sim.s.meta.wave = { ...sim.s.meta.wave, landscape: l, night: n };
         sim.s.spawnQueue = [];
         sim.s.enemies = [];
         for (let i = 0; i < 6; i++) sim.spawnEnemy('grunt', 500 + i * 110);

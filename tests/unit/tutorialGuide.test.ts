@@ -78,7 +78,38 @@ describe('prelude guide', () => {
     expect(pickTarget([raider(1, 900, { st: 'air' }), raider(2, 900)], 1280)).toBe(2);
   });
 
-  it('releases the freeze when the day ends', () => {
+  it('after the praise shows the Rolling Wheel, waits for the tap on it, praises it and walks off', () => {
+    const texts = { ...HINTS, wheel: 'Tap my wheel!', wheelDone: 'Rolled!' };
+    const g = new PreludeGuide(LINES, 'Well done', texts, 0);
+    g.update(frame([raider(2, 700)], [release(2, 2000)]));
+    expect(g.stage).toBe('praise');
+    for (let t = 0; t < GUIDE.praiseSeconds + 0.05; t += 0.1) g.update(frame([raider(3, 900)]));
+    expect(g.stage).toBe('wheel');
+    expect(g.kingIn()).toBe(1);
+    expect(g.kingLine()).toBe('Tap my wheel!');
+    expect(g.caption()).toBeNull();
+    expect(g.pointWheel).toBe(true);
+    expect(g.hold).toBe(false);
+    // A tap on another slot does not count, the wheel's own does.
+    g.update(frame([raider(3, 900)], [{ e: 'fire', slot: 1, weapon: 'cheese', tier: 1, p: 0 }]));
+    expect(g.stage).toBe('wheel');
+    g.update(frame([raider(3, 900)], [{ e: 'fire', slot: 0, weapon: 'wheel', tier: 1, p: 0 }]));
+    expect(g.stage).toBe('wheelDone');
+    expect(g.kingLine()).toBe('Rolled!');
+    expect(g.pointWheel).toBe(false);
+    for (let t = 0; t < GUIDE.wheelPraiseSeconds + GUIDE.walk + 0.2; t += 0.1) g.update(frame([raider(3, 900)]));
+    expect(g.stage).toBe('done');
+    expect(g.kingIn()).toBe(0);
+  });
+
+  it('lets the player be when the wheel is not tapped for a while', () => {
+    const g = new PreludeGuide(LINES, 'Well done', { ...HINTS, wheel: 'Tap my wheel!' }, 0);
+    g.update(frame([raider(2, 700)], [release(2, 2000)]));
+    for (let t = 0; t < GUIDE.praiseSeconds + GUIDE.wheelMaxSeconds + 0.3; t += 0.1) g.update(frame([raider(3, 900)]));
+    expect(g.stage).toBe('done');
+  });
+
+  it('releases the freeze when the fight ends', () => {
     const g = new PreludeGuide(LINES, 'Well done', HINTS);
     runIntro(g, [raider(2, 700)]);
     g.update(frame([], [], 0.1, false));
