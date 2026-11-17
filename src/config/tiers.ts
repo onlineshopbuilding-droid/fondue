@@ -19,11 +19,14 @@ export const CREST_COST = 50;
  * Highest tier that can be bought for weapons and hand, by campaign progress.
  * `afterLevel`: from the moment this level is won. The last step (tier 7) needs the Eagle Perch.
  * This keeps gold from endless runs from rolling over a part of the campaign.
+ * v0.4: tier 2 until level 6 is won (the early levels with the damage slot only stay a fight), tier 3 from
+ * level 6, when the castle builds the slow slot.
  * The castle does not use this cap: each castle tier has its own won level (CASTLE_TIER_LEVEL in
  * ./slotTiers.ts), never below the cap level of the same tier here (unit test).
  */
 export const TIER_CAP_BY_LEVEL: { afterLevel: number; cap: number }[] = [
-  { afterLevel: 0, cap: 3 },
+  { afterLevel: 0, cap: 2 },
+  { afterLevel: 6, cap: 3 },
   { afterLevel: 10, cap: 4 },
   { afterLevel: 25, cap: 5 },
   { afterLevel: 45, cap: 6 },

@@ -149,8 +149,12 @@ describe('quote and buy', () => {
     }
   });
 
-  it('the tier cap follows campaign progress: 3, then 4 after level 10, 5 after 25, 6 after 45, 7 only with the Eagle Perch', async () => {
+  it('the tier cap follows campaign progress: 2, then 3 after level 6, 4 after 10, 5 after 25, 6 after 45, 7 only with the Eagle Perch', async () => {
     const p = await fresh();
+    expect(tierCap(p, W)).toBe(2);
+    winLevels(p, 5);
+    expect(tierCap(p, W)).toBe(2);
+    winLevels(p, 6);
     expect(tierCap(p, W)).toBe(3);
     winLevels(p, 10);
     expect(tierCap(p, W)).toBe(4);
@@ -168,13 +172,18 @@ describe('quote and buy', () => {
     const p = await fresh();
     completeTutorial(p, W);
     addGold(p, RICH);
+    // Before level 6 the cap is tier 2 (v0.4): one step each for weapon and hand, then the cap holds.
     buy(p, { kind: 'weapon', id: 'wheel' }, W);
-    buy(p, { kind: 'weapon', id: 'wheel' }, W);
-    expect(p.weaponTier('wheel')).toBe(3);
+    expect(p.weaponTier('wheel')).toBe(2);
     const q = buy(p, { kind: 'weapon', id: 'wheel' }, W);
     expect(q.allowed).toBe(false);
     expect(q.reason).toBe('cap');
     expect(buy(p, { kind: 'hand' }, W).allowed).toBe(true);
+    expect(buy(p, { kind: 'hand' }, W).reason).toBe('cap');
+    // After level 6 the next step opens, and the cap holds again at tier 3.
+    winLevels(p, 6);
+    expect(buy(p, { kind: 'weapon', id: 'wheel' }, W).allowed).toBe(true);
+    expect(buy(p, { kind: 'weapon', id: 'wheel' }, W).reason).toBe('cap');
     expect(buy(p, { kind: 'hand' }, W).allowed).toBe(true);
     expect(buy(p, { kind: 'hand' }, W).reason).toBe('cap');
   });
