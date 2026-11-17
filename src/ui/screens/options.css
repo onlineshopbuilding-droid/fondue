@@ -3,7 +3,8 @@
 .panel.options {
   width: min(680px, 100%);
   display: flex; flex-direction: column;
-  max-height: 96vh; overflow: hidden;
+  /* A fixed height, so the bottom line (Back) sits at the same place on every tab. */
+  height: min(600px, 96vh); max-height: 96vh; overflow: hidden;
 }
 .opt-head { display: flex; align-items: center; justify-content: center; gap: 10px; flex: none; }
 .opt-head h2 { margin-bottom: 4px; }
@@ -13,7 +14,6 @@
 }
 .opt-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; flex: none; margin: 4px 0 8px; }
 .opt-tabs .opt-tab { min-height: 44px; min-width: 44px; padding: 4px 14px; font-size: 16px; }
-.opt-tabs .opt-tab.active { pointer-events: none; }
 .opt-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px 4px; }
 .opt-body .help-title { text-align: center; }
 .opt-body .row { margin-top: 8px; }
@@ -34,7 +34,7 @@
 
 /* Phones in landscape: the same page, packed tighter; tabs keep 44 px. */
 @media (max-height: 520px) {
-  .panel.options { max-height: 100%; }
+  .panel.options { height: 100%; max-height: 100%; }
   .opt-head h2 { margin-bottom: 0; }
   .opt-version { font-size: 12px; }
   .opt-tabs { margin: 2px 0 4px; gap: 4px; }
