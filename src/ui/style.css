@@ -643,7 +643,7 @@ button.cm-st.sel { outline: 4px solid #fff; outline-offset: 3px; z-index: 3; }
 .cm-mouse { position: absolute; width: 42px; height: 38px; left: 50%; bottom: calc(100% + 4px); animation: cm-bob 1.3s ease-in-out infinite; pointer-events: none; }
 .boss .cm-mouse { bottom: calc(100% + 22px); }
 .cm-boss-name {
-  position: absolute; z-index: 1; transform: translate(-50%, 36px); white-space: nowrap; pointer-events: none;
+  position: absolute; z-index: 1; transform: translate(-50%, 52px); white-space: nowrap; pointer-events: none;
   font-family: 'Lilita One', sans-serif; font-size: 14px; color: var(--cream); text-shadow: 0 1.5px 0 var(--ink);
   background: var(--rust); border: 2px solid var(--ink); border-radius: 8px; padding: 0 7px;
 }
@@ -697,7 +697,7 @@ ul.cm-card-unlocks { list-style: none; margin: 2px 0; padding: 0; font-family: '
   .cm-helm { width: 34px; height: 23px; top: -20px; }
   .cm-mouse { width: 34px; height: 31px; }
   .boss .cm-mouse { bottom: calc(100% + 17px); }
-  .cm-boss-name { font-size: 11px; transform: translate(-50%, 30px); }
+  .cm-boss-name { font-size: 11px; transform: translate(-50%, 44px); }
   .cm-boss-name.up { transform: translate(-50%, calc(-100% - 48px)); }
   .cm-card { width: min(330px, 42vw); bottom: max(6px, env(safe-area-inset-bottom)); right: max(8px, env(safe-area-inset-right)); max-height: calc(100% - 58px); padding: 6px 12px; gap: 2px; border-width: 3px; border-radius: 12px; }
   .cm-card-num { font-size: 13px; }

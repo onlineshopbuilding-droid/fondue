@@ -12,7 +12,7 @@ import { CASTLE_TIERS, STATIONS } from '../../config/keep';
 import { weaponById } from '../../config/weapons';
 import { levelOf } from '../../config/worlds';
 import type { UnlockDef } from '../../config/worlds/types';
-import { levelCheese } from '../../modes';
+import { CAMPAIGN, levelCheese } from '../../modes';
 import { markIntroSeen, shopAfterWin, type Intro } from '../../modes/tutorial';
 import { slotIntro } from '../../modes/unlocks';
 import { CASTLE_READY_LINES, FIRST_WIN_LINES, STATION_INTROS } from '../../config/worlds/fondue/story';
@@ -113,11 +113,18 @@ export const wonScreen: Screen = {
       : '';
     const purse = `<div class="stats" id="runPurse"><span>Gold kept</span><b id="runGold">${reward.gold}</b>${reward.crests > 0 ? `<span>Raider Crests</span><b id="runCrests">${reward.crests}</b>` : ''}</div>`;
     const king = guest ? { lines: [], toShop: false } : kingLines(ctx);
-    const nav = guest
-      ? navRow('<button class="alt" data-a="quit">Leave</button>')
-      : shopButton && !king.toShop
-        ? navRow('<button class="secondary" data-a="continue" id="continue">Continue</button>', '<button data-a="toShop" id="toShop">Build it in the Keep Shop</button>')
-        : navRow('', `<button data-a="continue" id="continue">${king.toShop ? 'To the Keep Shop' : 'Continue'}</button>`);
+    // Every result screen: the way back on the left ("Back", "Back to room" in co-op, "Leave" for the
+    // guest), the one main action on the right (the Keep Shop when it has something new, else the next level).
+    const host = ctx.session?.role === 'host';
+    const nextId = (rules.level ?? 0) + 1;
+    const hasNext = !host && rules.mode === CAMPAIGN.id && !!levelOf(rules.world, nextId) && CAMPAIGN.canPlay(ctx.profile, rules.world, nextId);
+    let nav: string;
+    if (guest) nav = navRow('<button class="alt" data-a="quit">Leave</button>');
+    else if (host) nav = navRow('<button class="secondary" data-a="continue" id="continue">Back to room</button>');
+    else if (king.toShop) nav = navRow('<button class="secondary" data-a="quit" id="backToHall">Back</button>', '<button data-a="continue" id="continue">To the Keep Shop</button>');
+    else if (shopButton) nav = navRow('<button class="secondary" data-a="continue" id="continue">Back</button>', '<button data-a="toShop" id="toShop">To the Keep Shop</button>');
+    else if (hasNext) nav = navRow('<button class="secondary" data-a="continue" id="continue">Back</button>', `<button data-a="nextLevel" id="nextLevel" data-level="${nextId}">Next level</button>`);
+    else nav = navRow('', '<button data-a="continue" id="continue">Continue</button>');
     // Three blocks: on a laptop they stack in this order; on a phone in landscape the head and the
     // purse share the left column and the King and the cheese the right one, so everything fits and
     // the nav row with Continue stays in sight below (style.css, `.won`).
@@ -131,10 +138,17 @@ export const wonScreen: Screen = {
         ${guest ? '<p class="note-line">The host decides what comes next.</p>' : ''}</div>
       </div>${nav}</div>`;
   },
-  onAction(action, _el, ctx) {
+  onAction(action, el, ctx) {
     switch (action) {
       case 'continue': ctx.afterRun(); break;
       case 'toShop': ctx.leaveToMenu(); ctx.show('armoury'); break;
+      case 'nextLevel': {
+        const level = Number(el.dataset.level);
+        if (!CAMPAIGN.canPlay(ctx.profile, ctx.world, level)) { ctx.afterRun(); break; }
+        ctx.leaveToMenu();
+        ctx.startCampaign(level);
+        break;
+      }
       case 'quit': ctx.leaveToMenu(); break;
     }
   },

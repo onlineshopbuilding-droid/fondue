@@ -62,6 +62,9 @@ for (const d of DEVICES) {
 
     await winLevel(page, 1);
     await expect(page.locator('#cheeseList li')).toHaveCount(5);
+    // The way back on the left, the one main action on the right.
+    await expect(page.locator('.won .nav-back #backToHall')).toHaveText('Back');
+    await expect(page.locator('.won .nav-forward #continue')).toHaveText('To the Keep Shop');
     await expectFits(page);
     await toastsGone(page);
     await page.screenshot({ path: `${SHOTS}/won-level1-${d.name}.png` });
@@ -76,7 +79,8 @@ for (const d of DEVICES) {
     await expect(page.locator('#kingSays')).toContainText(CASTLE_READY_LINES[2]);
     await expect(page.locator('#kingSays')).not.toContainText('slot.');
     await expect(page.locator('#continue')).toBeVisible();
-    await expect(page.locator('#toShop')).toBeVisible();
+    await expect(page.locator('.won .nav-forward #toShop')).toHaveText('To the Keep Shop');
+    await expect(page.locator('.won .nav-back #continue')).toHaveText('Back');
     await expectFits(page);
     await toastsGone(page);
     await page.screenshot({ path: `${SHOTS}/won-castle-tier2-${d.name}.png` });
