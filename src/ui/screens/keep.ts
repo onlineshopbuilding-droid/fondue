@@ -255,9 +255,9 @@ function tierPanel(ctx: ScreenContext, t: Target, title: string, lines: string[]
     <div class="sh-buy">${buyBlock(ctx, q, label.replace('{tier}', String(q.toTier)))}</div>`;
 }
 
-/** The gold bar toward the next castle tier ("Gold 250 / 400"), when gold is what is missing or nearly so. */
+/** The gold bar toward the next castle tier ("Gold 250 / 400"), while gold is what is still missing. */
 function goldBar(ctx: ScreenContext, q: Quote): string {
-  if (q.reason === 'max' || q.reason === 'level' || q.price.gold <= 0) return '';
+  if (q.allowed || q.reason === 'max' || q.reason === 'level' || q.price.gold <= 0) return '';
   const have = Math.min(ctx.profile.data.wallet.gold, q.price.gold);
   const share = Math.round((have / q.price.gold) * 100);
   return `<span class="cg-bar" id="castleGoalBar" role="img" aria-label="Gold ${have} of ${q.price.gold}"><i style="width:${share}%"></i><b>${CURRENCIES.gold.icon} Gold ${have.toLocaleString('en-US')} / ${q.price.gold.toLocaleString('en-US')}</b></span>`;
