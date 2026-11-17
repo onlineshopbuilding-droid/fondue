@@ -31,6 +31,20 @@ export const CURVE = {
   levelShareMax: 1.7,
   countShare: 0.4,
   /**
+   * v0.4 (A3): levels earlyFrom to earlyTo are played with the damage slot only (the slow slot needs castle
+   * tier 2, buildable after level 6). They stay tense through the mix and the shape, not the count alone:
+   * earlyCount more raiders, Keg Haulers earlyBombers times as common (shake them or the gate takes the
+   * bombs), and the spike waves arrive earlyRush times faster (a crowd at once instead of a trickle).
+   */
+  earlyFrom: 4,
+  earlyTo: 6,
+  earlyCount: 0.6,
+  earlyBombers: 2,
+  earlyRush: 0.6,
+  /** Early levels: raiders this much stronger (fewer die from one throw), and this many more alive at once. */
+  earlyPower: 0.6,
+  earlyAlive: 6,
+  /**
    * Strength of the raiders: 1 in level 1, growing by powerPerLevel per level, and from level powerLateFrom on
    * by powerLate more, growing with the square (the late campaign asks for tier 6 and 7, balance.md).
    */
@@ -132,6 +146,9 @@ export function chance(a: number, b: number): number {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
+/** v0.4: a level played with the damage slot only (CURVE.earlyFrom..earlyTo). */
+const isEarly = (level: number): boolean => level >= CURVE.earlyFrom && level <= CURVE.earlyTo;
+
 function landscapeOf(level: number): Landscape {
   let land: Landscape = 'meadow';
   for (const [from, l] of LANDSCAPE_FROM) if (level >= from) land = l;
@@ -170,6 +187,7 @@ function mixFor(level: number, total: number, twist: TwistDef | null): Partial<R
     if (twist?.kind === 'onlyTypes') w = 1;
     if (twist?.kind === 'flood' && twist.type === t) w *= t === 'siegeCart' ? 6 : 5;
     if (twist?.kind === 'allTypes' && t !== 'grunt') w *= 1.6;
+    if (t === 'bomber' && isEarly(level)) w *= CURVE.earlyBombers;
     return w;
   });
   const sum = weights.reduce((a, b) => a + b, 0);
@@ -228,7 +246,9 @@ function wavesOf(level: number, target: number, counts: Partial<Record<EnemyType
   });
   const pauses = weights.map((_, i) => (i === n - 1 ? 0 : Math.round((WAVES.pauseMin + (WAVES.pauseMax - WAVES.pauseMin) * chance(level * 7, i)) * 10) / 10));
   const active = Math.max(n * 3, target * c.plannedShare - pauses.reduce((a, b) => a + b, 0));
-  const spans = split(Math.round(active * 10), weights.map((w) => 0.6 + 0.4 * w)).map((v) => Math.max(2, v / 10));
+  // Early levels: the spike waves (the biggest of the pattern) come in a rush.
+  const rush = (w: number, i: number) => (isEarly(level) && i < n - 1 && w >= 1.4 ? c.earlyRush : 1);
+  const spans = split(Math.round(active * 10), weights.map((w, i) => (0.6 + 0.4 * w) * rush(w, i))).map((v) => Math.max(2, v / 10));
   const waves: WaveDef[] = weights.map((_, i) => ({ counts: {}, spawnSeconds: spans[i], packs: 1, pauseAfter: pauses[i] }));
   for (const [type, total] of Object.entries(counts) as [EnemyType, number][]) {
     // A newcomer waits for the second wave, so the first wave is the familiar warm-up.
@@ -271,7 +291,7 @@ function buildLevel(level: number): LevelDef {
   const twist = TWISTS[level] ?? null;
   const bossInfo = BOSSES[level];
   const boss: BossDef | null = level % 10 === 0 && bossInfo ? bossInfo : null;
-  const total = Math.max(8, Math.round(legacyTotal(level) * CURVE.countShare));
+  const total = Math.max(8, Math.round(legacyTotal(level) * CURVE.countShare * (isEarly(level) ? 1 + CURVE.earlyCount : 1)));
   const counts = mixFor(level, total, twist);
   const targetSeconds = targetSecondsOf(level, !!boss, twist);
   const waves = wavesOf(level, targetSeconds, counts, !!boss);
@@ -286,13 +306,13 @@ function buildLevel(level: number): LevelDef {
     waves,
     targetSeconds,
     challenges: challengesFor(level, levelCounts),
-    power: powerOf(level) * (boss ? bossFactorOf(level) : 1),
+    power: (powerOf(level) + (isEarly(level) ? CURVE.earlyPower : 0)) * (boss ? bossFactorOf(level) : 1),
     boss,
     twist,
     story: LEVEL_STORY[level - 1] ?? '',
     hints: [],
     newEnemies,
-    maxAlive: Math.round(WAVES.maxAliveMin + ((WAVES.maxAliveMax - WAVES.maxAliveMin) * (level - 1)) / (LEVEL_COUNT - 1)),
+    maxAlive: Math.round(WAVES.maxAliveMin + ((WAVES.maxAliveMax - WAVES.maxAliveMin) * (level - 1)) / (LEVEL_COUNT - 1)) + (isEarly(level) ? CURVE.earlyAlive : 0),
   };
 }
 

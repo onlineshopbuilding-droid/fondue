@@ -40,6 +40,13 @@ Stand: 100 Level, 1989 Wellen, 10 Boss-Level, geplant zusammen 498 Minuten. Jede
 | `levelSharePerDay` | v0.2-Kurve: Zunahme dieses Anteils je Tag | 0,35 |
 | `levelShareMax` | v0.2-Kurve: höchster Anteil | 1,7 |
 | `countShare` | v0.3: Anteil der v0.2-Räuberzahl je Level (B4) | 0,4 |
+| `earlyFrom` | v0.4: erstes Level, das nur mit dem Damage-Slot gespielt wird und deshalb anders gebaut ist | 4 |
+| `earlyTo` | v0.4: letztes solches Level (danach ist der Slow-Slot meist gebaut) | 6 |
+| `earlyCount` | v0.4: in diesen Leveln so viel mehr Räuber (Anteil) | 0,6 |
+| `earlyBombers` | v0.4: Keg Hauler in diesen Leveln so viel häufiger (Faktor) | 2 |
+| `earlyRush` | v0.4: Spitzenwellen dieser Level kommen so viel schneller an (Faktor auf die Ankunftszeit) | 0,6 |
+| `earlyPower` | v0.4: Räuber dieser Level so viel stärker (auf die Stärke addiert) | 0,6 |
+| `earlyAlive` | v0.4: in diesen Leveln so viele Räuber mehr gleichzeitig auf dem Feld | 6 |
 | `powerPerLevel` | Stärke der Räuber: Zunahme je Level (Level 1 = 1) | 0,05 |
 | `powerLateFrom` | Ab diesem Level wächst die Stärke zusätzlich (mit dem Quadrat) | 40 |
 | `powerLate` | Zusätzliche Stärke bei Level 100 | 3 |
@@ -81,12 +88,12 @@ Jede Burg-Stufe ab 2 wird mit dem Sieg im genannten Level kaufbar und kostet dan
 | Burg-Stufe | Name | kaufbar ab Level | Gold | Raider Crests | öffnet |
 |---|---|---|---|---|---|
 | 1 | Oak Gate | Start | 0 | 0 | Damage |
-| 2 | Iron-Bound Gate | 6 | 400 | 0 | Slow |
-| 3 | Stone Keep | 12 | 1200 | 0 | Gate |
-| 4 | Bannered Keep | 20 | 4000 | 0 | Support |
-| 5 | Gilded Keep | 28 | 10000 | 0 | Passive |
-| 6 | Runic Fortress | 50 | 24000 | 0 | mehr Torleben |
-| 7 | Alpine Citadel | 75 | 50000 | 50 | mehr Torleben |
+| 2 | Iron-Bound Gate | 6 | 8000 | 0 | Slow |
+| 3 | Stone Keep | 12 | 15000 | 0 | Gate |
+| 4 | Bannered Keep | 20 | 24000 | 0 | Support |
+| 5 | Gilded Keep | 28 | 26000 | 0 | Passive |
+| 6 | Runic Fortress | 50 | 80000 | 0 | mehr Torleben |
+| 7 | Alpine Citadel | 75 | 150000 | 50 | mehr Torleben |
 
 Von Anfang an da: Waffe Rolling Wheel.
 
@@ -99,9 +106,9 @@ Dauer: geplante Länge (m:ss). Räuber: alle Wellen zusammen, allein gespielt; d
 | 1 | Pot Helmets | Wiese | 1:17 | 5 | 21 (6) | Pothelm |  |  | 1 | Use the Rolling Wheel 3 times; Throw 10 raiders |  |
 | 2 | Gooey Road | Wiese | 1:26 | 6 | 73 (20) |  |  |  | 1,05 | Use the Rolling Wheel 3 times; Throw 36 raiders |  |
 | 3 | Kegs on the Road | Wiese | 1:38 | 7 | 82 (19) | Keg Hauler |  |  | 1,1 | Let 3 kegs explode among the raiders; Shake the keg off 2 Keg Haulers |  |
-| 4 | Crumbs at the Gate | Wiese | 1:44 | 7 | 89 (21) |  |  |  | 1,15 | Defeat 4 Keg Haulers with a throw; Use the Rolling Wheel 3 times |  |
-| 5 | Summer Siege | Wiese | 1:56 | 8 | 95 (20) |  |  |  | 1,2 | Let 6 kegs explode among the raiders; Shake the keg off 5 Keg Haulers |  |
-| 6 | Sticky Situation | Wiese | 2:02 | 8 | 102 (21) |  |  |  | 1,25 | Use the Rolling Wheel 3 times; Let 8 kegs explode among the raiders | Burg-Stufe 2 kaufbar (Iron-Bound Gate), Waffe Sticky Fondue |
+| 4 | Crumbs at the Gate | Wiese | 1:44 | 7 | 142 (32) |  |  |  | 1,75 | Defeat 12 Keg Haulers with a throw; Use the Rolling Wheel 3 times |  |
+| 5 | Summer Siege | Wiese | 1:56 | 8 | 153 (32) |  |  |  | 1,8 | Let 10 kegs explode among the raiders; Shake the keg off 10 Keg Haulers |  |
+| 6 | Sticky Situation | Wiese | 2:02 | 8 | 163 (33) |  |  |  | 1,85 | Use the Rolling Wheel 3 times; Let 10 kegs explode among the raiders | Burg-Stufe 2 kaufbar (Iron-Bound Gate), Waffe Sticky Fondue |
 | 7 | Hoofbeats | Wiese | 1:57 | 8 | 107 (23) | Goat Rider |  |  | 1,3 | Defeat 3 Goat Riders with a throw; Use the Rolling Wheel 3 times |  |
 | 8 | Meadow Muddle | Wiese | 2:14 | 9 | 113 (20) |  |  |  | 1,35 | Defeat 8 Keg Haulers with a throw; Use the Rolling Wheel 3 times |  |
 | 9 | The Stampede | Wiese | 7:20 | 29 | 119 (7) |  | Riders only (nur Goat Rider) |  | 1,4 | Use the Rolling Wheel 3 times; Defeat 41 raiders with a throw |  |
