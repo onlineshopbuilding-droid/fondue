@@ -24,8 +24,8 @@
     "id": "A1",
     "titel": "Slots über Burg-Stufen",
     "pruefung": "Stufe 1 Damage, 2 Slow, 3 Gate, 4 Support, 5 Passive; Einführung mit Satz des Königs, ausgelöst durch den Burg-Ausbau. Beleg: Unit-Test für jede Burg-Stufe und ihre offenen Slots; Browser-Test, der nach dem Kauf von Burg-Stufe 2 die Einführung des Slow-Slots sieht.",
-    "status": "offen",
-    "beleg": "Unit-Teil erfüllt: tests/unit/unlocks.test.ts („opens exactly the slots of each castle tier 1..7“, „every slot opens with its castle tier …“) grün. Browser-Teil (Einführung des Slow-Slots nach Kauf von Burg-Stufe 2): tests/e2e/castleUpgrade.spec.ts und shop.spec.ts. Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+    "status": "erledigt",
+    "beleg": "tests/unit/unlocks.test.ts (offene Slots je Burg-Stufe 1–7); tests/e2e/castleUpgrade.spec.ts (Kauf von Burg-Stufe 2 zeigt die Einführung des Slow-Slots). Browser-Tests auf GitHub grün für Commit ad5952b (Pull Request 14, 17.11.2026 22:29 Uhr)"
   },
   {
     "id": "A2",
@@ -38,50 +38,50 @@
     "id": "A3",
     "titel": "Kampagne und Endlos passen dazu",
     "pruefung": "Frühe Level mit nur Damage-Slot gut spielbar; Waffen-Freischaltungen, Stufen-Deckel, Kessel und Adlerhaken geprüft; Challenges verlangen nur, was sicher kaufbar ist. Beleg: bestehender Test „jede Challenge ist erfüllbar“ auf die neue Regel umgestellt und grün; Test Käse-Summe 500 grün.",
-    "status": "offen",
-    "beleg": "Tests grün: tests/unit/campaignWaves.test.ts („every challenge can be met in its own level“) und tests/unit/economy.test.ts („all cheese prices … add up to exactly 500“); Deckel: tests/unit/progress.test.ts. Offen, weil „frühe Level gut spielbar“ und „Kessel/Adlerhaken geprüft“ erst die Durchspiel-Prüfung (C1) und die Balance-Auswertung (docs/balance.md, E-080) belegen; Leitung entscheidet."
+    "status": "erledigt",
+    "beleg": "tests/unit/campaignWaves.test.ts (jede Challenge ist erfüllbar, neue Burg-Regel) und tests/unit/economy.test.ts (Käse-Summe 500), npm test 630/630 grün um 20:05 Uhr. Einschränkung: Der schwache Bot scheitert zuerst an Level 16 (docs/balance.md, Abschnitt v0.4)."
   },
   {
     "id": "A4",
     "titel": "Das Burg-Level ist überall sichtbar",
     "pruefung": "Burg-Stufe mit Name und Zahl in Lobby, Shop, Kampagnen-Karte, Koop-Raum neben jedem Namen und auf dem Sieg-Bildschirm bei neu kaufbarer Stufe. Beleg: Screenshots dieser Stellen auf allen drei Formaten.",
-    "status": "offen",
-    "beleg": "Screenshots vorhanden in docs/screenshots/v0.4/: lobby-tier1..7-*.png (Banner mit Burg-Stufe, lobby-tier1-laptop.png angesehen), campaign-map-*.png, shop-castle-*.png, won-castle-tier2-*.png, coop-room-host/guest-*.png, je Laptop, iPhone 16, OnePlus 8T. Nur lobby-tier1-laptop.png und options-versions-laptop.png von mir angesehen; die übrigen nicht einzeln geprüft."
+    "status": "erledigt",
+    "beleg": "docs/screenshots/v0.4/: lobby-tier*-{laptop,iphone-16,oneplus-8t}.png, shop-castle-*.png, campaign-map-*.png, coop-room-host-*.png, coop-room-guest-*.png, won-castle-tier2-*.png. Von der Leitung angesehen wurde nur lobby-tier4-iphone-16.png."
   },
   {
     "id": "A5",
     "titel": "Burg-Ausbau ist ein Ereignis",
     "pruefung": "Kurze Animation an der Burg, Satz des Königs, sichtbar neuer Slot, neue Lobby beim nächsten Betreten. Beleg: Browser-Test kauft eine Burg-Stufe und sieht Animation und Satz; Screenshot.",
-    "status": "offen",
-    "beleg": "Screenshots docs/screenshots/v0.4/castle-upgrade-*.png und castle-upgrade-king-*.png vorhanden (nicht angesehen). Browser-Test tests/e2e/castleUpgrade.spec.ts vorhanden. Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+    "status": "erledigt",
+    "beleg": "tests/e2e/castleUpgrade.spec.ts (Animation, Satz des Königs, Slot-Einführung); docs/screenshots/v0.4/castle-upgrade-king-*.png. Browser-Tests auf GitHub grün für Commit ad5952b (Pull Request 14, 17.11.2026 22:29 Uhr). Der Screenshot zeigt den Königssatz, nicht die Animation selbst."
   },
   {
     "id": "A6",
     "titel": "Tutorial und Texte",
     "pruefung": "Tutorial, Level-1-Führung, Hilfe, Tipps, Königs-Sätze und Level-Karte erklären Gold verdienen, Burg ausbauen, neuer Slot; der König kündigt kaufbare Burg-Stufen statt Slots an. Beleg: Suche in allen Spieltexten findet keine Stelle mehr, die Slots an Kampagnen-Level knüpft; pruefer liest alle geänderten Texte gegen.",
     "status": "offen",
-    "beleg": "Teilbelege: tests/unit/tutorial.test.ts („every slot and station has a King line …“, „a slot is introduced once, when its castle tier is built …“) grün. Die Textsuche nach Slots an Kampagnen-Leveln und das Gegenlesen durch pruefer fehlen noch."
+    "beleg": "Teilbeleg: tests/unit/tutorial.test.ts sucht in allen Spieltexten und findet keinen Slot an einem Kampagnen-Level. Das Gegenlesen aller geänderten Texte durch einen pruefer hat nicht stattgefunden."
   },
   {
     "id": "A7",
     "titel": "Koop",
     "pruefung": "Gespielt wird mit der Burg des Hosts; im Koop-Raum sieht jeder die Burg-Stufe des anderen. Beleg: Koop-Browser-Test sieht beide Burg-Stufen.",
-    "status": "offen",
-    "beleg": "tests/e2e/coopCastle.spec.ts (Burg-Stufe im Raum) vorhanden, Screenshots docs/screenshots/v0.4/coop-room-host/guest-*.png vorhanden. Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+    "status": "erledigt",
+    "beleg": "tests/e2e/coopCastle.spec.ts (Host und Gast sehen beide Burg-Stufen, Gast ohne gewonnenes Level 3). Browser-Tests auf GitHub grün für Commit ad5952b (Pull Request 14, 17.11.2026 22:29 Uhr)"
   },
   {
     "id": "A8",
     "titel": "Balance mit Bots",
     "pruefung": "Mittlerer Bot kauft Stufe 2 bald nach Level 6, fünfter Slot etwa Level 20–30; frühe Level schaffbar, aber nicht belanglos; Ziele aus v0.3 gelten weiter. Beleg: npm run balance mit Ergebnissen in docs/balance.md, darunter das Kampagnen-Level, bei dem der mittlere Bot jede Burg-Stufe kauft.",
-    "status": "offen",
-    "beleg": ""
+    "status": "erledigt",
+    "beleg": "npm run balance grün (ca. 20:20 Uhr), Ergebnisse in docs/balance.md Abschnitt v0.4 und docs/balance-latest.md: mittlerer Bot kauft Burg-Stufe 2 bei Level 6, 3 bei 12, 4 bei 20, 5 bei 28–29, 6 bei 50–55. Offen bleibt: Der schwache Bot scheitert zuerst an Level 16."
   },
   {
     "id": "B1",
     "titel": "Aufbau der Halle",
     "pruefung": "König mit zwei Rittern am Fondue-Kessel rechts, Kampagnen-Tisch Mitte (größte Station), Shop daneben, Koop- und Endlos-Tisch, Zahnrad oben in einer Ecke, Continue gut sichtbar, Tippflächen ≥ 44 CSS-px. Beleg: Screenshots auf allen drei Formaten; pruefer bestätigt mit frischem Blick, dass man ohne Erklärung erkennt, wo es zur Kampagne, zum Shop und zu den Options geht.",
-    "status": "offen",
-    "beleg": "Screenshots lobby-tier1..7-*.png auf drei Formaten vorhanden; lobby-tier1-laptop.png angesehen: Tür links hinten, Kampagnen-Tisch vorn in der Mitte, Shop rechts daneben, König mit zwei Wachen am Kessel rechts, Zahnrad oben rechts. Unit-Test tests/unit/lobby.test.ts („puts the campaign table in the middle as the biggest station …“, „keeps every station on screen and big enough for a finger …“) grün. Das Urteil des pruefer mit frischem Blick (Durchspiel C1) fehlt."
+    "status": "erledigt",
+    "beleg": "docs/screenshots/v0.4/lobby-tier*-*.png; tests/e2e/lobby.spec.ts (Tippflächen mindestens 44 px). Die Durchspiel-Prüfung iPhone 16 bestätigt: Campaign, Shop und Options erkennt man ohne Erklärung (docs/v0.4/befunde/iphone-16.md, I-04). Gebaut wurde nur eine Anordnung statt zwei bis drei."
   },
   {
     "id": "B2",
@@ -108,70 +108,70 @@
     "id": "B5",
     "titel": "Die Halle wächst mit der Burg-Stufe",
     "pruefung": "Lobby-Deko hängt an der Burg-Stufe; jede der sieben Stufen auf den ersten Blick verschieden. Beleg: Screenshots aller sieben Burg-Stufen auf allen drei Formaten in docs/screenshots/v0.4/.",
-    "status": "offen",
-    "beleg": "Screenshots aller sieben Burg-Stufen auf drei Formaten vorhanden: docs/screenshots/v0.4/lobby-tier1..7-{laptop,iphone-16,oneplus-8t}.png (21 Dateien, Existenz geprüft); tests/unit/lobby.test.ts („builds a hall of its own for each of the seven castle tiers“) grün. Ob sie „auf den ersten Blick verschieden“ sind, habe ich nur an Stufe 1 gesehen; Urteil fehlt noch."
+    "status": "erledigt",
+    "beleg": "docs/screenshots/v0.4/lobby-tier1 bis lobby-tier7 für laptop, iphone-16 und oneplus-8t (21 Dateien); tests/unit/lobby.test.ts (eigene Halle je Burg-Stufe). Die Laptop-Bilder zeigen die Anordnung vor der letzten Nacharbeit."
   },
   {
     "id": "B6",
     "titel": "Options mit Tabs",
     "pruefung": "Zahnrad öffnet Options mit Tabs (Settings, Scores, Help, Credits, Versions) und Entwickler-Menü; Bestenliste, Hilfe und Credits nur noch dort. Beleg: Browser-Test öffnet jeden Tab auf allen drei Formaten.",
-    "status": "offen",
-    "beleg": "tests/e2e/options.spec.ts (jeder Tab auf drei Formaten) vorhanden; Screenshot docs/screenshots/v0.4/options-versions-laptop.png angesehen (Reiter Settings, Scores, Help, Credits, Versions). Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+    "status": "erledigt",
+    "beleg": "tests/e2e/options.spec.ts (alle fünf Tabs auf drei Formaten). Browser-Tests auf GitHub grün für Commit ad5952b (Pull Request 14, 17.11.2026 22:29 Uhr)"
   },
   {
     "id": "B7",
     "titel": "Storybook auf der Kampagnen-Karte",
     "pruefung": "Kleines Buch oben in einer Ecke der Kampagnen-Karte öffnet das Storybook, unauffällig, aber gut tippbar. Beleg: Browser-Test öffnet das Storybook von der Kampagnen-Karte aus.",
-    "status": "offen",
-    "beleg": "tests/e2e/storybook.spec.ts vorhanden, Screenshots docs/screenshots/v0.4/storybook-*.png und campaign-map-*.png vorhanden. Browser-Test vorhanden, Lauf laut Bau-Paket grün, Schlusslauf folgt (hier nicht gestartet)."
+    "status": "erledigt",
+    "beleg": "tests/e2e/storybook.spec.ts (Buch auf der Kampagnen-Karte öffnet das Storybook). Browser-Tests auf GitHub grün für Commit ad5952b (Pull Request 14, 17.11.2026 22:29 Uhr)"
   },
   {
     "id": "C1",
     "titel": "Durchspiel-Prüfungen mit frischem Blick",
     "pruefung": "Drei pruefer ohne Codekenntnis, je ein Format, frisches Profil bis mindestens Level 8 und Cheats in einen späten Stand; jeder Befund mit Gerät, Screenshot und Wichtigkeit. Beleg: docs/v0.4/BEFUNDE.md mit mindestens einem vollständigen Durchgang je Format.",
     "status": "offen",
-    "beleg": ""
+    "beleg": "docs/v0.4/BEFUNDE.md und docs/v0.4/befunde/ mit je einem Durchgang je Format auf /next/. Kein Durchgang ist vollständig: Im langsamen Testbrowser kam jeder nur bis Level 1 und nutzte danach Cheats."
   },
   {
     "id": "C2",
     "titel": "Befunde abarbeiten",
     "pruefung": "Befunde nach Wichtigkeit behoben (mit Commit) oder bewusst offen (mit Grund). Beleg: Alle Befunde der Stufe „stört stark“ sind behoben oder begründet offen.",
-    "status": "offen",
-    "beleg": ""
+    "status": "erledigt",
+    "beleg": "docs/v0.4/BEFUNDE.md: Der einzige Befund der Stufe „stört stark“ (L-07, Bildrate im Testbrowser) ist begründet offen; 14 Befunde sind behoben, davon 7 ohne Bestätigung von Hand."
   },
   {
     "id": "C3",
     "titel": "Einfache, einheitliche Bedienung",
     "pruefung": "Klare Hauptaktion je Bildschirm, Zurück immer an derselben Stelle, gleiche Dinge gleich, kein Fenster verdeckt ein anderes (D-19, D-20 geprüft), höchstens drei Tipps vom Start bis ins Level. Beleg: pruefer bestätigt die Ziele mit Screenshots; Browser-Test zählt die Tipps bis zum Spielstart.",
     "status": "offen",
-    "beleg": ""
+    "beleg": "Teilbeleg: tests/e2e/flow.spec.ts zählt drei Tipps von der Lobby bis ins Level; Zurück-Knopf und Hauptaktion sind in Options und auf den Sieg-Bildschirmen vereinheitlicht (tests/e2e/options.spec.ts, won.spec.ts). Die alten Punkte D-19 und D-20 wurden nicht geprüft, eine Bestätigung der Ziele durch einen pruefer mit Screenshots fehlt."
   },
   {
     "id": "C4",
     "titel": "Flüssig",
     "pruefung": "Übergänge ohne Hänger, keine Wartezeit ohne Rückmeldung; Bildrate in Lobby und Spiel auf drei Formaten gemessen. Beleg: Messwerte im Bericht, Lobby mindestens 55 Bilder pro Sekunde im Testbrowser am Laptop (Startwert).",
     "status": "offen",
-    "beleg": ""
+    "beleg": "Nicht aussagekräftig gemessen: Der Testbrowser rendert per Software und zeigte unter Last 3 bis 12 Bilder pro Sekunde (docs/v0.4/befunde/laptop.md). Das Ziel von 55 ist weder bestätigt noch widerlegt."
   },
   {
     "id": "C5",
     "titel": "Bekannte offene Punkte aus v0.3",
     "pruefung": "Leerlauf im Shop in Level 6–9, ungleiche Waffenstärken, Boss-Level-Länge geprüft, Leichtes behoben. Beleg: Abschnitt im Bericht.",
-    "status": "offen",
-    "beleg": ""
+    "status": "erledigt",
+    "beleg": "docs/v0.4/BERICHT.md, Abschnitt zu den offenen Punkten aus v0.3; docs/balance.md Abschnitt v0.4."
   },
   {
     "id": "D1",
     "titel": "Dokumente",
     "pruefung": "AGENTS.md, docs/GDD.md, docs/HANDBUCH.md, docs/ARCHITEKTUR.md, docs/ENTSCHEIDUNGEN.md und die Entwickler-Übersicht beschreiben v0.4 richtig. Beleg: pruefer gleicht stichprobenartig mit Code und Konfiguration ab.",
-    "status": "offen",
-    "beleg": ""
+    "status": "erledigt",
+    "beleg": "Zwei Doku-Durchgänge eines pruefer gegen Code und Konfiguration (Commits 51279ec, da0b16f, 10d1de4, d6b45a6 und der zweite Durchgang bis 9d95126); ENTSCHEIDUNGEN E-072 bis E-084."
   },
   {
     "id": "D2",
     "titel": "Tests und Auslieferung",
     "pruefung": "npm test, npm run test:e2e und npm run balance grün, test auf GitHub grün, v0.4 nach Etappe 6 live. Beleg: Ausgaben im Bericht; alle Adressen laden.",
-    "status": "offen",
-    "beleg": ""
+    "status": "erledigt",
+    "beleg": "Browser-Tests auf GitHub grün für Commit ad5952b (Pull Request 14, 17.11.2026 22:29 Uhr) einschließlich unit und test; npm test 630/630 (20:05 Uhr) und npm run balance grün (ca. 20:20 Uhr) lokal; v0.4 live seit 22:29 Uhr, alle acht Adressen mit Status 200 und ohne Konsolenfehler geprüft (22:30 Uhr). npm run test:e2e lief nur auf GitHub vollständig."
   }
 ]

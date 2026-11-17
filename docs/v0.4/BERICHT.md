@@ -1,6 +1,6 @@
 # Fondue v0.4 – Bericht
 
-STAND-DER-VEROEFFENTLICHUNG-FOLGT
+**Stand der Veröffentlichung:** v0.4 ist seit dem 17.11.2026, 22:29 Uhr live unter https://onlineshopbuilding-droid.github.io/fondue/ (Pull Request 14, Merge-Commit 82cee21, Tag `v0.4`). Die Pflichtprüfung `test` auf GitHub war grün. Der Merge kam neun Minuten nach der im Auftrag gesetzten Grenze von 22:20 Uhr zustande: Zwei Tests erwarteten noch die alte Beschriftung des Sieg-Bildschirms, die Korrektur war um 21:58 Uhr gepusht, der Testlauf auf GitHub brauchte danach bis 22:29 Uhr. Nach der Auslieferung um 22:30 Uhr antworteten `/fondue/`, `/v0.1/`, `/classic/`, `/v0.2/`, `/v0.3/`, `/next/`, `/next/dev/` und `/dev/` mit Status 200 und luden im Testbrowser ohne Konsolenfehler. Pull Request 12 (v0.3) hat GitHub mit dem Merge als gemergt markiert, weil v0.4 seine Commits enthält; dort steht ein Hinweis auf `/v0.3/`.
 
 ## Das Wichtigste in Kürze
 
@@ -84,7 +84,7 @@ Der Auftrag sah ein Team aus gleichzeitig arbeitenden Agenten vor. Die Sitzung h
 
 **Verbrauch am Anfang (16:43 Uhr):** 5-Stunden-Fenster 9 %, Woche alle Modelle 80 %, Woche Fable 91 %.
 
-**Verbrauch am Ende:** VERBRAUCH-ENDE-FOLGT
+**Verbrauch am Ende:** Um 20:59 Uhr hat sich das Wochenfenster zurückgesetzt. Davor standen zuletzt (17:09 Uhr) 82 % für alle Modelle und 91 % für Fable. Um 21:58 Uhr, nach dem Zurücksetzen: 5-Stunden-Fenster 31 %, Woche alle Modelle 2 %, Woche Fable 2 %.
 
 **Netzausfall:** Von 17:10 bis 19:10 Uhr stand die Arbeit, weil das Netz ausgefallen war. Bis dahin waren die Versionsregel mit der neuen Auslieferung, der eigene Speicher mit der Übernahme aus v0.3 und das Fundament (Slots über die Burg-Stufe) fertig. Ab 19:15 Uhr liefen deshalb fünf Bau-Pakete gleichzeitig (Lobby, Options, Karte und Koop, Texte und Shop, Balance), dazu Dokumente und Prüfungen. Die Zeit für Prüfungen war dadurch stark verkürzt: Die Durchspiel-Prüfungen blieben unvollständig, und die unabhängige Schlussprüfung fand nicht als eigenes Durchspielen statt, sondern über die Tests auf GitHub.
 
@@ -92,7 +92,7 @@ Der Auftrag sah ein Team aus gleichzeitig arbeitenden Agenten vor. Die Sitzung h
 
 Bekannt aus der Sitzung: `npm test` lokal um 20:05 Uhr 630 von 630 grün; `npm run balance` um etwa 20:20 Uhr grün mit allen Zielen (siehe `docs/balance.md`). Alle Tests, die einen alten Ablauf prüften, sind mit Grund ersetzt, keiner abgeschwächt oder ohne Ersatz gelöscht (Liste in `docs/v0.4/PROGRESS.md`).
 
-TESTAUSGABEN-FOLGEN
+Auf GitHub lief für den gemergten Stand (Commit ad5952b) die ganze Prüfung grün: `unit` (32 s), die vier Blöcke der Browser-Tests auf Laptop, iPhone 16 und OnePlus 8T (`browser (1)` bis `(4)`) und die Pflichtprüfung `test`. Der Lauf davor hatte in Block 4 sechs rote Tests (`tutorial.spec` und `won.spec` auf allen drei Formaten); beide erwarteten die alte Beschriftung „Continue“ und sind an die neuen Knöpfe angepasst. Lokal lief `npm test` zuletzt um 20:05 Uhr mit 630 von 630 Tests grün und `npm run balance` gegen 20:20 Uhr grün mit allen Zielen. Nach den letzten Nacharbeiten wurden beide lokal nicht wiederholt, weil der Rechner überlastet war; `npm run test:e2e` lief nie lokal in einem Stück, sondern vollständig nur auf GitHub.
 
 ## Offen oder abgeschaltet
 
