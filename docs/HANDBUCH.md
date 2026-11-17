@@ -5,7 +5,7 @@ Dieses Dokument sagt, wo was liegt und was alles angefasst werden muss, wenn sic
 Weitere Dokumente:
 - `docs/ARCHITEKTUR.md`: Aufbau im Detail, Klassen und Datenfluss.
 - `docs/GDD.md`: die Spielregeln und Zahlen.
-- `docs/ENTSCHEIDUNGEN.md`: warum etwas so ist (E-001 bis E-078; E-063 bis E-071 gehören zu v0.3, ab E-072 zu v0.4).
+- `docs/ENTSCHEIDUNGEN.md`: warum etwas so ist (E-001 bis E-084; E-063 bis E-071 gehören zu v0.3, ab E-072 zu v0.4).
 - `docs/OFFENE-ENTSCHEIDUNGEN.md`: was Tim und Lenny noch entscheiden oder bewerten sollen.
 - `docs/balance.md`: Balance-Ziele, Ergebnisse, geänderte Werte (v0.3).
 - `docs/KAMPAGNE-TABELLE.md`: alle 100 Level Welle für Welle (erzeugt).

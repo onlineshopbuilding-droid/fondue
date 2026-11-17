@@ -1,8 +1,24 @@
-# Offene Entscheidungen v0.3
+# Offene Entscheidungen v0.4 und v0.3
 
-Hier steht, was die Leitung in v0.3 entschieden hat und was Tim und Lenny noch bestätigen oder entscheiden sollen. Dieselbe Liste kommt aus `src/config/decisions.ts` und steht interaktiv auf der Entwickler-Übersicht unter `/fondue/next/dev/`: Dort wählt ihr je Eintrag eine Möglichkeit, schreibt eine Notiz und erzeugt daraus ein GitHub-Issue mit dem Titel-Präfix `[Entscheidungen]`. Künftige Aufträge lesen diese Issues. Im Spiel steht die Liste im Entwickler-Menü unter „Decisions and ratings“ (abhaken, bewerten, Notiz; die Bewertungen liegen im Profil).
+Hier steht, was die Leitung in v0.4 und davor in v0.3 entschieden hat und was Tim und Lenny noch bestätigen oder entscheiden sollen. Dieselbe Liste kommt aus `src/config/decisions.ts` und steht interaktiv auf der Entwickler-Übersicht unter `/fondue/next/dev/`: Dort wählt ihr je Eintrag eine Möglichkeit, schreibt eine Notiz und erzeugt daraus ein GitHub-Issue mit dem Titel-Präfix `[Entscheidungen]`. Künftige Aufträge lesen diese Issues. Im Spiel steht die Liste im Entwickler-Menü unter „Decisions and ratings“ (abhaken, bewerten, Notiz; die Bewertungen liegen im Profil).
 
 Ändert sich eine Entscheidung, werden `src/config/decisions.ts` und diese Datei gemeinsam geändert. Begründungen stehen auch in `docs/ENTSCHEIDUNGEN.md`.
+
+## Entscheidungen v0.4
+
+Alle Entscheidungen von v0.4 hat die Leitung vorläufig getroffen; Tim und Lenny bestätigen oder ändern sie. D4-01 bis D4-07 stehen auch in `src/config/decisions.ts` (`DECISIONS_V4`). Die Begründungen stehen ausführlich in `docs/ENTSCHEIDUNGEN.md` (E-072 bis E-084).
+
+| Nr | Eintrag | Frage | Möglichkeiten | Wahl der Leitung | Begründung | früher |
+|---|---|---|---|---|---|---|
+| D4-01 | Castle tier levels and gold prices | Passen die Kampagnen-Level und Goldpreise der Burg-Stufen (Tabelle „Burg-Stufen“)? Stufe 2 ab Level 6 und Stufe 7 ab Level 75 sind fest. | So lassen / Burg-Stufen früher / Burg-Stufen später / Billiger / Teurer / Anders (bitte im Textfeld beschreiben) | So lassen | Werte stehen in `src/config/slotTiers.ts` und `src/config/keep.ts`; Gold soll der Engpass sein, der mittlere Bot kauft Stufe 2 bei Level 6 und Stufe 5 bei Level 28 bis 29 (E-079, `docs/balance.md`). | – |
+| D4-02 | Taking over a v0.3 save | Wie wird ein v0.3-Spielstand übernommen, in dem mehr Slots offen sind, als seine Burg-Stufe nach v0.4 erlaubt? | Burg-Stufe kostenlos so weit anheben, dass alle offenen Slots offen bleiben / Slots schließen, bis die Burg ausgebaut ist / Anders (bitte im Textfeld beschreiben) | Burg-Stufe kostenlos anheben | Niemand verliert beim Wechsel etwas, das er in v0.3 schon hatte; der v0.3-Spielstand selbst bleibt unverändert (E-074). | – |
+| D4-03 | Guest joins by invite link | Darf ein Gast über einen Einladungslink beitreten, auch wenn er selbst Level 3 noch nicht gewonnen hat? | Ja; die Sperre gilt nur für das Eröffnen eines Raums am Koop-Tisch / Nein, auch der Gast braucht Level 3 / Anders (bitte im Textfeld beschreiben) | Ja | Ein Freund soll sofort mitspielen können, wenn er eingeladen wird (E-076). | D3-14 |
+| D4-04 | Hall layout and its seven tiers | Passen die Anordnung der Halle und die Gestaltung der sieben Hallen-Stufen? | So lassen / Anordnung ändern / Anders (bitte im Textfeld beschreiben) | So lassen | Nur eine Anordnung gebaut und auf drei Formaten geprüft; Einzelheiten in E-081. | – |
+| D4-05 | Tabs of the options | Welche Tabs haben die Options und in welcher Reihenfolge? | Settings, Scores, Help, Credits, Versions / Weniger Tabs (bitte im Textfeld sagen, welche) / Anders (bitte im Textfeld beschreiben) | Settings, Scores, Help, Credits, Versions | Die Einstellungen braucht man am häufigsten, also zuerst; Bestenliste, Hilfe und Credits sind nur noch hier erreichbar; die Versionsliste kommt zuletzt; das Entwickler-Menü bleibt unten erreichbar (E-077, E-083). | – |
+| D4-06 | Early levels with one slot | Wie bleiben die frühen Level spannend, solange nur der Damage-Slot offen ist? | So lassen / Mehr Abwechslung in den Leveln 1 bis 6 / Anders (bitte im Textfeld beschreiben) | So lassen | Level 1 bis 3 ruhig, Level 4 bis 6 dichter mit Ansturm-Wellen, Waffen und Hand bis Level 6 höchstens Stufe 2 (E-080, `docs/balance.md`). | – |
+| D4-07 | Findings left open on purpose | Welche Befunde der Durchspiel-Prüfung bleiben bewusst offen? | So lassen / Diese bitte doch beheben (im Textfeld nennen) / Anders (bitte im Textfeld beschreiben) | So lassen | Vorläufig entschieden; was und warum, steht im Bericht `docs/v0.4/BERICHT.md` (wird am Ende geschrieben). | – |
+
+Weitere Entscheidungen von v0.4 ohne eigene Nummer in der Entwickler-Übersicht, aber in `docs/ENTSCHEIDUNGEN.md` begründet und zur Bestätigung offen: die Slot-Einführung im Shop statt am Sieg-Bildschirm (E-082), die Bestenliste nach einem Game Over im Reiter Scores (E-083) und das um 20 % schwächere Mending Horn (E-084).
 
 ## Entscheidungen v0.3
 
