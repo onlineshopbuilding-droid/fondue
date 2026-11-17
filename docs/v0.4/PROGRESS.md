@@ -30,3 +30,42 @@ Zeiten per `date` vom Laptop. Verbrauch per `get_usage` der Claude-Desktop-App.
 - **Bauplan und Abnahmeliste:** Commit 6bc0ec2 (`BAUPLAN.md`, `abnahme.json`).
 - **Läuft:** Fundament A1 bis A3 (ein bauer). Die Slot-Konfiguration liegt in `src/config/slotTiers.ts`.
 - **Nächster Schritt:** Prüfung des Fundaments, dann die fünf parallelen Pakete (Lobby, Options, Karte, Texte, Bots).
+
+## Verlauf zwischen 17:10 und 19:15 Uhr
+
+- **Netzausfall 17:10 bis 19:10 Uhr:** Die Arbeit stand. Das Fundament (A1 bis A3) war bis dahin committet und der Plan für die fünf Pakete geschrieben.
+- **Ab 19:15 Uhr:** fünf parallele Bau-Pakete (Lobby, Options, Karte und Koop, Texte und Shop, Balance), dazu Dokumente und Prüfung, alle auf `v0.4-dev` mit getrennten Dateien.
+
+## Ersetzte Tests mit Grund
+
+Stand 17.11.2026, 20:35 Uhr, aus `git log --stat a77caee..HEAD -- tests/` und den Commit-Texten. Kein Test wurde abgeschwächt oder gelöscht, ohne dass ein Test der neuen Regel an seine Stelle trat. Tests für Werfen, Gewicht, Koop-Synchronität, Speichern, Bildschirmformate und Mehrfach-Touch blieben unverändert (die Koop-Spezifikationen und `relay.spec.ts` bekamen nur eine neue Vorbereitung, siehe unten).
+
+**Slots über Burg-Stufe statt Kampagnen-Level (Commit 3afd4ba, Fundament):**
+- `tests/unit/unlocks.test.ts`: Der Test „Slot-Level aufsteigend, `openSlots` über Level, Endlos mit dem fünften Slot“ prüft jetzt offene Slots je Burg-Stufe 1 bis 7, Endlos ab Level 10 und Koop-Tisch ab Level 3.
+- `tests/unit/weapons.test.ts`: „erste Waffe eines Slots = Slot-Level“ heißt jetzt „keine Waffe vor dem Kauf-Level der Burg-Stufe ihres Slots“.
+- `tests/unit/progress.test.ts`: Die Burg-Quote hat den neuen Grund `level` (gewonnenes Level fehlt); der Stufen-Deckel gilt nur noch für Waffen und Hand, ein neuer Test verlangt, dass kein Kauf-Level einer Burg-Stufe unter dem Level des Deckels für dieselbe Stufe liegt.
+- `tests/unit/cheats.test.ts`: „alles freischalten“ öffnet den fünften Slot über die Burg-Stufe 5 statt über Level.
+- `tests/unit/campaignWaves.test.ts`: Endlos-Grenze von Level 11 auf Level 10; der Challenge-Test „jede Challenge ist erfüllbar“ bleibt und benutzt die neue Regel `weaponUsableIn` (Slot erst `CHALLENGE_SLOT_MARGIN` Level nach dem Kauf-Level der Burg-Stufe).
+- `tests/unit/tutorial.test.ts`: `pendingIntros` folgt der Burg-Stufe statt gewonnenen Leveln (später in Commit edd3f8d um Tests der Königs-Sätze und Hilfetexte erweitert).
+- `tests/unit/modes.test.ts`: Vorbereitung auf die neue Freischaltung.
+- `tests/unit/economy.test.ts`: Käse-Summe 500 unverändert.
+
+**Speicher `fondue.v4.` (Commit 07d2d9a):** `tests/unit/profile-data.test.ts`, `profile.test.ts`, `profile-save.test.ts` und `tests/e2e/dev-tools.spec.ts` prüfen jetzt das Präfix `fondue.v4.` statt `fondue.v3.`, weil v0.4 unter eigenem Schlüssel speichert (Versionsregel). Neu: `profile-v3import.test.ts`, `tests/e2e/storage.spec.ts`, später `castleImport.test.ts` (Commit 19745a3).
+
+**Lobby-Stationen (Commit 4ce3a88, 14c40b0):**
+- `tests/unit/lobby.test.ts`: Stationsliste, Deko nach Kampagnen-Level und Storybook-Seiten sind ersetzt durch Stationen von v0.4 (Kampagne, Shop, Koop, Endlos, Options, Continue), Halle je Burg-Stufe 1 bis 7 und Sperre der zwei Tische (Level 3 und 10). Storybook, Help, Credits und Scores sind keine Stationen mehr.
+- `tests/e2e/lobby.spec.ts`: „Endlos bis zum fünften Slot gesperrt“ wird zu „Endlos-Tisch kaputt bis Level 10, danach offen“; dazu kaputte und gedeckte Tische.
+- `tests/e2e/flow.spec.ts` und `mobile.spec.ts`: die Lobby-Tests (jede Station, HTML-Menü je Station, Version in der Lobby, Stationsliste der Halle) und der Weg zu Scores (Options-Reiter, Commit 9356257) sind auf die neuen Stationen umgestellt; dazu ein Test, dass vom Start bis in ein Level höchstens drei Tipps nötig sind. Wurf- und Pausen-Tests blieben unverändert.
+- `tests/unit/assets.test.ts`: Asset-Liste um die neuen Lobby-Bilder (Tische, Wachen, Hallen je Stufe).
+
+**Koop-Tisch ab Level 3 (Commit f8cc806):** `tests/e2e/coop.spec.ts`, `coopStart.spec.ts`, `relay.spec.ts` und `helpers.ts` öffnen vor dem Eröffnen eines Raums den Koop-Tisch (Profil mit gewonnenem Level 3, `setCastleTier`/`unlockEndless` in `helpers.ts`). Geprüft wird weiter dasselbe. Neu: `coopCastle.spec.ts` (Burg-Stufe im Raum).
+
+**Tutorial (Commit 2d8a29e):** `tests/e2e/tutorial.spec.ts`: „Level 2 öffnet den Slow-Slot“ wird zu „Level 2 öffnet keinen Slot; der Slow-Slot kommt mit Burg-Stufe 2“.
+
+**Shop und Sieg (Commits 2286ea8, 1fd34e1, 7a519cf, 28f37bd):** `tests/e2e/shop.spec.ts` öffnet den Slow-Slot über die Burg-Stufe und prüft die Sperre der Burg über das Level; Gold für den Kauf kommt aus den Preisen der Konfiguration statt aus einer festen Zahl (Preise der Balance, 8000 für Stufe 2). `tests/e2e/won.spec.ts` prüft den Sieg-Bildschirm mit „Castle tier N can be built“ statt der Slot-Einführung. Neu: `castleUpgrade.spec.ts`, `storybook.spec.ts`, `options.spec.ts`.
+
+**Preise und Deckel aus der Konfiguration (Commits 3493018, 1edf1b9):** `tests/unit/progress.test.ts`: Der Stufen-Deckel-Test heißt jetzt „2 von Anfang an, 3 nach Level 6, 4 nach Level 10, 5 nach 25, 6 nach 45, 7 nur mit Eagle Perch“ (Balance, E-080).
+
+**Balance (Commits 5137729, e4c4759):** `tests/balance/balance.test.ts` meldet das Kampagnen-Level jedes Burg-Kaufs und die Versuche je Level 1 bis 15; Käufe zwischen Farm-Läufen werden mitgezählt. `tests/unit/campaignTable.test.ts` prüft die neue Spalte „Burg-Stufe kaufbar“ der Level-Tabelle.
+
+Neu hinzugekommen ohne Ersatz: `tests/unit/versionsAndDecisionsV4.test.ts`, `campaignCastle.test.ts`, Erweiterungen in `tests/e2e/dev-tools.spec.ts` (Entwickler-Übersicht, Cheat Burg-Stufe).
