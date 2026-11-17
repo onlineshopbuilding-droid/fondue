@@ -5,8 +5,11 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
 import { GAME_VERSION } from '../../src/config/game';
+import { CASTLE_TIERS } from '../../src/config/keep';
+import { CASTLE_TIER_LEVEL } from '../../src/config/slotTiers';
+import { VERSIONS, versionUrl } from '../../src/config/versions';
 import { STORAGE_PREFIX } from '../../src/profile/schema';
-import { GAME_WAIT, startSolo, waitForGame } from './helpers';
+import { GAME_WAIT, startSolo, station, waitForGame } from './helpers';
 
 /**
  * Developer tools of v0.3 (F1 weapon editor, F2 cheats, F3/F4 developer overview), on the laptop.
@@ -134,6 +137,23 @@ test('developer overview: version, cheese sum, roadmap, and a decision becomes a
     await expect(page.locator('#cheeseSum')).toContainText('500');
     await expect(page.locator('#fahrplan')).toContainText('v1.0');
     await expect(page.locator('#waffen')).toContainText('Rolling Wheel');
+    // v0.4: the playable versions with links, the castle tiers from the configuration, the level
+    // column of buildable castle tiers and the v0.4 decision list above the older one of v0.3.
+    const links = await page.locator('#versionen a[href]').evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
+    for (const v of VERSIONS) expect(links).toContain(versionUrl(v));
+    const castleRows = page.locator('#burg tbody tr');
+    await expect(castleRows).toHaveCount(CASTLE_TIERS.length);
+    for (let i = 1; i < CASTLE_TIERS.length; i++) {
+      await expect(castleRows.nth(i)).toContainText(CASTLE_TIERS[i].name);
+      await expect(castleRows.nth(i)).toContainText(`Level ${CASTLE_TIER_LEVEL[i]}`);
+      await expect(castleRows.nth(i)).toContainText(`${CASTLE_TIERS[i].gold} Gold`);
+    }
+    await expect(castleRows.nth(1)).toContainText('Slot');
+    await expect(page.locator('#level thead').first()).toContainText('Burg-Stufe kaufbar');
+    await expect(page.locator('#level tbody tr').filter({ has: page.locator('td:first-child', { hasText: /^6$/ }) }).first()).toContainText('Burg-Stufe 2');
+    await expect(page.locator('#entscheidungen-v4')).toHaveText('Offene Entscheidungen v0.4');
+    for (let i = 1; i <= 7; i++) await expect(page.locator(`[data-decision="D4-0${i}"]`)).toBeVisible();
+    await expect(page.locator('[data-decision="D4-04"]')).toContainText('docs/v0.4/BERICHT.md');
 
     const card = page.locator('[data-decision="D3-09"]');
     await card.locator('input[type=radio]').nth(1).check();
@@ -157,4 +177,31 @@ test('developer overview: version, cheese sum, roadmap, and a decision becomes a
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('options: the developer menu sets castle tiers 1 to 7 through the cheat and marks the profile', async ({ page }) => {
+  await page.goto('/?menu=1&fresh=1');
+  await waitForGame(page);
+  // The cog in the lobby, as a player opens the Options.
+  await station(page, 'options');
+  await page.click('#devMenuButton');
+  await expect(page.locator('#tuning')).toBeVisible();
+  for (const tier of [3, 7, 1, 5]) {
+    await page.click(`#devCastleTier${tier}`);
+    const p = await profile(page);
+    expect(p.keep.castleTier).toBe(tier);
+    expect(p.cheats).toBe(true);
+    await expect(page.locator(`#devCastleTier${tier}`)).not.toHaveClass(/secondary/);
+  }
+  // A changed number field that loses focus while the panel redraws does not break the page.
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await page.locator('#devUnlockTo').fill('7');
+  await page.click('#devCastleTier2');
+  await page.keyboard.press('F1');
+  await expect(page.locator('#tuning')).toHaveCount(0);
+  expect((await profile(page)).keep.castleTier).toBe(2);
+  await page.evaluate(() => (window as any).__fondue.show('options'));
+  await expect(page.locator('#optCheatBadge')).toHaveText('Cheats used');
+  expect(errors).toEqual([]);
 });
