@@ -1,18 +1,19 @@
 # Fondue – Änderungshandbuch
 
-Dieses Dokument sagt, wo was liegt und was alles angefasst werden muss, wenn sich etwas ändert. Es richtet sich an Tim, Lenny und jede KI, die weiterbaut. Es nennt Bezeichner (Namen von Dateien, Klassen, Tabellen) statt Zeilennummern, weil sich Zeilen ständig verschieben. Es beschreibt **v0.3** (Branch `v0.3-dev`, Testadresse `/fondue/next/`).
+Dieses Dokument sagt, wo was liegt und was alles angefasst werden muss, wenn sich etwas ändert. Es richtet sich an Tim, Lenny und jede KI, die weiterbaut. Es nennt Bezeichner (Namen von Dateien, Klassen, Tabellen) statt Zeilennummern, weil sich Zeilen ständig verschieben. Es beschreibt **v0.4** (Branch `v0.4-dev`, Testadresse `/fondue/next/`; nach der Veröffentlichung `/fondue/`). Die Versionsregel, nach der alle Versionen veröffentlicht werden, steht in Abschnitt 7.
 
 Weitere Dokumente:
 - `docs/ARCHITEKTUR.md`: Aufbau im Detail, Klassen und Datenfluss.
 - `docs/GDD.md`: die Spielregeln und Zahlen.
-- `docs/ENTSCHEIDUNGEN.md`: warum etwas so ist (E-001 bis E-071; E-063 bis E-071 gehören zu v0.3).
+- `docs/ENTSCHEIDUNGEN.md`: warum etwas so ist (E-001 bis E-078; E-063 bis E-071 gehören zu v0.3, ab E-072 zu v0.4).
 - `docs/OFFENE-ENTSCHEIDUNGEN.md`: was Tim und Lenny noch entscheiden oder bewerten sollen.
 - `docs/balance.md`: Balance-Ziele, Ergebnisse, geänderte Werte (v0.3).
 - `docs/KAMPAGNE-TABELLE.md`: alle 100 Level Welle für Welle (erzeugt).
 - `docs/GRAFIK-AUSTAUSCHEN.md`: Grafik durch Bilddateien ersetzen, Liste aller Assets (Liste erzeugt).
+- `docs/v0.4/AUFTRAG.md`, `BAUPLAN.md`, `abnahme.json`, `PROGRESS.md`, `UEBERGABE.md`: Auftrag, Bauplan, Abnahmeliste, Verlauf und Stand der v0.4-Runde.
 - `docs/v0.3/BAUPLAN.md`, `abnahme.json`, `PROGRESS.md`, `UEBERGABE.md`, `MESSUNGEN-KOOP.md`: Bauplan, Abnahmeliste, Verlauf und Messungen der v0.3-Runde.
 - `docs/uebergabe/LERNEN.md`: Konzepte (fester Zeitschritt, Wurfphysik, WebRTC).
-- Entwickler-Übersicht: https://onlineshopbuilding-droid.github.io/fondue/next/dev/ (alle Level, Waffen mit Stufen, Gegner, Freischaltungen, Käse-Summe, Balance, offene Entscheidungen, Fahrplan; erzeugt aus dem Code). Die Übersicht des Live-Stands liegt unter `/fondue/dev/`.
+- Entwickler-Übersicht: https://onlineshopbuilding-droid.github.io/fondue/next/dev/ (alle Level, Waffen mit Stufen, Gegner, Freischaltungen, Käse-Summe, Balance, offene Entscheidungen, Fahrplan; erzeugt aus dem Code). Die Übersicht des Stands auf `main` liegt unter `/fondue/dev/`.
 
 ## 1. Wie das Spiel aufgebaut ist
 
@@ -52,7 +53,7 @@ Im Koop rechnet nur der Host. Der Gast schickt Eingaben, der Host schickt 30-mal
 3. **Zahlen gehören nach `src/config/`.** Ausnahmen stehen in Abschnitt 6.
 4. **Fondue bleibt ein eigenes Spiel.** Nichts aus anderen Spielen übernehmen (`AGENTS.md`, E-001). Der Name des Spiels steht nur in `src/config/game.ts`.
 
-Dazu für v0.3: **Alle Speicherschlüssel beginnen mit `fondue.v3.`** (`STORAGE_PREFIX` in `src/profile/schema.ts`). Die Adressen `/fondue/`, `/fondue/next/`, `/fondue/v0.2/` und `/fondue/classic/` teilen sich den Browser-Speicher; `fondue.profile`, `fondue.settings.v1` und `fondue.scores.v1` gehören den älteren Ständen und werden von v0.3 nie gelesen oder geschrieben.
+Dazu für v0.4: **Alle Speicherschlüssel beginnen mit `fondue.v4.`** (`STORAGE_PREFIX` in `src/profile/schema.ts`; Profil: `fondue.v4.profile`). Alle Adressen (`/fondue/`, `/fondue/next/`, `/fondue/v0.3/`, `/fondue/v0.2/`, `/fondue/v0.1/`, `/fondue/classic/`) teilen sich den Browser-Speicher. v0.4 liest genau einen fremden Schlüssel, `fondue.v3.profile`, und das nur einmal zur Übernahme (Abschnitt 4, „Speicher und Übernahme“). `fondue.v3.*`, `fondue.profile`, `fondue.settings.v1` und `fondue.scores.v1` gehören den älteren Ständen und werden von v0.4 nie geändert oder gelöscht.
 
 ## 3. Wo liegt was
 
@@ -60,10 +61,12 @@ Dazu für v0.3: **Alle Speicherschlüssel beginnen mit `fondue.v3.`** (`STORAGE_
 
 | Datei | Inhalt |
 |---|---|
-| `game.ts` | Name und Version des Spiels (`GAME_NAME`, `GAME_VERSION` „0.3“); auch der Seitentitel kommt von hier (Platzhalter `%GAME_NAME%` in `index.html`, ersetzt in `vite.config.ts`) |
+| `game.ts` | Name und Version des Spiels (`GAME_NAME`, `GAME_VERSION` „0.4“); auch der Seitentitel kommt von hier (Platzhalter `%GAME_NAME%` in `index.html`, ersetzt in `vite.config.ts`) |
 | `enemies.ts` | Alle 11 Gegner (`ENEMIES`: Werte, Gewicht `mass`, Gold), Tempo-Faktoren von v0.3 (`V3_SPEED`, `V3_GOLD`), Greifzuschlag schneller Gegner (`GRAB_SPEED_BONUS`), Zielgewichte für Gruppen-Waffen (`TARGETING`), Sonderwerte (`BEHAVIOUR`: Fass, Schütteln, Blase, Schatten, Krähe, Yeti, übergroße Boss-Räuber) |
 | `weapons.ts` | Alle 25 Waffen (`WEAPONS`) mit Slot-Aufgabe (`slot`), Verhalten (`kind`), Zielwahl (`target`), `enabled`, `unlockLevel`, `cheesePrice`, `goldScale` und genau sieben Stufen (`tiers` mit `cooldown`, `note` und den Zahlen der Art) |
-| `slots.ts` | Die fünf Waffenplätze (`SLOTS`) mit Aufgabe (`SlotRole`), Lage, Freischalt-Level und Einführungssatz des Königs |
+| `slots.ts` | Die fünf Waffenplätze (`SLOTS`) mit Aufgabe (`SlotRole`), Lage und `castleTier` (die Burg-Stufe, die den Slot öffnet, gelesen aus `slotTiers.ts`) |
+| `slotTiers.ts` | **Die Burg als Fortschritt (v0.4):** welche Burg-Stufe welchen Slot öffnet (`CASTLE_TIER_FOR_SLOT`), ab welchem gewonnenen Level jede Burg-Stufe kaufbar ist (`CASTLE_TIER_LEVEL`), ab welchem Level Koop-Tisch und Endlos-Tisch offen sind (`TABLE_UNLOCK_LEVEL`), ab wann eine Challenge einen Slot verlangen darf (`CHALLENGE_SLOT_MARGIN`) |
+| `versions.ts` | Liste aller spielbaren Versionen mit Adresse (`VERSIONS`), für die Options und die Entwickler-Übersicht |
 | `tiers.ts` | Stufen 1 bis 7: `TIER_MAX`, Goldpreise der Waffenstufen (`WEAPON_TIER_GOLD`), Wappen für Stufe 7 (`CREST_COST`), Stufen-Deckel je Kampagnen-Abschnitt (`TIER_CAP_BY_LEVEL`) |
 | `currencies.ts` | Namen, Icons und Kurztexte von Käse, Gold und Räuberwappen; Käse-Regeln (`CHEESE`: fünf Bits, Schwellen 50 % und 90 % Torleben, Summe 500) |
 | `crests.ts` | Wappen je Gegnertyp, Höchstzahl je Runde, Größe und Zielhilfe des Adlerhakens (`CRESTS`) |
@@ -85,7 +88,7 @@ Dazu für v0.3: **Alle Speicherschlüssel beginnen mit `fondue.v3.`** (`STORAGE_
 | `worlds/fondue/world.ts` | Welt 1 als Paket |
 | `worlds/fondue/campaign.ts` | Die 100 Level: Kurve (`CURVE`), Erstauftritte (`FIRST_LEVEL`), Landschaften, Bosse, Besonderheiten (`TWISTS`), Änderungen einzelner Level (`LEVEL_OVERRIDES`) |
 | `worlds/fondue/challenges.ts` | Challenge-Vorlagen (`CHALLENGE_TEMPLATES`) und die zwei Challenges je Level |
-| `worlds/fondue/unlocks.ts` | Freischalt-Tabelle (`UNLOCKS`), aus den `unlockLevel`-Feldern von Waffen, Slots und Stationen zusammengesetzt |
+| `worlds/fondue/unlocks.ts` | Freischalt-Tabelle (`UNLOCKS`), aus `unlockLevel` von Waffen und Stationen und `CASTLE_TIER_LEVEL` (kaufbare Burg-Stufen, Art `castle`) zusammengesetzt. Slots stehen nicht darin: Sie öffnen über die Burg-Stufe |
 | `worlds/fondue/endless.ts` | Endlos-Zufall (Fenster der Erstauftritte, Gewichte), Landschaftswechsel (`ENDLESS`) |
 | `worlds/fondue/story.ts` | König, Sätze der Vorrunde, Käse- und Gold-Erklärung, Slot- und Stations-Einführungen, Level-Namen und -Sätze, Bosse, Popups „New enemy“, Sprüche in der Lobby, Storybuch |
 
@@ -95,10 +98,10 @@ Dazu für v0.3: **Alle Speicherschlüssel beginnen mit `fondue.v3.`** (`STORAGE_
 |---|---|
 | `src/modes/` | `TutorialMode`, `CampaignMode` (mit `keepLoadout`, `payRun`), `EndlessMode`, `EndlessPlanner`; Schnittstelle `GameMode` (`mode.ts`); Verzeichnis `MODES` und `RESERVED_MODES` (`index.ts`) |
 | `src/modes/progress.ts` | **Progression an einer Stelle:** `quote` (was kostet der nächste Schritt, geht er, warum nicht), `buy`, `equip`, Käse einmalig vergeben (`applyLevelCheese`, `cheeseMask`), `addGold`, `addCrests`. Shop, Bots, Cheats und Tests benutzen nur diese Funktionen. Ziele: Waffe, Burg, Hand, Station |
-| `src/modes/unlocks.ts` | Was der Fortschritt freigibt, aus `levelsDone` berechnet: offene Slots (`slotOpen`), kaufbare Waffen und Stationen, Stufen-Deckel (`tierCap`), Endlos offen (`endlessOpen`), `syncUnlocks` (das freie Rolling Wheel) |
+| `src/modes/unlocks.ts` | Was der Fortschritt freigibt, aus Burg-Stufe und `levelsDone` berechnet: offene Slots (`slotOpen`, aus `keep.castleTier`), Burg-Stufe kaufbar ab gewonnenem Level (`castleTierBuyableAt`, `castleTierUnlocked`), kaufbare Waffen (verlangen einen offenen Slot) und Stationen, Stufen-Deckel für Waffen und Hand (`tierCap`), Koop-Tisch offen (`coopTableOpen`, ab Level 3), Endlos-Tisch offen (`endlessOpen`, ab Level 10), `syncUnlocks` (das freie Rolling Wheel) |
 | `src/modes/challenges.ts` | Beurteilt die zwei Challenges eines Levels an den Zählern des Laufs (`challengesDone`) |
 | `src/modes/cheats.ts` | Entwickler-Cheats ohne DOM: Gold, Käse, Wappen geben, Level freischalten, Stufen setzen, alles freischalten, Profil zurücksetzen, zweite Hand am Laptop; markiert das Profil (`cheats.used`) |
-| `src/profile/` | Profil (`Profile`), Datenform (`schema.ts`), Migrationen, Bereinigung, Speicher (`ProfileStore`), Export-Code (`codec.ts`) |
+| `src/profile/` | Profil (`Profile`), Datenform (`schema.ts`), Migrationen, Bereinigung, Speicher (`ProfileStore`), Export-Code (`codec.ts`), einmalige Übernahme des v0.3-Stands (`fromV3.ts`) |
 | `src/sim/sim.ts` | `Sim`: die eine Tür zur Simulation |
 | `src/sim/rules.ts` | Datentypen eines Laufs: `RunRules`, `RunSetup`, `RunStart`, `RunResult`, `Loadout`, `Scaling`, Statistik `RunStatsData` |
 | `src/sim/plan.ts`, `spawn.ts`, `spawner.ts` | Wellenplaner (`FixedPlanner` für Kampagne und Vorrunde), Endlos-Wellengröße, Verteilung über die Welle, Auftreten der Gegner (`spawnEnemy`) |
@@ -133,7 +136,7 @@ Dazu für v0.3: **Alle Speicherschlüssel beginnen mit `fondue.v3.`** (`STORAGE_
 | `src/ui/lobby/` | Steuerung der Lobby, Storybuch, `?menu=html` |
 | `src/ui/coop/room.ts` | `CoopRoom`: Raum eröffnen, beitreten, Wiedereinstieg, Versionsmeldung |
 | `src/ui/tuningPanel.ts` | Entwickler-Menü mit Waffen-Editor, Cheats, Reglern, Schaltern |
-| `src/ui/version.ts` | Versionszeile „v0.3 · build <Hash>“ für Menü, Options und Lobby |
+| `src/ui/version.ts` | Versionszeile „v0.4 · build <Hash>“ für Menü, Options und Lobby |
 | `src/ui/enemyPopup.ts`, `campaignArt.ts`, `content.ts`, `html.ts`, `style.css` | Popup „New enemy“; Zeichnung der Kampagnen-Karte; Hilfe-Seiten, Tipps, Credits; HTML-Bausteine; Aussehen |
 | `scripts/` | `dev-page.ts` (Entwickler-Übersicht), `campaign-table.ts` (Level-Tabelle), `list-assets.ts` (Asset-Liste), `weapon-sheet.ts` (Bild aller Waffen in allen Stufen), `android-setup.mjs` |
 | `server/relay/index.mjs` | Plan-B-Server |
@@ -161,14 +164,18 @@ Hände sind durchnummeriert (`handIndex` in `src/sim/physics.ts`): Die erste Han
 | Zu zweit | `COOP` in `waves.ts` (`countFactor`, `goldPerKill`) |
 | Schwierigkeitsgrade im Endlos, Gold je Schwierigkeit | `DIFFICULTIES` |
 | Waffenstärke und Nachladezeit | Stufe in `WEAPONS` (`tiers`) |
-| Ab welchem Level eine Waffe kaufbar ist, Käse-Preis | `unlockLevel`, `cheesePrice` in `WEAPONS`; die Summe aller Käse-Preise samt Kessel und Haken muss genau 500 bleiben (Test) |
+| Ab welchem Level eine Waffe kaufbar ist, Käse-Preis | `unlockLevel`, `cheesePrice` in `WEAPONS`; ein Test verlangt, dass keine Waffe vor dem Kauf-Level der Burg-Stufe ihres Slots kaufbar ist; die Summe aller Käse-Preise samt Kessel und Haken muss genau 500 bleiben (Test) |
 | Goldpreis der Waffenstufen | `WEAPON_TIER_GOLD` in `tiers.ts`, je Waffe mal `goldScale` |
 | Stufen-Deckel gegen Überrollen, Wappen für Stufe 7 | `TIER_CAP_BY_LEVEL`, `CREST_COST` in `tiers.ts` |
 | Wappen je Gegner, Höchstzahl je Runde, Größe und Zielhilfe des Hakens | `CRESTS` in `crests.ts` |
 | Käse-Schwellen, Challenge-Texte und -Mengen | `CHEESE` in `currencies.ts`; `CHALLENGE_TEMPLATES` in `worlds/fondue/challenges.ts` |
-| Was welches Level freischaltet | `unlockLevel` bei Waffen und Stationen, `unlockLevel` in `SLOTS`; die Tabelle `UNLOCKS` baut sich daraus |
+| Was welches Level freischaltet | `unlockLevel` bei Waffen und Stationen, `CASTLE_TIER_LEVEL` bei Burg-Stufen; die Tabelle `UNLOCKS` baut sich daraus |
+| Welche Burg-Stufe welchen Slot öffnet | `CASTLE_TIER_FOR_SLOT` in `src/config/slotTiers.ts` (Slots öffnen nie über ein Level) |
+| Ab welchem gewonnenen Level eine Burg-Stufe kaufbar ist (Stufe 2: Level 6 und Stufe 7: Level 75 sind fest) | `CASTLE_TIER_LEVEL` in `src/config/slotTiers.ts` |
+| Ab welchem Level Koop-Tisch und Endlos-Tisch offen sind (fest: 3 und 10) | `TABLE_UNLOCK_LEVEL` in `src/config/slotTiers.ts` |
+| Wie früh eine Challenge einen Slot verlangen darf | `CHALLENGE_SLOT_MARGIN` in `src/config/slotTiers.ts` (Level nach der Kaufbarkeit der Burg-Stufe des Slots) |
 | Hand stärker, Preise der Hand, ab wann die zweite Hand | `HANDS`; Wurfregel und Zweite-Hand-Stufe `HAND_RULES` |
-| Torleben, Torpreise | `CASTLE_TIERS` |
+| Torleben, Goldpreise der Burg-Stufen, Wappen für Stufe 7 | `CASTLE_TIERS` in `keep.ts` |
 | Preis und Zeitpunkt von Kessel und Haken, Schmelzzeit | `STATIONS`, `CAULDRON_SECONDS`; Kessel-Goldfaktor `ECONOMY` |
 | Schütteln leichter oder schwerer | `BEHAVIOUR.kegShake` |
 | Lage von Kessel und Haken | `WORLD.cauldron`, `WORLD.perch` |
@@ -229,6 +236,17 @@ Spieltexte sind Englisch. Story, König, Level-Sätze, Popups, Storybuch, Käse-
 | STUN-Server, PeerJS | `src/net/peer.ts` |
 | Goldteilung, Gegnerzahl zu zweit | `COOP` in `waves.ts`; Gold schreibt `payRun` in `src/modes/campaign.ts`, Käse nur der Host (`CampaignMode.reward`) |
 
+### Speicher und Übernahme
+
+| Ziel | Stelle |
+|---|---|
+| Schlüssel-Präfix von v0.4, Profil-Schlüssel, Merker der Übernahme | `STORAGE_PREFIX` (`fondue.v4.`), `PROFILE_KEY` (`fondue.v4.profile`), `V3_IMPORT_KEY` (`fondue.v4.importedV3`) in `src/profile/schema.ts` |
+| Einmalige Übernahme des v0.3-Stands | `Profile.load` in `src/profile/profile.ts` liest `fondue.v3.profile` nur, wenn es noch nie ein v0.4-Profil gab und der Merker fehlt; `migrateV3ToV4` in `migrations.ts` |
+| Umrechnung auf die neuen Regeln | `liftCastleForV3Slots`, `stepV3ToV4` in `src/profile/fromV3.ts`: Die Burg-Stufe wird kostenlos so weit angehoben, dass jeder in v0.3 offene Slot offen bleibt; die dadurch offenen Slots gelten als eingeführt (`seen.slotIntros`), damit nicht vier Einführungen auf einmal kommen (E-074) |
+| Profil-Version | `PROFILE_VERSION` 2 (1 = v0.3) in `schema.ts` |
+
+`fondue.v3.*` und `fondue.profile` bleiben dabei unverändert (Test `tests/unit/profile-v3import.test.ts`, Browser-Test `tests/e2e/storage.spec.ts`). Die Entwurfs-Entscheidungen der Entwickler-Übersicht (`fondue.v3.dev.decisions`) werden nicht übernommen (E-075).
+
 ## 5. Rezepte
 
 TypeScript hilft bei allen Rezepten: `ENEMIES`, `RIGS`, `BEHAVIOURS` und `ENDLESS.types` sind vollständige Tabellen, `npx tsc --noEmit` meldet fehlende Einträge.
@@ -241,7 +259,7 @@ TypeScript hilft bei allen Rezepten: `ENEMIES`, `RIGS`, `BEHAVIOURS` und `ENDLES
 
 **Ein neues Level** (die Kampagne verlängern): `LEVEL_COUNT` erhöhen, Name und Satz in `LEVEL_NAMES` und `LEVEL_STORY` (`story.ts`), dann wie oben. Achtung: Es gibt höchstens 5 Käse je Level und genau 500 Käse-Preise; mehr Level heißt, die Preise neu zu verteilen. Neue Level verändern den Startwert der anderen nicht; alte Profile bleiben gültig.
 
-**Eine neue Freischaltung:** Waffen und Stationen sagen selbst, ab welchem Level sie kaufbar sind (`unlockLevel` und `cheesePrice` in `WEAPONS` und `STATIONS`), Slots in `SLOTS`. `UNLOCKS` (`worlds/fondue/unlocks.ts`) baut sich daraus. Karte, Shop, Sieg-Bildschirm und Regeln lesen die Tabelle. Danach `node scripts/campaign-table.ts`; der Test zur Käse-Summe sagt, ob die 500 noch stimmen.
+**Eine neue Freischaltung:** Waffen und Stationen sagen selbst, ab welchem Level sie kaufbar sind (`unlockLevel` und `cheesePrice` in `WEAPONS` und `STATIONS`), Burg-Stufen in `CASTLE_TIER_LEVEL` (`src/config/slotTiers.ts`). Slots öffnen nur über die Burg-Stufe (`CASTLE_TIER_FOR_SLOT`), nie über ein Level; eine Waffe darf nicht vor dem Kauf-Level der Burg-Stufe ihres Slots kaufbar sein. `UNLOCKS` (`worlds/fondue/unlocks.ts`) baut sich daraus. Karte, Shop, Sieg-Bildschirm und Regeln lesen die Tabelle. Danach `node scripts/campaign-table.ts`; der Test zur Käse-Summe sagt, ob die 500 noch stimmen.
 
 **Eine neue Waffe**
 1. Eintrag in `WEAPONS` (`src/config/weapons.ts`) mit `id`, `slot` (die Aufgabe), `kind`, `target`, `unlockLevel`, `cheesePrice`, `goldScale`, `desc` und genau sieben Stufen. Passt eine vorhandene Art (`kind`), ist das alles an Regeln. Die Käse-Preise müssen zusammen mit Kessel und Haken wieder genau 500 ergeben, jede Stufe muss sich um einen Schalter oder um mindestens 15 % einer Zahl ändern (Tests in `tests/unit/weapons.test.ts`).
@@ -281,7 +299,7 @@ Die Bots lesen die Tabelle und bewerten Waffen grob nach den Zahlen der Stufe (`
 
 **Ein neuer Schnellstart:** Eintrag in `QUICK_STARTS`; ein Unit-Test prüft, dass jede Waffe echt ist und in ihren Slot passt.
 
-**Eine neue Burg-Ausbaustufe:** Es gibt genau sieben, so wie `TIER_MAX`. Eine Stufe ändern: `CASTLE_TIERS` (Name, Torleben, Gold) und die Grafik der Stufe in `src/art/castle/` (Name `prop:keep<N-1>` …, siehe `tiers.ts`). Die Plätze aus `SLOTS` müssen auf der Grafik frei bleiben.
+**Eine neue Burg-Ausbaustufe:** Es gibt genau sieben, so wie `TIER_MAX`. Eine Stufe ändern: `CASTLE_TIERS` (Name, Torleben, Gold) in `keep.ts`, ihr Kauf-Level in `CASTLE_TIER_LEVEL` und, falls sie einen Slot öffnet, `CASTLE_TIER_FOR_SLOT` (beides `src/config/slotTiers.ts`) und die Grafik der Stufe in `src/art/castle/` (Name `prop:keep<N-1>` …, siehe `tiers.ts`). Die Plätze aus `SLOTS` müssen auf der Grafik frei bleiben. Die Zahlen sind Startwerte der Balance (`docs/balance.md`); das Kauf-Level einer Burg-Stufe liegt nie unter dem Level, ab dem der Stufen-Deckel für Waffen und Hand (`TIER_CAP_BY_LEVEL`) dieselbe Stufe erlaubt (Test in `tests/unit/progress.test.ts`).
 
 **Neues am Profil:** Feld in `ProfileData` (`src/profile/schema.ts`), Standardwert in `freshProfile`, Bereinigung in `sanitize.ts`, `PROFILE_VERSION` erhöhen und einen Schritt an die Kette in `migrations.ts` hängen (das Format ist so geschnitten, dass es später eins zu eins in einen Cloud-Account wandern kann). Test in `tests/unit/profile*.test.ts`. Geld und Burg nie an `progress.ts` vorbei ändern.
 
@@ -294,8 +312,8 @@ Die Bots lesen die Tabelle und bewerten Waffen grob nach den Zahlen der Stufe (`
 ## 6. Fallen
 
 1. **Gespeichertes Tuning wirkt nur in Entwickler-Läufen.** Außerhalb davon gilt immer `TUNING_DEFAULT`. Wer im Entwickler-Menü Regler oder Waffenwerte verstellt, bekommt weder Gold noch Käse noch Bestenliste, bis er **Default** drückt. Im Koop zählen die Werte des Hosts.
-2. **Ein Merge nach `main` geht sofort live.** Vorher `npm test` und `npm run test:e2e`. Branches `v0.3-dev`, `v0.2` und `classic` gehen nicht über `main` live, sondern erst durch einen Lauf des Deploy-Workflows (Abschnitt 7).
-3. **Host und Gast brauchen denselben Build und dieselbe Adresse.** Sonst lehnt der Host mit einer Versionsmeldung ab. `/fondue/next/`, `/fondue/v0.2/` und `/fondue/classic/` sind verschiedene Spiele. Nach jedem Deploy laden beide die Seite neu.
+2. **Ein Merge nach `main` geht sofort live.** Vorher `npm test` und `npm run test:e2e`. Nach der Versionsregel (Abschnitt 7) braucht der Merge der neuesten Version keine Freigabe mehr, die Pflichtprüfung `test` aber muss grün sein. Die Branches `v0.4-dev`, `v0.3`, `v0.2` und `classic` gehen nicht über `main` live, sondern erst durch einen Lauf des Deploy-Workflows.
+3. **Host und Gast brauchen denselben Build und dieselbe Adresse.** Sonst lehnt der Host mit einer Versionsmeldung ab. `/fondue/next/`, `/fondue/v0.3/`, `/fondue/v0.2/` und `/fondue/v0.1/` sind verschiedene Spiele. Nach jedem Deploy laden beide die Seite neu.
 4. **Einige Regeln gibt es doppelt, damit der Gast sofort reagiert.** Wer eine Seite ändert, muss die andere mitziehen:
 
    | Host (`src/sim/`) | Gast (`GuestSession` in `src/game/session.ts`) |
@@ -312,7 +330,7 @@ Die Bots lesen die Tabelle und bewerten Waffen grob nach den Zahlen der Stufe (`
 7. **Größen:** `radius` und `height` in `ENEMIES` sind Weltmaße. Wer eine Figur größer zeichnet, muss sie dort mit anpassen, sonst passt die Greiffläche nicht.
 8. **Balance-Bots sind Näherungen.** Die Zahlen sagen, ob eine Änderung in die richtige Richtung geht, nicht wie Menschen abschneiden. Die Bots haben einen „Geschmack“ je Waffe, bewerten sie aber nur grob. Gemessen wird mit Feldbreite 1280.
 9. **Tests dürfen nie abgeschwächt werden.** Ändert sich eine Regel bewusst, wird der Test durch einen Test der neuen Regel ersetzt und das festgehalten (`docs/PROGRESS-GROSSES-UPDATE.md`, „Ersetzte Tests“; für v0.3 `docs/v0.3/PROGRESS.md`).
-10. **Testläufe überschreiben `docs/screenshots/`.** Das erzeugt Git-Änderungen ohne Bedeutung; diese Dateien nicht mit committen, wenn sie nicht gemeint sind. Belege für die Abnahme von v0.3 liegen in `docs/screenshots/v0.3/` und werden gezielt hinzugefügt.
+10. **Testläufe überschreiben `docs/screenshots/`.** Das erzeugt Git-Änderungen ohne Bedeutung; diese Dateien nicht mit committen, wenn sie nicht gemeint sind. Belege für die Abnahme liegen in `docs/screenshots/v0.3/` (v0.3) und `docs/screenshots/v0.4/` (v0.4) und werden gezielt hinzugefügt.
 11. **Welt- und Bildschirmkoordinaten sind nicht dasselbe.** Die Feldbreite ist 1280 bis 1760 und steht in `meta.fieldW`; was auf breiten Handys sichtbar ist, gibt `RunSetup.viewRight` an (Räuber treten dort ein). Figuren, Geschosse und Hände stehen in Weltkoordinaten, das HUD in Bildschirmkoordinaten.
 12. **Links von x = 0 liegt nur der Westflügel der Burg** (Kamera `marketCamera.ts`). Alles Spielrelevante muss im Feld liegen, sonst sehen Host und Gast nicht dasselbe.
 13. **`Math.random` und `window` sind in `src/sim/` tabu.** Auch ein Import aus `src/render/` zieht Phaser in die Unit-Tests.
@@ -322,10 +340,12 @@ Die Bots lesen die Tabelle und bewerten Waffen grob nach den Zahlen der Stufe (`
 17. **Homescreen-App und Browser-Tab haben getrennte Speicher.** Ein Profil im Safari-Tab ist nicht das Profil der Homescreen-App. Umzug über Export und Import in den Options.
 18. **Belohnungen werden genau einmal gezahlt.** Jeder Lauf hat eine `runId`, das Profil merkt sich die letzten 200 (`claimRun`). Wer `reward` zweimal aufruft, bekommt beim zweiten Mal nichts. Käse wird zusätzlich je Bit nur einmal vergeben.
 19. **Geld und Burg nur über `src/modes/progress.ts` ändern.** Ein direkter Schreibzugriff auf `wallet` oder `keep` umgeht die Preise, den Stufen-Deckel und das sofortige Speichern (`flushSync`). Ausnahme: `src/modes/cheats.ts`, und das markiert das Profil.
-20. **Der Stufen-Deckel hält den Ausbau auf, nicht das Gold.** Wer die späte Kampagne leichter oder schwerer machen will, dreht an `TIER_CAP_BY_LEVEL` und `CURVE.powerLate`, nicht nur an den Preisen (`docs/balance.md`).
+20. **Der Stufen-Deckel hält den Ausbau von Waffen und Hand auf, nicht das Gold.** Wer die späte Kampagne leichter oder schwerer machen will, dreht an `TIER_CAP_BY_LEVEL` und `CURVE.powerLate`, nicht nur an den Preisen (`docs/balance.md`). Die Burg hat ihren eigenen Riegel: das Kauf-Level je Stufe (`CASTLE_TIER_LEVEL`).
 21. **Im Spiel gibt es keine Kaufbefehle.** `Command` hat kein `buy…`; wer im Lauf etwas verändern will, muss das bewusst als Entwickler-Eingriff bauen, der den Lauf zum Entwickler-Lauf macht.
+22. **Slots öffnen nur über die Burg-Stufe, nie über ein Level.** Wer einen Slot früher oder später öffnen will, ändert `CASTLE_TIER_FOR_SLOT`, nicht eine Level-Zahl. Eine Waffe darf nicht vor dem Kauf-Level der Burg-Stufe ihres Slots kaufbar sein, und eine Challenge verlangt eine Waffe eines Slots erst `CHALLENGE_SLOT_MARGIN` Level nach dessen Kauf-Level (beides Tests).
+23. **Ein v0.3-Spielstand wird bei der Übernahme umgerechnet.** Die Burg-Stufe steigt kostenlos so weit, dass alle in v0.3 offenen Slots offen bleiben (E-074). Wer die Zuordnung Slot zu Burg-Stufe ändert, ändert damit auch, was die Übernahme anhebt; die v0.3-Regeln selbst sind in `fromV3.ts` eingefroren (`V3_SLOTS`).
 
-## 7. Befehle, Testen und veröffentlichen
+## 7. Befehle, Testen und Versionsregel
 
 | Befehl | Was er tut |
 |---|---|
@@ -345,22 +365,43 @@ Die Bots lesen die Tabelle und bewerten Waffen grob nach den Zahlen der Stufe (`
 | `npx playwright test --config playwright.live.config.ts` | Veröffentlichte Seite; mit `EXPECT_BUILD=<kurzer Hash>` prüft er, dass der neue Build live ist |
 | `npm run relay` | Plan-B-Server lokal |
 
-**Veröffentlichen**, sobald Tim oder Lenny es sagt: alle Tests grün, Pull Request nach `main`, Merge. `.github/workflows/ci.yml` führt für jeden Pull Request die Prüfung `test` aus (Typ-Check, Unit-Tests, Browser-Tests in sechs Teilen), ohne Grün kein Merge. `.github/workflows/deploy.yml` baut nach jedem Merge mehrere Stände in einen Ordner und stellt sie live:
+### Die Versionsregel (gilt dauerhaft, ab v0.4)
 
-| Adresse | Was |
+Tim hat sie am 17.11.2026 festgelegt (E-072); kurz steht sie auch in `AGENTS.md`.
+
+- **Versionen heißen** v0.1, v0.2, v0.3, v0.4 … v1.0, v1.1 und so weiter.
+- **Jede ältere Version bleibt dauerhaft spielbar** unter `/fondue/vX.Y/`, gebaut aus ihrem eingefrorenen Branch `vX.Y` (Tag `vX.Y`). Die Ausnahme ist v0.1: Ihr Branch heißt `classic`, ihre Tags `v0-alpha` und `v0.1`. Eingefrorene Branches und Tags werden nie verändert, verschoben oder gelöscht, und es gibt keinen Force-Push.
+- **Die neueste Version darf direkt nach `main`** und ist damit unter `/fondue/` live. Es braucht keine Freigabe von Tim oder Lenny. Die Pflichtprüfung `test` (`.github/workflows/ci.yml`: Typ-Check, Unit-Tests, Browser-Tests in sechs Teilen) muss grün sein, sonst ist kein Merge möglich. Vor dem Merge laufen trotzdem `npm test` und `npm run test:e2e`.
+- **Jede Version hat ihren eigenen Speicher-Schlüssel** (v0.2 `fondue.profile`, v0.3 `fondue.v3.*`, v0.4 `fondue.v4.*`), weil alle Adressen denselben Browser-Speicher teilen. Eine neue Version liest den Stand der Vorgängerversion einmal, rechnet ihn in ihr Format um und ändert oder löscht ihn nie.
+- **`/fondue/classic/`** zeigt dasselbe wie `/fondue/v0.1/` (alte Links). **`/fondue/next/`** ist die Testadresse der Version im Bau, gebaut aus ihrem Arbeitsbranch (heute `v0.4-dev`).
+
+| Adresse (`https://onlineshopbuilding-droid.github.io` + …) | Was |
 |---|---|
-| https://onlineshopbuilding-droid.github.io/fondue/ | das Spiel von `main` (bis zur Veröffentlichung von v0.3 noch v0.2) |
-| https://onlineshopbuilding-droid.github.io/fondue/next/ | v0.3, gebaut aus dem Branch `v0.3-dev`, zum Testen |
-| https://onlineshopbuilding-droid.github.io/fondue/next/dev/ | die Entwickler-Übersicht von v0.3, aus dem Code erzeugt |
-| https://onlineshopbuilding-droid.github.io/fondue/v0.2/ | der eingefrorene Stand v0.2 aus dem Branch `v0.2` (Tag `v0.2`) |
-| https://onlineshopbuilding-droid.github.io/fondue/classic/ | der alte Stand v0.1 vom Branch `classic` (Tag `v0-alpha`), E-032 |
-| https://onlineshopbuilding-droid.github.io/fondue/dev/ | die Entwickler-Übersicht des Stands auf `main` |
+| `/fondue/` | die neueste Version, gebaut aus `main` (bis zur Veröffentlichung von v0.4 noch v0.2) |
+| `/fondue/next/` und `/fondue/next/dev/` | v0.4 im Bau, gebaut aus `v0.4-dev`; die Entwickler-Übersicht dieses Stands |
+| `/fondue/v0.3/` | eingefrorenes v0.3 aus dem Branch `v0.3` (Tag `v0.3`) |
+| `/fondue/v0.2/` | eingefrorenes v0.2 aus dem Branch `v0.2` (Tag `v0.2`) |
+| `/fondue/v0.1/` und `/fondue/classic/` | eingefrorenes v0.1 aus dem Branch `classic` (Tags `v0-alpha`, `v0.1`), zweimal gebaut mit je eigenem Basis-Pfad (E-032) |
+| `/fondue/dev/` | die Entwickler-Übersicht des Stands auf `main` |
 
-Die Pages-Umgebung nimmt nur Läufe von `main` an. Nach einer Änderung an `v0.3-dev`, `v0.2` oder `classic` den Deploy deshalb von Hand starten: `gh workflow run deploy.yml --ref main` (Actions, „Run workflow“, Branch `main`). Zurückrollen auf einen alten Stand: `main` per Pull Request auf den Stand des Tags bringen (kein Force-Push). Alle Adressen teilen sich den Browser-Speicher, v0.3 benutzt aber nur Schlüssel `fondue.v3.…`. Auf dem iPhone legt man `/fondue/next/` über „Zum Home-Bildschirm“ als eigene App an; sie hat einen eigenen Speicher, getrennt vom bisherigen Symbol.
+Ab v0.5 liegt v0.4 zusätzlich unter `/fondue/v0.4/`. Die Liste in der Tabelle steht im Spiel (Options, Reiter „Versions“) und in der Entwickler-Übersicht, beide aus `src/config/versions.ts`.
 
-Alle Adressen teilen sich den Browser-Speicher. Deshalb speichert v0.3 unter eigenen Schlüsseln (`fondue.v3.*`) und lässt den Spielstand der Live-Version in Ruhe.
+`.github/workflows/deploy.yml` baut alle Stände in einen Ordner und stellt sie live, bei jedem Push auf `main` und auf Knopfdruck. Die Pages-Umgebung nimmt nur Läufe von `main` an. Nach einer Änderung an `v0.4-dev` oder einem eingefrorenen Branch den Deploy deshalb von Hand starten: `gh workflow run deploy.yml --ref main` (Actions, „Run workflow“, Branch `main`). Ist der Stand auf `v0.4-dev` kaputt, läuft die Auslieferung trotzdem durch: `/next/` zeigt dann eine kurze Seite „Next version build failed, see Actions“, und `/fondue/` ist davon nie betroffen. Zurückrollen von `/fondue/`: `main` per Pull Request auf den Stand des Tags bringen (kein Force-Push).
 
-Ist der Stand auf `v0.3-dev` kaputt, läuft die Auslieferung trotzdem durch: `/next/` (oder `/next/dev/`) zeigt dann eine kurze Seite „v0.3 build failed, see Actions“, und der Lauf hat eine Warnung. Das Spiel unter `/fondue/` ist davon nie betroffen.
+### Rezept: neue Version einfrieren und veröffentlichen
+
+Beispiel: v0.5 soll v0.4 ablösen. Der Ablauf bleibt für jede Version gleich.
+
+1. **Die abzulösende Version sichern.** Tag und eingefrorenen Branch `v0.4` auf den Stand von `main` setzen und pushen. Weil Tag und Branch denselben Namen haben, die Namen ausschreiben: `git tag v0.4 <commit>`, `git push origin refs/tags/v0.4`, `git branch v0.4 <commit>`, `git push origin refs/heads/v0.4`. Danach nie wieder anfassen.
+2. **Deploy-Workflow ergänzen.** In `.github/workflows/deploy.yml` einen weiteren Block „Check out the frozen v0.4“ und „Build v0.4 into /v0.4/“ einfügen, nach dem Muster von v0.3: `ref: v0.4`, `path: .v04-src`, `npm ci`, `npx vite build --base=/fondue/v0.4/ --outDir ../dist/v0.4 --emptyOutDir`. Den Kopfkommentar der Datei ergänzen. Die Blöcke für `/next/` zeigen dann auf den neuen Arbeitsbranch `v0.5-dev` (`ref`, Namen in den Warntexten). Als Pull Request nach `main`, bei grünem `test` mergen, Deploy starten. Dieser Merge ändert das Spiel unter `/fondue/` noch nicht.
+3. **Neuen Speicher-Präfix einführen**, bevor `/next/` die neue Version zum ersten Mal zeigt: `STORAGE_PREFIX` in `src/profile/schema.ts` auf `fondue.v5.`, `PROFILE_VERSION` bei Formatänderung erhöhen. Die einmalige Übernahme nach dem Muster von v0.4 bauen (`src/profile/fromV3.ts`, `Profile.load`, Merker `V3_IMPORT_KEY`): `fondue.v4.profile` nur lesen, nie schreiben oder löschen. Tests: Übernahme (`tests/unit/profile-v3import.test.ts` als Vorlage) und dass `fondue.v4.*`, `fondue.v3.*` und `fondue.profile` danach unverändert sind (`tests/e2e/storage.spec.ts`).
+4. **Versionsliste und Version nachziehen.** `GAME_VERSION` in `src/config/game.ts`. In `VERSIONS` (`src/config/versions.ts`) den Eintrag der abgelösten Version auf `/fondue/v0.4/` mit `current: false` setzen und die neue Version oben mit `/fondue/` und `current: true` eintragen. In den Eintrag der neuen Version gehört ihr kurzer englischer Name.
+5. **Neue Version nach `main`.** Pull Request vom Arbeitsbranch, `npm test`, `npm run test:e2e`, `npm run balance` grün, `test` auf GitHub grün, mergen. Der Deploy läuft durch den Push. Danach prüfen, dass `/fondue/` die neue Version zeigt und alle älteren Adressen laden (`curl -I` je Adresse und `npx playwright test --config playwright.live.config.ts` mit `EXPECT_BUILD=<kurzer Hash>`). Tag `v0.5` auf den gemergten Stand setzen.
+6. **Dokumente nachziehen.** `AGENTS.md` (Aktuelle Phase, Adressen, Speicher), dieses Handbuch (Tabelle oben, Speicher-Schlüssel, Falle 3), `docs/GDD.md`, `docs/ARCHITEKTUR.md`, `docs/ENTSCHEIDUNGEN.md`.
+
+Auf dem iPhone legt man die Adresse über „Zum Home-Bildschirm“ als eigene App an. Sie hat einen eigenen Speicher, getrennt vom Safari-Tab und von älteren Symbolen (Falle 17); ein v0.3-Stand, der nur im Tab liegt, wird dort nicht übernommen, sondern muss über den Export-Code der Options umziehen.
+
+Alle Adressen teilen sich den Browser-Speicher. Deshalb speichert v0.4 unter eigenen Schlüsseln (`fondue.v4.*`) und lässt die Spielstände der älteren Versionen in Ruhe.
 
 ## 8. Hilfen beim Ausprobieren
 
@@ -399,14 +440,14 @@ Eine Änderung ist erst fertig, wenn das ganze Spiel danach noch zusammenpasst. 
 
 | Bereich | Frage | Wo nachsehen |
 |---|---|---|
-| Texte | Stimmen Popups, Hilfe-Seiten, Tipps, Waffentexte, Sätze des Königs noch? Gleicher Ton, Englisch, „tap“ statt „click“? Kein Wort aus der Zeit vor v0.3 (Markt, Sterne, Tage, Offerings)? | `ENEMY_POPUPS`, `story.ts`, `HELP_SLIDES`, `LOADING_TIPS`, `STATION_TIPS` in `content.ts`, `desc`/`note` in `WEAPONS` |
+| Texte | Stimmen Popups, Hilfe-Seiten, Tipps, Waffentexte, Sätze des Königs noch? Gleicher Ton, Englisch, „tap“ statt „click“? Kein Wort aus der Zeit vor v0.3 (Markt, Sterne, Tage, Offerings) und keine Stelle, die einen Slot an ein Kampagnen-Level knüpft (Slots öffnen über die Burg-Stufe)? | `ENEMY_POPUPS`, `story.ts`, `HELP_SLIDES`, `LOADING_TIPS`, `STATION_TIPS` in `content.ts`, `desc`/`note` in `WEAPONS` |
 | Regeln | Widerspricht etwas Neues einer alten Regel? Sonderfälle wie Blase, gefrorene, gehaltene, hängende Gegner, Boss-Räuber, zweite Hand? | `src/sim/`, `docs/GDD.md` |
 | Kampagne | Passt die Level-Tabelle, ist jedes Level schaffbar, sind die Challenges erfüllbar? Neue Gegner und Freischaltungen an sinnvoller Stelle? | `node scripts/campaign-table.ts`, `npm run balance` |
-| Käse, Gold und Freischaltungen | Kommt regelmäßig etwas Neues, ist nichts zu früh fertig? Käse-Summe genau 500? Kein Farmen über Wiederholen, Endlos oder Koop? Hält der Stufen-Deckel? | `CHEESE`, `unlockLevel`/`cheesePrice`, `TIER_CAP_BY_LEVEL`, `docs/balance.md` |
+| Käse, Gold und Freischaltungen | Kommt regelmäßig etwas Neues, ist nichts zu früh fertig? Käse-Summe genau 500? Kein Farmen über Wiederholen, Endlos oder Koop? Hält der Stufen-Deckel? Ist keine Waffe vor der Burg-Stufe ihres Slots kaufbar, und ist jede Challenge mit den Waffen erfüllbar, die man an der Stelle sicher hat? | `CHEESE`, `unlockLevel`/`cheesePrice`, `TIER_CAP_BY_LEVEL`, `CASTLE_TIER_LEVEL`, `CASTLE_TIER_FOR_SLOT`, `docs/balance.md` |
 | Wirtschaft | Sind höhere Stufen teurer und besser? Ist alles erreichbar? Wappen-Grind bei 20 bis 30 Runden? | `WEAPON_TIER_GOLD`, `CASTLE_TIERS`, `HANDS`, `CRESTS` |
 | Schwierigkeit | Liegt der Verlauf im Ziel? Ohne Ausbau bleibt der mittlere Bot früh stecken, mit Ausbau kommt er weiter, der sehr gute Bot braucht in Boss-Leveln mehr Versuche, zu zweit ist es nicht leichter als allein | `docs/balance.md`, `npm run balance` |
 | Koop | Sieht der Gast dasselbe, reagiert er genauso? Belohnung für beide richtig (Gold beide, Käse nur Host)? | Falle 4, `src/net/snapshot.ts`, `CampaignMode.reward` |
-| Profil | Braucht es ein neues Feld, dann mit Migration? Überlebt ein altes Profil? Bleibt `fondue.profile` unberührt? | `src/profile/`, `tests/unit/profile*.test.ts` |
+| Profil | Braucht es ein neues Feld, dann mit Migration? Überlebt ein altes Profil, auch ein v0.3-Stand bei der Übernahme? Bleiben `fondue.v3.*` und `fondue.profile` unberührt? | `src/profile/`, `tests/unit/profile*.test.ts` |
 | Bedienung | Geht es mit Finger und Maus, Flächen mindestens 44 Pixel, weiter rechts und zurück links, zweite Hand ohne Zoom und Scrollen? | Abschnitt 10; Screenshots ansehen |
 | Aussehen | Passt es zum Stil? Überlappt etwas, wird etwas abgeschnitten? In allen sieben Burgstufen und Landschaften? | `PAL` in `src/art/characters/kit.ts`, `style.css`; Screenshots |
 | Rückmeldung | Hat etwas Neues Klang, Effekt und einen Hinweis für Spielende? | `handleEvent`, `SFX_RECIPES` |
@@ -432,7 +473,7 @@ Fondue ist ein Handyspiel im Querformat. Jede Entscheidung zu Bedienung, Schrift
 
 **Für jede neue Funktion**
 - Alles muss per Finger gehen. Tastatur, Hover und Rechtsklick sind nur Zusatz (die rechte Maustaste als zweite Hand ist ein Entwickler-Schalter).
-- Neue Bildschirme bekommen einen Browser-Test auf den drei Geräten und Screenshots unter `docs/screenshots/v0.3/`.
+- Neue Bildschirme bekommen einen Browser-Test auf den drei Geräten und Screenshots unter `docs/screenshots/v0.4/`.
 - Spieltexte sagen „tap“, nicht „click“.
 - Keine neue Abhängigkeit, die nur im Desktop-Browser läuft.
 
@@ -444,8 +485,8 @@ Fondue ist ein Handyspiel im Querformat. Jede Entscheidung zu Bedienung, Schrift
 
 | Thema | Heute | Nötig |
 |---|---|---|
-| Verpackung als App | Android-Testapp als Hülle um die Live-Seite, iPhone noch nicht; keine App und kein iOS-Gerüst in v0.3 | Spiel fest in die App packen (Capacitor), iPhone über TestFlight |
-| Spielstand | Profil im Browser (`fondue.v3.profile`) mit Version und Migrationskette, Export-Code, sofortiges Speichern, Fortsetzen unterbrochener Level | App-Speicher (Capacitor) hinter `ProfileStore`; später Accounts und Cloud |
+| Verpackung als App | Android-Testapp als Hülle um die Live-Seite, iPhone noch nicht; keine App und kein iOS-Gerüst in v0.4 | Spiel fest in die App packen (Capacitor), iPhone über TestFlight |
+| Spielstand | Profil im Browser (`fondue.v4.profile`) mit Version und Migrationskette, einmalige Übernahme des v0.3-Stands, Export-Code, sofortiges Speichern, Fortsetzen unterbrochener Level | App-Speicher (Capacitor) hinter `ProfileStore`; später Accounts und Cloud |
 | Leistung | Auf dem Laptop und im simulierten Handy gemessen | Auf echten Handys messen, bei Bedarf weniger Effekte |
 | Koop über Mobilfunk | STUN, öffentlicher PeerJS-Dienst, kein TURN, Verbindung wählbar über `pickTransport` | Eigener Vermittlungs- und Relay-Dienst (als weiterer Eintrag in `choose.ts`) |
 | Versionsprüfung | Host und Gast brauchen exakt denselben Build; klare Meldung bei Abweichung | Lockerer, weil in Stores nicht alle gleichzeitig aktualisieren |
@@ -461,7 +502,7 @@ Die Regeln stehen in `AGENTS.md`. `CLAUDE.md` und `GEMINI.md` verweisen nur dara
 1. `git pull`, damit alle vom selben Stand ausgehen.
 2. Ein Thema bekommt ein Issue, das einer Person zugewiesen wird, und einen eigenen Branch.
 3. Fertige Arbeit kommt als Pull Request mit `Fixes #NUMMER`.
-4. `main` ist geschützt: Ist die Prüfung `test` grün, mergen Tim oder Lenny. Der Merge geht sofort live.
+4. `main` ist geschützt: Ist die Prüfung `test` grün, ist der Merge möglich und geht sofort live. Für die neueste Version braucht er nach der Versionsregel (Abschnitt 7) keine Freigabe von Tim oder Lenny; Claude auf GitHub (`@claude`) mergt weiterhin nie selbst.
 
 **Claude auf GitHub:** `.github/workflows/claude.yml` startet Claude, wenn jemand mit Schreibrechten `@claude` in einem Issue oder Pull Request schreibt. Es läuft über das Abo von Tim (Geheimnis `CLAUDE_CODE_OAUTH_TOKEN`, ein Jahr gültig, danach mit `claude setup-token` erneuern).
 
