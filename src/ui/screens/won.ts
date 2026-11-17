@@ -5,6 +5,8 @@
 // into the shop for the first upgrade (D4), he announces a castle tier that can now be built, and he
 // introduces every station the level opened (C2). Slots are introduced in the shop, right after the
 // castle tier that opens them is built (src/ui/screens/keep.ts).
+// v0.4: a win that lets a new castle tier be built says so in its own banner, with the King's line
+// (CASTLE_READY_LINES) and, in a solo run, a button straight into the Keep Shop.
 import { CHEESE } from '../../config/currencies';
 import { CASTLE_TIERS, STATIONS } from '../../config/keep';
 import { weaponById } from '../../config/weapons';
@@ -95,9 +97,16 @@ export const wonScreen: Screen = {
     if (!rules || !reward) return '';
     const level = levelOf(rules.world, rules.level ?? 0);
     const guest = ctx.session?.role === 'guest';
-    const unlocks = reward.unlocks.length > 0
-      ? `<ul class="unlocks" id="unlocks">${reward.unlocks.map((u) => `<li>${esc(unlockName(u))}</li>`).join('')}</ul>`
+    const castle = guest ? undefined : reward.unlocks.find((u) => u.kind === 'castle');
+    const others = castle ? reward.unlocks.filter((u) => u !== castle) : reward.unlocks;
+    const unlocks = others.length > 0
+      ? `<ul class="unlocks" id="unlocks">${others.map((u) => `<li>${esc(unlockName(u))}</li>`).join('')}</ul>`
       : '';
+    const castleBanner = castle && castle.kind === 'castle'
+      ? `<div class="won-castle" id="wonCastle" data-tier="${castle.tier}"><span class="won-castle-ico" aria-hidden="true">🏰</span><span>${esc(unlockName(castle))}</span></div>`
+      : '';
+    // Straight into the shop only from a solo run: leaving a co-op run would close the room.
+    const shopButton = castle && !guest && ctx.session?.role !== 'host';
     const note = reward.counted ? '' : `<p class="note-line">${ctx.result?.devRun ? 'Developer run: nothing is kept.' : 'Already counted.'}</p>`;
     const cheese = !guest && level
       ? cheeseList(cheeseTexts(level.challenges), levelCheese(ctx.profile, rules.world, level.id), reward.cheeseBits)
@@ -106,7 +115,9 @@ export const wonScreen: Screen = {
     const king = guest ? { lines: [], toShop: false } : kingLines(ctx);
     const nav = guest
       ? navRow('<button class="alt" data-a="quit">Leave</button>')
-      : navRow('', `<button data-a="continue" id="continue">${king.toShop ? 'To the Keep Shop' : 'Continue'}</button>`);
+      : shopButton && !king.toShop
+        ? navRow('<button class="secondary" data-a="continue" id="continue">Continue</button>', '<button data-a="toShop" id="toShop">Build it in the Keep Shop</button>')
+        : navRow('', `<button data-a="continue" id="continue">${king.toShop ? 'To the Keep Shop' : 'Continue'}</button>`);
     // Three blocks: on a laptop they stack in this order; on a phone in landscape the head and the
     // purse share the left column and the King and the cheese the right one, so everything fits and
     // the nav row with Continue stays in sight below (style.css, `.won`).
@@ -114,7 +125,7 @@ export const wonScreen: Screen = {
       <div class="won-head"><h2>Level ${rules.level ?? ''} won!</h2>
         <div class="won-name" id="wonLevel">${esc(level?.name ?? '')}</div>
         <div class="won-cheese" id="wonCheese"><span class="cur-icon">🧀</span> +${reward.cheese}</div></div>
-      <div class="won-side">${kingSaysHtml(king.lines)}${note}${cheese}</div>
+      <div class="won-side">${castleBanner}${kingSaysHtml(king.lines)}${note}${cheese}</div>
       <div class="won-foot">${purse}${unlocks}
         ${reward.story ? `<p class="story" id="story">${esc(reward.story)}</p>` : ''}
         ${guest ? '<p class="note-line">The host decides what comes next.</p>' : ''}</div>
@@ -123,6 +134,7 @@ export const wonScreen: Screen = {
   onAction(action, _el, ctx) {
     switch (action) {
       case 'continue': ctx.afterRun(); break;
+      case 'toShop': ctx.leaveToMenu(); ctx.show('armoury'); break;
       case 'quit': ctx.leaveToMenu(); break;
     }
   },

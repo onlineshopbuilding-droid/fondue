@@ -26,8 +26,13 @@ export function loadoutHtml(ctx: ScreenContext): string {
       : def ? `<img src="${weaponUri(def.id, p.weaponTier(def.id) || 1)}" alt="">` : '<span class="lo-empty" aria-hidden="true">+</span>';
     const label = !open ? `${s.name} slot, opens with castle tier ${slotCastleTier(i)}`
       : `${s.name} slot: ${def ? `${def.name}, tier ${p.weaponTier(def.id)}` : 'empty'}. Tap to change.`;
-    return `<button class="lo-tile ${open ? '' : 'locked'} ${openSlot === i ? 'on' : ''}" data-a="loSlot" data-slot="${i}" id="lo-${i}" ${open ? '' : 'disabled'} aria-label="${esc(label)}">${inner}<span class="lo-role">${esc(s.name)}</span></button>`;
+    return `<button class="lo-tile ${open ? '' : 'locked'} ${openSlot === i ? 'on' : ''}" data-a="loSlot" data-slot="${i}" id="lo-${i}" ${open ? '' : 'disabled'} aria-label="${esc(label)}"${open ? '' : ` title="${esc(label)}"`}>${inner}<span class="lo-role">${esc(s.name)}</span></button>`;
   }).join('');
+  // The next slot to come, in words: slots open with the castle, never with a campaign level.
+  const next = SLOTS.map((s, i) => ({ s, i, tier: slotCastleTier(i) }))
+    .filter((x) => !slotOpen(p, ctx.world, x.i))
+    .sort((a, b) => a.tier - b.tier)[0];
+  const nextLine = next ? `<div class="lo-next" id="loNext"><span aria-hidden="true">🔒</span> ${esc(next.s.name)} slot opens with castle tier ${next.tier}</div>` : '';
   let choice = '';
   if (openSlot !== null && slotOpen(p, ctx.world, openSlot)) {
     const role = slotRole(openSlot);
@@ -38,7 +43,7 @@ export function loadoutHtml(ctx: ScreenContext): string {
     const none = worn ? `<button class="lo-pick none" data-a="loPick" data-slot="${openSlot}" data-id="" aria-label="Leave the slot empty"><span>Empty</span></button>` : '';
     choice = `<div class="lo-choice" id="loChoice">${picks}${none}${owned.length <= 1 ? '<span class="lo-hint">More weapons in the Keep Shop.</span>' : ''}</div>`;
   }
-  return `<div class="loadout" id="loadout"><div class="lo-strip">${tiles}</div>${choice}</div>`;
+  return `<div class="loadout" id="loadout"><div class="lo-strip">${tiles}</div>${choice || nextLine}</div>`;
 }
 
 /**

@@ -898,3 +898,63 @@ ul.cm-card-cheese li:nth-child(n + 4) { grid-column: 1 / -1; }
   ul.cm-card-cheese { font-size: 11.5px; }
   .cm-got { font-size: 9.5px; }
 }
+
+/* ------------------------------------------------------------------------------------------- */
+/* v0.4: castle tier on the campaign map, the storybook book, the castle banner of the win      */
+/* screen, the next-slot hint before a level and the castle tier next to each name in co-op.   */
+/* ------------------------------------------------------------------------------------------- */
+.cm-castle-tier {
+  font-family: 'Lilita One', sans-serif; color: var(--cream); text-shadow: 0 2px 0 var(--ink);
+  font-size: 18px; white-space: nowrap; padding: 2px 10px; border: 2px solid var(--ink); border-radius: 10px;
+  background: rgba(30, 16, 8, 0.35);
+}
+/* The small book in the top right corner: quiet, but a full 44 px to tap. */
+button.cm-book {
+  flex: none; width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; margin: 0;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1;
+  background: rgba(30, 16, 8, 0.3); border: 2px solid rgba(43, 22, 40, 0.6); border-radius: 10px; box-shadow: none; opacity: 0.85;
+}
+button.cm-book:hover { opacity: 1; }
+.cm-castle {
+  position: absolute; bottom: -9px; left: -12px; z-index: 2; padding: 0 4px; border-radius: 8px;
+  font-family: 'Lilita One', sans-serif; font-size: 11px; line-height: 16px; color: var(--ink); text-shadow: none;
+  background: #f4e6c4; border: 2px solid var(--ink); pointer-events: none; white-space: nowrap;
+}
+button.cm-st.castle { box-shadow: inset 0 -4px 0 rgba(43, 22, 40, 0.18), 0 0 0 3px #7a8c99, 0 3px 0 3px var(--ink); }
+.cm-card-castle { font-weight: 800; color: #4a3a66; padding: 3px 8px; border-radius: 8px; background: rgba(122, 140, 153, 0.18); }
+.won-castle {
+  display: flex; align-items: center; gap: 10px; margin: 0 0 6px; padding: 6px 12px; border: 3px solid var(--ink); border-radius: 12px;
+  font-family: 'Lilita One', sans-serif; font-size: 20px; color: var(--ink);
+  background: linear-gradient(180deg, #fff3c4 0%, #f2c75a 100%); box-shadow: 0 3px 0 rgba(43, 22, 40, 0.35);
+}
+.won-castle-ico { font-size: 28px; }
+.lo-next { margin-top: 4px; font-size: 13px; font-weight: 800; opacity: 0.8; text-align: center; }
+.seat { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 10px; }
+.seat-castle { font-size: 13px; font-weight: 800; color: #4a3a66; white-space: nowrap; }
+.room-note { font-size: 13px; opacity: 0.75; margin-top: 2px; }
+
+/* The storybook window (opened from the campaign map). */
+.storybook-veil {
+  position: absolute; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
+  padding: 12px; background: rgba(14, 16, 28, 0.55);
+}
+.panel.storybook { max-height: 100%; overflow: auto; text-align: center; }
+.storybook .sb-title { margin: 2px 0 6px; font-size: 22px; color: #853820; }
+.storybook .sb-text { text-align: left; font-size: 16px; line-height: 1.4; }
+.storybook .sb-text p { margin: 0 0 8px; }
+.storybook .sb-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.storybook .sb-foot button { min-width: 56px; min-height: 44px; font-size: 26px; }
+.storybook .sb-count { font-weight: 800; }
+.storybook .sb-more { margin-top: 6px; font-size: 14px; opacity: 0.75; }
+.storybook .sb-close { margin-top: 8px; min-height: 44px; }
+
+@media (max-height: 520px) {
+  .cm-castle-tier { font-size: 13px; padding: 1px 6px; }
+  .won-castle { font-size: 15px; padding: 3px 8px; margin-bottom: 3px; }
+  .won-castle-ico { font-size: 20px; }
+  .lo-next { font-size: 11px; margin-top: 2px; }
+  .seat-castle { font-size: 11px; }
+  .room-note { font-size: 11px; }
+  .storybook .sb-title { font-size: 18px; margin: 0 0 4px; }
+  .storybook .sb-text { font-size: 14px; }
+}
