@@ -45,14 +45,6 @@ export const CURVE = {
   earlyPower: 0.6,
   earlyAlive: 6,
   /**
-   * v0.4: from midFrom to midTo the keep has only two to four slots (gate, support and passive come with castle
-   * tiers 3 to 5, levels 12 to 28). Raider strength there is lowered by up to midEase, most at midFrom and
-   * fading to nothing at midTo, so weaker players do not get stuck right after the cauldron.
-   */
-  midFrom: 11,
-  midTo: 32,
-  midEase: 0.25,
-  /**
    * Strength of the raiders: 1 in level 1, growing by powerPerLevel per level, and from level powerLateFrom on
    * by powerLate more, growing with the square (the late campaign asks for tier 6 and 7, balance.md).
    */
@@ -295,12 +287,6 @@ export function bossFactorOf(level: number): number {
   return CURVE.bossPower + CURVE.bossPowerLate * late * late;
 }
 
-/** v0.4: share by which raiders are weaker in the levels with few slots (CURVE.midFrom..midTo), 0 elsewhere. */
-function midEaseOf(level: number): number {
-  if (level < CURVE.midFrom || level >= CURVE.midTo) return 0;
-  return CURVE.midEase * (CURVE.midTo - level) / (CURVE.midTo - CURVE.midFrom);
-}
-
 function buildLevel(level: number): LevelDef {
   const twist = TWISTS[level] ?? null;
   const bossInfo = BOSSES[level];
@@ -320,7 +306,7 @@ function buildLevel(level: number): LevelDef {
     waves,
     targetSeconds,
     challenges: challengesFor(level, levelCounts),
-    power: (powerOf(level) + (isEarly(level) ? CURVE.earlyPower : 0)) * (1 - midEaseOf(level)) * (boss ? bossFactorOf(level) : 1),
+    power: (powerOf(level) + (isEarly(level) ? CURVE.earlyPower : 0)) * (boss ? bossFactorOf(level) : 1),
     boss,
     twist,
     story: LEVEL_STORY[level - 1] ?? '',
