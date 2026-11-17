@@ -59,7 +59,8 @@ for (const d of PHONE_DEVICES) {
     }
     // Endless opens after the campaign's first levels; this profile has them, so its page can be checked too.
     await unlockEndless(page);
-    const pages: [string, boolean][] = [['options', false], ['help', true], ['scores', false], ['credits', false], ['armoury', false], ['play', true], ['coop', true]];
+    // Help, scores and credits are options tabs since v0.4 (checked by finger in tests/e2e/options.spec.ts).
+    const pages: [string, boolean][] = [['options', false], ['armoury', false], ['play', true], ['coop', true]];
     for (const [id, noScroll] of pages) {
       await tapStation(page, id, true);
       await waitScreen(page, id === 'play' ? 'play' : id);

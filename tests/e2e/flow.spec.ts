@@ -2,7 +2,6 @@ import { expect, test, type Page } from '@playwright/test';
 import { GAME_VERSION } from '../../src/config/game';
 import { DEFAULT_WORLD, levelOf } from '../../src/config/worlds';
 import { ENEMY_POPUPS } from '../../src/config/worlds/fondue/story';
-import { HELP_SLIDES } from '../../src/ui/content';
 import {
   DEVICES, breakGate, clearField, drag, endLevel, gameState, nextWave, spawn, startSolo, station, tapStation, unlockEndless, waitFor,
   waitForGame, waitForLobby, openGame, screenOf, waitGame, waitPhase, waitScreen, GAME_WAIT,
@@ -13,7 +12,10 @@ import {
 const sim = (s: string) => `window.__fondue.session.sim.s.${s}`;
 const headline = (page: Page) => page.locator('.panel h2');
 /** The start of the line that says why endless is still locked (src/ui/screens/main.ts, ENDLESS_LOCKED; that file cannot load outside the app). */
-const ENDLESS_LOCKED = /^Endless opens with your fifth slot/;
+const ENDLESS_LOCKED = /^Endless opens once you win level 10/;
+/** What the King says at the broken tables (src/config/lobby.ts, TABLE_LOCKED_LINES). */
+const ENDLESS_TABLE_LINE = /^Win level 10 and the carpenters will fix this table/;
+const COOP_TABLE_LINE = /^Win level 3 and the carpenters will fix this table for a feast with a friend/;
 const wallet = (page: Page) => page.evaluate(() => ({ ...(window as any).__fondue.profile.data.wallet }) as { cheese: number; gold: number; crests: number });
 /** Nothing of the old in-run market may show up: no results screen, no market, no buy buttons. */
 const BUY_UI = '#toShop, #ready, #market, #marketWindow, #marketHint, [data-buy]';
@@ -35,35 +37,44 @@ test('lobby: every station opens its page and Back returns to the hall', async (
   await waitForGame(page);
   await waitForLobby(page);
   const ids = (await page.evaluate(() => (window as any).__fondue.lobby.spots().map((s: any) => s.id))) as string[];
-  // Nothing to continue on a fresh profile, so the door has no sign; everything else is there.
-  expect(ids.sort()).toEqual(['armoury', 'campaign', 'coop', 'credits', 'help', 'options', 'play', 'scores', 'storybook'].sort());
+  // Nothing to continue on a fresh profile, so the door has no sign; storybook, help, credits and
+  // scores are no stations any more (options tabs and campaign map).
+  expect(ids.sort()).toEqual(['armoury', 'campaign', 'coop', 'options', 'play'].sort());
   await page.screenshot({ path: 'mobile-screenshots/lobby.png' });
-  // Endless is still locked on a fresh profile: the pot only makes the King say why.
+  // Both tables are still broken on a fresh profile: a tap only makes the King say when they are mended.
   await tapStation(page, 'play', false);
-  await waitFor(() => page.evaluate(() => (window as any).__fondue.lobby.lastLine as string), (l) => ENDLESS_LOCKED.test(l), 5000);
+  await waitFor(() => page.evaluate(() => (window as any).__fondue.lobby.lastLine as string), (l) => ENDLESS_TABLE_LINE.test(l), 5000);
+  expect(await screenOf(page)).toBe('main');
+  await tapStation(page, 'coop', false);
+  await waitFor(() => page.evaluate(() => (window as any).__fondue.lobby.lastLine as string), (l) => COOP_TABLE_LINE.test(l), 5000);
   expect(await screenOf(page)).toBe('main');
   await unlockEndless(page);
-  const pages: [string, string][] = [['options', 'Options'], ['scores', 'Scores'], ['credits', 'Credits'], ['armoury', 'Keep Shop'], ['coop', 'Co-op'], ['play', 'Endless']];
+  const pages: [string, RegExp][] = [['options', /Options/], ['armoury', /Shop/], ['coop', /Co-op/], ['play', /Endless/]];
   for (const [id, title] of pages) {
     await tapStation(page, id, false);
-    await expect(headline(page)).toHaveText(title);
+    await expect(headline(page).first()).toHaveText(title);
     await page.click('button[data-a="main"]');
     await waitScreen(page, 'main');
   }
-  await tapStation(page, 'help', false);
-  const seen = new Set<string>();
-  for (let i = 0; i < HELP_SLIDES.length; i++) {
-    seen.add(await headline(page).innerText());
-    await page.click('button[data-a="helpNext"]');
-  }
-  expect(seen.size).toBe(HELP_SLIDES.length);
-  await page.click('button[data-a="main"]');
   await tapStation(page, 'campaign', false);
   await expect(page.locator('#campaignMap')).toBeVisible();
   await page.click('button[data-a="main"]');
-  await tapStation(page, 'storybook', false);
-  await waitFor(() => page.evaluate(() => (window as any).__fondue.lobby.storybookOpen as boolean), (b) => b, 5000);
-  await page.evaluate(() => (window as any).__fondue.lobby.closeStorybook());
+  expect(errors).toEqual([]);
+});
+
+test('lobby: from the start of the app into a level takes at most three taps', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await page.goto('/?menu=1');
+  await waitForGame(page);
+  await waitForLobby(page);
+  let taps = 0;
+  // Campaign table, the next level on the map, Play.
+  await tapStation(page, 'campaign', false); taps++;
+  await page.click('.cm-st[data-level="1"]'); taps++;
+  await page.click('#playLevel'); taps++;
+  await waitFor(() => page.evaluate(() => !!(window as any).__fondue.session), (b) => b, GAME_WAIT);
+  expect(taps).toBeLessThanOrEqual(3);
   expect(errors).toEqual([]);
 });
 
@@ -100,8 +111,11 @@ test('the plain menu (?menu=html) has a button for every station and shows the b
   await page.goto('/?menu=html');
   await waitForGame(page);
   await expect(page.locator('.version')).toContainText(`v${GAME_VERSION} · build`);
-  for (const a of ['campaign', 'coop', 'armoury', 'options', 'scores', 'help', 'credits']) await expect(page.locator(`button[data-a="${a}"]`)).toBeVisible();
+  for (const a of ['campaign', 'armoury', 'options']) await expect(page.locator(`button[data-a="${a}"]`)).toBeVisible();
+  // Scores, help and credits are tabs of the options now, not menu buttons.
+  for (const a of ['scores', 'help', 'credits']) await expect(page.locator(`.menu button[data-a="${a}"]`)).toHaveCount(0);
   expect(await page.evaluate(() => (window as any).__fondue.lobby.visible)).toBe(false);
+  await expect(page.locator('.menu-main button', { hasText: 'Co-op' })).toBeDisabled();
   // Endless is locked on a fresh profile and says why; with the progress it opens.
   await expect(page.locator('.menu-main button', { hasText: 'Endless' })).toBeDisabled();
   expect(await page.locator('.menu-main button', { hasText: 'Endless' }).getAttribute('title')).toMatch(ENDLESS_LOCKED);

@@ -78,8 +78,8 @@ export const STATIONS: readonly StationDef[] = [
   { id: 'continueLevel', label: 'Continue', art: '', x: 250, y: 318, r: 100, lx: 250, ly: 150, size: 32 },
   { id: 'coop', label: 'Co-op', art: 'coopTable', tiered: true, brokenArt: 'coopTableBroken', scale: 0.9, depth: 6, x: 262, y: 604, r: 104, lx: 262, ly: 700 },
   { id: 'play', label: 'Endless', art: 'endlessTable', tiered: true, brokenArt: 'endlessTableBroken', scale: 0.8, depth: 4, x: 478, y: 468, r: 92, lx: 478, ly: 372 },
-  { id: 'campaign', label: 'Campaign', art: 'mapTable', tiered: true, scale: 0.95, depth: 5, x: 680, y: 582, r: 150, lx: 680, ly: 700, size: 38 },
-  { id: 'armoury', label: 'Shop', art: 'armourStand', scale: 0.95, depth: 6, x: 950, y: 584, r: 110, lx: 950, ly: 700 },
+  { id: 'campaign', label: 'Campaign', art: 'mapTable', tiered: true, scale: 1.05, depth: 5, x: 680, y: 580, r: 150, lx: 680, ly: 700, size: 38 },
+  { id: 'armoury', label: 'Shop', art: 'armourStand', scale: 0.95, depth: 6, x: 968, y: 584, r: 110, lx: 968, ly: 700 },
   { id: 'options', label: 'Options', art: 'cogPlaque', scale: 0.62, depth: 8, x: 66, y: 66, r: 82, lx: 66, ly: 128, size: 20, corner: true },
 ];
 
