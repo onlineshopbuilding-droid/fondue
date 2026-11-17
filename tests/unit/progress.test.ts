@@ -1,18 +1,20 @@
 /**
  * Progression through src/modes/progress.ts: unlocking with cheese, tiers with gold (tier 7 also
- * Raider Crests), the tier cap, wearing weapons (tiers stay), cheese paid once, and reload.
+ * Raider Crests), castle tiers gated by won levels (v0.4), the tier cap of weapons and hand, wearing weapons (tiers stay), cheese paid once, and reload.
  */
 import { describe, expect, it } from 'vitest';
 import { CHEESE } from '../../src/config/currencies';
 import { CASTLE_TIERS, STATIONS } from '../../src/config/keep';
 import { HANDS } from '../../src/config/hand';
-import { CREST_COST, TIER_MAX, WEAPON_TIER_GOLD } from '../../src/config/tiers';
+import { CASTLE_TIER_LEVEL } from '../../src/config/slotTiers';
+import { SLOTS } from '../../src/config/slots';
+import { CREST_COST, TIER_CAP_BY_LEVEL, TIER_MAX, TIER_MAX_NEEDS_STATION, WEAPON_TIER_GOLD } from '../../src/config/tiers';
 import { WEAPONS } from '../../src/config/weapons';
 import { CAMPAIGN } from '../../src/modes';
 import {
   addCrests, addGold, applyLevelCheese, buy, cheeseMask, completeTutorial, equip, levelCheese, quote, unlockWeapon,
 } from '../../src/modes/progress';
-import { slotRole, tierCap, weaponGoldScale, weaponRole } from '../../src/modes/unlocks';
+import { slotOpen, slotRole, tierCap, weaponGoldScale, weaponRole } from '../../src/modes/unlocks';
 import { MemoryProfileStore, PROFILE_KEY, Profile } from '../../src/profile';
 
 const W = 'fondue';
@@ -89,7 +91,7 @@ describe('quote and buy', () => {
 
   it('refuses without enough gold, and changes nothing', async () => {
     const p = await fresh();
-    winLevels(p, 1);
+    winLevels(p, 6);
     addGold(p, CASTLE_TIERS[1].gold - 1);
     const q = buy(p, { kind: 'castle' }, W);
     expect(q.allowed).toBe(false);
@@ -102,10 +104,49 @@ describe('quote and buy', () => {
     const p = await fresh();
     addGold(p, RICH);
     p.edit((d) => { d.keep.stations.perch = 1; d.keep.castleTier = 6; });
+    winLevels(p, 75);
     expect(quote(p, { kind: 'castle' }, W).reason).toBe('crests');
     addCrests(p, CASTLE_TIERS[6].crests);
     expect(buy(p, { kind: 'castle' }, W).allowed).toBe(true);
     expect(p.data.keep.castleTier).toBe(7);
+  });
+
+  it('each castle tier needs its won campaign level first (reason "level"), then gold (and crests for 7), and opens its slot', async () => {
+    const p = await fresh();
+    completeTutorial(p, W);
+    addGold(p, RICH);
+    addCrests(p, RICH);
+    for (let tier = 2; tier <= 7; tier++) {
+      const level = CASTLE_TIER_LEVEL[tier - 1];
+      winLevels(p, level - 1);
+      const locked = quote(p, { kind: 'castle' }, W);
+      expect(locked.toTier, `tier ${tier}`).toBe(tier);
+      expect(locked.reason, `tier ${tier} before level ${level}`).toBe('level');
+      expect(buy(p, { kind: 'castle' }, W).allowed).toBe(false);
+      expect(p.data.keep.castleTier).toBe(tier - 1);
+      winLevels(p, level);
+      expect(buy(p, { kind: 'castle' }, W).allowed, `tier ${tier} after level ${level}`).toBe(true);
+      expect(p.data.keep.castleTier).toBe(tier);
+      const slot = SLOTS.findIndex((s) => s.castleTier === tier);
+      if (slot >= 0) expect(slotOpen(p, W, slot), `slot ${slot} with tier ${tier}`).toBe(true);
+    }
+    expect(quote(p, { kind: 'castle' }, W).reason).toBe('max');
+  });
+
+  it('with the level won but too little gold the castle says "gold", and the hand keeps the tier cap', async () => {
+    const p = await fresh();
+    winLevels(p, 6);
+    expect(quote(p, { kind: 'castle' }, W).reason).toBe('gold');
+    addGold(p, RICH);
+    p.edit((d) => { d.keep.handTier = 3; });
+    expect(quote(p, { kind: 'hand' }, W).reason).toBe('cap');
+  });
+
+  it('no castle tier can be built before the tier cap of weapons and hand allows that tier', () => {
+    for (let tier = 2; tier <= 7; tier++) {
+      const cap = TIER_CAP_BY_LEVEL.find((step) => step.cap >= tier)?.afterLevel ?? STATIONS[TIER_MAX_NEEDS_STATION].unlockLevel;
+      expect(CASTLE_TIER_LEVEL[tier - 1], `castle tier ${tier}`).toBeGreaterThanOrEqual(cap);
+    }
   });
 
   it('the tier cap follows campaign progress: 3, then 4 after level 10, 5 after 25, 6 after 45, 7 only with the Eagle Perch', async () => {
@@ -172,7 +213,7 @@ describe('quote and buy', () => {
   it('every purchase is saved at once, without waiting for the background save', async () => {
     const store = new MemoryProfileStore();
     const p = await fresh(store);
-    winLevels(p, 1);
+    winLevels(p, 6);
     addGold(p, CASTLE_TIERS[1].gold);
     buy(p, { kind: 'castle' }, W);
     // No await: flushSync wrote synchronously.
@@ -216,6 +257,8 @@ describe('equip (A1)', () => {
     p.setWeaponTier(slow.id, 2);
     expect(equip(p, 1, slow.id, W)).toBe(false); // slot 1 is not open yet
     winLevels(p, 20);
+    expect(equip(p, 1, slow.id, W)).toBe(false); // won levels open no slot
+    p.edit((d) => { d.keep.castleTier = 2; });
     expect(equip(p, 1, slow.id, W)).toBe(true);
     expect(p.data.keep.loadout[1]).toBe(slow.id);
     expect(p.data.keep.loadout.filter((id) => id === slow.id)).toHaveLength(1);

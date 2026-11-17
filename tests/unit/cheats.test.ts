@@ -9,11 +9,11 @@ import { TIER_MAX } from '../../src/config/tiers';
 import { weaponById } from '../../src/config/weapons';
 import { DEFAULT_WORLD } from '../../src/config/worlds';
 import {
-  CHEAT_BADGE, cheatBadge, cheatsUsed, giveCheese, giveCrests, giveGold, resetProfile, setCastleTier, setHandTier,
+  CHEAT_BADGE, cheatBadge, cheatCastleTier, cheatsUsed, giveCheese, giveCrests, giveGold, resetProfile, setCastleTier, setHandTier,
   setSecondHandSimulated, setStationTier, setWeaponTier, unlockEverything, unlockLevels,
 } from '../../src/modes/cheats';
 import { importCode, MemoryProfileStore, Profile } from '../../src/profile';
-import { slotOpen } from '../../src/modes/unlocks';
+import { castleTierUnlocked, slotOpen } from '../../src/modes/unlocks';
 
 const W = DEFAULT_WORLD;
 const fresh = (): Promise<Profile> => Profile.load(new MemoryProfileStore());
@@ -44,12 +44,15 @@ describe('developer cheats', () => {
     expect(importCode(p.exportCode()).cheats.used).toBe(true);
   });
 
-  it('unlocks levels: they count as won and open the slots', async () => {
+  it('unlocks levels: they count as won and make castle tiers buildable, but open no slot by themselves', async () => {
     const p = await fresh();
     expect(slotOpen(p, W, 4)).toBe(false);
     unlockLevels(p, W, 12);
     expect(p.highestLevelDone(W)).toBe(12);
-    expect(slotOpen(p, W, 4)).toBe(true);
+    expect(slotOpen(p, W, 0)).toBe(true);
+    expect(slotOpen(p, W, 1)).toBe(false);
+    expect(castleTierUnlocked(p, W, 3)).toBe(true);
+    expect(castleTierUnlocked(p, W, 4)).toBe(false);
     expect(p.hasWeapon('wheel')).toBe(true);
     expect(cheatsUsed(p)).toBe(true);
     unlockLevels(p, W, 100000);
@@ -73,8 +76,23 @@ describe('developer cheats', () => {
   it('a weapon set by cheat goes into its open, empty slot', async () => {
     const p = await fresh();
     unlockLevels(p, W, 3);
+    setWeaponTier(p, W, 'mortar', 2);
+    // The gate slot is closed at castle tier 1: owned, but not worn.
+    expect(p.data.keep.loadout[2]).toBeNull();
+    expect(cheatCastleTier(p, 2)).toBe(2);
     setWeaponTier(p, W, 'cheese', 2);
     expect(p.data.keep.loadout[1]).toBe('cheese');
+  });
+
+  it('cheatCastleTier opens the slots of that tier and marks the profile', async () => {
+    const p = await fresh();
+    unlockLevels(p, W, 1);
+    const marks = p.data.cheats.log.length;
+    expect(cheatCastleTier(p, 4)).toBe(4);
+    expect([0, 1, 2, 3, 4].map((s) => slotOpen(p, W, s))).toEqual([true, true, true, true, false]);
+    expect(p.data.cheats.log.length).toBe(marks + 1);
+    expect(cheatsUsed(p)).toBe(true);
+    expect(setCastleTier).toBe(cheatCastleTier);
   });
 
   it('sets castle, hand and station tiers', async () => {
@@ -92,9 +110,11 @@ describe('developer cheats', () => {
     expect(cheatsUsed(p)).toBe(true);
   });
 
-  it('unlocks everything: all slots open, every weapon and station owned', async () => {
+  it('unlocks everything: castle tier 5 with all slots open, levels up to 28 won, every weapon and station owned', async () => {
     const p = await fresh();
     unlockEverything(p, W);
+    expect(p.data.keep.castleTier).toBe(5);
+    expect(p.highestLevelDone(W)).toBe(28);
     for (let s = 0; s < 5; s++) expect(slotOpen(p, W, s)).toBe(true);
     expect(p.hasWeapon('forks')).toBe(true);
     expect(p.data.keep.stations.cauldron).toBeGreaterThanOrEqual(1);

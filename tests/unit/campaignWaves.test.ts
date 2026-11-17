@@ -1,12 +1,13 @@
 /**
  * The campaign as waves on the permanent keep (F2): the field is never quiet for long, levels last
  * as long as planned, the keep of the profile goes into every run, gold stays, cheese is paid once,
- * endless opens with the fifth slot, every challenge can be met in its level, and every raider
+ * endless opens once level 10 is won, every challenge can be met in its level, and every raider
  * appears first where the table says.
  */
 import { describe, expect, it } from 'vitest';
 import { runGame } from '../../src/bots/harness';
 import { ENEMIES, ENEMY_TYPES, type EnemyType } from '../../src/config/enemies';
+import { CASTLE_TIER_FOR_SLOT, CASTLE_TIER_LEVEL, CHALLENGE_SLOT_MARGIN } from '../../src/config/slotTiers';
 import { DIFFICULTIES, WAVES } from '../../src/config/waves';
 import { WEAPONS } from '../../src/config/weapons';
 import { levelOf, worldById } from '../../src/config/worlds';
@@ -176,9 +177,10 @@ describe('planned length of the levels (B1)', () => {
 });
 
 describe('the permanent keep goes into the run (A1)', () => {
-  /** A profile at level 7 won (slots 0 to 3 open), with one owned weapon per open slot at a tier. */
+  /** A profile at level 7 won with castle tier 4 (slots 0 to 3 open), with one owned weapon per open slot at a tier. */
   async function keptProfile(store = new MemoryProfileStore()) {
     const p = await profileWith(7, store);
+    p.edit((d) => { d.keep.castleTier = 4; });
     const worn: { slot: number; id: string; tier: number }[] = [];
     for (let slot = 0; slot < 4; slot++) {
       const def = WEAPONS.find((w) => w.enabled && weaponRole(w) === slotRole(slot));
@@ -192,7 +194,6 @@ describe('the permanent keep goes into the run (A1)', () => {
     // A passive weapon written into the closed fifth slot must not come along.
     const passive = WEAPONS.find((w) => w.enabled && weaponRole(w) === slotRole(4));
     p.edit((d) => {
-      d.keep.castleTier = 3;
       d.keep.handTier = 2;
       d.keep.stations.cauldron = 2;
       if (passive) { d.keep.weapons[passive.id] = { tier: 4 }; d.keep.loadout[4] = passive.id; }
@@ -213,7 +214,7 @@ describe('the permanent keep goes into the run (A1)', () => {
     expect(lo.slotWeapon[4]).toBeNull();
     if (passive) expect(lo.weaponTier[passive]).toBeUndefined();
     expect(setup.rules.slotsOpen).toEqual([true, true, true, true, false]);
-    expect(lo.gateTier).toBe(2);
+    expect(lo.gateTier).toBe(3);
     expect(lo.stations.cauldron).toBe(true);
     expect(lo.stations.perch).toBe(false);
     expect(lo.stationTier?.cauldron).toBe(2);
@@ -235,7 +236,7 @@ describe('the permanent keep goes into the run (A1)', () => {
     const lo = CAMPAIGN.buildRun(again, { world: W, level: 8 }, env()).start.loadout;
     expect(lo.slotWeapon[slot]).toBe(id);
     expect(lo.weaponTier[id]).toBe(tier);
-    expect(lo.gateTier).toBe(2);
+    expect(lo.gateTier).toBe(3);
   });
 });
 
@@ -334,10 +335,13 @@ describe('the five cheese of a level are paid once each', () => {
 });
 
 describe('endless (E1)', () => {
-  it('is locked until the fifth slot opens: not after 10 won levels, open after 11', async () => {
+  it('is locked until level 10 is won: not after 9 won levels, open after 10, with castle tier 1 and only the damage slot', async () => {
     expect(ENDLESS.isAvailable(await profileWith(0), W)).toBe(false);
-    expect(ENDLESS.isAvailable(await profileWith(10), W)).toBe(false);
-    expect(ENDLESS.isAvailable(await profileWith(11), W)).toBe(true);
+    expect(ENDLESS.isAvailable(await profileWith(9), W)).toBe(false);
+    const p = await profileWith(10);
+    expect(p.data.keep.castleTier).toBe(1);
+    expect(ENDLESS.isAvailable(p, W)).toBe(true);
+    expect(ENDLESS.buildRun(p, { world: W, difficulty: 'medium' }, env()).rules.slotsOpen).toEqual([true, false, false, false, false]);
   });
 
   it('pays gold but never cheese', async () => {
@@ -390,6 +394,9 @@ describe('every challenge can be met in its own level (A2)', () => {
           case 'weaponShots': {
             const id = String(c.params.weapon);
             if (!weaponUsableIn(l.id, id)) say(`${id} cannot be worn in this level`);
+            // A3: the castle tier of the weapon's slot must have been buildable for CHALLENGE_SLOT_MARGIN won levels.
+            const tier = CASTLE_TIER_FOR_SLOT[WEAPONS.find((w) => w.id === id)?.slot ?? 'passive'];
+            if (tier > 1 && l.id - 1 < CASTLE_TIER_LEVEL[tier - 1] + CHALLENGE_SLOT_MARGIN) say(`${id} needs castle tier ${tier}, not surely built by level ${l.id}`);
             if (WEAPONS.find((w) => w.id === id)?.slot === 'passive') say(`${id} is passive and cannot be used by hand`);
             break;
           }

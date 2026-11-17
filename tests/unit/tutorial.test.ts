@@ -97,20 +97,23 @@ describe('introductions of slots and stations (C2)', () => {
     expect(STATION_INTROS.perch).toContain('Eagle Perch');
   });
 
-  it('a slot is introduced once, when it opens; stations when they can be unlocked', async () => {
+  it('a slot is introduced once, when its castle tier is built (won levels alone open none); stations when they can be unlocked', async () => {
     const p = await newProfile();
     finishPrelude(p);
     expect(pendingIntros(p, W)).toEqual([]);
-    p.markLevelDone(W, 1);
+    for (let l = 1; l <= 6; l++) p.markLevelDone(W, l);
     expect(pendingIntros(p, W)).toEqual([]);
-    p.markLevelDone(W, 2);
+    // Castle tier 2 built: the slow slot opens and waits for its introduction.
+    p.edit((d) => { d.keep.castleTier = 2; });
     expect(pendingIntros(p, W)).toEqual([{ kind: 'slot', slot: 1 }]);
     expect(markIntroSeen(p, { kind: 'slot', slot: 1 })).toBe(true);
     expect(markIntroSeen(p, { kind: 'slot', slot: 1 })).toBe(false);
     expect(p.data.seen.slotIntros).toEqual([1]);
     expect(pendingIntros(p, W)).toEqual([]);
-    for (let l = 3; l <= 16; l++) p.markLevelDone(W, l);
-    expect(pendingIntros(p, W)).toEqual([{ kind: 'slot', slot: 2 }, { kind: 'slot', slot: 3 }, { kind: 'slot', slot: 4 }, { kind: 'station', station: 'cauldron' }]);
+    for (let l = 7; l <= 16; l++) p.markLevelDone(W, l);
+    expect(pendingIntros(p, W)).toEqual([{ kind: 'station', station: 'cauldron' }]);
+    p.edit((d) => { d.keep.castleTier = 3; });
+    expect(pendingIntros(p, W)).toEqual([{ kind: 'slot', slot: 2 }, { kind: 'station', station: 'cauldron' }]);
   });
 });
 

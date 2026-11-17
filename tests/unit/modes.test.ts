@@ -189,10 +189,12 @@ describe('endless mode', () => {
     expect(fresh.start.wave).toBe(1);
     expect(fresh.start.gold).toBe(0);
     expect(fresh.devRun).toBe(false);
-    // Endless opens with the fifth slot (E1); see campaignWaves.test.ts for the exact level.
+    // Endless opens once level 10 is won (B4); see campaignWaves.test.ts for the exact level.
     expect(ENDLESS.isAvailable(p, W)).toBe(false);
     const won = await profileAt(11);
     won.setWeaponTier('wheel', 4);
+    // Its open slots are the castle's: all five from castle tier 5.
+    won.edit((d) => { d.keep.castleTier = 5; });
     const setup = ENDLESS.buildRun(won, { world: W, difficulty: 'medium' }, env());
     expect(ENDLESS.isAvailable(won, W)).toBe(true);
     expect(setup.rules.slotsOpen.every((open) => open)).toBe(true);

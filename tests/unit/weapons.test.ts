@@ -6,6 +6,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { WORLD } from '../../src/config/field';
 import { STATIONS } from '../../src/config/keep';
+import { CASTLE_TIER_LEVEL } from '../../src/config/slotTiers';
 import { SLOTS, SLOT_ROLES } from '../../src/config/slots';
 import {
   MAX_TIER, WEAPONS, activeWeapons, firesOnItsOwn, weaponById, weaponsForSlot,
@@ -57,15 +58,18 @@ describe('the weapon table', () => {
     for (const w of WEAPONS) expect(SLOTS.filter((s) => s.role === w.slot), w.id).toHaveLength(1);
   });
 
-  it('the slots open at levels 0, 2, 4, 7 and 11 and the first weapon of each comes with its slot', () => {
-    const open: Record<string, number> = { damage: 0, slow: 2, gate: 4, support: 7, passive: 11 };
+  it('the slots open with castle tiers 1 to 5; no weapon comes before the castle tier of its slot can be built', () => {
+    const tierOf: Record<string, number> = { damage: 1, slow: 2, gate: 3, support: 4, passive: 5 };
     SLOTS.forEach((s, i) => {
-      expect(s.unlockLevel, s.role).toBe(open[s.role]);
+      expect(s.castleTier, s.role).toBe(tierOf[s.role]);
       // The King's line lives once, in the world story (SLOT_INTROS), and the unlock table reads it.
       expect(slotIntro(i), s.role).toBe(SLOT_INTROS[i]);
       expect(slotIntro(i).length, s.role).toBeGreaterThan(10);
+      const buildable = CASTLE_TIER_LEVEL[s.castleTier - 1];
+      for (const w of weaponsForSlot(s.role)) expect(w.unlockLevel, w.id).toBeGreaterThanOrEqual(buildable);
+      // The first weapon of a slot comes exactly when its castle tier can be built.
       const first = Math.min(...weaponsForSlot(s.role).map((w) => w.unlockLevel));
-      expect(first, s.role).toBe(s.unlockLevel);
+      expect(first, s.role).toBe(buildable);
     });
   });
 
@@ -85,7 +89,10 @@ describe('the weapon table', () => {
   it('unlocks spread over the campaign: something new every few levels, up to about level 80', () => {
     const levels = WEAPONS.map((w) => w.unlockLevel).sort((a, b) => a - b);
     expect(new Set(levels).size).toBe(levels.length);
-    for (let i = 1; i < levels.length; i++) expect(levels[i] - levels[i - 1], `after level ${levels[i - 1]}`).toBeLessThanOrEqual(4);
+    // From v0.4 the castle tiers are unlocks too (CASTLE_TIER_LEVEL), and weapons wait for their slot's tier:
+    // with them, something new comes at least every 6 levels.
+    const all = [...new Set([...levels, ...CASTLE_TIER_LEVEL, STATIONS.cauldron.unlockLevel, STATIONS.perch.unlockLevel])].sort((a, b) => a - b);
+    for (let i = 1; i < all.length; i++) expect(all[i] - all[i - 1], `after level ${all[i - 1]}`).toBeLessThanOrEqual(6);
     expect(levels[levels.length - 1]).toBeGreaterThanOrEqual(75);
     expect(levels[levels.length - 1]).toBeLessThanOrEqual(85);
   });
