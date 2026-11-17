@@ -75,7 +75,7 @@ Stand: 100 Level, 1989 Wellen, 10 Boss-Level, geplant zusammen 498 Minuten. Jede
 | Crowcaller | 52 |
 | Yeti | 61 |
 
-Von Anfang an da: Slot 1 (Damage), Waffe Rolling Wheel.
+Von Anfang an da: Waffe Rolling Wheel.
 
 ### Alle Level
 
@@ -84,35 +84,35 @@ Dauer: geplante Länge (m:ss). Räuber: alle Wellen zusammen, allein gespielt; d
 | Level | Name | Landschaft | Dauer | Wellen | Räuber (größte Welle) | Neue Räuber | Besonderheit | Boss | Stärke | Challenges | Sieg schaltet frei |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | Pot Helmets | Wiese | 1:17 | 5 | 21 (6) | Pothelm |  |  | 1 | Use the Rolling Wheel 3 times; Throw 10 raiders |  |
-| 2 | Gooey Road | Wiese | 1:26 | 6 | 73 (20) |  |  |  | 1,05 | Use the Rolling Wheel 3 times; Throw 36 raiders | Slot 2 (Slow), Waffe Sticky Fondue |
+| 2 | Gooey Road | Wiese | 1:26 | 6 | 73 (20) |  |  |  | 1,05 | Use the Rolling Wheel 3 times; Throw 36 raiders |  |
 | 3 | Kegs on the Road | Wiese | 1:38 | 7 | 82 (19) | Keg Hauler |  |  | 1,1 | Let 3 kegs explode among the raiders; Shake the keg off 2 Keg Haulers |  |
-| 4 | Crumbs at the Gate | Wiese | 1:44 | 7 | 89 (21) |  |  |  | 1,15 | Defeat 4 Keg Haulers with a throw; Use the Sticky Fondue 3 times | Slot 3 (Gate), Waffe Gate Mortar |
+| 4 | Crumbs at the Gate | Wiese | 1:44 | 7 | 89 (21) |  |  |  | 1,15 | Defeat 4 Keg Haulers with a throw; Use the Rolling Wheel 3 times |  |
 | 5 | Summer Siege | Wiese | 1:56 | 8 | 95 (20) |  |  |  | 1,2 | Let 6 kegs explode among the raiders; Shake the keg off 5 Keg Haulers |  |
-| 6 | Sticky Situation | Wiese | 2:02 | 8 | 102 (21) |  |  |  | 1,25 | Use the Rolling Wheel 3 times; Let 8 kegs explode among the raiders |  |
-| 7 | Hoofbeats | Wiese | 1:57 | 8 | 107 (23) | Goat Rider |  |  | 1,3 | Defeat 3 Goat Riders with a throw; Use the Gate Mortar 3 times | Slot 4 (Support), Waffe Golden Fondue |
+| 6 | Sticky Situation | Wiese | 2:02 | 8 | 102 (21) |  |  |  | 1,25 | Use the Rolling Wheel 3 times; Let 8 kegs explode among the raiders | Burg-Stufe 2 kaufbar (Iron-Bound Gate), Waffe Sticky Fondue |
+| 7 | Hoofbeats | Wiese | 1:57 | 8 | 107 (23) | Goat Rider |  |  | 1,3 | Defeat 3 Goat Riders with a throw; Use the Rolling Wheel 3 times |  |
 | 8 | Meadow Muddle | Wiese | 2:14 | 9 | 113 (20) |  |  |  | 1,35 | Defeat 8 Keg Haulers with a throw; Use the Rolling Wheel 3 times |  |
-| 9 | The Stampede | Wiese | 7:20 | 29 | 119 (7) |  | Riders only (nur Goat Rider) |  | 1,4 | Use the Golden Fondue 3 times; Defeat 41 raiders with a throw |  |
-| 10 | Bigpot's Charge | Wiese | 7:44 | 31 | 240 (13) |  |  | Sir Hubert Bigpot (Riesen: 1× Pothelm) | 2,1 | Let 10 kegs explode among the raiders; Use the Golden Fondue 3 times |  |
-| 11 | Thinking Caps | Wiese | 2:35 | 10 | 168 (29) |  |  |  | 1,5 | Let 10 kegs explode among the raiders; Use the Golden Fondue 3 times | Slot 5 (Passive), Waffe Marmot Sentry |
-| 12 | Boing | Wiese | 2:37 | 10 | 175 (30) | Pogo Bandit |  |  | 1,55 | Let 10 kegs explode among the raiders; Use the Golden Fondue 4 times |  |
+| 9 | The Stampede | Wiese | 7:20 | 29 | 119 (7) |  | Riders only (nur Goat Rider) |  | 1,4 | Use the Rolling Wheel 3 times; Defeat 41 raiders with a throw |  |
+| 10 | Bigpot's Charge | Wiese | 7:44 | 31 | 240 (13) |  |  | Sir Hubert Bigpot (Riesen: 1× Pothelm) | 2,1 | Let 10 kegs explode among the raiders; Use the Rolling Wheel 3 times |  |
+| 11 | Thinking Caps | Wiese | 2:35 | 10 | 168 (29) |  |  |  | 1,5 | Let 10 kegs explode among the raiders; Use the Sticky Fondue 3 times |  |
+| 12 | Boing | Wiese | 2:37 | 10 | 175 (30) | Pogo Bandit |  |  | 1,55 | Let 10 kegs explode among the raiders; Use the Sticky Fondue 4 times | Burg-Stufe 3 kaufbar (Stone Keep), Waffe Gate Mortar |
 | 13 | Up the Pass | Schlucht | 2:33 | 10 | 225 (34) |  |  |  | 1,6 | Let 10 kegs explode among the raiders; Shake the keg off 10 Keg Haulers |  |
-| 14 | Pogo Party | Schlucht | 8:43 | 35 | 144 (7) |  | Hoppers only (nur Pogo Bandit) |  | 1,65 | Defeat 12 Pogo Bandits with a throw; Use the Gate Mortar 4 times | Waffe Fondue Forks |
+| 14 | Pogo Party | Schlucht | 8:43 | 35 | 144 (7) |  | Hoppers only (nur Pogo Bandit) |  | 1,65 | Defeat 12 Pogo Bandits with a throw; Use the Sticky Fondue 4 times | Waffe Fondue Forks |
 | 15 | Canyon Echoes | Schlucht | 2:43 | 11 | 241 (36) |  |  |  | 1,7 | Shake the keg off 10 Keg Haulers; Defeat 12 Keg Haulers with a throw |  |
-| 16 | Forks Out | Schlucht | 2:47 | 11 | 249 (36) |  |  |  | 1,75 | Shake the keg off 10 Keg Haulers; Use the Gate Mortar 4 times | Station Great Cauldron |
+| 16 | Forks Out | Schlucht | 2:47 | 11 | 249 (36) |  |  |  | 1,75 | Shake the keg off 10 Keg Haulers; Use the Sticky Fondue 4 times | Station Great Cauldron |
 | 17 | Amber Bubbles | Schlucht | 3:02 | 12 | 257 (35) | Hexer |  |  | 1,8 | Throw 2 raiders into the cauldron; Let 10 kegs explode among the raiders | Waffe Frost Horn |
 | 18 | Moonless Pass | Schlucht | 8:26 | 34 | 212 (13) |  | Night raid (Nacht) |  | 1,85 | Throw 2 raiders into the cauldron; Defeat 11 Goat Riders with a throw |  |
 | 19 | Falling Leaves | Schlucht | 3:08 | 13 | 218 (25) |  |  |  | 1,9 | Throw 2 raiders into the cauldron; Shake the keg off 8 Keg Haulers |  |
-| 20 | The Big Keg | Schlucht | 8:12 | 33 | 224 (13) |  |  | Old Barrelbelly (Riesen: 1× Keg Hauler) | 2,83 | Shake the keg off 8 Keg Haulers; Use the Fondue Forks 4 times | Waffe Hedgehog Gate |
-| 21 | Banners Up | Schlucht | 3:28 | 14 | 286 (32) |  |  |  | 2 | Let 10 kegs explode among the raiders; Defeat 12 Goat Riders with a throw |  |
+| 20 | The Big Keg | Schlucht | 8:12 | 33 | 224 (13) |  |  | Old Barrelbelly (Riesen: 1× Keg Hauler) | 2,83 | Shake the keg off 8 Keg Haulers; Use the Fondue Forks 4 times | Burg-Stufe 4 kaufbar (Bannered Keep), Waffe Golden Fondue |
+| 21 | Banners Up | Schlucht | 3:28 | 14 | 286 (32) |  |  |  | 2 | Let 10 kegs explode among the raiders; Defeat 12 Goat Riders with a throw | Waffe Hedgehog Gate |
 | 22 | Keg Rain | Schlucht | 8:35 | 34 | 179 (10) |  | Keg parade (viele Keg Hauler) |  | 2,05 | Defeat 12 Keg Haulers with a throw; Throw 2 raiders into the cauldron |  |
 | 23 | Pebble Storm | Schlucht | 4:20 | 17 | 241 (24) | Slinger |  |  | 2,1 | Defeat 12 Pogo Bandits with a throw; Let 10 kegs explode among the raiders | Waffe Ember Beacon |
 | 24 | Chilly Toes | Schlucht | 3:47 | 15 | 187 (20) |  |  |  | 2,15 | Defeat 6 Hexers with a throw; Let 8 kegs explode among the raiders |  |
 | 25 | Last of the Canyon | Schlucht | 4:17 | 17 | 192 (18) |  |  |  | 2,2 | Defeat 9 Goat Riders with a throw; Let 9 kegs explode among the raiders |  |
-| 26 | Into the Marsh | Sumpf | 3:55 | 16 | 321 (35) |  |  |  | 2,25 | Shake the keg off 10 Keg Haulers; Let 10 kegs explode among the raiders | Waffe Roof Bolter |
+| 26 | Into the Marsh | Sumpf | 3:55 | 16 | 321 (35) |  |  |  | 2,25 | Shake the keg off 10 Keg Haulers; Let 10 kegs explode among the raiders |  |
 | 27 | Night Croak | Sumpf | 8:22 | 33 | 200 (10) |  | Night raid (Nacht) |  | 2,3 | Use the Hedgehog Gate 5 times; Defeat 6 Hexers with a throw |  |
-| 28 | Cuckoo! | Sumpf | 3:54 | 16 | 334 (36) |  |  |  | 2,35 | Use the Frost Horn 5 times; Shake the keg off 10 Keg Haulers |  |
+| 28 | Cuckoo! | Sumpf | 3:54 | 16 | 334 (36) |  |  |  | 2,35 | Use the Frost Horn 5 times; Shake the keg off 10 Keg Haulers | Burg-Stufe 5 kaufbar (Gilded Keep), Waffe Marmot Sentry |
 | 29 | Wheels in the Mud | Sumpf | 3:31 | 14 | 341 (42) | Siege Cart |  |  | 2,4 | Defeat 12 Slingers with a throw; Let 10 kegs explode among the raiders | Waffe Stomper |
-| 30 | Horns at Dawn | Sumpf | 8:28 | 34 | 423 (26) |  |  | Countess Hornhoof (Riesen: 1× Goat Rider) | 3,55 | Shake the keg off 10 Keg Haulers; Defeat 12 Pogo Bandits with a throw |  |
+| 30 | Horns at Dawn | Sumpf | 8:28 | 34 | 423 (26) |  |  | Countess Hornhoof (Riesen: 1× Goat Rider) | 3,55 | Shake the keg off 10 Keg Haulers; Defeat 12 Pogo Bandits with a throw | Waffe Roof Bolter |
 | 31 | A Scout Squeaks | Sumpf | 4:32 | 18 | 215 (20) |  |  |  | 2,5 | Use the Rolling Wheel 5 times; Throw 3 raiders into the cauldron |  |
 | 32 | Soggy Boots | Sumpf | 3:57 | 16 | 219 (25) |  |  |  | 2,55 | Defeat 8 Slingers with a throw; Shake the keg off 7 Keg Haulers | Waffe Cuckoo Clock |
 | 33 | Eagle Eyes | Sumpf | 4:24 | 18 | 367 (37) |  |  |  | 2,6 | Let 10 kegs explode among the raiders; Throw 3 raiders into the cauldron |  |
@@ -132,7 +132,7 @@ Dauer: geplante Länge (m:ss). Räuber: alle Wellen zusammen, allein gespielt; d
 | 47 | Darkest Night | Schneewald | 9:07 | 36 | 362 (19) |  | Night of shades (Nacht) |  | 3,34 | Shake the keg off 10 Keg Haulers; Throw 4 raiders into the cauldron |  |
 | 48 | Snowed In | Schneewald | 4:03 | 16 | 366 (38) |  |  |  | 3,4 | Defeat 12 Goat Riders with a throw; Use the Rolling Wheel 7 times | Waffe Snowdrift Cannon |
 | 49 | Rumbling Ground | Schneewald | 4:41 | 19 | 463 (40) |  |  |  | 3,47 | Use the Rolling Wheel 7 times; Shake the keg off 10 Keg Haulers |  |
-| 50 | Caravan of Carts | Schneewald | 8:42 | 35 | 661 (34) |  |  | The Rumble Caravan | 5,14 | Let 10 kegs explode among the raiders; Use the Hedgehog Gate 7 times |  |
+| 50 | Caravan of Carts | Schneewald | 8:42 | 35 | 661 (34) |  |  | The Rumble Caravan | 5,14 | Let 10 kegs explode among the raiders; Use the Hedgehog Gate 7 times | Burg-Stufe 6 kaufbar (Runic Fortress) |
 | 51 | Thaw | Schlucht | 3:39 | 15 | 380 (42) |  |  |  | 3,6 | Let 10 kegs explode among the raiders; Shake the keg off 10 Keg Haulers |  |
 | 52 | Black Feathers | Schlucht | 4:35 | 18 | 577 (54) | Crowcaller |  |  | 3,67 | Throw 5 raiders into the cauldron; Defeat 12 Hexers with a throw | Waffe Cheese Cascade |
 | 53 | The Letter, Opened | Schlucht | 3:37 | 14 | 389 (46) |  |  |  | 3,74 | Shake the keg off 10 Keg Haulers; Let 10 kegs explode among the raiders |  |
@@ -157,7 +157,7 @@ Dauer: geplante Länge (m:ss). Räuber: alle Wellen zusammen, allein gespielt; d
 | 72 | The Spyglass | Sumpf | 4:03 | 16 | 707 (74) |  |  |  | 5,4 | Fling 1 raider onto the Eagle Perch; Shake the keg off 10 Keg Haulers | Waffe Battering Log |
 | 73 | Hop and Gallop | Sumpf | 7:14 | 29 | 714 (42) |  | Hop and gallop (nur Pogo Bandit, Goat Rider) |  | 5,51 | Throw 6 raiders into the cauldron; Use the Cheese Cascade 9 times |  |
 | 74 | Reed Rafts | Sumpf | 4:41 | 19 | 479 (44) |  |  |  | 5,61 | Defeat 9 Shades with a throw; Fling 1 raider onto the Eagle Perch |  |
-| 75 | Leaving the Marsh | Sumpf | 3:54 | 16 | 726 (74) |  |  |  | 5,72 | Use the Fondue Forks 9 times; Defeat 12 Shades with a throw |  |
+| 75 | Leaving the Marsh | Sumpf | 3:54 | 16 | 726 (74) |  |  |  | 5,72 | Use the Fondue Forks 9 times; Defeat 12 Shades with a throw | Burg-Stufe 7 kaufbar (Alpine Citadel) |
 | 76 | Home Meadow | Wiese | 4:44 | 19 | 609 (55) |  |  |  | 5,83 | Defeat 9 Crowcallers with a throw; Fling 1 raider onto the Eagle Perch | Waffe Helping Hand |
 | 77 | Hay Bales | Wiese | 4:29 | 18 | 614 (59) |  |  |  | 5,94 | Use the Snowdrift Cannon 9 times; Defeat 12 Goat Riders with a throw |  |
 | 78 | A Crumb Dropped | Wiese | 4:51 | 19 | 496 (46) |  |  |  | 6,05 | Throw 7 raiders into the cauldron; Shake the keg off 10 Keg Haulers |  |
