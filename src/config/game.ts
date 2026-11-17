@@ -3,7 +3,7 @@ export const GAME_NAME = 'Fondue';
 
 /**
  * The version shown in the game, in the Options and in the lobby, and part of the co-op version check.
- * v0.1 is classic (/fondue/classic/), v0.2 the earlier live game (/fondue/v0.2/), v0.3 this update
- * (/fondue/next/), v1.0 the store launch.
+ * Every older version stays playable at /fondue/vX.Y/: v0.1 (classic, also /fondue/classic/), v0.2 at
+ * /fondue/v0.2/, v0.3 at /fondue/v0.3/. v0.4 is this build (tested at /fondue/next/); v1.0 the store launch.
  */
-export const GAME_VERSION = '0.3';
+export const GAME_VERSION = '0.4';
