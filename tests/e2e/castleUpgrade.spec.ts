@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { CASTLE_TIERS } from '../../src/config/keep';
 import { CASTLE_TIER_LEVEL } from '../../src/config/slotTiers';
+import { CASTLE_BUILD } from '../../src/config/tutorial';
 import { CASTLE_BUILT_LINES, SLOT_INTROS } from '../../src/config/worlds/fondue/story';
 import { DEVICES, openGame, waitForLobby, waitScreen, type Device } from './helpers';
 
@@ -61,20 +62,38 @@ for (const d of DEVICES) {
     await expect(page.locator('#spot-slot1')).toHaveClass(/locked/);
     await page.screenshot({ path: `${SHOTS}/shop-castle-${d.name}.png` });
 
-    // Build it: the keep rises (the King waits), and the shop does not hang.
-    // (Read and photographed at once: the rise lasts only a moment, and a slow test machine must not miss it.)
+    // Build it: the keep rises (the King waits), and the shop does not hang. For the photo only, the
+    // test stretches the rise's own timer (the page's timer of CASTLE_BUILD.ms) and freezes its CSS
+    // animation at a lively moment, so a slow test machine does not miss it; the game is unchanged.
+    await page.evaluate(([ms, stretched]) => {
+      const w = window as any;
+      const orig = w.setTimeout.bind(w);
+      w.setTimeout = (fn: any, delay?: number, ...rest: any[]) => orig(fn, delay === ms ? stretched : delay, ...rest);
+    }, [CASTLE_BUILD.ms, CASTLE_BUILD.ms + 5000] as const);
     await tap(page, d, '#castleGoalBuy');
     const rising = await page.evaluate(() => ({
       rise: document.querySelector('#castleBuild')?.textContent ?? null,
       king: !!document.querySelector('#castleNews'),
     }));
-    await page.screenshot({ path: `${SHOTS}/castle-upgrade-${d.name}.png` });
     expect(rising.rise, 'the keep rises').toContain(CASTLE_TIERS[1]!.name);
     expect(rising.king, 'the King waits for the rise').toBe(false);
+    await page.evaluate(() => {
+      for (const a of document.getAnimations()) {
+        const el = (a.effect as KeyframeEffect | null)?.target ?? null;
+        if (el && el.closest('#shopKeep')) { a.pause(); a.currentTime = 450; }
+      }
+    });
+    await page.screenshot({ path: `${SHOTS}/castle-upgrade-${d.name}.png` });
+    await page.evaluate(() => { for (const a of document.getAnimations()) if (a.playState === 'paused') a.play(); });
     expect((await keep(page)).castleTier).toBe(2);
 
     // On its own after a moment: the King's line, then the Slow slot's introduction; the slot is marked.
-    await expect(page.locator('#castleBuild')).toHaveCount(0, { timeout: 4000 });
+    await expect(page.locator('#castleBuild')).toHaveCount(0, { timeout: CASTLE_BUILD.ms + 10_000 });
+    // The King's picture is there beside his words (decoded during the rise, no empty space).
+    await expect.poll(() => page.evaluate(() => {
+      const img = document.querySelector('#castleNews img') as HTMLImageElement | null;
+      return !!img && img.complete && img.naturalWidth > 0;
+    })).toBe(true);
     const news = page.locator('#castleNews');
     await expect(news).toContainText(CASTLE_BUILT_LINES[2]!);
     await expect(news).toContainText(SLOT_INTROS[SLOW]!);

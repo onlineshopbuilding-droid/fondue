@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { CASTLE_TIERS } from '../../src/config/keep';
 import { DEVICES, openGame, setCastleTier, tapStation, waitFor, waitForLobby, waitScreen, type Device } from './helpers';
 
 /**
@@ -9,6 +10,8 @@ import { DEVICES, openGame, setCastleTier, tapStation, waitFor, waitForLobby, wa
  */
 
 const SHOTS = 'docs/screenshots/v0.3';
+/** Gold for castle tiers 2 and 3 (from the config, which the balance may still change) plus some for the forks. */
+const START_GOLD = CASTLE_TIERS[1]!.gold + CASTLE_TIERS[2]!.gold + 5000;
 
 /** Gives the profile campaign progress and money the way a player would have it (no UI cheats). */
 async function grant(page: Page, levels: number, wallet: { cheese: number; gold: number; crests: number }) {
@@ -48,7 +51,7 @@ async function fits(page: Page, root: string, where: string) {
 for (const d of DEVICES) {
   test(`${d.name}: keep shop: unlock, upgrade, wear and take off; the wallet follows and a reload keeps it`, async ({ browser }) => {
     const { context, page, errors } = await openGame(browser, d, '?menu=1');
-    await grant(page, 14, { cheese: 40, gold: 20000, crests: 0 });
+    await grant(page, 14, { cheese: 40, gold: START_GOLD, crests: 0 });
     await page.reload();
     await waitForLobby(page);
     await page.screenshot({ path: `${SHOTS}/lobby-${d.name}.png` });
@@ -56,7 +59,7 @@ for (const d of DEVICES) {
     await waitScreen(page, 'armoury');
     await expect(page.locator('#shop h2')).toHaveText('Keep Shop');
     await expect(page.locator('#walletCheese')).toHaveText('40');
-    await expect(page.locator('#walletGold')).toHaveText('20,000');
+    await expect(page.locator('#walletGold')).toHaveText(START_GOLD.toLocaleString('en-US'));
     await fits(page, '#shop', `${d.name} shop`);
     // Every spot on the keep is a big target.
     for (const box of await page.locator('.sh-spot').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()))) {
