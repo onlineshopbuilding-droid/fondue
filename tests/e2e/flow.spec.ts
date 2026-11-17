@@ -234,7 +234,9 @@ test('endless: the gate falls, the run ends with its score, scores and back, the
   await page.waitForSelector('#restart', { timeout: GAME_WAIT });
   await page.click('button[data-a="quit"]');
   await waitForLobby(page);
-  await station(page, 'scores');
+  // Scores are a tab of the options since v0.4, no longer a station in the hall.
+  await station(page, 'options');
+  await page.click('#optTab-scores');
   await expect(page.locator('table.scores tbody tr')).toHaveCount(2);
 });
 
