@@ -1,16 +1,24 @@
 name: Deploy to GitHub Pages
 
-# One site, several builds:
-#   /fondue/            the game from main
-#   /fondue/classic/    the frozen alpha from the branch "classic" (tag v0-alpha, v0.1)
-#   /fondue/dev/        the developer overview, one HTML file from scripts/dev-page.ts
+# One site, several builds. Version rule: every older version stays playable for good under
+# /fondue/vX.Y/, built from its frozen branch "vX.Y" (tag vX.Y); the newest version lives on main.
+#   /fondue/            the newest version, from main
+#   /fondue/dev/        the developer overview of main, one HTML file from scripts/dev-page.ts
+#   /fondue/v0.1/       the frozen alpha from the branch "classic" (tags v0-alpha and v0.1)
+#   /fondue/classic/    the same build of "classic" again, so old links keep working
 #   /fondue/v0.2/       the frozen v0.2 from the branch "v0.2" (tag v0.2)
-#   /fondue/next/       the next version in progress from the branch "v0.3-dev", for testing
+#   /fondue/v0.3/       the frozen v0.3 from the branch "v0.3" (tag v0.3)
+#   /fondue/next/       the next version in progress from the branch "v0.4-dev", for testing
 #   /fondue/next/dev/   the developer overview of that version
-# Each build needs its own base path, otherwise its files do not load.
-# All builds share one origin and so one browser storage; v0.3 keeps its save under its own keys (fondue.v3.*).
-# The Pages environment only accepts runs from main, so a change on "classic", "v0.2" or "v0.3-dev"
-# goes live when this workflow is started by hand: gh workflow run deploy.yml --ref main
+# Each build needs its own base path, otherwise its files do not load; that is why "classic" is
+# built twice instead of copied.
+# All builds share one origin and so one browser storage: every version keeps its save under its
+# own storage keys (v0.2 fondue.profile, v0.3 fondue.v3.*, and so on). A new version may read the
+# save of the one before once to take it over, but never changes or deletes it.
+# When a version is frozen, add one more "check out + build" block for its branch below (same
+# pattern as v0.3) and point /next/ at the branch of the version that is built next.
+# The Pages environment only accepts runs from main, so a change on "classic", a frozen branch or
+# "v0.4-dev" goes live when this workflow is started by hand: gh workflow run deploy.yml --ref main
 # (or Actions, Run workflow, branch main).
 on:
   push:
@@ -49,10 +57,11 @@ jobs:
         with:
           ref: classic
           path: .classic-src
-      - name: Build the classic version into /classic/
+      - name: Build the classic version into /v0.1/ and /classic/
         working-directory: .classic-src
         run: |
           npm ci
+          npx vite build --base=/fondue/v0.1/ --outDir ../dist/v0.1 --emptyOutDir
           npx vite build --base=/fondue/classic/ --outDir ../dist/classic --emptyOutDir
 
       - name: Check out the frozen v0.2
@@ -66,14 +75,25 @@ jobs:
           npm ci
           npx vite build --base=/fondue/v0.2/ --outDir ../dist/v0.2 --emptyOutDir
 
-      # The next version is work in progress. A broken state on v0.3-dev must never stop main from
+      - name: Check out the frozen v0.3
+        uses: actions/checkout@v4
+        with:
+          ref: v0.3
+          path: .v03-src
+      - name: Build v0.3 into /v0.3/
+        working-directory: .v03-src
+        run: |
+          npm ci
+          npx vite build --base=/fondue/v0.3/ --outDir ../dist/v0.3 --emptyOutDir
+
+      # The next version is work in progress. A broken state on v0.4-dev must never stop main from
       # going live: these steps may fail, and then /next/ shows a short notice instead of vanishing.
-      - name: Check out the next version (v0.3-dev)
+      - name: Check out the next version (v0.4-dev)
         id: next-src
         continue-on-error: true
         uses: actions/checkout@v4
         with:
-          ref: v0.3-dev
+          ref: v0.4-dev
           path: .next-src
       - name: Build the next version into /next/
         id: next
@@ -109,13 +129,13 @@ jobs:
           EOF
           }
           if [ "$GAME_OK" != "true" ]; then
-            echo "::warning title=/next/ not built::The build of v0.3-dev failed; /fondue/next/ shows a notice page. See this run's log."
+            echo "::warning title=/next/ not built::The build of v0.4-dev failed; /fondue/next/ shows a notice page. See this run's log."
             rm -rf dist/next
-            notice dist/next "v0.3 build failed, see Actions"
+            notice dist/next "Next version build failed, see Actions"
           else
-            echo "::warning title=/next/dev/ not built::The developer overview of v0.3-dev failed; /fondue/next/dev/ shows a notice page."
+            echo "::warning title=/next/dev/ not built::The developer overview of v0.4-dev failed; /fondue/next/dev/ shows a notice page."
             rm -rf dist/next/dev
-            notice dist/next/dev "v0.3 developer overview failed, see Actions"
+            notice dist/next/dev "Next version developer overview failed, see Actions"
           fi
 
       - uses: actions/upload-pages-artifact@v3
