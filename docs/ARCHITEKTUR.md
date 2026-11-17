@@ -1,8 +1,8 @@
 # Fondue – Architektur
 
-Dieses Dokument beschreibt den Aufbau von v0.3 („dauerhafte Burg“): welche Ordner es gibt, welche Klasse welche Aufgabe hat und wie die Daten fließen. Es richtet sich an Tim, Lenny und jede KI, die weiterbaut. Die Rezepte („ich will ein neues Level, eine neue Waffe …“) stehen in `docs/HANDBUCH.md`.
+Dieses Dokument beschreibt den Aufbau von v0.4 („Burg als Fortschritt“, auf dem Grundaufbau von v0.3 „dauerhafte Burg“): welche Ordner es gibt, welche Klasse welche Aufgabe hat und wie die Daten fließen. Es richtet sich an Tim, Lenny und jede KI, die weiterbaut. Die Rezepte („ich will ein neues Level, eine neue Waffe …“) stehen in `docs/HANDBUCH.md`.
 
-Stand: 14.11.2026, an den Code des Branches `v0.3-dev` angeglichen. Die Grundzerlegung stammt aus dem großen Update (Profil → Modus → Lauf → Sim → Szene); v0.3 ändert vor allem drei Dinge: **die Burg lebt im Profil statt im Lauf**, **ein Level ist eine Wellenfolge ohne Einkauf**, **Käse, Gold und Räuberwappen** sind die Währungen. Die Begründungen stehen in `docs/ENTSCHEIDUNGEN.md` (E-063 bis E-071), der Bauplan in `docs/v0.3/BAUPLAN.md`.
+Stand: 17.11.2026, Branch `v0.4-dev`. Angeglichen an v0.4 sind Freischaltung der Slots über die Burg-Stufe, Konfiguration (`slotTiers.ts`, `versions.ts`), Modi, Profil und Speicher, die Tabelle in Abschnitt 11 und Abschnitt 14. Die Abschnitte zu Lobby, Options und Kampagnen-Karte (Abschnitt 8) beschreiben noch den Stand von v0.3 und werden nach dem Umbau der Lobby nachgezogen. Die Grundzerlegung stammt aus dem großen Update (Profil → Modus → Lauf → Sim → Szene); v0.3 hat drei Dinge geändert: **die Burg lebt im Profil statt im Lauf**, **ein Level ist eine Wellenfolge ohne Einkauf**, **Käse, Gold und Räuberwappen** sind die Währungen. Die Begründungen stehen in `docs/ENTSCHEIDUNGEN.md` (E-063 bis E-071 für v0.3, ab E-072 für v0.4), der Bauplan in `docs/v0.3/BAUPLAN.md` und `docs/v0.4/BAUPLAN.md`.
 
 ## 0. Sechs Begriffe vorab
 
@@ -23,7 +23,7 @@ Stand: 14.11.2026, an den Code des Branches `v0.3-dev` angeglichen. Die Grundzer
 2. **Die Simulation weiß nichts vom Drumherum.** Sie bekommt fertige Regeln für einen Lauf und einen Wellenplaner. Sie kennt weder Kampagne noch Endlos, weder Profil noch Browser.
 3. **Ein Modus entscheidet, die Simulation rechnet.** Tutorial, Kampagne und Endlos sind eigene Klassen. Ein Modus baut den Lauf und verteilt am Ende die Belohnung.
 4. **Die Burg ist Stand des Profils, nicht des Laufs.** Was gekauft ist, steht in `profile.data.keep`; die Sim liest es nur. Kauf, Freischalten und Anlegen laufen ausschließlich durch `src/modes/progress.ts`.
-5. **Abgeleitet wird nicht gespeichert.** Offene Slots, kaufbare Waffen und der Stufen-Deckel ergeben sich aus den gewonnenen Leveln und den Tabellen (`src/modes/unlocks.ts`). Eine geänderte Tabelle kann so nie einen kaputten Spielstand erzeugen.
+5. **Abgeleitet wird nicht gespeichert.** Offene Slots (aus der Burg-Stufe), kaufbare Burg-Stufen und Waffen, der Stufen-Deckel für Waffen und Hand sowie offener Koop-Tisch und Endlos-Tisch ergeben sich aus `keep.castleTier`, den gewonnenen Leveln und den Tabellen (`src/modes/unlocks.ts`). Eine geänderte Tabelle kann so nie einen kaputten Spielstand erzeugen.
 6. **Die vier alten Regeln gelten weiter:** `src/sim/` kennt weder Phaser noch DOM; dort kein `Math.random`; Zahlen in die Konfiguration; der Spielname nur in `src/config/game.ts`.
 7. **Regeln und Stand sind getrennt.** Regeln eines Laufs ändern sich nie (`RunRules`). Die Burg eines Laufs (`Loadout`) ändert sich im Lauf nicht; im Lauf ändern sich nur Gold, Torleben und Statistik.
 
@@ -76,7 +76,9 @@ Jede Tabelle hat oben einen Kommentar, der die Spalten erklärt.
 | `game.ts` | Name und Version des Spiels (`GAME_NAME`, `GAME_VERSION`). Der Schalter, der den Knopf zum Entwickler-Menü zeigt, heißt `DEV_MENU_BUTTON` und steht in `src/ui/screens/options.ts`. |
 | `enemies.ts` | `ENEMIES`: das Verzeichnis aller Gegner mit Werten, `mass` (Gewicht) und Popup-Text; `V3_SPEED`, `V3_GOLD`, `GRAB_SPEED_BONUS`; `BEHAVIOUR`. Eine Welt wählt daraus aus. |
 | `weapons.ts` | `WEAPONS`: 25 Waffen, eine Definition je Waffe (Slot-Aufgabe, Art des Verhaltens, Zielwahl, Freischalt-Level, Käse-Preis, Preisfaktor `goldScale`, sieben Stufen mit Werten und Text, Texte, `enabled`). |
-| `slots.ts` | `SLOTS`: die fünf Waffenplätze der Burg mit Aufgabe (`SlotRole`: `damage`, `slow`, `support`, `passive`, `gate`), Lage, Freischalt-Level und Einführungssatz. |
+| `slots.ts` | `SLOTS`: die fünf Waffenplätze der Burg mit Aufgabe (`SlotRole`: `damage`, `slow`, `support`, `passive`, `gate`), Lage und `castleTier` (die Burg-Stufe, die den Slot öffnet; der Wert kommt aus `slotTiers.ts`). Der Einführungssatz des Königs steht in `SLOT_INTROS` (`worlds/fondue/story.ts`). |
+| `slotTiers.ts` | **Die Burg als Fortschrittsmaß (v0.4).** `CASTLE_TIER_FOR_SLOT` (Stufe 1 Damage, 2 Slow, 3 Gate, 4 Support, 5 Passive), `CASTLE_TIER_LEVEL` (ab welchem gewonnenen Level jede Burg-Stufe kaufbar ist; Stufe 2 ab 6 und Stufe 7 ab 75 sind fest, die übrigen Startwerte der Balance), `TABLE_UNLOCK_LEVEL` (Koop-Tisch 3, Endlos-Tisch 10, fest), `CHALLENGE_SLOT_MARGIN`. Sie importiert aus `slots.ts` nur den Typ `SlotRole`; gelesen wird sie von `slots.ts`, `weapons.ts`, `tiers.ts`, `src/modes/unlocks.ts`, `worlds/fondue/unlocks.ts` und `challenges.ts`, `src/profile/fromV3.ts` und einigen Bildschirmen. |
+| `versions.ts` | Alle spielbaren Versionen mit Adresse (`VERSIONS`, `VERSIONS_NOTE`, `versionUrl`), für die Options und die Entwickler-Übersicht. |
 | `tiers.ts` | Stufen 1 bis 7: Goldpreise der Waffenstufen, Wappen für Stufe 7, Stufen-Deckel je Kampagnen-Abschnitt (`TIER_CAP_BY_LEVEL`). |
 | `currencies.ts` | Käse, Gold, Räuberwappen: Namen, Icons, Kurztexte; die fünf Käse eines Levels (`CHEESE`). |
 | `crests.ts` | Wappen je Gegnertyp, Höchstzahl je Runde, Größe und Zielhilfe des Adlerhakens. |
@@ -95,7 +97,7 @@ Jede Tabelle hat oben einen Kommentar, der die Spalten erklärt.
 | `worlds/fondue/world.ts` | Welt 1 als Paket: König, Landschaften, Gegnerauswahl, Stationen, Verweise auf Kampagne, Story und Endlos-Tabelle. |
 | `worlds/fondue/campaign.ts` | Die 100 Level: Regeln der Kurve plus `LEVEL_OVERRIDES` für einzelne Level. `buildCampaign()` liefert `LevelDef[]`. |
 | `worlds/fondue/challenges.ts` | Vorlagen der Challenges und die zwei Challenges jedes Levels. |
-| `worlds/fondue/unlocks.ts` | Freischalt-Tabelle `UNLOCKS`, zusammengesetzt aus den Feldern `unlockLevel` von Slots, Waffen und Stationen; Einführungen der Slots. |
+| `worlds/fondue/unlocks.ts` | Freischalt-Tabelle `UNLOCKS`, zusammengesetzt aus `unlockLevel` von Waffen und Stationen und `CASTLE_TIER_LEVEL` (Art `castle`, ersetzt die frühere Art `slot`). Slots stehen nicht darin. |
 | `worlds/fondue/endless.ts` | Endlos-Zufall dieser Welt: Fenster der Erstauftritte (in Wellen), Gewichte, Wahrscheinlichkeiten, Landschaftswechsel. |
 | `worlds/fondue/story.ts` | König (`KING`), Sätze der Vorrunde (`PRELUDE_LINES`), Erklärung von Käse und Gold, Einführungen von Slots und Stationen, Namen und Story-Satz je Level, Bosse (`BOSSES`), Popups „New enemy“ (`ENEMY_POPUPS`), Sprüche in der Lobby, Storybuch. |
 
@@ -223,7 +225,7 @@ Befehle (`Command`): `press`, `release`, `move` (zweite Hand), `fireSlot(slot)`,
 ```ts
 interface GameMode {
   readonly id: string;
-  isAvailable(profile: Profile, world: string): boolean;          // Endlos: erst mit dem fünften Slot
+  isAvailable(profile: Profile, world: string): boolean;          // Endlos: ab gewonnenem Level 10 (Endlos-Tisch)
   buildRun(profile: Profile, choice: RunChoice, env: RunEnv): RunSetup;
   reward(result: RunResult, rules: RunRules, profile: Profile, role: 'solo' | 'host' | 'guest'): Reward;
   next(result: RunResult, rules: RunRules, profile: Profile): NextStep;  // Vorrunde → Level 1, sonst Lobby
@@ -246,7 +248,7 @@ Die Hinweise des Königs in Level 1 kommen nicht aus dem Modus, sondern aus den 
 | `endless.ts` | `EndlessMode` | Schwierigkeit wählbar, Zufall aus der Welt-Tabelle, eigene Burg, Gold je Schwierigkeit, Bestenliste. |
 | `endlessPlanner.ts` | `EndlessPlanner`, `endlessRolls` | Wellenpläne des Endlos-Modus aus der Welt-Tabelle; würfelt einmal je Lauf die Erstauftritte. |
 | `progress.ts` | Funktionen | **Die eine Stelle für Progression:** `quote` (Preis des nächsten Schritts, erlaubt oder warum nicht), `buy`, `equip`, Käse einmalig vergeben, Gold und Wappen gutschreiben. Ziele: Waffe, Burg, Hand, Station. Jede Änderung speichert sofort. |
-| `unlocks.ts` | Funktionen | Liest die Freischalt-Tabelle und leitet aus `levelsDone` ab: `slotOpen`, `weaponAvailable`, `stationAvailable`, `tierCap`, `endlessOpen`; `syncUnlocks` legt das freie Rolling Wheel an. |
+| `unlocks.ts` | Funktionen | Leitet aus Burg-Stufe und `levelsDone` ab: `slotOpen` und `slotCastleTier` (Slot öffnet mit der Burg-Stufe), `castleTierBuyableAt` und `castleTierUnlocked` (Burg-Stufe kaufbar ab gewonnenem Level), `weaponAvailable` (verlangt einen offenen Slot), `stationAvailable`, `tierCap` (nur Waffen und Hand), `endlessOpen` (Level 10), `coopTableOpen` (Level 3); `syncUnlocks` legt das freie Rolling Wheel an. |
 | `challenges.ts` | Funktionen | `challengesDone`: beurteilt die zwei Challenges an den Zählern des Laufs. |
 | `cheats.ts` | Funktionen | Entwickler-Cheats (Gold, Käse, Wappen, Level, Stufen, Zurücksetzen, zweite Hand am Laptop); sie ändern das Profil dauerhaft und markieren es. |
 | `mode.ts` | `GameMode` und Typen | Die gemeinsame Schnittstelle. |
@@ -256,12 +258,13 @@ Eine eigene Datei `rewards.ts` gibt es nicht: Die Belohnungsregeln stehen in `re
 
 ## 7. Profil (`src/profile/`)
 
-Schlüssel `fondue.v3.profile` (`PROFILE_KEY`, Präfix `STORAGE_PREFIX` = `fondue.v3.`), `PROFILE_VERSION` 1 (neue Zählung, eigenes Format, keine Übernahme aus v0.2). Reines JSON mit Kopfdaten (`format` „fondue-profile“, `version`, `profileId`, `createdAt`, `updatedAt`), damit es später eins zu eins in einen Cloud-Account wandern kann.
+Schlüssel `fondue.v4.profile` (`PROFILE_KEY`, Präfix `STORAGE_PREFIX` = `fondue.v4.`), `PROFILE_VERSION` 2 (1 = v0.3). Reines JSON mit Kopfdaten (`format` „fondue-profile“, `version`, `profileId`, `createdAt`, `updatedAt`), damit es später eins zu eins in einen Cloud-Account wandern kann. Alle Adressen der Seite teilen sich den Browser-Speicher; v0.4 schreibt und löscht nur Schlüssel mit seinem Präfix. Der Stand von v0.3 (`fondue.v3.profile`) wird genau einmal gelesen und übernommen (unten), der von v0.2 (`fondue.profile`) nie.
 
 | Datei | Inhalt |
 |---|---|
 | `schema.ts` | `ProfileData` und Standardwerte (`freshProfile`), Konstanten der Stufen und der Schlüssel. |
-| `migrations.ts` | Die Kette der Versionssprünge (`MIGRATION_STEPS`; heute nur ein Schritt 0 → 1, der nichts ändert, denn Version 1 ist der Anfang). Ein v0.2-Profil wird weder gelesen noch geändert. |
+| `migrations.ts` | Die Kette der Versionssprünge (`MIGRATION_STEPS`: Schritt 0 → 1 ändert nichts, Schritt 1 → 2 ist `stepV3ToV4`) und `migrateV3ToV4` für die Übernahme (auch für einen FONDUE3-Code aus v0.3). |
+| `fromV3.ts` | Einmalige Übernahme des v0.3-Stands: `liftCastleForV3Slots` hebt die Burg-Stufe kostenlos so weit an, dass jeder in v0.3 offene Slot offen bleibt (die Regeln von v0.3 stehen darin eingefroren, `V3_SLOTS`), und trägt die dadurch offenen Slots als eingeführt in `seen.slotIntros` ein. |
 | `store.ts` | `ProfileStore` (Schnittstelle mit `read` und `write`, beide asynchron), `LocalProfileStore` (Browser), `MemoryProfileStore` (Tests). Später: App-Speicher, eigener Dienst. |
 | `profile.ts` | Klasse `Profile`: hält die Daten im Speicher, alle Lese- und Schreibwege, schreibt nach jeder Änderung entprellt (höchstens 250 ms, `SAVE_DELAY_MS`) im Hintergrund und synchron mit `flushSync` bei `visibilitychange` (hidden), `pagehide`, `beforeunload` und nach jedem Level und Kauf. Ist der Speicher voll oder gesperrt, läuft das Spiel im Speicher weiter und zeigt einmal einen Hinweis. |
 | `sanitize.ts` | Bereinigt gelesene Daten Feld für Feld; Unbrauchbares wird durch Standardwerte ersetzt. |
@@ -272,8 +275,10 @@ Inhalt der Blöcke:
 - `wallet` (ausgebbar) und `earned` (je verdient): `cheese`, `gold`, `crests`.
 - `keep`: `castleTier` und `handTier` (1 bis 7), `stations` (0 = nicht freigeschaltet, sonst Stufe), `weapons` (nur freigeschaltete, mit `tier`), `loadout` (fünf Einträge, die angelegte Waffe je Slot oder `null`).
 - `worlds[weltId]`: `levelsDone`, `cheese` (Bitmaske der fünf Käse je Level: Sieg, Tor über 50 %, Tor über 90 %, Challenge 1, Challenge 2), `storyRead`, `scores` (Bestenliste, Feld `wave`), `endlessBest` (beste Welle je Schwierigkeit).
-- `seen`: Tutorial, Gegner, Tipps, Slot-Einführungen, Willkommenshinweis `v3Notice`.
+- `seen`: Tutorial, Gegner, Tipps, Slot-Einführungen, Feld `v3Notice` (heute ungenutzt).
 - `claimedRuns` (letzte 200 `runId`s), `devRatings`, `cheats` (`used`, Protokoll), `pendingRun`, `coopCampaign` (vorgehalten), `settings` und `name`.
+
+**Übernahme aus v0.3 (V2):** `Profile.load` liest zuerst `fondue.v4.profile`. Gibt es keines und fehlt der Merker `fondue.v4.importedV3` (`V3_IMPORT_KEY`), liest es einmal `fondue.v3.profile`, rechnet es mit `migrateV3ToV4` um, schreibt das Ergebnis unter `fondue.v4.profile` und setzt danach den Merker. `fondue.v3.*` und `fondue.profile` werden nie geschrieben oder gelöscht (Tests `tests/unit/profile-v3import.test.ts`, `tests/e2e/storage.spec.ts`). Die Entwurfs-Entscheidungen der Entwickler-Übersicht (`fondue.v3.dev.decisions`) bleiben bewusst zurück (E-075).
 
 **Käse genau einmal:** `applyLevelCheese` setzt nur Bits, die noch nicht gesetzt waren, und zählt nur diese; `earned.cheese` ist die Summe aller Bits.
 
@@ -364,7 +369,7 @@ Heutige Umsetzungen: PeerJS direkt (`peer.ts`, Standard), Relay über WebSocket 
 
 ## 11. Was wohin gewandert ist
 
-Frühere Stände (v0.2 und davor) und ihr Gegenstück in v0.3:
+Frühere Stände (v0.2 und davor) und ihr Gegenstück in v0.3, dann die Änderungen von v0.3 nach v0.4:
 
 | Früher | Heute |
 |---|---|
@@ -376,7 +381,10 @@ Frühere Stände (v0.2 und davor) und ihr Gegenstück in v0.3:
 | Tore (`GATES`, 5 Stufen) | Burg-Stufen (`CASTLE_TIERS`, 7 Stufen; die Burg ist das Tor) |
 | Waffen mit 5 Stufen, im Lauf verbessert oder aus Sternen | 25 Waffen mit 7 Stufen, dauerhaft im Profil (`keep.weapons`) |
 | Hand mit 3 Stufen | Hand mit 7 Stufen, Stufe 7 mit zweiter Hand |
-| Profil `fondue.profile` | `fondue.v3.profile`, eigenes Format, Version 1 |
+| Profil `fondue.profile` | `fondue.v3.profile`, eigenes Format, Version 1 (v0.3); in v0.4 `fondue.v4.profile`, Version 2, mit einmaliger Übernahme des v0.3-Stands |
+| Slots öffnen mit gewonnenen Leveln (`unlockLevel` in `SLOTS`, `slotUnlockLevel`, Art `slot` in `UNLOCKS`; v0.3) | Slots öffnen mit der Burg-Stufe (`CASTLE_TIER_FOR_SLOT`, `slotCastleTier`); Level machen Burg-Stufen kaufbar (`CASTLE_TIER_LEVEL`, Art `castle`) |
+| Endlos offen mit dem fünften Slot (v0.3) | Endlos-Tisch ab Level 10 (`endlessOpen`, `TABLE_UNLOCK_LEVEL`); Koop-Tisch ab Level 3 (`coopTableOpen`) |
+| Stufen-Deckel für Waffen, Hand und Burg (v0.3) | Deckel (`tierCap`) nur noch für Waffen und Hand; die Burg hat ein eigenes Kauf-Level je Stufe, Quote-Grund `level` in `src/modes/progress.ts` |
 | `meta.today` (Landschaft, Nacht, Boss des Tages) | `meta.wave` |
 | `config/world.ts` | `config/field.ts` |
 | `RunRules.tierUpgrades`, `handBuyable`, `fixedTier` | Entfallen: Die Burg im Lauf kommt fest aus dem Profil (`Loadout`) |
@@ -396,3 +404,9 @@ Koop-Kampagne (Feld `coopCampaign` im Profil, Name in `RESERVED_MODES`), Schnell
 7. **Prüfung und Abschluss:** unabhängige Prüfung, Dokumente, Pull Request von `v0.3-dev` nach `main` (noch nicht gemergt).
 
 Der genaue Stand steht in `docs/v0.3/PROGRESS.md`, `docs/v0.3/UEBERGABE.md` und in der Abnahmeliste `docs/v0.3/abnahme.json`.
+
+## 14. Änderungen von v0.4 (Burg als Fortschritt)
+
+Fertig und hier beschrieben: Die Burg-Stufe öffnet die Slots (Abschnitt 4, `slotTiers.ts`, `src/modes/unlocks.ts`); Burg-Stufen brauchen Gold und ein gewonnenes Level (`quote` in `src/modes/progress.ts`); Koop-Tisch und Endlos-Tisch öffnen über Level (`TABLE_UNLOCK_LEVEL`); eigener Speicher `fondue.v4.` mit einmaliger Übernahme des v0.3-Stands (Abschnitt 7); Versionsliste (`versions.ts`) und Deploy aller Versionen nach der Versionsregel (`docs/HANDBUCH.md`, Abschnitt 7; `.github/workflows/deploy.yml`).
+
+Noch nachzuziehen, wenn die Pakete fertig sind: neue Lobby mit Halle je Burg-Stufe, Options mit Reitern, Storybuch auf der Kampagnen-Karte, Burg-Stufe im Koop-Raum. Der genaue Stand steht in `docs/v0.4/PROGRESS.md`, `docs/v0.4/UEBERGABE.md` und der Abnahmeliste `docs/v0.4/abnahme.json`.
