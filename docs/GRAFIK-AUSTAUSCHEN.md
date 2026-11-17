@@ -104,7 +104,7 @@ node scripts/list-assets.ts
 Die Größe und der Ankerpunkt gelten in Weltpixeln. „Bilddatei in Pixeln“ ist die Größe, in der man eine Ersatzdatei anlegt.
 
 <!-- ASSETS:START (erzeugt von scripts/list-assets.ts, nicht von Hand ändern) -->
-Stand: 444 Assets.
+Stand: 511 Assets.
 
 ### Figurenteile (86)
 
@@ -197,7 +197,7 @@ Stand: 444 Assets.
 | `rig:crow:body` | 50 × 34 | 25, 16 | 100 × 68 | 0, -12 | static | Start |
 | `rig:crow:wingFront` | 37 × 41 | 13, 31 | 74 × 82 | 3, -16 | armFront | Start |
 
-### Requisiten, Burg und Effekte (163)
+### Requisiten, Burg und Effekte (230)
 
 | Name | Größe in Weltpixeln | Ankerpunkt (x, y) | Bilddatei in Pixeln | Gruppe |
 |---|---|---|---|---|
@@ -342,18 +342,11 @@ Stand: 444 Assets.
 | `prop:perchHook` | 110 × 130 | 55, 0 | 220 × 260 | Start |
 | `prop:eagleHeadOpen` | 520 × 240 | 20, 120 | 1040 × 480 | Start |
 | `prop:eagleHeadShut` | 520 × 240 | 20, 120 | 1040 × 480 | Start |
-| `lobby:room` | 1600 × 720 | 0, 0 | 1600 × 720 | Start |
 | `lobby:flame` | 40 × 64 | 20, 60 | 80 × 128 | Start |
 | `lobby:cogPlaque` | 140 × 140 | 70, 70 | 280 × 280 | Start |
-| `lobby:storybook` | 200 × 150 | 100, 75 | 400 × 300 | Start |
-| `lobby:helpScroll` | 110 × 160 | 55, 80 | 220 × 320 | Start |
-| `lobby:mapTable` | 280 × 170 | 140, 85 | 560 × 340 | Start |
-| `lobby:pot` | 240 × 160 | 120, 80 | 480 × 320 | Start |
-| `lobby:painting` | 160 × 130 | 80, 65 | 320 × 260 | Start |
-| `lobby:slate` | 140 × 120 | 70, 60 | 280 × 240 | Start |
-| `lobby:feastTable` | 280 × 150 | 140, 75 | 560 × 300 | Start |
 | `lobby:armourStand` | 160 × 270 | 80, 135 | 320 × 540 | Start |
 | `lobby:king` | 180 × 220 | 90, 110 | 360 × 440 | Start |
+| `lobby:knight` | 150 × 260 | 75, 260 | 300 × 520 | Start |
 | `lobby:throne` | 280 × 340 | 140, 170 | 560 × 680 | Start |
 | `lobby:throneGold` | 280 × 340 | 140, 170 | 560 × 680 | Start |
 | `lobby:rug` | 460 × 80 | 230, 40 | 920 × 160 | Start |
@@ -364,6 +357,80 @@ Stand: 444 Assets.
 | `lobby:goldenForks` | 220 × 120 | 110, 60 | 440 × 240 | Start |
 | `lobby:garland` | 1600 × 140 | 800, 0 | 3200 × 280 | Start |
 | `lobby:nameBanner` | 420 × 110 | 210, 55 | 840 × 220 | Start |
+| `lobby:straw` | 220 × 60 | 110, 30 | 440 × 120 | Start |
+| `lobby:hayBale` | 130 × 90 | 65, 45 | 260 × 180 | Start |
+| `lobby:barrel` | 90 × 120 | 45, 60 | 180 × 240 | Start |
+| `lobby:goldPile` | 160 × 90 | 80, 45 | 320 × 180 | Start |
+| `lobby:cheeseChest` | 200 × 150 | 100, 75 | 400 × 300 | Start |
+| `lobby:runeStone` | 100 × 150 | 50, 75 | 200 × 300 | Start |
+| `lobby:pennants` | 400 × 60 | 0, 0 | 800 × 120 | Start |
+| `lobby:candelabra` | 90 × 180 | 45, 90 | 180 × 360 | Start |
+| `lobby:stainedBanner` | 110 × 230 | 55, 115 | 220 × 460 | Start |
+| `lobby:coopTableBroken` | 280 × 190 | 140, 95 | 560 × 380 | Start |
+| `lobby:endlessTableBroken` | 280 × 190 | 140, 95 | 560 × 380 | Start |
+| `lobby:wall1` | 400 × 380 | 0, 0 | 400 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:floor1` | 400 × 280 | 0, 0 | 400 × 280 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:ceiling1` | 400 × 72 | 0, 0 | 400 × 72 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:window1` | 200 × 260 | 100, 130 | 400 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:door1` | 220 × 250 | 110, 250 | 440 × 500 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:cauldron1` | 320 × 230 | 160, 230 | 640 × 460 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:wall2` | 400 × 380 | 0, 0 | 400 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:floor2` | 400 × 280 | 0, 0 | 400 × 280 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:ceiling2` | 400 × 72 | 0, 0 | 400 × 72 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:window2` | 200 × 260 | 100, 130 | 400 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:door2` | 220 × 250 | 110, 250 | 440 × 500 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:cauldron2` | 320 × 230 | 160, 230 | 640 × 460 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:wall3` | 400 × 380 | 0, 0 | 400 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:floor3` | 400 × 280 | 0, 0 | 400 × 280 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:ceiling3` | 400 × 72 | 0, 0 | 400 × 72 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:window3` | 200 × 260 | 100, 130 | 400 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:door3` | 220 × 250 | 110, 250 | 440 × 500 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:cauldron3` | 320 × 230 | 160, 230 | 640 × 460 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:wall4` | 400 × 380 | 0, 0 | 400 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:floor4` | 400 × 280 | 0, 0 | 400 × 280 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:ceiling4` | 400 × 72 | 0, 0 | 400 × 72 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:window4` | 200 × 260 | 100, 130 | 400 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:door4` | 220 × 250 | 110, 250 | 440 × 500 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:cauldron4` | 320 × 230 | 160, 230 | 640 × 460 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:wall5` | 400 × 380 | 0, 0 | 400 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:floor5` | 400 × 280 | 0, 0 | 400 × 280 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:ceiling5` | 400 × 72 | 0, 0 | 400 × 72 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:window5` | 200 × 260 | 100, 130 | 400 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:door5` | 220 × 250 | 110, 250 | 440 × 500 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:cauldron5` | 320 × 230 | 160, 230 | 640 × 460 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:wall6` | 400 × 380 | 0, 0 | 400 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:floor6` | 400 × 280 | 0, 0 | 400 × 280 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:ceiling6` | 400 × 72 | 0, 0 | 400 × 72 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:window6` | 200 × 260 | 100, 130 | 400 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:door6` | 220 × 250 | 110, 250 | 440 × 500 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:cauldron6` | 320 × 230 | 160, 230 | 640 × 460 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:wall7` | 400 × 380 | 0, 0 | 400 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:floor7` | 400 × 280 | 0, 0 | 400 × 280 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:ceiling7` | 400 × 72 | 0, 0 | 400 × 72 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:window7` | 200 × 260 | 100, 130 | 400 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:door7` | 220 × 250 | 110, 250 | 440 × 500 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:cauldron7` | 320 × 230 | 160, 230 | 640 × 460 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:mapTable1` | 400 × 260 | 200, 130 | 800 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:coopTable1` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:endlessTable1` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:mapTable2` | 400 × 260 | 200, 130 | 800 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:coopTable2` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:endlessTable2` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:mapTable3` | 400 × 260 | 200, 130 | 800 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:coopTable3` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:endlessTable3` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:mapTable4` | 400 × 260 | 200, 130 | 800 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:coopTable4` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:endlessTable4` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:mapTable5` | 400 × 260 | 200, 130 | 800 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:coopTable5` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:endlessTable5` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:mapTable6` | 400 × 260 | 200, 130 | 800 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:coopTable6` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:endlessTable6` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:mapTable7` | 400 × 260 | 200, 130 | 800 × 520 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:coopTable7` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
+| `lobby:endlessTable7` | 280 × 190 | 140, 95 | 560 × 380 | Lobby je Burg-Stufe (bei Bedarf) |
 
 ### Waffen (je Stufe ein Bild) (175)
 

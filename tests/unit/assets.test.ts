@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { RIGS } from '../../src/art/characters';
 import { CLOUDS, LANDSCAPE_ART } from '../../src/art/landscapes';
 import { PROPS } from '../../src/art/props';
-import { LOBBY_ART, lobbyKey } from '../../src/art/lobby';
+import { LOBBY_ART, LOBBY_HALL_ART, lobbyKey } from '../../src/art/lobby';
 import {
   ASSETS, applyOverrides, assetsOfGroup, buildAssets, cloudKey, landscapeKey, listAssets, parseAssetParams, partKey, propKey, weaponKey,
 } from '../../src/art/registry';
@@ -21,6 +21,7 @@ function expectedNames(): string[] {
   for (const land of Object.keys(LANDSCAPE_ART)) for (const layer of ['far', 'mid', 'near', 'ground']) names.push(landscapeKey(land, layer));
   CLOUDS.forEach((_, i) => names.push(cloudKey(i)));
   for (const name of Object.keys(LOBBY_ART)) names.push(lobbyKey(name));
+  for (const name of Object.keys(LOBBY_HALL_ART)) names.push(lobbyKey(name));
   return names;
 }
 
@@ -68,13 +69,17 @@ describe('asset directory', () => {
     expect(ASSETS['prop:keepWeather_snowpine_2'].group).toBe('snowpine');
     expect(ASSETS['land:canyon:far'].group).toBe('canyon');
     expect(ASSETS['cloud:0'].group).toBe('boot');
+    // The lobby's pictures of each castle tier are made when that hall is first shown.
+    expect(ASSETS['lobby:king'].group).toBe('boot');
+    expect(ASSETS['lobby:wall3'].group).toBe('lobbyHalls');
+    expect(ASSETS['lobby:mapTable7'].group).toBe('lobbyHalls');
     // Weapons: tier 1 is there before the first market, the higher tiers load in the background.
     expect(ASSETS['weapon:wheel:1'].group).toBe('boot');
     expect(ASSETS['weapon:wheel:5'].group).toBe('weaponTiers');
     expect(ASSETS['weapon:log:7'].group).toBe('weaponTiers');
     // A landscape's strips are made first, then its props; every asset is in exactly one group.
     expect(assetsOfGroup('meadow').slice(0, 4).map((a) => a.name)).toEqual(['land:meadow:far', 'land:meadow:mid', 'land:meadow:near', 'land:meadow:ground']);
-    const grouped = (['boot', 'keepStages', 'weaponTiers', 'meadow', 'canyon', 'marsh', 'snowpine'] as const).flatMap((g) => assetsOfGroup(g));
+    const grouped = (['boot', 'keepStages', 'weaponTiers', 'lobbyHalls', 'meadow', 'canyon', 'marsh', 'snowpine'] as const).flatMap((g) => assetsOfGroup(g));
     expect(grouped.length).toBe(listAssets().length);
   });
 

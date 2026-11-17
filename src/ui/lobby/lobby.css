@@ -23,23 +23,6 @@
   text-shadow: 0 1px 0 #2b2118, 0 0 3px #2b2118;
 }
 
-/* The storybook window over the hall. */
-.storybook-veil {
-  position: absolute; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
-  padding: 12px; background: rgba(14, 16, 28, 0.55);
-}
-.panel.storybook { max-height: 100%; overflow: auto; text-align: center; }
-.storybook .sb-title { margin: 2px 0 6px; font-size: 22px; color: #853820; }
-.storybook .sb-text { text-align: left; font-size: 16px; line-height: 1.4; }
-.storybook .sb-text p { margin: 0 0 8px; }
-.storybook .sb-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
-.storybook .sb-foot button { min-width: 56px; min-height: 44px; font-size: 26px; }
-.storybook .sb-count { font-weight: 800; }
-.storybook .sb-more { margin-top: 6px; font-size: 14px; opacity: 0.75; }
-.storybook .sb-close { margin-top: 8px; min-height: 44px; }
-
 @media (max-height: 480px) {
   .lobby-chip { font-size: 16px; padding: 2px 10px 3px; }
-  .storybook .sb-title { font-size: 18px; margin: 0 0 4px; }
-  .storybook .sb-text { font-size: 14px; }
 }

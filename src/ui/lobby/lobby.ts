@@ -1,23 +1,23 @@
 // The lobby controller: decides when the hall inside the keep is on screen, runs the camera move
-// between battlefield and hall, lets the King talk, opens the storybook and offers test hooks
+// between battlefield and hall, lets the King talk and offers test hooks
 // (`window.__fondue.lobby.spots()`, `.tap(id)`). The hall itself is drawn by LobbyScene.
 import type Phaser from 'phaser';
 import type { AudioEngine } from '../../audio/audio';
 import { WEAPONS } from '../../config/weapons';
 // The story texts of the one world there is; a second world would bring its own.
-import { KING_LOBBY_LINES, STORYBOOK } from '../../config/worlds/fondue/story';
+import { KING_LOBBY_LINES } from '../../config/worlds/fondue/story';
+import { TABLE_LOCKED_LINES } from '../../config/lobby';
 import type { Session } from '../../game/session';
 import { TABLE_UNLOCK_LEVEL } from '../../config/slotTiers';
-import { ENDLESS } from '../../modes';
+import { coopTableOpen, endlessOpen } from '../../modes';
 import type { Profile } from '../../profile';
 import { diveOf, fadeOf, stepLobby } from '../../render/lobby/dive';
-import { linesFor, pagesFor, pickLine, STATIONS, type StationId } from '../../render/lobby/layout';
+import { linesFor, pickLine, STATIONS, type StationId } from '../../render/lobby/layout';
 import { LobbyScene, type LobbySpot, type LobbyState } from '../../render/lobby/lobbyScene';
 import type { GameScene } from '../../render/scene';
 import type { PendingRun } from '../screens/context';
 import { pendingWave } from '../screens/main';
 import { htmlMenuWanted, OVER_LOBBY } from './mode';
-import { StorybookWindow } from './storybook';
 
 /** What the lobby needs from the app. */
 export interface LobbyHost {
@@ -40,7 +40,6 @@ export class Lobby {
   readonly enabled = !htmlMenuWanted();
   private scene: LobbyScene | null = null;
   private gameScene: GameScene | null = null;
-  private readonly book: StorybookWindow;
   /** 0 on the battlefield, 1 in the hall; the camera move runs between. */
   private k = 0;
   private inLobby = false;
@@ -48,8 +47,7 @@ export class Lobby {
   private lineIn = FIRST_LINE;
   private lastLine = '';
 
-  constructor(private host: LobbyHost, root: HTMLElement) {
-    this.book = new StorybookWindow(root, () => this.click());
+  constructor(private host: LobbyHost, _root: HTMLElement) {
     // A tap anywhere during the camera move skips it.
     window.addEventListener('pointerdown', () => { if (this.moving) this.skip(); }, true);
   }
@@ -61,7 +59,7 @@ export class Lobby {
     const scene = new LobbyScene();
     scene.hooks = {
       state: () => this.state(),
-      canTap: () => this.inLobby && this.k >= 1 && this.host.screen === 'main' && !this.book.isOpen,
+      canTap: () => this.inLobby && this.k >= 1 && this.host.screen === 'main',
       tap: (id) => this.tap(id),
       tapKing: () => this.say(),
       step: (dt) => this.step(dt),
@@ -78,7 +76,6 @@ export class Lobby {
     this.inLobby = want;
     // The first screen of the page appears at once; later changes move the camera.
     if (this.first && this.scene) { this.first = false; this.k = want ? 1 : 0; this.apply(); }
-    if (!want || this.host.screen !== 'main') this.book.close();
   }
 
   private state(): LobbyState {
@@ -86,9 +83,11 @@ export class Lobby {
     const pending = this.host.pendingRun();
     return {
       levelDone: p.highestLevelDone(this.host.world),
+      castleTier: p.data.keep.castleTier,
       weapons: WEAPONS.filter((w) => w.enabled && p.hasWeapon(w.id)).map((w) => w.id),
       pending: pending ? { level: pending.rules.level ?? 1, wave: pendingWave(pending) } : null,
-      endless: ENDLESS.isAvailable(p, this.host.world),
+      coop: coopTableOpen(p, this.host.world),
+      endless: endlessOpen(p, this.host.world),
     };
   }
 
@@ -96,7 +95,7 @@ export class Lobby {
     const before = this.k;
     this.k = stepLobby(this.k, this.inLobby, dt);
     if (this.k !== before) this.apply();
-    if (this.k >= 1 && this.host.screen === 'main' && !this.book.isOpen) {
+    if (this.k >= 1 && this.host.screen === 'main') {
       this.lineIn -= dt;
       if (this.lineIn <= 0 && !this.scene?.speaking) this.say();
     }
@@ -120,18 +119,10 @@ export class Lobby {
   tap(id: StationId | string) {
     if (!STATIONS.some((s) => s.id === id)) return;
     this.click();
-    if (id === 'storybook') { this.openBook(); return; }
-    if (id === 'play' && !ENDLESS.isAvailable(this.host.profile, this.host.world)) {
-      this.say(`Endless opens once you win level ${TABLE_UNLOCK_LEVEL.endless}.`);
-      return;
-    }
+    // A broken table: the King says when the carpenters mend it.
+    if (id === 'coop' && !coopTableOpen(this.host.profile, this.host.world)) { this.say(TABLE_LOCKED_LINES.coop(TABLE_UNLOCK_LEVEL.coop)); return; }
+    if (id === 'play' && !endlessOpen(this.host.profile, this.host.world)) { this.say(TABLE_LOCKED_LINES.endless(TABLE_UNLOCK_LEVEL.endless)); return; }
     this.host.lobbyAction(id);
-  }
-
-  private openBook() {
-    const done = this.host.profile.highestLevelDone(this.host.world);
-    const pages = pagesFor(STORYBOOK, done);
-    this.book.open(pages, STORYBOOK.length - pages.length);
   }
 
   /** The King says one of the remarks that fit the campaign so far (or `line`). */
@@ -157,11 +148,10 @@ export class Lobby {
   get moving(): boolean { return this.k > 0 && this.k < 1; }
   /** Where the move stands: 0 battlefield, 1 hall. */
   get progress(): number { return this.k; }
-  get storybookOpen(): boolean { return this.book.isOpen; }
-  get storybookPage(): string { return this.book.pageId; }
+  /** The castle tier whose hall is on show (0 while its pictures are still being made). */
+  get hallTier(): number { return this.scene?.hallShown ?? 0; }
   /** The King's remark on show, or ''. */
   get kingLine(): string { return this.scene?.bubbleLine ?? ''; }
   /** Every station on show: id, label, centre and radius in CSS pixels. */
   spots(): LobbySpot[] { return this.scene && this.k >= 1 ? this.scene.spots() : []; }
-  closeStorybook() { this.book.close(); }
 }
