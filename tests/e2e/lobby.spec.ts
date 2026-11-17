@@ -60,7 +60,10 @@ for (const d of DEVICES) {
     expect(s.spots.find((p) => p.id === 'coop')!.open).toBe(false);
     expect(s.spots.find((p) => p.id === 'play')!.open).toBe(false);
     await page.screenshot({ path: `docs/screenshots/v0.4/lobby-tables-broken-${d.name}.png` });
-    // Closed: the King explains instead of opening the page.
+    // Closed: the King explains instead of opening the page, at the first tap, also on the sign.
+    const sign = s.spots.find((p) => p.id === 'play')! as unknown as { lx: number; ly: number };
+    if (d.touch) await page.touchscreen.tap(sign.lx, sign.ly); else await page.mouse.click(sign.lx, sign.ly);
+    await expect.poll(async () => (await lobbyOf(page)).line).toContain('Win level 10');
     await tapStation(page, 'coop', d.touch);
     await expect.poll(async () => (await lobbyOf(page)).line).toContain('Win level 3');
     expect(await page.evaluate(() => (window as any).__fondue.screen)).toBe('main');
@@ -85,7 +88,10 @@ for (const d of DEVICES) {
     await tapStation(page, 'play', d.touch);
     await waitScreen(page, 'play');
     await (d.touch ? page.tap('button[data-a="main"]') : page.click('button[data-a="main"]'));
-    await tapStation(page, 'armoury', d.touch);
+    // A tap on a station's sign opens the station, like a tap on its picture.
+    await waitForLobby(page);
+    const shop = (await lobbyOf(page)).spots.find((p) => p.id === 'armoury')! as unknown as { lx: number; ly: number };
+    if (d.touch) await page.touchscreen.tap(shop.lx, shop.ly); else await page.mouse.click(shop.lx, shop.ly);
     await waitScreen(page, 'armoury');
     expect(errors).toEqual([]);
     await context.close();

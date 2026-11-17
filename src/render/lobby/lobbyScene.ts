@@ -41,7 +41,7 @@ export interface LobbyHooks {
 }
 
 /** A spot the player can tap, for tests: centre and radius in CSS pixels. */
-export interface LobbySpot { id: StationId; label: string; x: number; y: number; r: number; open: boolean }
+export interface LobbySpot { id: StationId; label: string; x: number; y: number; r: number; open: boolean; lx: number; ly: number }
 
 interface StationView {
   def: StationDef;
@@ -201,19 +201,23 @@ export class LobbyScene extends Phaser.Scene {
     if (!this.hooks.canTap() || !this.shownTier) return;
     const w = this.cssToRoom(cx, cy);
     const hit = this.hit(w.x, w.y);
-    if (hit) { this.pop(hit); this.hooks.tap(hit); return; }
+    // The station answers the tap at once (squash and a bright sign); the page follows a moment later.
+    if (hit) { this.pop(hit); this.time.delayedCall(LOBBY_HALL.stationBounceMs, () => this.hooks.tap(hit)); return; }
     if (Math.hypot(w.x - KING_SPOT.x, w.y - KING_SPOT.y) <= KING_SPOT.r) {
       this.tweens.add({ targets: this.king, scaleX: this.king.scaleX * 1.05, duration: LOBBY_HALL.kingNodMs, yoyo: true });
       this.hooks.tapKing();
     }
   }
 
-  /** The nearest visible station whose circle holds the room point. */
+  /** The station whose sign holds the room point, else the nearest visible station whose circle holds it. */
   private hit(x: number, y: number): StationId | null {
     let best: StationId | null = null;
     let bestD = Infinity;
     for (const v of this.stations.values()) {
       if (!v.label.visible) continue;
+      // The sign belongs to its station: a tap on it counts, also outside the circle.
+      const b = v.label.getBounds();
+      if (x >= b.x - 12 && x <= b.right + 12 && y >= b.y - 8 && y <= b.bottom + (v.sub?.visible ? v.sub.height : 0) + 8) return v.def.id;
       const d = Math.hypot(x - v.x, y - v.y);
       if (d <= v.def.r && d < bestD) { best = v.def.id; bestD = d; }
     }
@@ -223,6 +227,10 @@ export class LobbyScene extends Phaser.Scene {
   /** A small squash on the tapped object, so the tap feels answered. */
   private pop(id: StationId) {
     const v = this.stations.get(id);
+    if (v) {
+      v.label.setTint(0xfff1a8);
+      this.time.delayedCall(LOBBY_HALL.stationBounceMs * 3, () => v.label.clearTint());
+    }
     const targets = [v?.img, v?.label].filter(Boolean) as Phaser.GameObjects.Components.Transform[];
     for (const t of targets) {
       const sx = t.scaleX;
@@ -372,7 +380,10 @@ export class LobbyScene extends Phaser.Scene {
     const out: LobbySpot[] = [];
     for (const v of this.stations.values()) {
       if (!v.label.visible) continue;
-      out.push({ id: v.def.id, label: v.def.label, x: r.left + (v.x - left) * z * k, y: r.top + (v.y - top) * z * k, r: v.def.r * z * k, open: v.open });
+      out.push({
+        id: v.def.id, label: v.def.label, x: r.left + (v.x - left) * z * k, y: r.top + (v.y - top) * z * k, r: v.def.r * z * k, open: v.open,
+        lx: r.left + (v.lx - left) * z * k, ly: r.top + (v.ly - top) * z * k,
+      });
     }
     return out;
   }

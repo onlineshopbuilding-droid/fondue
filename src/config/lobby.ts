@@ -62,7 +62,7 @@ export interface StationDef {
   /** Where the label sits. */
   lx: number;
   ly: number;
-  /** Label size in room units. */
+  /** Label size in room units. A tap on the label counts as a tap on the station. */
   size?: number;
   /** Stands in the top right corner of what the screen shows (x and y are then the distance from it). */
   corner?: boolean;
@@ -77,9 +77,9 @@ export interface StationDef {
 export const STATIONS: readonly StationDef[] = [
   { id: 'continueLevel', label: 'Continue', art: '', x: 540, y: 318, r: 100, lx: 540, ly: 150, size: 32 },
   { id: 'play', label: 'Endless', art: 'endlessTable', tiered: true, brokenArt: 'endlessTableBroken', scale: 0.8, depth: 4, x: 312, y: 466, r: 85, lx: 312, ly: 376 },
-  { id: 'coop', label: 'Co-op', art: 'coopTable', tiered: true, brokenArt: 'coopTableBroken', scale: 0.8, depth: 6, x: 312, y: 632, r: 85, lx: 312, ly: 700 },
-  { id: 'campaign', label: 'Campaign', art: 'mapTable', tiered: true, scale: 1.05, depth: 5, x: 680, y: 580, r: 150, lx: 680, ly: 700, size: 38 },
-  { id: 'armoury', label: 'Shop', art: 'armourStand', scale: 0.95, depth: 6, x: 968, y: 584, r: 110, lx: 968, ly: 700 },
+  { id: 'coop', label: 'Co-op', art: 'coopTable', tiered: true, brokenArt: 'coopTableBroken', scale: 0.8, depth: 6, x: 312, y: 632, r: 85, lx: 312, ly: 672 },
+  { id: 'campaign', label: 'Campaign', art: 'mapTable', tiered: true, scale: 1.05, depth: 5, x: 680, y: 580, r: 150, lx: 680, ly: 668, size: 38 },
+  { id: 'armoury', label: 'Shop', art: 'armourStand', scale: 1.15, depth: 6, x: 985, y: 556, r: 120, lx: 985, ly: 668, size: 34 },
   { id: 'options', label: 'Options', art: 'cogPlaque', scale: 0.62, depth: 8, x: 66, y: 66, r: 82, lx: 66, ly: 128, size: 20, corner: true },
 ];
 
@@ -91,7 +91,7 @@ export const KING_GROUP = {
   /** Feet of the King (seated on the throne). */
   king: { x: 1252, y: 552 },
   cauldron: { x: 1252, y: 704, scale: 0.92 },
-  guards: [{ x: 1108, y: 704, scale: 0.76, flipX: false }, { x: 1398, y: 704, scale: 0.76, flipX: true }],
+  guards: [{ x: 1122, y: 704, scale: 0.76, flipX: false }, { x: 1398, y: 704, scale: 0.76, flipX: true }],
 };
 /** The banner above the King with the castle's name and tier. */
 export const NAME_BANNER = { x: 1196, y: 112, scale: 0.86 };
