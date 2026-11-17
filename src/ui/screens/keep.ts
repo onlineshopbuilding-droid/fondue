@@ -354,8 +354,21 @@ function castleBuilt(ctx: ScreenContext, tier: number): void {
   castleNews = lines.filter((l) => l !== '');
   building = tier;
   clearTimeout(buildTimer);
+  // The King's picture is a large SVG that decodes on first use; decode it during the rise, so his
+  // bubble does not appear with an empty space where he stands.
+  preloadKing();
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   buildTimer = setTimeout(() => endBuild(ctx), reduced ? CASTLE_BUILD.reducedMs : CASTLE_BUILD.ms);
+}
+
+let kingDecoded = false;
+function preloadKing(): void {
+  if (kingDecoded || typeof Image !== 'function') return;
+  const uri = propUri('kingTalk') || propUri('king');
+  if (!uri) return;
+  const img = new Image();
+  img.src = uri;
+  img.decode?.().then(() => { kingDecoded = true; }, () => undefined);
 }
 
 /** The rise is over (or skipped): the King speaks. Only redraws while the shop is still showing. */
@@ -409,6 +422,7 @@ export const keepScreen: Screen = {
   },
   onShow(ctx) {
     ctx.query<HTMLElement>('#shopSide')?.scrollTo({ top: 0 });
+    preloadKing();
   },
   onAction(action, el, ctx) {
     const p = ctx.profile;
