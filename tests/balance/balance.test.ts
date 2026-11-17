@@ -30,8 +30,10 @@ const MAX_TRIES = Number(process.env.BALANCE_TRIES ?? 6);
 /** B2: never more than this many seconds without a living raider. */
 const QUIET_MAX = 5;
 const FIELD_W = 1280;
-const MD = 'docs/balance-latest.md';
-const JSON_FILE = 'docs/balance-latest.json';
+/** Report files; BALANCE_OUT=path/name writes path/name.md and .json instead (for trial runs that must not touch docs/). */
+const OUT = process.env.BALANCE_OUT ?? 'docs/balance-latest';
+const MD = `${OUT}.md`;
+const JSON_FILE = `${OUT}.json`;
 /** Keeps for the endless rows: the Mid player's profile after these levels. */
 const KEEP_LEVELS = [20, 60];
 /** A4: the crest grind is measured with the Mid player's keep after this level (Eagle Perch owned), replaying the next level. */

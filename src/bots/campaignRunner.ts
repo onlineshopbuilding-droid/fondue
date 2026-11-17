@@ -114,7 +114,7 @@ export class CampaignRunner {
     const stuckAfter = o.stuckAfter ?? 2;
     let farmCount = 0;
     /** Plays endless runs for gold, as long as gold is what the player lacks. */
-    const farm = (beforeLevel: number, runs: number, out: FarmRun[]) => {
+    const farm = (beforeLevel: number, runs: number, out: FarmRun[], bought: ArmouryBuy[]) => {
       for (let k = 0; k < runs && endlessOpen(profile, world) && goldWanted(profile, skills[0], world, style) > 0; k++) {
         const difficulty = o.farmDifficulty ?? 'medium';
         const hand = profile.data.keep.handTier;
@@ -129,7 +129,7 @@ export class CampaignRunner {
           profile.edit((d) => { d.wallet.gold += gold; d.earned.gold += gold; });
         }
         out.push({ beforeLevel, difficulty, wave: g.wave, seconds: +g.seconds.toFixed(1), gold });
-        spend();
+        bought.push(...spend());
       }
     };
     // A player reaches the campaign through the tutorial, which gives the free Rolling Wheel.
@@ -149,7 +149,7 @@ export class CampaignRunner {
       const quietPerTry: number[] = [];
       const armoury: ArmouryBuy[] = [];
       const farmed: FarmRun[] = [];
-      if (farmMode === 'always') farm(level, o.farmRuns ?? 3, farmed);
+      if (farmMode === 'always') farm(level, o.farmRuns ?? 3, farmed, armoury);
       let game: GameResult | null = null;
       let cheeseEarned = 0;
       let goldEarned = 0;
@@ -173,7 +173,7 @@ export class CampaignRunner {
         // Gold of a lost attempt is kept; spending it may be what wins the next one.
         armoury.push(...spend());
         // Stuck: go and earn gold in endless, then try again.
-        if (!won && farmMode !== 'never' && attempt + 1 >= stuckAfter && attempt + 1 < maxTries) farm(level, o.farmRuns ?? 2, farmed);
+        if (!won && farmMode !== 'never' && attempt + 1 >= stuckAfter && attempt + 1 < maxTries) farm(level, o.farmRuns ?? 2, farmed, armoury);
       }
       const forced = !won && !!o.forceThrough;
       if (forced) {
