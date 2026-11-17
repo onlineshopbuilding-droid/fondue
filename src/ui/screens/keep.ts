@@ -361,6 +361,11 @@ function castleBuilt(ctx: ScreenContext, tier: number): void {
   buildTimer = setTimeout(() => endBuild(ctx), reduced ? CASTLE_BUILD.reducedMs : CASTLE_BUILD.ms);
 }
 
+/** A King bubble is (or, after the rise, will be) on the shop's panel. */
+function kingSpeaks(ctx: ScreenContext): boolean {
+  return guidePraise || castleNews.length > 0 || firstUpgradeDue(ctx.profile, ctx.world);
+}
+
 let kingDecoded = false;
 function preloadKing(): void {
   if (kingDecoded || typeof Image !== 'function') return;
@@ -449,10 +454,14 @@ export const keepScreen: Screen = {
         const q = buy(p, target, ctx.world);
         if (q.allowed) {
           ctx.audio.play('buy');
-          ctx.toast(q.action === 'unlock' ? `${q.name} unlocked!` : `${q.name}: tier ${q.toTier}!`);
           // The first purchase ends the tutorial's guide, whatever was bought.
           if (guided && finishFirstUpgrade(p)) guidePraise = true;
           if (target.kind === 'castle') castleBuilt(ctx, q.toTier);
+          // The King's news of an earlier castle tier is done once something else is bought.
+          else castleNews = [];
+          // Toast and King bubble never cover each other (O-01): when the King speaks about this
+          // purchase (guide praise, castle news), his words are the news and no toast comes.
+          if (!kingSpeaks(ctx)) ctx.toast(q.action === 'unlock' ? `${q.name} unlocked!` : `${q.name}: tier ${q.toTier}!`);
         }
         ctx.show('armoury');
         break;

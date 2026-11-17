@@ -100,6 +100,8 @@ for (const d of DEVICES) {
     await page.screenshot({ path: `${SHOTS}/tutorial-shop-${d.name}.png` });
     await press(page, d, '#guideBuy');
     await expect(page.locator('#shopGuide')).toContainText('Splendid');
+    // The King's praise is the news of this purchase: no toast covers his bubble (O-01).
+    await expect(page.locator('.toast')).toHaveCount(0);
     expect(await page.evaluate(() => (window as any).__fondue.profile.weaponTier('wheel'))).toBe(2);
     expect(await page.evaluate(() => (window as any).__fondue.profile.data.seen.tips.includes('firstUpgrade'))).toBe(true);
     await page.screenshot({ path: `${SHOTS}/tutorial-upgraded-${d.name}.png` });
