@@ -39,7 +39,7 @@ export const TUTORIAL_HINTS: {
  */
 export const FIRST_WIN_LINES: string[] = [
   "Every level hides five cheese. Cheese unlocks new weapons.",
-  "Gold makes what you have stronger, and you keep it all.",
+  "Gold makes weapons stronger and builds my castle: each castle tier opens a new slot.",
   "Come, let us spend your gold on that wheel!",
 ];
 
@@ -47,7 +47,7 @@ export const FIRST_WIN_LINES: string[] = [
 export const FIRST_UPGRADE_LINES: { pickSlot: string; buy: string; done: string } = {
   pickSlot: "Tap the Damage slot, where my wheel sits.",
   buy: "Now tap the glowing button: tier 2 for the wheel!",
-  done: "Splendid! A bigger wheel. Back to the gate, level 2 awaits.",
+  done: "Splendid! A bigger wheel. Now save your gold: a bigger castle opens new slots.",
 };
 
 /** King Fridolin introduces each weapon slot the first time it opens. Index = slot (see src/config/slots.ts). */
@@ -60,34 +60,35 @@ export const SLOT_INTROS: string[] = [
 ];
 
 /**
- * King Fridolin announces that a castle tier can now be built (shown when its campaign level is won).
- * Index = castle tier (2..7); indexes 0 and 1 stay empty (tier 1 is there from the start).
- * Plain placeholders for now; the final lines come with the text package.
+ * King Fridolin announces that a castle tier can now be built (shown when its campaign level is won,
+ * on the victory screen). Index = castle tier (2..7); indexes 0 and 1 stay empty (tier 1 is there from
+ * the start). No level numbers here: the level of each tier lives in src/config/slotTiers.ts.
  */
 export const CASTLE_READY_LINES: string[] = [
   '',
   '',
-  'Castle tier 2 can be built now. Visit the Keep Shop!',
-  'Castle tier 3 can be built now. Visit the Keep Shop!',
-  'Castle tier 4 can be built now. Visit the Keep Shop!',
-  'Castle tier 5 can be built now. Visit the Keep Shop!',
-  'Castle tier 6 can be built now. Visit the Keep Shop!',
-  'Castle tier 7 can be built now. Visit the Keep Shop!',
+  "My carpenters are ready! Build the Iron-Bound Gate in the Keep Shop, and a Slow slot opens.",
+  "Masons have climbed up the valley! Build the Stone Keep, and a Gate slot opens above our door.",
+  "Banners, I want banners! Build the Bannered Keep, and a Support slot opens on the wall.",
+  "Gold leaf for my walls! Build the Gilded Keep, and the Passive slot opens. That makes five!",
+  "The old runes of the mountain are waking up. Build the Runic Fortress for a far stronger gate.",
+  "The Alpine Citadel can rise at last! It costs Raider Crests on top of gold. Bring them to the Keep Shop.",
 ];
 
 /**
- * King Fridolin's line when a castle tier has just been built. Index = castle tier (2..7); indexes 0
- * and 1 stay empty. Plain placeholders for now; the final lines come with the text package.
+ * King Fridolin's line when a castle tier has just been built in the Keep Shop; the introduction of
+ * the slot it opened follows (SLOT_INTROS). Index = castle tier (2..7); indexes 0 and 1 stay empty.
+ * Tiers 6 and 7 open no slot: their lines speak of the gate and the hall.
  */
 export const CASTLE_BUILT_LINES: string[] = [
   '',
   '',
-  'Our castle grows! A new slot is open.',
-  'Our castle grows! A new slot is open.',
-  'Our castle grows! A new slot is open.',
-  'Our castle grows! A new slot is open.',
-  'Our castle grows! The gate is stronger than ever.',
-  'Our castle grows! The gate is stronger than ever.',
+  "The Iron-Bound Gate! Hear those iron bands ring. And look: a new slot on the wall.",
+  "The Stone Keep stands tall! A new slot sits right above our gate.",
+  "The Bannered Keep! A flag on every tower, and one more slot for you.",
+  "The Gilded Keep! It shines like a cheese rind at sunset. And the very last slot is open.",
+  "The Runic Fortress! The gate holds far more now, and my hall has never looked so grand.",
+  "The Alpine Citadel! The toughest gate in the mountains, and the finest hall a cheese king ever had.",
 ];
 
 /** King Fridolin introduces the two stations the first time they can be unlocked. */
@@ -395,6 +396,8 @@ export const KING_LOBBY_LINES: { minLevel: number; maxLevel: number; text: strin
   { minLevel: 0, maxLevel: 100, text: "You fling mice beautifully. Has anyone ever told you that?" },
   { minLevel: 0, maxLevel: 100, text: "Gold is lovely, but have you ever smelled melted cheese at dawn?" },
   { minLevel: 1, maxLevel: 30, text: "Gold burning a hole in your pocket? The Keep Shop is right by the door." },
+  { minLevel: 1, maxLevel: 40, text: "Save your gold for the castle. Every new castle tier opens a new slot." },
+  { minLevel: 6, maxLevel: 60, text: "A bigger castle, a bigger gate, more slots. A king can dream, can he not?" },
   { minLevel: 2, maxLevel: 100, text: "Five cheese in every level. I count them all, twice." },
   { minLevel: 0, maxLevel: 100, text: "A king needs three things: a crown, a castle and a very big pot." },
   { minLevel: 0, maxLevel: 100, text: "If you drop your bread in the pot, you owe me a song." },

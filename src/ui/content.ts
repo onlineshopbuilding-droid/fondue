@@ -1,4 +1,5 @@
 /** Text-only screens, kept apart from the UI logic so they are easy to edit. */
+import { CASTLE_TIER_LEVEL, TABLE_UNLOCK_LEVEL } from '../config/slotTiers';
 import { firesOnItsOwn, type WeaponDef } from '../config/weapons';
 
 export interface HelpSlide {
@@ -13,11 +14,12 @@ export const HELP_SLIDES: HelpSlide[] = [
   { title: 'Heavy raiders', icon: 'dust', text: 'Heavy raiders fly shorter for the same swipe. A Yeti needs a hand of tier 4, or two hands lifting together. Lift a raider high and just let go: the fall does the rest.' },
   { title: 'Keg Haulers', icon: 'bomb', text: 'Lift a Keg Hauler and shake it a few times. The keg comes loose, falls and bursts on the raiders below.' },
   { title: 'Waves', icon: 'iconComet', text: 'A level is one fight in waves: a few raiders, a short breath, then more. Win when every wave is beaten. If the gate falls, the level is lost, but the gold you earned stays yours.' },
-  { title: 'Weapons and slots', icon: 'iconCastle', text: 'The keep has five slots: Damage, Slow, Gate, Support and Passive. Tap a weapon to fire it; it picks its own target. Passive weapons fire on their own. A ring shows the reload.' },
+  { title: 'Weapons and slots', icon: 'iconCastle', text: 'The keep has five slots: Damage, Slow, Gate, Support and Passive. You start with the Damage slot; every new castle tier opens the next one. Tap a weapon to fire it; it picks its own target. Passive weapons fire on their own. A ring shows the reload.' },
   { title: 'Cheese', icon: 'cheese', text: 'Every level has five cheese: win it, keep the gate above half, keep it above 90 %, and beat its two challenges. Each cheese counts once. Cheese unlocks new weapons and stations.' },
   { title: 'Gold and the Keep Shop', icon: 'coin', text: 'Gold from every level and endless run is yours to keep. Spend it in the Keep Shop on weapon tiers, the castle and your hand. Everything you build stays for every level.' },
+  { title: 'Build your castle', icon: 'iconCastle', text: `Earn gold, build the castle up, get a new slot. The first new castle tier can be built after level ${CASTLE_TIER_LEVEL[1]}, and the King tells you whenever the next one is ready. Each tier also makes the gate tougher.` },
   { title: 'Tier 7 and Raider Crests', icon: 'perchHook', text: 'Late in the campaign the Eagle Perch opens. Fling a raider onto its hook and the eagle leaves a Raider Crest. Every tier 7 needs crests on top of gold.' },
-  { title: 'Endless', icon: 'iconStomper', text: 'Once all five slots are yours, endless opens: wave after wave with your own keep. No cheese there, but plenty of gold. How long can you hold?' },
+  { title: 'Endless', icon: 'iconStomper', text: `Win level ${TABLE_UNLOCK_LEVEL.endless} and the endless table in the hall is mended: wave after wave with your own keep. No cheese there, but plenty of gold. The coop table opens after level ${TABLE_UNLOCK_LEVEL.coop}, for two.` },
   { title: 'Know your enemy', icon: 'iconFrost', text: 'Tap Siege Carts again and again. Hexers are untouchable while their bubble is up. Every new raider is explained the first time it shows up.' },
 ];
 
@@ -54,6 +56,8 @@ export const LOADING_TIPS: string[] = [
   'Weapons recharge on their own. Tap them often.',
   'Stuck on a level? Play it again or go endless: the gold stays yours.',
   'Each level has two challenges. Their cheese is worth coming back for.',
+  'Every new castle tier opens a new slot. Save your gold for it.',
+  'The Keep Shop shows how much gold the next castle tier still needs.',
   'Swap weapons on the level card before you tap Play.',
 ];
 

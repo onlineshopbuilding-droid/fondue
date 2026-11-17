@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { ENEMIES, type EnemyType } from '../../src/config/enemies';
+import { CASTLE_TIERS } from '../../src/config/keep';
 import { SLOTS } from '../../src/config/slots';
+import { HELP_SLIDES, LOADING_TIPS } from '../../src/ui/content';
 import { FIRST_UPGRADE } from '../../src/config/tutorial';
 import { DEFAULT_WORLD, levelOf } from '../../src/config/worlds';
 import {
-  BOSSES, ENEMY_POPUPS, FIRST_UPGRADE_LINES, FIRST_WIN_LINES, KING_LOBBY_LINES, LEVEL_STORY, PRELUDE_LINES, SLOT_INTROS, STATION_INTROS, TUTORIAL_HINTS,
+  BOSSES, CASTLE_BUILT_LINES, CASTLE_READY_LINES, ENEMY_POPUPS, FIRST_UPGRADE_LINES, FIRST_WIN_LINES, KING_LOBBY_LINES, LEVEL_STORY, PRELUDE_LINES, SLOT_INTROS, STATION_INTROS, TUTORIAL_HINTS,
 } from '../../src/config/worlds/fondue/story';
 import { buy, quote, TUTORIAL } from '../../src/modes';
 import { PRELUDE_WHEEL_SLOT, finishFirstUpgrade, firstUpgradeDue, markIntroSeen, pendingIntros, shopAfterWin } from '../../src/modes/tutorial';
@@ -120,7 +122,7 @@ describe('introductions of slots and stations (C2)', () => {
 describe('texts of the first minutes and the story (D3)', () => {
   const all = [
     ...PRELUDE_LINES, ...Object.values(TUTORIAL_HINTS), ...FIRST_WIN_LINES, ...Object.values(FIRST_UPGRADE_LINES),
-    ...SLOT_INTROS, ...Object.values(STATION_INTROS), ...LEVEL_STORY, ...Object.values(BOSSES).map((b) => b.line),
+    ...SLOT_INTROS, ...CASTLE_READY_LINES, ...CASTLE_BUILT_LINES, ...Object.values(STATION_INTROS), ...LEVEL_STORY, ...Object.values(BOSSES).map((b) => b.line),
     ...Object.values(ENEMY_POPUPS).map((e) => e.text), ...KING_LOBBY_LINES.map((l) => l.text),
     ...Array.from({ length: 100 }, (_, i) => levelOf(W, i + 1)!.challenges.map((c) => c.text)).flat(),
   ];
@@ -129,6 +131,35 @@ describe('texts of the first minutes and the story (D3)', () => {
     for (const t of all) {
       expect(t, t).not.toMatch(/\bstars?\b|market|offering|\bclick/i);
       expect(t, t).not.toMatch(/\bday \d|\bnext day|\bdays? (of|in) (the|this) level/i);
+    }
+  });
+
+  it('the King announces and celebrates every castle tier from 2 to 7 by its name (A5, A6)', () => {
+    for (const lines of [CASTLE_READY_LINES, CASTLE_BUILT_LINES]) {
+      expect(lines).toHaveLength(CASTLE_TIERS.length + 1);
+      expect(lines[0]).toBe('');
+      expect(lines[1]).toBe('');
+      for (let tier = 2; tier <= CASTLE_TIERS.length; tier++) {
+        expect(lines[tier]!.length, lines[tier]).toBeGreaterThan(0);
+        // Level numbers come from src/config/slotTiers.ts, never typed into a King line.
+        expect(lines[tier], lines[tier]).not.toMatch(/\d/);
+      }
+    }
+    for (let tier = 2; tier <= CASTLE_TIERS.length; tier++) expect(CASTLE_BUILT_LINES[tier]).toContain(CASTLE_TIERS[tier - 1]!.name);
+    // Tiers 6 and 7 open no slot: their lines speak of the gate and the hall.
+    for (const tier of [6, 7]) {
+      expect(CASTLE_BUILT_LINES[tier]).toMatch(/gate/i);
+      expect(CASTLE_BUILT_LINES[tier]).toMatch(/hall/i);
+      expect(CASTLE_BUILT_LINES[tier]).not.toMatch(/slot/i);
+    }
+    expect(CASTLE_READY_LINES[7]).toMatch(/Raider Crests/);
+  });
+
+  it('no game text ties a slot to a campaign level any more (A6)', () => {
+    const texts = [...all, ...HELP_SLIDES.flatMap((h) => [h.title, h.text]), ...LOADING_TIPS];
+    for (const t of texts) {
+      expect(t, t).not.toMatch(/fifth slot|all five slots|slot opens after|slots? (opens?|after) (winning )?level|win level 11/i);
+      expect(t, t).not.toMatch(/level \d+[^.]*\bslot|\bslot[^.]*level \d+/i);
     }
   });
 
