@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { CI, GAME_WAIT, collectErrors, station, waitFor, waitForGame } from './helpers';
+import { CI, GAME_WAIT, collectErrors, station, unlockCoop, waitFor, waitForGame } from './helpers';
 
 /**
  * B3 in co-op: after the host starts the run, the first raider is on the guest's screen within
@@ -35,6 +35,8 @@ for (const plan of ['campaign', 'endless'] as const) {
     await host.goto(BASE);
     await waitForGame(host);
     if (plan === 'endless') await openEndless(host);
+    // v0.4: the co-op table opens once levels 1 to 3 are won.
+    else await unlockCoop(host);
     await station(host, 'coop');
     await host.fill('#name', 'Tim');
     await host.click('button[data-a="openRoom"]');

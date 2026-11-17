@@ -2,7 +2,8 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { ENEMIES } from '../../src/config/enemies';
 import { COOP } from '../../src/config/waves';
 import {
-  CI, GAME_WAIT, closePopups, collectErrors, equip, fling, gameState, pointer, screenOf, station, waitFor, waitForGame, waitGame, waitPhase, waitScreen,
+  CI, GAME_WAIT, closePopups, collectErrors, equip, fling, gameState, pointer, screenOf, station, unlockCoop, waitFor, waitForGame, waitGame, waitPhase,
+  waitScreen,
 } from './helpers';
 
 /** Two players on two browser windows, linked the way the game links them on one machine (loopback). */
@@ -30,12 +31,25 @@ async function openEndless(page: Page) {
 
 type Prep = (p: Page) => Promise<unknown>;
 
+/** Takes back every won level of this page's profile (the tutorial stays seen). */
+async function forgetLevels(page: Page) {
+  await page.evaluate(() => {
+    const a = (window as any).__fondue;
+    a.profile.edit((d: any) => { a.profile.world(a.world); d.worlds[a.world].levelsDone = []; });
+    a.profile.flushSync();
+  });
+}
+
 async function openRoom(host: Page, query: string, plan: 'endless' | 'campaign', before?: Prep) {
   await host.goto(`${BASE}${query}`);
   await waitForGame(host);
   if (plan === 'endless') await openEndless(host);
+  else await unlockCoop(host);
   if (before) await before(host);
   await station(host, 'coop');
+  // v0.4: the co-op table in the hall opens once levels 1 to 3 are won. The campaign room below plays
+  // the host's first win of level 1, so that progress is taken back once the host is at the table.
+  if (plan === 'campaign') await forgetLevels(host);
   await host.fill('#name', 'Tim');
   await host.click('button[data-a="openRoom"]');
   await expect(host.locator('#roomCode')).toHaveText(/[A-Z2-9]{5}/);
@@ -396,12 +410,13 @@ test('co-op endless pays the guest the round\'s gold into the guest\'s own profi
   await context.close();
 });
 
-test('a host without the fifth slot cannot open an endless room', async ({ browser }) => {
+test('a host cannot open an endless room before level 10 is won', async ({ browser }) => {
   const context = await browser.newContext();
   const host = await context.newPage();
   await host.goto(BASE);
   await waitForGame(host);
-  await host.evaluate(() => (window as any).__fondue.profile.edit((d: any) => { d.seen.tutorial = true; }));
+  // Levels 1 to 3 won: the co-op table is open, endless (level 10) is not.
+  await unlockCoop(host);
   await station(host, 'coop');
   await host.fill('#name', 'Tim');
   await host.click('button[data-a="openRoom"]');

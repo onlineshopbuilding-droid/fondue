@@ -1,5 +1,6 @@
 import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { DT } from '../../src/config/field';
+import { TABLE_UNLOCK_LEVEL } from '../../src/config/slotTiers';
 
 /**
  * Shared pieces of the browser tests. Every test waits on the state of the game (`window.__fondue`)
@@ -166,6 +167,22 @@ export async function setCastleTier(page: Page, tier: number) {
     a.profile.edit((d: any) => { d.keep.castleTier = t; d.seen.tutorial = true; });
     a.profile.flushSync();
   }, tier);
+}
+
+/** Campaign levels a profile must have won before the co-op table in the hall is mended (TABLE_UNLOCK_LEVEL.coop). */
+export const COOP_AFTER_LEVEL = TABLE_UNLOCK_LEVEL.coop;
+
+/**
+ * Gives the profile of this page the progress that mends the co-op table (levels 1 to 3 won) and marks
+ * the tutorial as seen. Only the host needs it: a guest joins through the room code or invite link.
+ */
+export async function unlockCoop(page: Page) {
+  await page.evaluate((upTo) => {
+    const a = (window as any).__fondue;
+    for (let l = 1; l <= upTo; l++) a.profile.markLevelDone(a.world, l);
+    a.profile.edit((d: any) => { d.seen.tutorial = true; });
+    a.profile.flushSync();
+  }, COOP_AFTER_LEVEL);
 }
 
 /** Gives the profile of this page the progress that opens endless, and marks the tutorial as seen. */
