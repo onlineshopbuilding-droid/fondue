@@ -5,8 +5,8 @@ import { DEVICES, openGame, station } from './helpers';
 
 /**
  * v0.4 B6, V1, V3: the Options open from the cog with the tabs Settings, Scores, Help, Credits and
- * Versions in this order; every tab shows its content, "v0.4" is on show, the Back button stays at the
- * same place on every tab, tap targets are at least 44 CSS px and no tab, link or button text is cut
+ * Versions in this order; every tab shows its content, "v0.4" is on show, the Back button sits top left
+ * as in the shop and on the campaign map and stays at the same place on every tab, tap targets are at least 44 CSS px and no tab, link or button text is cut
  * off on the laptop, the iPhone 16 and the OnePlus 8T (both in landscape).
  */
 
@@ -54,10 +54,19 @@ for (const d of DEVICES) {
     await expect(page.locator('#optTab-settings')).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('#name')).toBeVisible();
     await expect(page.locator('#devMenuButton')).toBeVisible();
-    await checkTargets(page, '.opt-tabs [data-a="optTab"], .panel.options > .navrow button');
-    const back = page.locator('.panel.options > .navrow .nav-back button');
+    await checkTargets(page, '.opt-tabs [data-a="optTab"], .opt-head button');
+    const back = page.locator('.panel.options .opt-head .opt-back button');
     await expect(back).toHaveText('Back');
     const backAt = (await back.boundingBox())!;
+    // Top left: left of the title, above the tabs, at the panel's left edge (as in the shop).
+    const title = (await page.locator('.panel.options h2').boundingBox())!;
+    const tabRow = (await page.locator('.opt-tabs').boundingBox())!;
+    const panel = (await page.locator('.panel.options').boundingBox())!;
+    expect(backAt.x + backAt.width).toBeLessThanOrEqual(title.x + 1);
+    expect(backAt.y + backAt.height).toBeLessThanOrEqual(tabRow.y + 1);
+    expect(backAt.x - panel.x).toBeLessThan(60);
+    const dev = (await page.locator('#devMenuButton').boundingBox())!;
+    expect(dev.y + dev.height).toBeLessThanOrEqual(tabRow.y + 1);
 
     for (const [id] of TABS) {
       await press(page, `#optTab-${id}`, d.touch);
@@ -66,7 +75,7 @@ for (const d of DEVICES) {
       // The bottom line does not move between tabs.
       const at = (await back.boundingBox())!;
       expect(Math.abs(at.x - backAt.x) + Math.abs(at.y - backAt.y), `Back stays put on ${id}`).toBeLessThanOrEqual(1);
-      await checkTargets(page, '.opt-tabs [data-a="optTab"], .panel.options > .navrow button');
+      await checkTargets(page, '.opt-tabs [data-a="optTab"], .opt-head button');
       switch (id) {
         case 'settings': await expect(page.locator('#versionLabel').last()).toContainText(`v${GAME_VERSION} · build`); break;
         case 'scores': await expect(page.locator('#optBody-scores table.scores')).toBeVisible(); break;
@@ -98,10 +107,23 @@ for (const d of DEVICES) {
     }
 
     // Back leaves the Options; the next visit opens on Settings again.
-    await press(page, '.panel.options > .navrow .nav-back button', d.touch);
+    await press(page, '.panel.options .opt-head .opt-back button', d.touch);
     await expect(page.locator('.panel.options')).toHaveCount(0);
     await station(page, 'options');
     await expect(page.locator('#optTab-settings')).toHaveAttribute('aria-selected', 'true');
+
+    // O-11: the developer menu's "Win levels 1 to" field marks its number when tapped, so typing replaces it.
+    await press(page, '#devMenuButton', d.touch);
+    const upTo = page.locator('#devUnlockTo');
+    await expect(upTo).toBeVisible();
+    await upTo.scrollIntoViewIfNeeded();
+    await press(page, '#devUnlockTo', d.touch);
+    await expect(upTo).toBeFocused();
+    expect(await upTo.inputValue()).not.toBe('');
+    // The field marks its value one frame after the tap.
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    await page.keyboard.type('60');
+    await expect(upTo).toHaveValue('60');
     expect(errors).toEqual([]);
     await context.close();
   });
