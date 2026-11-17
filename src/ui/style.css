@@ -958,3 +958,14 @@ button.cm-st.castle { box-shadow: inset 0 -4px 0 rgba(43, 22, 40, 0.18), 0 0 0 3
   .storybook .sb-title { font-size: 18px; margin: 0 0 4px; }
   .storybook .sb-text { font-size: 14px; }
 }
+
+/* A win that makes a castle tier buildable says more: on a laptop the head gets a little smaller and
+   the panel a little wider, so everything still fits without scrolling. */
+@media (min-height: 521px) {
+  .panel.won:has(.won-castle) { width: min(640px, 100%); padding-top: 14px; padding-bottom: 14px; }
+  .won:has(.won-castle) .won-name { font-size: 22px; }
+  .won:has(.won-castle) .won-cheese { font-size: 40px; }
+  .won:has(.won-castle) .king-says { margin: 4px 0; }
+  .won:has(.won-castle) ul.unlocks { font-size: 18px; margin: 4px 0; }
+  .won:has(.won-castle) .cheese-list li { margin: 1px 0; }
+}

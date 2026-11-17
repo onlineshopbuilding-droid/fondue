@@ -175,7 +175,7 @@ export class CoopRoom {
     const p = this.app.profile;
     const world = this.app.world;
     const next: RoomPlan = { ...this.plan, ...change, world };
-    // Endless opens with the fifth slot (E1), for a hosted room as for a solo run.
+    // Endless opens once its table is mended (TABLE_UNLOCK_LEVEL.endless), for a hosted room as for a solo run.
     if (next.mode !== 'campaign' && !ENDLESS.isAvailable(p, world)) next.mode = 'campaign';
     if (next.mode === 'campaign') {
       const level = next.level ?? CAMPAIGN.nextLevel(p, world);

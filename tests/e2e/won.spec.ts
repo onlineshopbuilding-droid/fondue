@@ -1,13 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
+import { CASTLE_TIER_LEVEL } from '../../src/config/slotTiers';
+import { CASTLE_READY_LINES } from '../../src/config/worlds/fondue/story';
 import { DEVICES, endLevel, gameState, openGame, station, waitForGame, waitPhase, waitScreen } from './helpers';
 
 /**
  * The win screen fits every format without scrolling (G2): the King's lines, the five cheese, the
  * gold kept, the unlocks and the story are all in sight, and Continue is always on screen.
- * Level 1 (the King explains cheese and gold) and level 2 (the Slow slot opens) say the most.
+ * Level 1 (the King explains cheese and gold) and the level that lets castle tier 2 be built say the
+ * most. Since v0.4 no slot is introduced here: that win shows the castle banner, the King's line and a
+ * button straight into the Keep Shop (slots are introduced in the shop after the castle tier is built).
  */
 
-const SHOTS = 'docs/screenshots/v0.3';
+const SHOTS = 'docs/screenshots/v0.4';
+/** The level whose win lets castle tier 2 be built, from the configuration. */
+const TIER2_LEVEL = CASTLE_TIER_LEVEL[1];
 
 /** The battle's tip toasts of the level start still float when a test wins at once; a player never sees them here. */
 const toastsGone = (page: Page) => page.waitForFunction(() => (document.querySelector('.toast-area')?.children.length ?? 0) === 0, null, { timeout: 20_000 });
@@ -50,7 +56,7 @@ async function expectFits(page: Page) {
 }
 
 for (const d of DEVICES) {
-  test(`${d.name}: the win screens of level 1 and level 2 fit without scrolling`, async ({ browser }) => {
+  test(`${d.name}: the win screens of level 1 and of the castle tier 2 level fit without scrolling`, async ({ browser }) => {
     test.setTimeout(process.env.CI ? 420_000 : 180_000);
     const { context, page, errors } = await openGame(browser, d);
 
@@ -60,17 +66,22 @@ for (const d of DEVICES) {
     await toastsGone(page);
     await page.screenshot({ path: `${SHOTS}/won-level1-${d.name}.png` });
 
-    // Back to the hall (the first win may lead into the shop), then level 2 opens the Slow slot.
-    await page.evaluate(() => { const a = (window as any).__fondue; a.profile.markLevelDone(a.world, 1); a.profile.flushSync(); });
+    // Back to the hall (the first win may lead into the shop), then the level that lets castle tier 2
+    // be built: the castle banner, the King's line, no slot introduction, and a button into the shop.
+    await page.evaluate((upTo) => { const a = (window as any).__fondue; for (let l = 1; l < upTo; l++) a.profile.markLevelDone(a.world, l); a.profile.flushSync(); }, TIER2_LEVEL);
     await page.reload();
     await waitForGame(page);
-    await winLevel(page, 2);
-    await expect(page.locator('#kingSays')).toContainText('This is your Slow slot.');
-    await expect(page.locator('#unlocks li').first()).toBeVisible();
+    await winLevel(page, TIER2_LEVEL);
+    await expect(page.locator('#wonCastle')).toContainText('Castle tier 2 can be built');
+    await expect(page.locator('#kingSays')).toContainText(CASTLE_READY_LINES[2]);
+    await expect(page.locator('#kingSays')).not.toContainText('slot.');
     await expect(page.locator('#continue')).toBeVisible();
+    await expect(page.locator('#toShop')).toBeVisible();
     await expectFits(page);
     await toastsGone(page);
-    await page.screenshot({ path: `${SHOTS}/won-${d.name}.png` });
+    await page.screenshot({ path: `${SHOTS}/won-castle-tier2-${d.name}.png` });
+    await page.click('#toShop');
+    await waitScreen(page, 'armoury');
 
     expect(errors).toEqual([]);
     await context.close();
