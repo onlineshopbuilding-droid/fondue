@@ -64,3 +64,13 @@ export const FIRST_UPGRADE = {
   /** Id in `seen.tips` once the guide is over. */
   tipId: 'firstUpgrade',
 } as const;
+
+/**
+ * Building a castle tier in the Keep Shop is an event (v0.4, A5): the keep rises with dust and a glow
+ * for `ms` milliseconds (a tap skips it), then the King speaks and the new slot is marked. With
+ * reduced motion the picture only fades in, for `reducedMs`.
+ */
+export const CASTLE_BUILD = {
+  ms: 1300,
+  reducedMs: 400,
+} as const;

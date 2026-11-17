@@ -17,11 +17,12 @@ import {
 } from '../../modes';
 import { BACK_BUTTON, esc, pipsHtml, propUri, weaponUri } from '../html';
 import { finishFirstUpgrade, firstUpgradeDue, markIntroSeen, pendingIntros } from '../../modes/tutorial';
-import { FIRST_UPGRADE } from '../../config/tutorial';
+import { CASTLE_BUILD, FIRST_UPGRADE } from '../../config/tutorial';
 import { CASTLE_BUILT_LINES, FIRST_UPGRADE_LINES } from '../../config/worlds/fondue/story';
 import type { ScreenContext } from './context';
 import { kingSaysHtml } from './won';
 import type { Screen } from './screen';
+import './keep.css';
 
 /** A spot of the keep: one of the five slots, the castle (the gate), the hand or a station. */
 export type SpotId = `slot${number}` | 'castle' | 'hand' | StationId;
@@ -43,6 +44,11 @@ let guideStarted = false;
 let guidePraise = false;
 /** What the King says right after a castle tier was built: his line and the introduction of each slot it opened. */
 let castleNews: string[] = [];
+/** The castle tier being built right now (the short rise of the keep, A5), or 0. */
+let building = 0;
+let buildTimer: ReturnType<typeof setTimeout> | undefined;
+/** Slots opened by the castle tier just built: their spots stay marked until another spot is tapped. */
+let freshSlots: number[] = [];
 const GLOW = 'box-shadow:0 0 0 4px #ffd34d,0 0 22px 8px rgba(255,211,77,0.85)';
 
 /** The tutorial's hook: the King's line on top of the panel, the glowing wheel spot and its upgrade button. */
@@ -88,6 +94,11 @@ function capLevel(tier: number): number | null {
 /** Why something cannot be bought, in words a player understands. */
 function whyNot(ctx: ScreenContext, q: Quote): string {
   const w = ctx.profile.data.wallet;
+  if (q.target.kind === 'castle') {
+    // The castle is the shop's main goal: one plain sentence of what is missing.
+    if (q.reason === 'gold') return `You need ${(q.price.gold - w.gold).toLocaleString('en-US')} more gold.`;
+    if (q.reason === 'crests') return `You need ${q.price.crests - w.crests} more Raider Crests.`;
+  }
   switch (q.reason) {
     case 'cheese': return `Need ${q.price.cheese - w.cheese} more cheese. Win levels and their challenges.`;
     case 'gold': return `Need ${(q.price.gold - w.gold).toLocaleString('en-US')} more gold. Every level and endless run pays gold.`;
@@ -162,7 +173,8 @@ function spots(ctx: ScreenContext): SpotView[] {
     const worn = p.data.keep.loadout[i];
     return { id: `slot${i}` as SpotId, x: s.x, y: s.y, label: `${s.name} slot`, state: !open ? 'locked' : worn ? '' : 'empty' };
   });
-  out.push({ id: 'castle', x: GATE_SPOT.x, y: GATE_SPOT.y, label: 'Castle', state: '' });
+  const castle = quote(p, { kind: 'castle' }, ctx.world);
+  out.push({ id: 'castle', x: GATE_SPOT.x, y: GATE_SPOT.y, label: `Castle ${castle.fromTier}`, state: castle.allowed ? 'ready' : '' });
   out.push({ id: 'hand', x: SIDE_SPOTS.hand.x, y: SIDE_SPOTS.hand.y, label: 'Hand', state: '' });
   for (const s of STATION_IDS) {
     const q = quote(p, { kind: 'station', id: s }, ctx.world);
@@ -173,10 +185,11 @@ function spots(ctx: ScreenContext): SpotView[] {
 }
 
 function spotButton(s: SpotView): string {
+  const fresh = s.id.startsWith('slot') && freshSlots.includes(slotOf(s.id)) ? 'fresh' : '';
   const badge = s.state === 'locked' ? '<span class="sh-badge lock" aria-hidden="true">🔒</span>'
     : s.state === 'empty' ? '<span class="sh-badge plus" aria-hidden="true">+</span>'
       : s.state === 'ready' ? '<span class="sh-badge new" aria-hidden="true">!</span>' : '';
-  return `<button class="sh-spot ${s.id === selected ? 'sel' : ''} ${s.state}" data-a="spot" data-spot="${s.id}" id="spot-${s.id}"
+  return `<button class="sh-spot ${s.id === selected ? 'sel' : ''} ${s.state} ${fresh}" data-a="spot" data-spot="${s.id}" id="spot-${s.id}"
       style="left:${pct(s.x, VIEW.x, VIEW.w)};top:${pct(s.y, VIEW.y, VIEW.h)}" aria-label="${esc(s.label)}"><span class="sh-spot-name">${esc(s.label.replace(' slot', ''))}</span>${badge}</button>`;
 }
 
@@ -242,15 +255,43 @@ function tierPanel(ctx: ScreenContext, t: Target, title: string, lines: string[]
     <div class="sh-buy">${buyBlock(ctx, q, label.replace('{tier}', String(q.toTier)))}</div>`;
 }
 
+/** The gold bar toward the next castle tier ("Gold 250 / 400"), when gold is what is missing or nearly so. */
+function goldBar(ctx: ScreenContext, q: Quote): string {
+  if (q.reason === 'max' || q.reason === 'level' || q.price.gold <= 0) return '';
+  const have = Math.min(ctx.profile.data.wallet.gold, q.price.gold);
+  const share = Math.round((have / q.price.gold) * 100);
+  return `<span class="cg-bar" id="castleGoalBar" role="img" aria-label="Gold ${have} of ${q.price.gold}"><i style="width:${share}%"></i><b>${CURRENCIES.gold.icon} Gold ${have.toLocaleString('en-US')} / ${q.price.gold.toLocaleString('en-US')}</b></span>`;
+}
+
+/**
+ * The castle as the shop's main goal (A4): its tier and name always on top, the next tier, and either
+ * its build button (highlighted) or the one thing still missing, with a gold bar toward it.
+ */
+function castleGoalHtml(ctx: ScreenContext): string {
+  const q = quote(ctx.profile, { kind: 'castle' }, ctx.world);
+  const now = CASTLE_TIERS[q.fromTier - 1];
+  const next = CASTLE_TIERS[q.fromTier];
+  const head = `<span class="cg-now">Castle tier ${q.fromTier} · <b>${esc(now?.name ?? '')}</b></span>`;
+  if (!next || q.reason === 'max') return `<div class="castle-goal top" id="castleGoal">${head}<span class="cg-next">The finest castle in the mountains.</span></div>`;
+  const what = `Next: <b>${esc(next.name)}</b>${ctx.profile.data.keep.castleTier < SLOT_COUNT ? ', a new slot' : ''}.`;
+  const act = q.allowed
+    ? `<button class="small buy cg-build" data-a="buyCastle" id="castleGoalBuy">Build ${esc(next.name)} <span class="sh-price">${priceHtml(q.price)}</span></button>`
+    : `<span class="cg-why" id="castleGoalWhy">${esc(whyNot(ctx, q))}</span>`;
+  return `<div class="castle-goal ${q.allowed ? 'ready' : ''}" id="castleGoal">${head}<span class="cg-next">${what}</span>${goldBar(ctx, q)}${act}</div>`;
+}
+
 function castlePanel(ctx: ScreenContext): string {
   const q = quote(ctx.profile, { kind: 'castle' }, ctx.world);
   const now = CASTLE_TIERS[q.fromTier - 1];
   const next = CASTLE_TIERS[q.fromTier];
-  const lines = [`<b>${esc(now?.name ?? '')}</b> (tier ${q.fromTier}): ${esc(now?.desc ?? '')}`];
+  const lines = [`<b>${esc(now?.name ?? '')}</b> (castle tier ${q.fromTier}): ${esc(now?.desc ?? '')}`];
   if (next && q.reason !== 'max') {
     lines.push(`<span class="sh-stages" aria-hidden="true"><img src="${propUri(`keep${q.fromTier - 1}`)}" alt=""><span class="sw-arrow">→</span><img src="${propUri(`keep${q.toTier - 1}`)}" alt=""></span>`);
     lines.push(`<span class="sh-change" id="castleChange">Tier ${q.fromTier} → ${q.toTier}: gate strength <b>${q.before}</b> → <b>${q.after}</b></span>`);
-    lines.push(`Next: <b>${esc(next.name)}</b>. ${esc(next.desc)}`);
+    const opens = SLOTS.findIndex((_, i) => slotCastleTier(i) === q.toTier);
+    lines.push(`Next: <b>${esc(next.name)}</b>. ${esc(next.desc)}${opens >= 0 ? ` It opens the ${esc(SLOTS[opens]!.name)} slot.` : ' A grander hall, too.'}`);
+    const bar = goldBar(ctx, q);
+    if (bar) lines.push(bar);
   } else lines.push(`Gate strength <b>${q.before}</b>.`);
   return tierPanel(ctx, { kind: 'castle' }, 'Castle', lines, 'Build tier {tier}');
 }
@@ -296,19 +337,44 @@ function targetOf(el: HTMLElement): Target | null {
 }
 
 /**
- * A castle tier was just built: the King's line, then the introduction of every slot it opened (each
- * shown once, here and nowhere else), and the shop turns to the newest open slot.
+ * A castle tier was just built (A5): the keep rises for a moment (a tap skips it), then the King's
+ * line and the introduction of every slot it opened (each shown once, here and nowhere else), and the
+ * new slot's spot is marked. The intros count as seen at once, so leaving mid-rise loses nothing.
  */
 function castleBuilt(ctx: ScreenContext, tier: number): void {
   const lines = [CASTLE_BUILT_LINES[tier] ?? ''];
+  freshSlots = [];
   for (const intro of pendingIntros(ctx.profile, ctx.world)) {
     if (intro.kind !== 'slot') continue;
     lines.push(slotIntro(intro.slot));
     markIntroSeen(ctx.profile, intro);
-    selected = `slot${intro.slot}`;
+    freshSlots.push(intro.slot);
   }
   ctx.profile.flushSync();
   castleNews = lines.filter((l) => l !== '');
+  building = tier;
+  clearTimeout(buildTimer);
+  const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  buildTimer = setTimeout(() => endBuild(ctx), reduced ? CASTLE_BUILD.reducedMs : CASTLE_BUILD.ms);
+}
+
+/** The rise is over (or skipped): the King speaks. Only redraws while the shop is still showing. */
+function endBuild(ctx: ScreenContext): void {
+  clearTimeout(buildTimer);
+  buildTimer = undefined;
+  if (building === 0) return;
+  building = 0;
+  if (ctx.query('#shop')) ctx.show('armoury');
+}
+
+/** The overlay over the keep while it rises: dust, sparkles and the new tier's name. Tapping it skips. */
+function buildOverlay(): string {
+  if (building === 0) return '';
+  const def = CASTLE_TIERS[building - 1];
+  const dust = Array.from({ length: 7 }, (_, i) => `<i class="cb-dust" style="left:${8 + i * 13}%;animation-delay:${(i % 3) * 0.12}s"></i>`).join('');
+  const stars = Array.from({ length: 6 }, (_, i) => `<i class="cb-star" style="left:${14 + i * 14}%;top:${18 + (i % 3) * 14}%;animation-delay:${0.25 + i * 0.1}s">✦</i>`).join('');
+  return `<button class="castle-build" id="castleBuild" data-a="skipBuild" data-tier="${building}" aria-label="Castle tier ${building} built. Tap to go on.">
+      ${dust}${stars}<span class="cb-name">Castle tier ${building}<b>${esc(def?.name ?? '')}</b></span><span class="cb-skip">Tap to go on</span></button>`;
 }
 
 export const keepScreen: Screen = {
@@ -318,7 +384,9 @@ export const keepScreen: Screen = {
     if (slotOf(selected) >= SLOT_COUNT) selected = 'slot0';
     if (!guideStarted && firstUpgradeDue(ctx.profile, ctx.world)) { guideStarted = true; selected = `slot${slotOfRole('damage')}`; }
     const guide = guideHtml(ctx, panelFor(ctx, selected));
-    const news = castleNews.length > 0 ? kingSaysHtml(castleNews, 'castleNews') : '';
+    // While the keep rises the King waits; his line comes once the rise is over or skipped.
+    const news = castleNews.length > 0 && building === 0 ? kingSaysHtml(castleNews, 'castleNews') : '';
+    const goal = selected === 'castle' ? '' : castleGoalHtml(ctx);
     const wheelSpot = `id="spot-slot${slotOfRole('damage')}"`;
     const spotsHtml = spots(ctx).map(spotButton).join('');
     return `<div class="panel shop" id="shop">
@@ -328,12 +396,13 @@ export const keepScreen: Screen = {
         ${walletHtml(ctx)}
       </div>
       <div class="sh-body">
-        <div class="sh-keep" id="shopKeep">
+        <div class="sh-keep ${building ? 'building' : ''}" id="shopKeep">
           ${keepPicture(ctx)}
           ${guide.due ? spotsHtml.replace(wheelSpot, `${wheelSpot} data-guide="1"`).replace(/(data-guide="1"[^>]*style=")/, `$1${GLOW};`) : spotsHtml}
+          ${buildOverlay()}
         </div>
         <div class="sh-side" id="shopSide" data-keep-scroll data-spot="${selected}">
-          ${news}${guide.king}${guide.panel}
+          ${news}${guide.king}${goal}${guide.panel}
         </div>
       </div>
     </div>`;
@@ -349,13 +418,18 @@ export const keepScreen: Screen = {
         if (isSpot(s)) {
           selected = s;
           castleNews = [];
+          freshSlots = [];
+          building = 0;
+          clearTimeout(buildTimer);
           ctx.show('armoury');
           ctx.query<HTMLElement>('#shopSide')?.scrollTo({ top: 0 });
         }
         break;
       }
+      case 'skipBuild': endBuild(ctx); break;
+      case 'buyCastle':
       case 'buy': {
-        const target = targetOf(el);
+        const target = action === 'buyCastle' ? { kind: 'castle' as const } : targetOf(el);
         if (!target) return;
         const guided = firstUpgradeDue(p, ctx.world);
         const q = buy(p, target, ctx.world);
@@ -382,7 +456,10 @@ export const keepScreen: Screen = {
         ctx.show('armoury');
         break;
       }
-      case 'main': guidePraise = false; castleNews = []; ctx.show('main'); break;
+      case 'main':
+        guidePraise = false; castleNews = []; freshSlots = []; building = 0; clearTimeout(buildTimer);
+        ctx.show('main');
+        break;
     }
   },
 };
