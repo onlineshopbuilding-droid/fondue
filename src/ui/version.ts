@@ -6,5 +6,5 @@ declare const __GAME_VERSION__: string;
 /** Short git hash of this build ("dev" without git), set by vite.config.ts. */
 export const BUILD_HASH: string = __GAME_VERSION__;
 
-/** For example "v0.3 · build 8c1dddb". */
+/** For example "v0.4 · build 8c1dddb". */
 export const VERSION_LABEL = `v${GAME_VERSION} · build ${BUILD_HASH}`;
