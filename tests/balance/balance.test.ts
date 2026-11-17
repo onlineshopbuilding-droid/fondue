@@ -13,6 +13,7 @@ import { CampaignRunner, type CampaignOptions, type CampaignRun } from '../../sr
 import { mean, median, quantile, runGame } from '../../src/bots/harness';
 import { CAMPAIGN, ENDLESS, buy, slotRole, weaponRole } from '../../src/modes';
 import { CREST_COST } from '../../src/config/tiers';
+import { CASTLE_TIER_LEVEL } from '../../src/config/slotTiers';
 import { MemoryProfileStore, Profile } from '../../src/profile';
 
 /** Which part to run: 'endless', 'campaign' or both (endless needs the campaign's keeps, so it runs the Mid campaign too). */
@@ -67,6 +68,17 @@ const kindOf = (level: number): LevelKind => {
 const KIND_RANGE: Record<LevelKind, [number, number]> = { early: [60, 120], middle: [180, 300], boss: [360, 600] };
 const KIND_NAME: Record<LevelKind, string> = { early: 'früh (1–10)', middle: 'Mitte', boss: 'Boss und Sonder' };
 const SECTIONS: [number, number][] = [[1, 25], [26, 50], [51, 75], [76, 100]];
+/** v0.4 (A8): attempts per level are listed for levels 1 to this one (the levels with few slots). */
+const EARLY_LEVELS = 15;
+/** Castle tiers whose purchase level is reported (tier 1 is there from the start). */
+const CASTLE_REPORT_TIERS = [2, 3, 4, 5, 6, 7];
+
+/** Level after which each castle tier was built: the first level whose spending raised the castle to that tier. */
+function castleBuys(ls: CampaignRun['levels']): Record<number, number | null> {
+  const at: Record<number, number | null> = {};
+  for (const t of CASTLE_REPORT_TIERS) at[t] = ls.find((l) => l.armoury.some((b) => b.item === 'castle' && b.tier === t))?.level ?? null;
+  return at;
+}
 
 interface CampaignSummary {
   label: string; skills: string[]; personality: number; upgrades: boolean; farm: string; seconds: number;
@@ -82,6 +94,10 @@ interface CampaignSummary {
   gateBySection: number[];
   /** Levels each weapon was worn in (last attempt). */
   worn: Record<string, number>;
+  /** v0.4 (A8): campaign level after which each castle tier 2..7 was built (key = tier), null = never. */
+  castleAt: Record<number, number | null>;
+  /** Attempts of levels 1..EARLY_LEVELS (index 0 = level 1); a level never won counts as -tries. */
+  earlyTries: number[];
   levels: CampaignRun['levels'];
 }
 
@@ -136,10 +152,13 @@ async function campaign(rowDefs: CampaignRowDef[], keeps: Record<number, unknown
       quietMax: +Math.max(0, ...quiet).toFixed(1), quietOver: quiet.filter((q) => q > QUIET_MAX).length,
       gateBySection: SECTIONS.map(([a, b]) => median(ls.filter((l) => l.level >= a && l.level <= b).map((l) => l.gatePct))),
       worn,
+      castleAt: castleBuys(ls),
+      earlyTries: Array.from({ length: EARLY_LEVELS }, (_, i) => ls.find((l) => l.level === i + 1)).filter((l) => l !== undefined).map((l) => (l.won ? l.tries : -l.tries)),
       levels: ls,
     };
     rows.push(r);
     console.log(`campaign ${r.label}: first stuck ${r.firstStuck}, first try ${r.firstTry}, never ${r.never}, tries by section ${r.triesBySection.join('/')}, boss ${r.triesBoss} vs ${r.triesNormal}, farm ${r.farmRuns} runs, ${run.seconds.toFixed(1)} s`);
+    console.log(`campaign ${r.label}: castle built after level ${CASTLE_REPORT_TIERS.map((t) => `T${t}=${r.castleAt[t] ?? '-'}`).join(' ')}; tries L1-${EARLY_LEVELS} ${r.earlyTries.map((t) => (t < 0 ? `x${-t}` : String(t))).join(' ')}`);
   }
   return rows;
 }
@@ -230,6 +249,12 @@ function goals(rep: Report): string[] {
   const great = by('Great solo');
   const farmer = by('Mid Farmer');
   const duo = by('Mid zu zweit');
+  if (mid?.castleAt) {
+    const t2 = mid.castleAt[2];
+    const t5 = mid.castleAt[5];
+    out.push(`| A8 Burg-Stufe 2 | Mid baut sie nach Level ${t2 ?? '– (nie)'} | Level 6–8 | ${ok(t2 !== null && t2 >= 6 && t2 <= 8)} |`);
+    out.push(`| A8 fünfter Slot (Burg-Stufe 5) | Mid baut sie nach Level ${t5 ?? '– (nie)'} | Level 20–30 | ${ok(t5 !== null && t5 >= 20 && t5 <= 30)} |`);
+  }
   if (noUp) out.push(`| B5 ohne Ausbau | Mid ohne Ausbau scheitert zuerst an Level ${noUp.firstStuck ?? '–'} | vor Level 30 | ${ok(noUp.firstStuck !== null && noUp.firstStuck < 30)} |`);
   if (mid && noUp) out.push(`| B5 mit Ausbau | Mid scheitert zuerst an Level ${mid.firstStuck ?? '– (nie)'}, nie geschafft: ${mid.never} | weiter als ohne Ausbau | ${ok((mid.firstStuck ?? 101) > (noUp.firstStuck ?? 101))} |`);
   if (great) out.push(`| B5/G1 Great spät mehr Versuche | Versuche je Level 1–25 / 26–50 / 51–75 / 76–100: ${great.triesBySection.join(' / ')}; Boss ${great.triesBoss}, sonst ${great.triesNormal} | spät und Boss spürbar mehr als früh | ${ok(great.triesBySection[3] >= great.triesBySection[0] + 0.3 && great.triesBoss >= great.triesNormal + 0.3)} |`);
@@ -299,6 +324,18 @@ function render(rep: Report): string {
       out.push('', '### Levellängen (Mid solo, letzter Versuch gewonnener Level)', '', '| Gruppe | Level | Median | im Bereich | Soll |', '|---|---|---|---|---|');
       for (const k of ['early', 'middle', 'boss'] as LevelKind[]) out.push(`| ${KIND_NAME[k]} | ${d[k].n} | ${d[k].median} s | ${d[k].inRange} | ${KIND_RANGE[k][0]}–${KIND_RANGE[k][1]} s |`);
     }
+    out.push('', '### Burg-Käufe (v0.4, A8)', '', `Nach welchem Kampagnen-Level die Zeile jede Burg-Stufe gebaut hat (– = nie). Kaufbar ab gewonnenem Level: ${CASTLE_REPORT_TIERS.map((t) => `Stufe ${t} ab ${CASTLE_TIER_LEVEL[t - 1]}`).join(', ')}.`, '');
+    out.push(`| Zeile | ${CASTLE_REPORT_TIERS.map((t) => `Stufe ${t}`).join(' | ')} |`, `|---|${CASTLE_REPORT_TIERS.map(() => '---').join('|')}|`);
+    for (const r of c.rows) out.push(`| ${r.label} | ${CASTLE_REPORT_TIERS.map((t) => r.castleAt?.[t] ?? '–').join(' | ')} |`);
+    out.push('', `### Versuche je Level 1–${EARLY_LEVELS} (v0.4, A8)`, '', 'Versuche bis zum Sieg (✗n = in n Versuchen nicht geschafft); in Klammern das Torleben am Ende des letzten Versuchs in Prozent.', '');
+    out.push(`| Zeile | ${Array.from({ length: EARLY_LEVELS }, (_, i) => String(i + 1)).join(' | ')} |`, `|---|${Array.from({ length: EARLY_LEVELS }, () => '---').join('|')}|`);
+    for (const r of c.rows) {
+      const cells = Array.from({ length: EARLY_LEVELS }, (_, i) => {
+        const l = r.levels.find((x) => x.level === i + 1);
+        return l ? `${l.won ? l.tries : `✗${l.tries}`} (${l.gatePct})` : '–';
+      });
+      out.push(`| ${r.label} | ${cells.join(' | ')} |`);
+    }
     out.push('', '### Waffen je Slot (C3)', '', 'Level, in denen eine Waffe angelegt war (letzter Versuch), über alle Zeilen. Gezählt als „genutzt“ ab 5 Leveln.', '', '| Slot | Waffen |', '|---|---|');
     const total: Record<string, number> = {};
     for (const r of c.rows) for (const [id, n] of Object.entries(r.worn)) total[id] = (total[id] ?? 0) + n;
@@ -350,7 +387,7 @@ it('balance report', async () => {
   // A part run keeps the other part of the last report, if it has the same shape.
   let rep: Report = { date: '' };
   if (existsSync(JSON_FILE)) { try { rep = JSON.parse(readFileSync(JSON_FILE, 'utf8')); } catch { rep = { date: '' }; } }
-  if (rep.campaign && rep.campaign.rows.some((r) => !('triesBySection' in r))) delete rep.campaign;
+  if (rep.campaign && rep.campaign.rows.some((r) => !('triesBySection' in r) || !('castleAt' in r))) delete rep.campaign;
   if (rep.endless && rep.endless.rows.some((r) => !('goldPerMinute' in r))) delete rep.endless;
   rep.date = new Date().toISOString().slice(0, 16).replace('T', ' ');
   const keeps: Record<number, unknown> = {};
