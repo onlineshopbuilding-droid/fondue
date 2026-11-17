@@ -19,3 +19,14 @@ Zeiten per `date` vom Laptop. Verbrauch per `get_usage` der Claude-Desktop-App.
 - Startwerte „kaufbar ab gewonnenem Level“: Stufe 2 ab 6 (fest), 3 ab 12, 4 ab 20, 5 ab 28, 6 ab 50, 7 ab 75 (fest).
 - Ein Gast darf über einen Einladungslink beitreten, auch wenn er Level 3 noch nicht gewonnen hat.
 - Options-Tabs: Settings, Scores, Help, Credits, Versions.
+
+## 17:09 Uhr – Etappe 0 abgeschlossen, Etappe 1 abgeschlossen, Fundament läuft
+
+- **Verbrauch (17:09):** 5-Stunden-Fenster 20 %, Woche alle Modelle 82 %, Woche Fable 91 %.
+- **Deploy-Umbau erledigt:** Pull Request 13 (nur `.github/workflows/deploy.yml`), Prüfung `test` grün, Merge-Commit 7aaeec4, Deploy-Lauf 44121215224 erfolgreich. Per curl und Playwright (Laptop-Format) geprüft: `/`, `/v0.1/`, `/classic/`, `/v0.2/`, `/v0.3/`, `/next/`, `/next/dev/`, `/dev/` antworten mit 200, laden ohne Konsolenfehler und mit richtigem Basis-Pfad. `/next/` trägt den App-Namen „Fondue v0.4“, `/v0.3/` „Fondue v0.3“. Dass `/fondue/` weiter v0.2 zeigt, folgt daraus, dass der Merge nur den Workflow geändert hat; der Spielinhalt dort wurde nicht gesondert geprüft.
+- **V2/V3 (technischer Teil) erledigt:** Commits 1aeef12, e5d7125, 07d2d9a, f2b774e. Speicher-Präfix `fondue.v4.`, einmalige Übernahme aus `fondue.v3.profile` mit Merker `fondue.v4.importedV3`, `GAME_VERSION` 0.4. Belege: `tests/unit/profile-v3import.test.ts`, `tests/e2e/storage.spec.ts`; `npm test` 604 bestanden.
+  - Umgestellte Tests (nicht abgeschwächt): `profile-data.test.ts`, `profile.test.ts`, `profile-save.test.ts` prüfen jetzt das Präfix `fondue.v4.`; `dev-tools.spec.ts` liest Version und Präfix aus der Konfiguration.
+  - Entwürfe der Entscheidungen auf der Entwickler-Übersicht (`fondue.v3.dev.decisions`) werden nicht übernommen, weil sie zu den v0.3-Entscheidungen gehören.
+- **Bauplan und Abnahmeliste:** Commit 6bc0ec2 (`BAUPLAN.md`, `abnahme.json`).
+- **Läuft:** Fundament A1 bis A3 (ein bauer). Die Slot-Konfiguration liegt in `src/config/slotTiers.ts`.
+- **Nächster Schritt:** Prüfung des Fundaments, dann die fünf parallelen Pakete (Lobby, Options, Karte, Texte, Bots).
