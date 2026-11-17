@@ -76,7 +76,7 @@ Dazu für v0.4: **Alle Speicherschlüssel beginnen mit `fondue.v4.`** (`STORAGE_
 | `waves.ts` | Rhythmus der Wellen (`WAVES`: Banner, Pausen, Höchstzahl lebender Räuber), Endlos-Wellen (`ENDLESS_WAVES`), Schwierigkeit (`DIFFICULTIES`), Koop (`COOP`), Landschaftsfolge |
 | `campaignScaling.ts` | Wie die Stärke eines Levels in Räuberwerte übersetzt wird und wächst (`CAMPAIGN_SCALING`) |
 | `tutorial.ts` | Vorrunde, Führung, Kessel-Hinweis, erstes Upgrade (`PRELUDE`, `GUIDE`, `POT_HINT`, `FIRST_UPGRADE`) |
-| `lobby.ts` | Zeiten der Lobby und der Kamerafahrt (`LOBBY_MOVE`, `LOBBY_HALL`) |
+| `lobby.ts` | Zeiten der Lobby und der Kamerafahrt (`LOBBY_MOVE`, `LOBBY_HALL`), die Stationen der Halle (`STATIONS`: Lage, Größe, Tippkreis), König mit Wachen (`KING_GROUP`), das Aussehen der Halle je Burg-Stufe 1 bis 7 (`HALL_LOOK`) und die Sätze der kaputten Tische (`TABLE_LOCKED_LINES`) |
 | `field.ts` | Geometrie: Bodenlinie, Tor, Kessel, Haken (`WORLD`), Feldbreite (`FIELD`) |
 | `tuning.ts` | Wurfgefühl (`TUNING_DEFAULT`, Voreinstellungen, Regler) |
 | `flags.ts` | Experiment-Schalter (`FLAG_DEFS`), darunter `secondHand` (zweite Hand am Laptop) |
@@ -90,7 +90,7 @@ Dazu für v0.4: **Alle Speicherschlüssel beginnen mit `fondue.v4.`** (`STORAGE_
 | `worlds/fondue/challenges.ts` | Challenge-Vorlagen (`CHALLENGE_TEMPLATES`) und die zwei Challenges je Level |
 | `worlds/fondue/unlocks.ts` | Freischalt-Tabelle (`UNLOCKS`), aus `unlockLevel` von Waffen und Stationen und `CASTLE_TIER_LEVEL` (kaufbare Burg-Stufen, Art `castle`) zusammengesetzt. Slots stehen nicht darin: Sie öffnen über die Burg-Stufe |
 | `worlds/fondue/endless.ts` | Endlos-Zufall (Fenster der Erstauftritte, Gewichte), Landschaftswechsel (`ENDLESS`) |
-| `worlds/fondue/story.ts` | König, Sätze der Vorrunde, Käse- und Gold-Erklärung, Slot- und Stations-Einführungen, Level-Namen und -Sätze, Bosse, Popups „New enemy“, Sprüche in der Lobby, Storybuch |
+| `worlds/fondue/story.ts` | König, Sätze der Vorrunde, Käse- und Gold-Erklärung, Slot- und Stations-Einführungen, Level-Namen und -Sätze, Bosse, Popups „New enemy“, Sätze zum Ausbau der Burg (`CASTLE_READY_LINES`, `CASTLE_BUILT_LINES`), Sprüche in der Lobby, Storybuch |
 
 ### Code
 
@@ -120,7 +120,7 @@ Dazu für v0.4: **Alle Speicherschlüssel beginnen mit `fondue.v4.`** (`STORAGE_
 | `src/net/` | Netznachrichten (`protocol.ts`, `PROTOCOL_VERSION`), Snapshots, Glättung beim Gast (`interp.ts`), Wahl der Verbindung (`choose.ts`), PeerJS (`peer.ts`), Plan B (`relay.ts`), Test im selben Browser (`loopback.ts`), Latenz-Simulator |
 | `src/input/pointer.ts`, `shake.ts` | Zeigerverlauf und Wurfgeschwindigkeit, zweiter Finger oder rechte Maustaste als zweite Hand; Schütteln erkennen |
 | `src/render/scene.ts` | `GameScene`: Schlachtfeld, Hände, Banner, Effekte zu Ereignissen (`handleEvent`) |
-| `src/render/lobby/` | Lobby als Szene (`lobbyScene.ts`), was wo steht und ab welchem Level (`layout.ts`), Kamerafahrt in die Burg (`dive.ts`) |
+| `src/render/lobby/` | Lobby als Szene (`lobbyScene.ts`), Rechenhilfen der Halle je Burg-Stufe (`layout.ts`; die Daten stehen in `src/config/lobby.ts`), Hallen-Bilder (`hallTextures.ts`), Kamerafahrt in die Burg (`dive.ts`) |
 | `src/render/marketCamera.ts` | Kamera mit Westflügel der Burg. Der Name stammt vom abgeschafften Markt; Einkaufen läuft heute nur über den Shop-Bildschirm |
 | `src/render/tutorialGuide.ts`, `tutorialView.ts` | Ablauf der Vorrunde und des Kessel-Hinweises; deren Zeichnung (König, Geste, Pfeil) |
 | `src/render/castleView.ts`, `stations.ts` | Die sieben Burgstufen, Tor, Waffen an der Burg mit Nachladering; Kessel und Haken |
@@ -129,11 +129,11 @@ Dazu für v0.4: **Alle Speicherschlüssel beginnen mit `fondue.v4.`** (`STORAGE_
 | `src/art/characters/` | Eine Datei je Gegner, Sammlung `RIGS` |
 | `src/art/castle/` | Sieben Burgstufen (`tiers.ts`, `keepStages.ts`, `keepStagesGrand.ts`), Tore, Westflügel, Kessel auf dem Hügel, Haken, Vordergrund, Wetter |
 | `src/art/weapons/index.ts` | Jede Waffe in sieben Stufen (`weapon:<id>:<stufe>`) |
-| `src/art/props/`, `lobby/`, `king.ts`, `landscapes.ts`, `shade.ts`, `draw.ts` | Icons, Geschosse, Effekte; Lobby-Halle, Möbel, Schmuck; König; Landschaften; Licht und Schatten |
+| `src/art/props/`, `lobby/`, `king.ts`, `landscapes.ts`, `shade.ts`, `draw.ts` | Icons, Geschosse, Effekte; Lobby-Halle je Burg-Stufe, Möbel, Tische, Schmuck, Schätze, die zwei Wachen; König; Landschaften; Licht und Schatten |
 | `src/audio/` | Soundeffekte (`SFX_RECIPES`), Musik, Abspielen |
 | `src/ui/app.ts` | `App`: Start, Profil laden, Adress-Schalter, Läufe starten, Belohnung auslösen, Fortsetzen am Wellenanfang (`savePending`, `pendingRun`) |
-| `src/ui/screens/` | Ein HTML-Bildschirm je Datei, Verzeichnis in `index.ts`, Manager in `screen.ts`. Wichtig: `keep.ts` (Shop, Kennung `armoury`), `prelevel.ts` (Ausrüstung vor dem Level), `won.ts`, `gameover.ts`, `campaign.ts` (Karte und Level-Karte) |
-| `src/ui/lobby/` | Steuerung der Lobby, Storybuch, `?menu=html` |
+| `src/ui/screens/` | Ein HTML-Bildschirm je Datei, Verzeichnis in `index.ts`, Manager in `screen.ts`. Wichtig: `keep.ts` (Shop, Kennung `armoury`), `prelevel.ts` (Ausrüstung vor dem Level), `won.ts`, `gameover.ts`, `campaign.ts` (Karte und Level-Karte, Burg-Stufe neben dem Fortschritt, Storybuch-Knopf), `options.ts` (Options mit Reitern Settings, Scores, Help, Credits, Versions; `OPTION_TABS`), `roomParts.ts` (Koop-Raum mit Burg-Stufe je Spieler) |
+| `src/ui/lobby/` | Steuerung der Lobby (Tipps auf Stationen und kaputte Tische), Storybuch-Fenster (geöffnet von der Kampagnen-Karte), `?menu=html` |
 | `src/ui/coop/room.ts` | `CoopRoom`: Raum eröffnen, beitreten, Wiedereinstieg, Versionsmeldung |
 | `src/ui/tuningPanel.ts` | Entwickler-Menü mit Waffen-Editor, Cheats, Reglern, Schaltern |
 | `src/ui/version.ts` | Versionszeile „v0.4 · build <Hash>“ für Menü, Options und Lobby |
@@ -206,7 +206,10 @@ Die Logik dazu: `velocity()` in `src/input/pointer.ts`; `release`, `throwEnemy`,
 | Lauf-, Halte-, Fluganimation | `applyPose` in `src/render/enemyView.ts` |
 | Burg, Tore, Westflügel, Kessel, Haken (alle sieben Burgstufen) | `src/art/castle/`; Zuordnung Stufe zu Grafik in `tiers.ts` |
 | Waffe an der Burg, je Stufe | `src/art/weapons/index.ts`; alle Waffen in allen Stufen als Bild: `node scripts/weapon-sheet.ts` |
-| Lobby-Halle, Möbel, Schmuck, König auf dem Thron | `src/art/lobby/`; wo was steht und ab welchem Level: `STATIONS`, `DECOR` in `src/render/lobby/layout.ts` |
+| Lobby-Halle, Möbel, Tische, Schmuck, König auf dem Thron, Wachen | `src/art/lobby/`; wo was steht: `STATIONS`, `KING_GROUP`, `HALL_PIECES` in `src/config/lobby.ts`; wie jede der sieben Hallen aussieht (je Burg-Stufe, nie je Kampagnen-Level): `HALL_LOOK` in `src/config/lobby.ts` plus die Bilder mit Stufen-Nummer in `src/art/lobby/` |
+| Burg-Stufe im Shop, Ausbau-Ereignis | `src/ui/screens/keep.ts` (`castleBuilt`), Sätze `CASTLE_BUILT_LINES` in `story.ts` |
+| Options, ihre Reiter, Versionsliste | `OPTION_TABS` in `src/ui/screens/options.ts`; Liste `VERSIONS` in `src/config/versions.ts` |
+| Storybook auf der Kampagnen-Karte | Knopf in `src/ui/screens/campaign.ts`, Fenster in `src/ui/lobby/storybook.ts` |
 | König auf dem Schlachtfeld | `src/art/king.ts`; Auftritt in `src/render/tutorialView.ts` |
 | Kampagnen-Karte | `src/ui/campaignArt.ts`, Bildschirm `src/ui/screens/campaign.ts` |
 | Shop | `src/ui/screens/keep.ts` (Bilder aus denselben Grafiken wie das Schlachtfeld) |
@@ -216,13 +219,13 @@ Die Logik dazu: `velocity()` in `src/input/pointer.ts`; `release`, `throwEnemy`,
 | Welcher Effekt und Klang bei welchem Ereignis | `handleEvent` in `src/render/scene.ts` |
 | Handfarben | `HAND_COLORS` in `src/render/scene.ts` |
 | HUD | `src/render/hud.ts` |
-| Menüs, Handy-Layout | `src/ui/style.css`, `src/ui/lobby/lobby.css` |
+| Menüs, Handy-Layout | `src/ui/style.css`, `src/ui/lobby/lobby.css`, `src/ui/screens/options.css`, `src/ui/screens/keep.css` |
 | Klang eines Effekts | `src/audio/sfx.ts`, `SFX_RECIPES` |
 | Musik | `src/audio/music.ts` |
 
 ### Texte und Menüs
 
-Spieltexte sind Englisch. Story, König, Level-Sätze, Popups, Storybuch, Käse- und Slot-Einführungen: `src/config/worlds/fondue/story.ts`. Hilfe, Lade-Tipps, kurze Tipps, Credits: `src/ui/content.ts`. Waffentexte: `desc` und `note` in `WEAPONS`. Währungstexte: `CURRENCIES`. Ein Bildschirm ist eine Datei in `src/ui/screens/`; ein Button trägt `data-a="name"` und wird in `onClick` des Bildschirms behandelt. Weiter steht rechts, zurück links.
+Spieltexte sind Englisch. Story, König, Level-Sätze, Popups, Storybuch, Käse-, Slot- und Burg-Sätze: `src/config/worlds/fondue/story.ts`. Hilfe, Lade-Tipps, kurze Tipps, Credits: `src/ui/content.ts`. Waffentexte: `desc` und `note` in `WEAPONS`. Währungstexte: `CURRENCIES`. Ein Bildschirm ist eine Datei in `src/ui/screens/`; ein Button trägt `data-a="name"` und wird in `onClick` des Bildschirms behandelt. Weiter steht rechts, zurück links.
 
 ### Koop
 
@@ -407,7 +410,7 @@ Alle Adressen teilen sich den Browser-Speicher. Deshalb speichert v0.4 unter eig
 
 **Entwickler-Menü:** Options → „Developer menu“ (auch am Handy), am Laptop F1, im einfachen HTML-Menü auch langes Drücken aufs Logo. Dort:
 - **Waffen-Editor** (ausklappbar): für jede Waffe und Stufe Zahlen live ändern (Abklingzeit, Reichweite, Schaden, Trefferzahl, Dauer, Größe), auf Standard zurücksetzen, als Text exportieren, um Werte an die KI zurückzugeben (`src/sim/weapons/overrides.ts`). Läufe mit Änderungen sind Entwickler-Läufe.
-- **Cheats** (`src/modes/cheats.ts`): sich Gold, Käse und Räuberwappen geben, Level freischalten, Stufen von Waffen, Burg, Hand und Stationen setzen, alles freischalten, Profil zurücksetzen (mit Sicherheitsabfrage). Sie wirken bewusst dauerhaft; das Profil trägt danach die Markierung „Cheats used“ im Entwickler-Menü und in den Options.
+- **Cheats** (`src/modes/cheats.ts`): sich Gold, Käse und Räuberwappen geben, Level freischalten, Stufen von Waffen, Hand und Stationen setzen, die **Burg-Stufe setzen** (`cheatCastleTier`: öffnet sofort alle Slots dieser Stufe, im Panel die Knöpfe 1 bis 7 unter „Castle tier“; so sieht man schnell eine hohe Burg-Stufe und die dazugehörige Halle), alles freischalten (Burg-Stufe 5 und die Level dazu), Profil zurücksetzen (mit Sicherheitsabfrage). Sie wirken bewusst dauerhaft; das Profil trägt danach die Markierung „Cheats used“ im Entwickler-Menü und in den Options.
 - **Zweite Hand am Laptop:** Der Schalter „Second hand on the laptop“ (`secondHand`) lässt die **rechte Maustaste** die zweite Hand sein: allein, oder gedrückt, während die linke Taste hält, um zwei Räuber zu greifen. Wie jeder Schalter macht er Läufe zu Entwickler-Läufen.
 - Zu einem Level und einer Welle der Kampagne springen (das Feld heißt im Menü noch „Day“), Endlos ab Welle 10, 20, 30, Tutorial wiederholen, Experiment-Schalter, Tuning-Regler, die Entscheidungs- und Bewertungsliste zum Abhaken, Bewerten und Kopieren als Text (`src/config/devReview.ts`, `decisions.ts`).
 Der Knopf in den Options lässt sich vor einer Veröffentlichung mit `DEV_MENU_BUTTON` (`src/ui/screens/options.ts`) verstecken.
@@ -440,6 +443,7 @@ Eine Änderung ist erst fertig, wenn das ganze Spiel danach noch zusammenpasst. 
 
 | Bereich | Frage | Wo nachsehen |
 |---|---|---|
+| Burg-Stufe, Slots, Hallen | Steht die Burg-Stufe überall, wo es um Fortschritt geht (Lobby-Banner, Shop, Karte, Sieg-Bildschirm, Koop-Raum)? Öffnet jeder Slot nur mit seiner Burg-Stufe und nie mit einem Level? Hat jede der sieben Hallen ein erkennbar eigenes Aussehen, auf allen drei Formaten? Passen Texte, Tutorial, Hilfe, Königs-Sätze und Level-Karte zu „Gold verdienen, Burg ausbauen, neuer Slot“? | `CASTLE_TIER_FOR_SLOT`, `CASTLE_TIER_LEVEL`, `HALL_LOOK`, `story.ts`, Screenshots in `docs/screenshots/v0.4/` |
 | Texte | Stimmen Popups, Hilfe-Seiten, Tipps, Waffentexte, Sätze des Königs noch? Gleicher Ton, Englisch, „tap“ statt „click“? Kein Wort aus der Zeit vor v0.3 (Markt, Sterne, Tage, Offerings) und keine Stelle, die einen Slot an ein Kampagnen-Level knüpft (Slots öffnen über die Burg-Stufe)? | `ENEMY_POPUPS`, `story.ts`, `HELP_SLIDES`, `LOADING_TIPS`, `STATION_TIPS` in `content.ts`, `desc`/`note` in `WEAPONS` |
 | Regeln | Widerspricht etwas Neues einer alten Regel? Sonderfälle wie Blase, gefrorene, gehaltene, hängende Gegner, Boss-Räuber, zweite Hand? | `src/sim/`, `docs/GDD.md` |
 | Kampagne | Passt die Level-Tabelle, ist jedes Level schaffbar, sind die Challenges erfüllbar? Neue Gegner und Freischaltungen an sinnvoller Stelle? | `node scripts/campaign-table.ts`, `npm run balance` |
