@@ -1,6 +1,6 @@
 // The options page with five tabs: Settings (name, endless difficulty, sound, the profile), Scores,
 // Help, Credits and Versions (every playable version with a link), plus the way into the developer
-// menu. Scores, help and credits are only reachable here (the game-over screen still opens the
+// menu (top right). Back sits top left as in the shop. Scores, help and credits are only reachable here (the game-over screen still opens the
 // score table). The open tab lives in this screen; switching re-renders the page via ctx.show.
 // It opens from the lobby and from the pause screen; its back button returns to whichever applies.
 import './options.css';
@@ -8,7 +8,7 @@ import { DEFAULT_WORLD } from '../../config/worlds';
 import { VERSIONS, VERSIONS_NOTE, versionUrl } from '../../config/versions';
 import { syncUnlocks } from '../../modes';
 import { cheatBadge } from '../../modes/cheats';
-import { BACK_BUTTON, esc, navRow } from '../html';
+import { BACK_BUTTON, esc } from '../html';
 import { GAME_NAME, GAME_VERSION } from '../../config/game';
 import { VERSION_LABEL } from '../version';
 import type { ScreenContext } from './context';
@@ -44,12 +44,16 @@ class OptionsScreen implements Screen {
     const tabs = OPTION_TABS.map((t) => `<button class="opt-tab${t.id === this.tab ? ' active' : ' secondary'}" role="tab" aria-selected="${t.id === this.tab}"
       data-a="optTab" data-tab="${t.id}" id="optTab-${t.id}">${t.label}</button>`).join('');
     const badge = cheatBadge(ctx.profile);
+    // Back sits top left, as in the shop and on the campaign map; the developer menu top right.
     return `<div class="panel options">
-      <div class="opt-head"><h2>Options</h2><span class="opt-version" id="optVersion">v${esc(GAME_VERSION)}</span></div>
+      <div class="opt-head">
+        <div class="opt-back">${returnBtn}</div>
+        <h2>Options</h2><span class="opt-version" id="optVersion">v${esc(GAME_VERSION)}</span>
+        ${DEV_MENU_BUTTON ? '<button class="secondary small" data-a="devMenu" id="devMenuButton">Developer menu</button>' : ''}
+      </div>
       <div class="opt-tabs" role="tablist">${tabs}</div>
       <div class="opt-body" id="optBody-${this.tab}" role="tabpanel">${this.body(ctx)}</div>
-      ${badge ? `<p class="note-line" id="optCheatBadge">${esc(badge)}</p>` : ''}
-      ${navRow(returnBtn, DEV_MENU_BUTTON ? '<button class="secondary" data-a="devMenu" id="devMenuButton">Developer menu</button>' : '')}</div>`;
+      ${badge ? `<p class="note-line" id="optCheatBadge">${esc(badge)}</p>` : ''}</div>`;
   }
 
   private body(ctx: ScreenContext): string {

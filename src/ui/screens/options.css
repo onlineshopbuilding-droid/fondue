@@ -1,13 +1,15 @@
-/* The options page (options.ts): a head with the version, a row of tabs, a scrolling body and the
-   bottom line (back, developer menu) that stays in place on every tab. Only this page's classes. */
+/* The options page (options.ts): a head row like the shop's (Back top left, title, version, developer
+   menu top right), a row of tabs and a scrolling body. Only this page's classes. */
 .panel.options {
   width: min(680px, 100%);
   display: flex; flex-direction: column;
-  /* A fixed height, so the bottom line (Back) sits at the same place on every tab. */
+  /* A fixed height, so the head row (Back) sits at the same place on every tab. */
   height: min(600px, 96vh); max-height: 96vh; overflow: hidden;
 }
-.opt-head { display: flex; align-items: center; justify-content: center; gap: 10px; flex: none; }
-.opt-head h2 { margin-bottom: 4px; }
+.opt-head { display: flex; align-items: center; gap: 14px; flex: none; }
+.opt-head h2 { margin: 0; flex: 1; text-align: left; font-size: 34px; }
+.opt-head h2::before, .opt-head h2::after { display: none; }
+.opt-head #devMenuButton { min-height: 44px; }
 .opt-version {
   font-weight: 800; font-size: 14px; color: var(--ink);
   background: var(--mustard); border: 2px solid var(--ink); border-radius: 999px; padding: 1px 9px;
@@ -18,7 +20,6 @@
 .opt-body .help-title { text-align: center; }
 .opt-body .row { margin-top: 8px; }
 .opt-body table.scores { width: 100%; }
-.panel.options > .navrow { flex: none; margin-top: 8px; }
 .panel.options > #optCheatBadge { flex: none; text-align: center; }
 
 .opt-versions { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -35,11 +36,11 @@
 /* Phones in landscape: the same page, packed tighter; tabs keep 44 px. */
 @media (max-height: 520px) {
   .panel.options { height: 100%; max-height: 100%; }
-  .opt-head h2 { margin-bottom: 0; }
+  .opt-head { gap: 8px; }
+  .opt-head h2 { font-size: 22px; -webkit-text-stroke-width: 3px; }
   .opt-version { font-size: 12px; }
   .opt-tabs { margin: 2px 0 4px; gap: 4px; }
   .opt-tabs .opt-tab { padding: 2px 10px; font-size: 15px; }
   .opt-body .slide img { max-height: 90px; }
   .opt-version-link { padding: 3px 12px; font-size: 15px; }
-  .panel.options > .navrow { margin-top: 4px; }
 }
