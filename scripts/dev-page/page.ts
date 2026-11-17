@@ -1,23 +1,27 @@
 /**
- * The developer overview of v0.3 (/fondue/next/dev/): one self-contained HTML page built from the
+ * The developer overview of v0.4 (/fondue/next/dev/): one self-contained HTML page built from the
  * game's configuration, so it never goes out of date. Loaded through Vite by scripts/dev-page.ts;
  * `readDevInput` collects the data, `renderDevPage` turns it into HTML without touching the disk.
  *
- * Shows: weapons (slot, unlock level, cheese price, seven tiers and what each tier changes = A5),
- * tier prices (gold, crests, caps), castle and hand tiers, stations, enemies, levels and waves,
- * unlocks, the cheese sum (must be 500), the interactive decision list (answers become GitHub
- * issues), the roadmap to v1.0 and the v0.3 acceptance list.
+ * Shows: every playable version with its link (src/config/versions.ts), the castle tiers (from which
+ * won level each can be built, its price and which slot it opens), weapons (slot, unlock level, cheese
+ * price, seven tiers and what each tier changes), tier prices (gold, crests, caps), hand tiers,
+ * stations, enemies, levels and waves with the castle tier that becomes buildable, unlocks, the
+ * cheese sum (must be 500), the interactive decision lists of v0.4 and v0.3 (answers become GitHub
+ * issues), the roadmap to v1.0 and the acceptance list of this version.
  * Level fields are read defensively: whatever the level table has is shown.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CURRENCIES } from '../../src/config/currencies';
-import { DECISIONS_V3, LEGACY_DECISIONS, ROADMAP, type Decision } from '../../src/config/decisions';
+import { DECISIONS_V3, DECISIONS_V4, LEGACY_DECISIONS, ROADMAP, type Decision } from '../../src/config/decisions';
 import { ENEMIES, ENEMY_TYPES, type EnemyType } from '../../src/config/enemies';
 import { GAME_NAME, GAME_VERSION } from '../../src/config/game';
 import { HAND_RULES, HANDS } from '../../src/config/hand';
 import { CASTLE_TIERS, STATIONS, STATION_IDS } from '../../src/config/keep';
 import { SLOTS } from '../../src/config/slots';
+import { CASTLE_TIER_FOR_SLOT, CASTLE_TIER_LEVEL } from '../../src/config/slotTiers';
+import { VERSIONS, VERSIONS_NOTE, versionUrl } from '../../src/config/versions';
 import { STORAGE_PREFIX } from '../../src/profile/schema';
 import { CREST_COST, TIER_CAP_BY_LEVEL, WEAPON_TIER_GOLD, tierCrests, weaponTierGold } from '../../src/config/tiers';
 import { MAX_TIER, WEAPONS, type WeaponDef } from '../../src/config/weapons';
@@ -27,6 +31,8 @@ import { esc, inline, markdown } from './markdown';
 export const NEXT_URL = 'https://onlineshopbuilding-droid.github.io/fondue/next/';
 export const LIVE_URL = 'https://onlineshopbuilding-droid.github.io/fondue/';
 export const CLASSIC_URL = 'https://onlineshopbuilding-droid.github.io/fondue/classic/';
+/** The docs folder of this version, for its acceptance list (docs/v0.4/abnahme.json). */
+export const DOCS_DIR = `v${GAME_VERSION}`;
 export const ISSUE_URL = 'https://github.com/onlineshopbuilding-droid/fondue/issues/new';
 /** Upper bound of one issue address. */
 export const ISSUE_MAX = 7000;
@@ -103,10 +109,9 @@ export function levelRow(raw: unknown): LevelRow {
 
 function unlockText(u: Record<string, unknown>): string {
   switch (u.kind) {
-    case 'slot': { const s = SLOTS[Number(u.slot)]; return `Slot ${s ? s.name : u.slot}`; }
+    case 'castle': { const opens = castleOpens(Number(u.tier)); return `Burg-Stufe ${u.tier} kaufbar${opens ? ` (öffnet ${opens})` : ''}`; }
     case 'weapon': { const w = WEAPONS.find((x) => x.id === u.weapon); return `Waffe ${w ? w.name : u.weapon}${w ? ` (${w.cheesePrice} Käse)` : ''}`; }
     case 'station': { const s = STATIONS[u.station as keyof typeof STATIONS]; return `${s ? s.name : u.station}${s ? ` (${s.cheesePrice} Käse)` : ''}`; }
-    case 'gate': return `Tor-Stufe ${u.tier}`;
     case 'hand': return `Hand-Stufe ${u.tier}`;
     default: return String(u.kind);
   }
@@ -145,7 +150,7 @@ export async function readDevInput(root: string, version: string): Promise<DevIn
   let balanceDate = '';
   try { balanceDate = JSON.parse(read(join(root, 'docs', 'balance-latest.json')) || '{}').date ?? ''; } catch { /* no date */ }
   let acceptance: AcceptanceItem[] = [];
-  try { acceptance = JSON.parse(read(join(root, 'docs', 'v0.3', 'abnahme.json')) || '[]'); } catch { /* none */ }
+  try { acceptance = JSON.parse(read(join(root, 'docs', DOCS_DIR, 'abnahme.json')) || '[]'); } catch { /* none */ }
   return {
     levels, levelError, unlocks,
     balanceMd: read(join(root, 'docs', 'balance-latest.md')),
@@ -165,6 +170,16 @@ export async function readDevInput(root: string, version: string): Promise<DevIn
 // ---------- small helpers ----------
 
 const SLOT_DE: Record<string, string> = { damage: 'Damage (links unten)', slow: 'Slow (links Mitte)', support: 'Support (links oben)', passive: 'Passive (rechts oben)', gate: 'Gate (über dem Tor)' };
+/** Names of the slots a castle tier opens, '' when it opens none. */
+export function castleOpens(tier: number): string {
+  return SLOTS.filter((s) => CASTLE_TIER_FOR_SLOT[s.role] === tier).map((s) => `Slot ${s.name}`).join(', ');
+}
+
+/** The castle tiers that become buildable once this level is won (tier 1 is there from the start). */
+export function castleTiersAt(level: number): number[] {
+  return CASTLE_TIER_LEVEL.map((l, i) => (i > 0 && l === level ? i + 1 : 0)).filter((t) => t > 0);
+}
+
 const TARGET_DE: Record<string, string> = { none: 'zielt nicht', front: 'vorderster Räuber', crowd: 'dichteste Gruppe', tough: 'zähster Räuber' };
 
 export const num = (v: number, digits = 2): string => {
@@ -234,25 +249,37 @@ function tierSection(): string {
   const gold = WEAPON_TIER_GOLD.map((g, i) => [String(i + 1), i === 0 ? 'Käse (Freischalten)' : `${g} Gold × Goldfaktor`, i + 1 === MAX_TIER ? `${CREST_COST} ${CURRENCIES.crests.name}` : '–']);
   const caps = TIER_CAP_BY_LEVEL.map((c) => [c.afterLevel === 0 ? 'Start' : `nach Level ${c.afterLevel}`, `Stufe ${c.cap}`]);
   caps.push(['mit dem Eagle Perch', `Stufe ${MAX_TIER}`]);
-  const castle = CASTLE_TIERS.map((c, i) => [String(i + 1), esc(c.name), String(c.hp), `${c.gold} Gold${c.crests ? ` + ${c.crests} Wappen` : ''}`, `<span class="small">${esc(c.desc)}</span>`]);
   const hands = HANDS.map((h, i) => [String(i + 1), num(h.strength), `${h.gold} Gold${h.crests ? ` + ${h.crests} Wappen` : ''}`, `<span class="small">${esc(h.note)}</span>`]);
   const stations = STATION_IDS.map((id) => {
     const s = STATIONS[id];
     return [esc(s.name), `Level ${s.unlockLevel}`, `${s.cheesePrice} Käse`, s.tiers.map((t, i) => `${i + 1}: ${t.gold} Gold – ${esc(t.note)}`).join('<br>'), `<span class="small">${esc(s.desc)}</span>`];
   });
-  return `<section id="stufen"><h2>Stufen, Preise, Burg und Hand</h2>
+  return `<section id="stufen"><h2>Stufen, Preise und Hand</h2>
 <h3>Waffenstufen (<code>src/config/tiers.ts</code>)</h3>
 ${table(['Stufe', 'Gold', 'Wappen'], gold)}
 <h3>Stufen-Deckel je Kampagnen-Abschnitt</h3>
 <p class="small">Höchste kaufbare Stufe für Waffen, Burg und Hand. So kann Endlos-Gold die Kampagne nicht überrollen.</p>
 ${table(['ab', 'höchste Stufe'], caps)}
-<h3>Burg (Tor)</h3>
-${table(['Stufe', 'Name', 'Torleben', 'Preis', 'Beschreibung'], castle)}
 <h3>Hand</h3>
 <p class="small">Ein Yeti braucht zusammen eine Stärke von ${num(HAND_RULES.yetiLift)}; mehrere Hände zählen zusammen.</p>
 ${table(['Stufe', 'Stärke', 'Preis', 'Beschreibung'], hands)}
 <h3>Stationen</h3>
 ${table(['Station', 'kaufbar ab', 'Freischalten', 'Stufen', 'Beschreibung'], stations)}</section>`;
+}
+
+function versionSection(): string {
+  const rows = VERSIONS.map((v) => [`<strong>v${esc(v.version)}</strong>${v.current ? ' <span class="tag unlock">diese</span>' : ''}`, esc(v.name), `<a href="${esc(versionUrl(v))}">${esc(v.path)}</a>`]);
+  return `<section id="versionen"><h2>Spielbare Versionen</h2>
+<p>Aus <code>src/config/versions.ts</code>. Jede ältere Version bleibt unter <code>/fondue/vX.Y/</code> spielbar; <a href="${CLASSIC_URL}">/fondue/classic/</a> zeigt weiter v0.1. Die Version im Bau läuft zum Testen unter <a href="${NEXT_URL}">/fondue/next/</a>. Im Spiel steht dazu: „${esc(VERSIONS_NOTE)}“</p>
+${table(['Version', 'Name', 'Adresse'], rows)}</section>`;
+}
+
+function castleSection(): string {
+  const rows = CASTLE_TIERS.map((c, i) => [String(i + 1), esc(c.name), i === 0 ? 'Start' : `Level ${CASTLE_TIER_LEVEL[i]}`,
+    i === 0 ? '–' : `${c.gold} Gold${c.crests ? ` + ${c.crests} Wappen` : ''}`, esc(castleOpens(i + 1) || '–'), String(c.hp), `<span class="small">${esc(c.desc)}</span>`]);
+  return `<section id="burg"><h2>Burg-Stufen</h2>
+<p>Aus <code>src/config/keep.ts</code> und <code>src/config/slotTiers.ts</code>. Eine Burg-Stufe wird kaufbar, sobald das Level gewonnen ist; dann kostet sie Gold (Stufe 7 zusätzlich Räuberwappen). Slots öffnen nur mit der Burg-Stufe.</p>
+${table(['Burg-Stufe', 'Name', 'kaufbar ab', 'Preis', 'öffnet', 'Torleben', 'Beschreibung'], rows)}</section>`;
 }
 
 function enemySection(): string {
@@ -277,15 +304,16 @@ function levelSection(input: DevInput): string {
     const hasWaves = L.some((l) => l.waves !== null);
     const rows = L.map((l) => [String(l.id), `${esc(l.name)}${l.boss ? ' <span class="tag boss">Boss</span>' : ''}`,
       hasWaves ? String(l.waves ?? '–') : String(l.days ?? '–'), l.raiders === null ? '–' : String(l.raiders), seconds(l.targetSeconds),
-      `<span class="small">${esc(l.challenges.join(' · ') || '–')}</span>`, esc((byLevel.get(l.id) ?? []).join(', '))]);
+      `<span class="small">${esc(l.challenges.join(' · ') || '–')}</span>`,
+      castleTiersAt(l.id).map((t) => `<span class="tag unlock">Burg-Stufe ${t}</span>`).join(' ') || '–', esc((byLevel.get(l.id) ?? []).join(', '))]);
     levels = `<p>${L.length} Level, geplante Dauer zusammen ${seconds(total)}. „Nach dem Sieg frei“ gilt ab dem Sieg in diesem Level.</p>
-${table(['Level', 'Name', hasWaves ? 'Wellen' : 'Tage', 'Räuber allein', 'geplante Dauer', 'Challenges', 'nach dem Sieg frei'], rows, 'compact')}`;
+${table(['Level', 'Name', hasWaves ? 'Wellen' : 'Tage', 'Räuber allein', 'geplante Dauer', 'Challenges', 'Burg-Stufe kaufbar', 'nach dem Sieg frei'], rows, 'compact')}`;
   }
   return `<section id="level"><h2>Level und Wellen</h2>
 <p>Aus <code>src/config/worlds/fondue/campaign.ts</code>. Die Werte werden beim Bau der Seite gelesen.</p>
 ${levels}
 <h3>Freischaltungen</h3>
-<p class="small">Aus <code>src/config/worlds/fondue/unlocks.ts</code>, <code>slots.ts</code>, <code>weapons.ts</code> und <code>keep.ts</code>.</p>
+<p class="small">Aus <code>src/config/worlds/fondue/unlocks.ts</code>, <code>slotTiers.ts</code>, <code>weapons.ts</code> und <code>keep.ts</code>.</p>
 ${table(['nach Level', 'Freischaltung'], unlockRows)}</section>`;
 }
 
@@ -313,6 +341,11 @@ function decisionSection(): string {
   return `<section id="entscheidungen"><h2>Entscheidungen</h2>
 <p>Wählt je Entscheidung eine Möglichkeit und schreibt bei Bedarf eine Notiz. „Issue erstellen“ öffnet ein vorausgefülltes GitHub-Issue mit dem Titel-Präfix <code>[Entscheidungen]</code>; lange Antworten werden auf mehrere Issues verteilt. Künftige Aufträge lesen diese Issues. Entwürfe bleiben in diesem Browser gespeichert. Die Liste steht auch in <code>docs/OFFENE-ENTSCHEIDUNGEN.md</code> und kommt aus <code>src/config/decisions.ts</code>.</p>
 <form id="decisions" onsubmit="return false">
+<h3 id="entscheidungen-v4">Offene Entscheidungen v0.4</h3>
+<p class="small">Was die KI in v0.4 vorläufig entschieden hat; bitte bestätigen oder anders wählen.</p>
+${DECISIONS_V4.map((d) => `<div id="dec-${d.id}">${decisionCard(d)}</div>`).join('\n')}
+<h3 id="entscheidungen-v3">Entscheidungen v0.3 (älter)</h3>
+<p class="small">Die Liste der vorigen Runde, weiter beantwortbar.</p>
 ${DECISIONS_V3.map((d) => `<div id="dec-${d.id}">${decisionCard(d)}</div>`).join('\n')}
 <div class="row"><button type="button" id="makeIssues">Issue erstellen</button> <button type="button" id="clearDrafts" class="secondary">Entwurf leeren</button> <span id="draftState" class="small"></span></div>
 <div id="issueLinks"></div>
@@ -322,9 +355,9 @@ ${table(['Nr', 'Eintrag', 'Stand', 'Warum', 'jetzt'], legacy, 'compact')}</secti
 }
 
 function roadmapSection(): string {
-  const now = `<div class="card"><h3>v${esc(GAME_VERSION)} – dieses Update</h3><p>Dauerhafte Burg, Käse, Gold und Wappen, Wellen statt Tage, 25 Waffen mit 7 Stufen, Shop statt Markt, Entwickler-Werkzeuge. Läuft unter <a href="${NEXT_URL}">/fondue/next/</a>.</p></div>`;
+  const now = `<div class="card"><h3>v${esc(GAME_VERSION)} – dieses Update</h3><p>Die Burg als Fortschritt: Burg-Stufen öffnen die Slots, neue Lobby mit sieben Hallen-Stufen, Options mit Tabs und Versionsliste. Läuft zum Testen unter <a href="${NEXT_URL}">/fondue/next/</a>.</p></div>`;
   return `<section id="fahrplan"><h2>Fahrplan bis v1.0</h2>
-<p>v0.1 Classic (<a href="${CLASSIC_URL}">/fondue/classic/</a>), v0.2 heutiger Live-Stand (<a href="${LIVE_URL}">/fondue/</a>), v0.3 dieses Update. v1.0 ist der Store-Start.</p>
+<p>Ältere Versionen: siehe <a href="#versionen">Spielbare Versionen</a>. v1.0 ist der Store-Start.</p>
 ${now}
 ${ROADMAP.map((r) => `<div class="card"><h3>${esc(r.version)} – ${esc(r.title)}</h3><ul>${r.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul></div>`).join('\n')}</section>`;
 }
@@ -333,8 +366,8 @@ function acceptanceSection(a: AcceptanceItem[]): string {
   if (a.length === 0) return '';
   const done = a.filter((p) => p.status === 'erledigt').length;
   const rows = a.map((p) => [`<code>${esc(p.id)}</code>`, esc(p.titel), esc(p.status), `<span class="small">${inline(p.pruefung)}</span>`, p.beleg ? `<span class="small">${inline(p.beleg)}</span>` : '']);
-  return `<section id="abnahme"><h2>Abnahmeliste v0.3</h2>
-<p>Aus <code>docs/v0.3/abnahme.json</code>. ${done} von ${a.length} erledigt; ein Punkt gilt nur mit echtem Beleg.</p>
+  return `<section id="abnahme"><h2>Abnahmeliste ${esc(DOCS_DIR)}</h2>
+<p>Aus <code>docs/${esc(DOCS_DIR)}/abnahme.json</code>. ${done} von ${a.length} erledigt; ein Punkt gilt nur mit echtem Beleg.</p>
 ${table(['Nr', 'Punkt', 'Stand', 'Prüfung', 'Beleg'], rows, 'compact')}</section>`;
 }
 
@@ -397,12 +430,12 @@ document.getElementById('makeIssues').addEventListener('click',function(){
 /** The whole page. Pure: the same input gives the same HTML. */
 export function renderDevPage(input: DevInput): string {
   const c = cheeseSum();
-  const open = DECISIONS_V3.filter((d) => d.choice === null).length;
+  const open = DECISIONS_V4.length;
   const stats = [
     [input.levels ? String(input.levels.length) : '–', 'Level'], [String(WEAPONS.filter((w) => w.enabled).length), 'Waffen'],
-    [String(ENEMY_TYPES.length), 'Räuberarten'], [`${c.total}`, 'Käse-Summe (Soll 500)'], [`${DECISIONS_V3.length} / ${open} offen`, 'Entscheidungen'],
+    [String(ENEMY_TYPES.length), 'Räuberarten'], [`${c.total}`, 'Käse-Summe (Soll 500)'], [String(CASTLE_TIERS.length), 'Burg-Stufen'], [`${open}`, 'Entscheidungen v0.4 zu bestätigen'],
   ].map(([n, l]) => `<div class="stat"><b>${n}</b>${l}</div>`).join('');
-  const nav = [['start', 'Start'], ['waffen', 'Waffen'], ['stufen', 'Stufen & Preise'], ['gegner', 'Gegner'], ['level', 'Level & Wellen'], ['kaese', 'Käse'], ['entscheidungen', 'Entscheidungen'], ['fahrplan', 'Fahrplan'], ['balance', 'Balance'], ['abnahme', 'Abnahme']]
+  const nav = [['start', 'Start'], ['versionen', 'Versionen'], ['burg', 'Burg-Stufen'], ['waffen', 'Waffen'], ['stufen', 'Stufen & Preise'], ['gegner', 'Gegner'], ['level', 'Level & Wellen'], ['kaese', 'Käse'], ['entscheidungen', 'Entscheidungen'], ['fahrplan', 'Fahrplan'], ['balance', 'Balance'], ['abnahme', 'Abnahme']]
     .map(([id, t]) => `<a href="#${id}">${t}</a>`).join('');
   return `<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -410,10 +443,12 @@ export function renderDevPage(input: DevInput): string {
 <style>${css(input.fonts)}</style></head><body>
 <header class="top" id="start"><h1>${esc(GAME_NAME)} – Entwickler-Übersicht <span class="version" id="gameVersion">v${esc(GAME_VERSION)}</span></h1>
 <p>Automatisch erzeugt aus den Konfigurationsdateien am ${esc(input.generated)}, Stand <code>${esc(input.version)}</code>. Nicht von Hand ändern: <code>node scripts/dev-page.ts &lt;Ordner&gt;</code>.</p>
-<div class="links"><a href="${NEXT_URL}">v${esc(GAME_VERSION)} spielen</a><a href="${LIVE_URL}">Live-Stand</a><a href="${CLASSIC_URL}">Classic</a></div></header>
+<div class="links"><a href="${NEXT_URL}">v${esc(GAME_VERSION)} testen</a>${VERSIONS.map((v) => `<a href="${esc(versionUrl(v))}">v${esc(v.version)}</a>`).join('')}</div></header>
 <nav>${nav}</nav>
 <main>
 <div class="cards" style="margin-top:16px">${stats}</div>
+${versionSection()}
+${castleSection()}
 ${weaponSection(input.weaponArt)}
 ${tierSection()}
 ${enemySection()}
