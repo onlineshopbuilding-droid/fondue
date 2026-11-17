@@ -10,6 +10,7 @@ import { bannerText } from '../../render/lobby/layout';
 import { esc } from '../html';
 import { htmlMenuWanted } from '../lobby/mode';
 import { VERSION_LABEL } from '../version';
+import type { Profile } from '../../profile';
 import type { PendingRun } from './context';
 import type { Screen } from './screen';
 
@@ -17,6 +18,14 @@ import type { Screen } from './screen';
 export const ENDLESS_LOCKED = `Endless opens once you win level ${TABLE_UNLOCK_LEVEL.endless}.`;
 /** Why co-op is still closed. */
 export const COOP_LOCKED = `Co-op opens once you win level ${TABLE_UNLOCK_LEVEL.coop}.`;
+
+/** Brings the chip over the hall (cheese, gold, next level) in line with the profile, without drawing the screen again. */
+export function refreshLobbyHud(root: ParentNode, p: Profile, world: string) {
+  const set = (id: string, text: string) => { const el = root.querySelector(`#${id}`); if (el && el.textContent !== text) el.textContent = text; };
+  set('cheeseTotal', String(p.data.wallet.cheese));
+  set('lobbyGold', p.data.wallet.gold.toLocaleString('en-US'));
+  set('levelNow', String(CAMPAIGN.nextLevel(p, world)));
+}
 
 /** The wave an interrupted level continues at. */
 export function pendingWave(p: PendingRun): number {

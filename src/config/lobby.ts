@@ -69,15 +69,15 @@ export interface StationDef {
 }
 
 /**
- * Left to right: the door back out to the gate (Continue), the co-op table in front of it, the
- * endless table further back, the campaign table in the middle (the biggest), the shop right beside
- * it, then the King with his guards at the cauldron. The cog for the options sits in the top right
+ * Left: the endless table at the back and the co-op table in front of it, each with its sign right
+ * at the table. Then the door back out to the gate (Continue) in the back wall, the campaign table
+ * in the middle (the biggest), the shop right beside it, then the King with his guards at the cauldron. The cog for the options sits in the top right
  * corner of whatever the screen shows.
  */
 export const STATIONS: readonly StationDef[] = [
-  { id: 'continueLevel', label: 'Continue', art: '', x: 250, y: 318, r: 100, lx: 250, ly: 150, size: 32 },
-  { id: 'coop', label: 'Co-op', art: 'coopTable', tiered: true, brokenArt: 'coopTableBroken', scale: 0.9, depth: 6, x: 262, y: 604, r: 104, lx: 262, ly: 700 },
-  { id: 'play', label: 'Endless', art: 'endlessTable', tiered: true, brokenArt: 'endlessTableBroken', scale: 0.8, depth: 4, x: 478, y: 468, r: 92, lx: 478, ly: 372 },
+  { id: 'continueLevel', label: 'Continue', art: '', x: 540, y: 318, r: 100, lx: 540, ly: 150, size: 32 },
+  { id: 'play', label: 'Endless', art: 'endlessTable', tiered: true, brokenArt: 'endlessTableBroken', scale: 0.8, depth: 4, x: 312, y: 466, r: 85, lx: 312, ly: 376 },
+  { id: 'coop', label: 'Co-op', art: 'coopTable', tiered: true, brokenArt: 'coopTableBroken', scale: 0.8, depth: 6, x: 312, y: 632, r: 85, lx: 312, ly: 700 },
   { id: 'campaign', label: 'Campaign', art: 'mapTable', tiered: true, scale: 1.05, depth: 5, x: 680, y: 580, r: 150, lx: 680, ly: 700, size: 38 },
   { id: 'armoury', label: 'Shop', art: 'armourStand', scale: 0.95, depth: 6, x: 968, y: 584, r: 110, lx: 968, ly: 700 },
   { id: 'options', label: 'Options', art: 'cogPlaque', scale: 0.62, depth: 8, x: 66, y: 66, r: 82, lx: 66, ly: 128, size: 20, corner: true },
@@ -96,7 +96,7 @@ export const KING_GROUP = {
 /** The banner above the King with the castle's name and tier. */
 export const NAME_BANNER = { x: 1196, y: 112, scale: 0.86 };
 /** The door out to the gate (bottom centre on the floor line) and the two windows of the back wall. */
-export const HALL_PIECES = { door: { x: 250, y: 442 }, windows: [{ x: 640, y: 236 }, { x: 980, y: 236 }] };
+export const HALL_PIECES = { door: { x: 540, y: 442 }, windows: [{ x: 770, y: 236 }, { x: 970, y: 236 }] };
 
 /** Pegs in one row high on the back wall where every unlocked weapon hangs, in the order of the weapon table. */
 export const WEAPON_PEGS: readonly { x: number; y: number }[] = Array.from({ length: 25 }, (_, i) => ({ x: 372 + i * 27, y: 104 }));
@@ -107,11 +107,11 @@ export const WEAPON_SIZE = 26;
 const SPOT = {
   farL: { x: 84, y: 610 },
   farR: { x: 1522, y: 610 },
-  wallA: { x: 440, y: 240 },
-  wallB: { x: 810, y: 292 },
+  wallA: { x: 330, y: 236 },
+  wallB: { x: 870, y: 292 },
   wallC: { x: 1520, y: 250 },
   wallD: { x: 84, y: 250 },
-  footA: { x: 560, y: 452 },
+  footA: { x: 440, y: 452 },
   footB: { x: 1040, y: 452 },
 } as const;
 
@@ -149,16 +149,16 @@ export const HALL_LOOK: readonly HallLook[] = [
     at('banner', 'wallA'), at('banner', 'wallB', { flipX: true }), at('banner', 'wallC'), at('banner', 'wallD'), at('trophyShield', 'footB', { scale: 0.7, depth: 2 })
   ] },
   { name: 'Gilded Keep', throne: 'throneGold', pennants: true, decor: [
-    hang('chandelier', 470), hang('chandelier', 820), at('banner', 'wallA'), at('trophyShield', 'wallB'), at('candelabra', 'farL', { depth: 3 }), at('candelabra', 'farR', { depth: 3 }),
+    hang('chandelier', 320), hang('chandelier', 870), at('banner', 'wallA'), at('trophyShield', 'wallB'), at('candelabra', 'farL', { depth: 3 }), at('candelabra', 'farR', { depth: 3 }),
     at('goldPile', 'footA', { depth: 2, scale: 0.8 }), at('cheeseStack', 'footB', { depth: 2, scale: 0.8 }),
   ] },
   { name: 'Runic Fortress', throne: 'throneGold', pennants: false, decor: [
-    hang('chandelier', 470), hang('chandelier', 820), at('stainedBanner', 'wallA', { scale: 0.9 }), at('stainedBanner', 'wallB', { scale: 0.9 }),
+    hang('chandelier', 320), hang('chandelier', 870), at('stainedBanner', 'wallA', { scale: 0.9 }), at('stainedBanner', 'wallB', { scale: 0.9 }),
     at('runeStone', 'farL', { depth: 3 }), at('runeStone', 'farR', { depth: 3, flipX: true }), at('goldPile', 'footA', { depth: 2 }), at('cheeseStack', 'footB', { depth: 2 }),
     at('stainedBanner', 'wallC', { scale: 0.9 }), at('stainedBanner', 'wallD', { scale: 0.9 }),
   ] },
   { name: 'Alpine Citadel', throne: 'throneGold', pennants: true, decor: [
-    hang('chandelier', 470), hang('chandelier', 820), at('stainedBanner', 'wallA', { scale: 0.9 }), at('goldenForks', 'wallB', { scale: 0.8 }),
+    hang('chandelier', 320), hang('chandelier', 870), at('stainedBanner', 'wallA', { scale: 0.9 }), at('goldenForks', 'wallB', { scale: 0.8 }),
     at('cheeseChest', 'farL', { depth: 3, scale: 0.8 }), at('cheeseChest', 'farR', { depth: 3, scale: 0.8, flipX: true }), at('goldPile', 'footA', { depth: 2 }), at('cheeseStack', 'footB', { depth: 2 }),
     at('stainedBanner', 'wallC', { scale: 0.9 }), at('stainedBanner', 'wallD', { scale: 0.9 }),
   ] },

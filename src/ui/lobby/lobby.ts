@@ -16,7 +16,7 @@ import { linesFor, pickLine, STATIONS, type StationId } from '../../render/lobby
 import { LobbyScene, type LobbySpot, type LobbyState } from '../../render/lobby/lobbyScene';
 import type { GameScene } from '../../render/scene';
 import type { PendingRun } from '../screens/context';
-import { pendingWave } from '../screens/main';
+import { pendingWave, refreshLobbyHud } from '../screens/main';
 import { htmlMenuWanted, OVER_LOBBY } from './mode';
 
 /** What the lobby needs from the app. */
@@ -47,7 +47,7 @@ export class Lobby {
   private lineIn = FIRST_LINE;
   private lastLine = '';
 
-  constructor(private host: LobbyHost, _root: HTMLElement) {
+  constructor(private host: LobbyHost, private readonly root: HTMLElement) {
     // A tap anywhere during the camera move skips it.
     window.addEventListener('pointerdown', () => { if (this.moving) this.skip(); }, true);
   }
@@ -92,6 +92,8 @@ export class Lobby {
   }
 
   private step(dt: number) {
+    // The chip over the hall follows the profile at once (a purchase, a cheat, a won level).
+    if (this.host.screen === 'main') refreshLobbyHud(this.root, this.host.profile, this.host.world);
     const before = this.k;
     this.k = stepLobby(this.k, this.inLobby, dt);
     if (this.k !== before) this.apply();
