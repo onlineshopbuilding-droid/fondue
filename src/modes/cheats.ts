@@ -14,7 +14,7 @@ import { TIER_MAX, TIER_MIN } from '../config/tiers';
 import { WEAPONS, weaponById } from '../config/weapons';
 import { worldById } from '../config/worlds';
 import type { Profile, ProfileData } from '../profile';
-import { dataOf, slotOpen, slotRole, syncUnlocks, unlockLevelOf, weaponRole, type ProfileLike } from './unlocks';
+import { castleTierBuyableAt, dataOf, slotCastleTier, slotOpen, slotRole, syncUnlocks, weaponRole, type ProfileLike } from './unlocks';
 
 /** The mark of a profile changed by cheats, shown in the developer menu and in Options. */
 export const CHEAT_BADGE = 'Cheats used';
@@ -54,7 +54,7 @@ export function campaignLength(world: string): number {
 }
 const CAMPAIGN_FALLBACK = 100;
 
-/** Marks campaign levels 1..`upTo` as won, so their slots, weapons and stations become available. */
+/** Marks campaign levels 1..`upTo` as won, so their castle tiers, weapons and stations become available. */
 export function unlockLevels(profile: Profile, world: string, upTo: number): number {
   const last = clamp(upTo, 0, campaignLength(world));
   let added = 0;
@@ -88,14 +88,20 @@ export function setWeaponTier(profile: Profile, world: string, id: string, tier:
   return true;
 }
 
-/** Sets the castle (gate) tier, 1..7. */
-export function setCastleTier(profile: Profile, tier: number): number {
+/**
+ * Sets the castle (gate) tier, 1..7, without gold or won levels; its slots open with it. Marks the
+ * profile as cheated. Returns the tier set.
+ */
+export function cheatCastleTier(profile: Profile, tier: number): number {
   const t = clamp(tier, TIER_MIN, Math.min(TIER_MAX, CASTLE_TIERS.length));
   profile.edit((d) => { d.keep.castleTier = t; });
   profile.noteCheat(`castle tier ${t}`);
   profile.flushSync();
   return t;
 }
+
+/** The same cheat under its v0.3 name, still used by the developer menu (src/ui/tuningPanel.ts). */
+export const setCastleTier = cheatCastleTier;
 
 /** Sets the hand tier, 1..7 (7 opens the second hand, C9). */
 export function setHandTier(profile: Profile, tier: number): number {
@@ -117,12 +123,23 @@ export function setStationTier(profile: Profile, id: StationId, tier: number): n
   return t;
 }
 
-/** Every slot, weapon and station, as if the campaign were far along (tiers stay as they are). */
+/** The castle tier `unlockEverything` raises to: the one that opens every slot. */
+const ALL_SLOTS_TIER = (() => {
+  let tier = TIER_MIN;
+  for (let slot = 0; slot < SLOT_COUNT; slot++) tier = Math.max(tier, slotCastleTier(slot));
+  return tier;
+})();
+
+/**
+ * Every slot, weapon and station, as if the campaign were far along: the castle rises to the tier that
+ * opens every slot (5) and the levels up to that tier's campaign level (28) count as won. Other tiers
+ * stay as they are.
+ */
 export function unlockEverything(profile: Profile, world: string): void {
-  let last = 0;
-  for (let slot = 0; slot < SLOT_COUNT; slot++) last = Math.max(last, unlockLevelOf(world, 'slot', slot) ?? 0);
+  const last = Math.min(castleTierBuyableAt(ALL_SLOTS_TIER), campaignLength(world));
   for (let l = 1; l <= last; l++) profile.markLevelDone(world, l);
   profile.edit((d) => {
+    d.keep.castleTier = Math.max(d.keep.castleTier, ALL_SLOTS_TIER);
     for (const w of WEAPONS) {
       if (!w.enabled) continue;
       if (!Object.hasOwn(d.keep.weapons, w.id)) d.keep.weapons[w.id] = { tier: 1 };

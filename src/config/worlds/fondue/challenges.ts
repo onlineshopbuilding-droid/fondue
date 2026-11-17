@@ -1,8 +1,8 @@
 /**
  * The two challenges of every level (A2, cheese 4 and 5), built from templates. A template only
  * asks for what the player can have at that point of the campaign: raider types that come in that
- * level, weapons and slots open after winning the level before, the Great Cauldron and Eagle Perch
- * once they can be unlocked. Whether a challenge is met is judged on the run's counts only
+ * level, weapons unlockable after winning the level before whose slot's castle tier has been buildable
+ * for CHALLENGE_SLOT_MARGIN levels, the Great Cauldron and Eagle Perch once they can be unlocked. Whether a challenge is met is judged on the run's counts only
  * (src/modes/challenges.ts); this file holds the data and the texts.
  *
  * CHALLENGE_TEMPLATES columns: id; needs = what must be available (see `available`); stat = which
@@ -12,10 +12,11 @@
  */
 import { ENEMIES, type EnemyType } from '../../enemies';
 import { STATIONS } from '../../keep';
-import { SLOTS, slotOfRole } from '../../slots';
+import { CASTLE_TIER_FOR_SLOT, CASTLE_TIER_LEVEL, CHALLENGE_SLOT_MARGIN } from '../../slotTiers';
+import { SLOTS } from '../../slots';
 import { WEAPONS } from '../../weapons';
 import type { ChallengeDef } from '../types';
-import { slotUnlockLevel, weaponUnlockLevel } from './unlocks';
+import { weaponUnlockLevel } from './unlocks';
 
 /** A whole number from 0 to 1 from two whole numbers, the same every time. */
 function pick(a: number, b: number): number {
@@ -29,13 +30,21 @@ const plural = (type: EnemyType) => (type === 'grunt' ? 'Pothelms' : `${ENEMIES[
 /** Won levels before this level: what the player can own when starting it. */
 const wonBefore = (level: number) => level - 1;
 
-/** A weapon can be worn in this level: unlockable after the level before, and its slot open. */
+/**
+ * Won levels before a weapon's slot is surely open in this level: the castle tier of the slot has been
+ * buildable for CHALLENGE_SLOT_MARGIN levels (gold takes a while). The start tier needs no margin.
+ */
+export function slotSureAfter(role: keyof typeof CASTLE_TIER_FOR_SLOT): number {
+  const tier = CASTLE_TIER_FOR_SLOT[role];
+  return tier <= 1 ? 0 : (CASTLE_TIER_LEVEL[tier - 1] ?? Number.POSITIVE_INFINITY) + CHALLENGE_SLOT_MARGIN;
+}
+
+/** A weapon can be asked for in this level: unlockable after the level before, and its slot surely open. */
 export function weaponUsableIn(level: number, weaponId: string): boolean {
   const def = WEAPONS.find((w) => w.id === weaponId);
   const unlock = weaponUnlockLevel(weaponId);
-  if (!def || unlock === null) return false;
-  const slot = slotOfRole(def.slot);
-  return slot >= 0 && wonBefore(level) >= unlock && wonBefore(level) >= slotUnlockLevel(slot);
+  if (!def || unlock === null || !Object.hasOwn(CASTLE_TIER_FOR_SLOT, def.slot)) return false;
+  return wonBefore(level) >= unlock && wonBefore(level) >= slotSureAfter(def.slot);
 }
 
 /** A station can be owned in this level. */

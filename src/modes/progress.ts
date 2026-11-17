@@ -3,6 +3,7 @@
  * and paying out cheese, gold and Raider Crests. The shop, bots, cheats and tests use only these.
  *
  * Targets: a weapon (unlock with cheese, then tiers 2..7 with gold, tier 7 also crests), the castle
+ * (tiers 2..7 with gold once their campaign level is won, tier 7 also crests; each tier opens its slot)
  * and the hand (tiers 2..7 with gold, tier 7 also crests), a station (unlock with cheese, then tiers with gold).
  * Every purchase and every level result is saved at once (flushSync).
  */
@@ -15,7 +16,7 @@ import { weaponById } from '../config/weapons';
 import { DEFAULT_WORLD } from '../config/worlds';
 import type { Profile, ProfileData } from '../profile';
 import {
-  STARTER_WEAPON, dataOf, slotOpen, slotRole, stationAvailable, syncUnlocks, tierCap, weaponAvailable,
+  STARTER_WEAPON, castleTierUnlocked, dataOf, slotOpen, slotRole, stationAvailable, syncUnlocks, tierCap, weaponAvailable,
   weaponCheesePrice, weaponGoldScale, weaponRole, type ProfileLike,
 } from './unlocks';
 
@@ -29,10 +30,11 @@ export interface Price { cheese: number; gold: number; crests: number }
 
 /**
  * ok = can be bought now; max = already at the top; locked = the campaign has not reached it yet;
- * cap = the tier cap of this campaign section stops it; cheese/gold/crests = not enough of that;
- * unknown = no such thing.
+ * level = the castle tier needs a won campaign level first (castleTierBuyableAt);
+ * cap = the tier cap of this campaign section stops it (weapons and hand); cheese/gold/crests = not
+ * enough of that; unknown = no such thing.
  */
-export type QuoteReason = 'ok' | 'max' | 'locked' | 'cap' | 'cheese' | 'gold' | 'crests' | 'unknown';
+export type QuoteReason = 'ok' | 'max' | 'locked' | 'level' | 'cap' | 'cheese' | 'gold' | 'crests' | 'unknown';
 
 export interface Quote {
   target: Target;
@@ -99,7 +101,9 @@ export function quote(p: ProfileLike, target: Target, world: string = DEFAULT_WO
       const base = { target, name, action: 'upgrade' as const, fromTier: now, toTier: Math.min(now + 1, table.length), before: value(now), note };
       if (!nextDef || now >= TIER_MAX) return finish(d, { ...base, after: value(now), price: NO_PRICE }, 'max');
       const price = { cheese: 0, gold: nextDef.gold, crests: nextDef.crests };
-      return finish(d, { ...base, after: value(now + 1), price }, now + 1 > cap ? 'cap' : null);
+      // The castle has its own gate: a won campaign level per tier. The hand keeps the tier cap.
+      const blocked = isCastle ? (castleTierUnlocked(d, world, now + 1) ? null : 'level') : now + 1 > cap ? 'cap' : null;
+      return finish(d, { ...base, after: value(now + 1), price }, blocked);
     }
     case 'station': {
       const def = STATIONS[target.id];

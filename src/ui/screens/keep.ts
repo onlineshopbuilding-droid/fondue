@@ -12,12 +12,13 @@ import { weaponById, type WeaponDef } from '../../config/weapons';
 import { weaponUnlockLevel } from '../../config/worlds/fondue/unlocks';
 import { PROPS } from '../../art/props';
 import {
-  buy, equip, quote, slotOpen, slotRole, unlockLevelOf, weaponsForRole, type Price, type Quote, type Target,
+  buy, castleTierBuyableAt, equip, levelsReached, quote, slotCastleTier, slotIntro, slotOpen, slotRole, unlockLevelOf,
+  weaponsForRole, type Price, type Quote, type Target,
 } from '../../modes';
 import { BACK_BUTTON, esc, pipsHtml, propUri, weaponUri } from '../html';
-import { finishFirstUpgrade, firstUpgradeDue } from '../../modes/tutorial';
+import { finishFirstUpgrade, firstUpgradeDue, markIntroSeen, pendingIntros } from '../../modes/tutorial';
 import { FIRST_UPGRADE } from '../../config/tutorial';
-import { FIRST_UPGRADE_LINES } from '../../config/worlds/fondue/story';
+import { CASTLE_BUILT_LINES, FIRST_UPGRADE_LINES } from '../../config/worlds/fondue/story';
 import type { ScreenContext } from './context';
 import { kingSaysHtml } from './won';
 import type { Screen } from './screen';
@@ -40,6 +41,8 @@ let selected: SpotId = 'slot0';
 /** The guided first upgrade (D4): it opened the damage slot once; the King praises the purchase until the shop is left. */
 let guideStarted = false;
 let guidePraise = false;
+/** What the King says right after a castle tier was built: his line and the introduction of each slot it opened. */
+let castleNews: string[] = [];
 const GLOW = 'box-shadow:0 0 0 4px #ffd34d,0 0 22px 8px rgba(255,211,77,0.85)';
 
 /** The tutorial's hook: the King's line on top of the panel, the glowing wheel spot and its upgrade button. */
@@ -93,6 +96,7 @@ function whyNot(ctx: ScreenContext, q: Quote): string {
       const level = capLevel(q.toTier);
       return level === null ? `Tier ${q.toTier} needs the Eagle Perch.` : `Win level ${level} to build tier ${q.toTier}.`;
     }
+    case 'level': return `Win level ${castleTierBuyableAt(q.toTier)} to build this.`;
     case 'locked': return 'The campaign has not reached it yet.';
     case 'max': return 'Top tier reached.';
     default: return '';
@@ -190,7 +194,10 @@ function weaponRow(ctx: ScreenContext, def: WeaponDef, slot: number): string {
   if (!owned) {
     if (q.reason === 'locked') {
       const level = weaponUnlockLevel(def.id) ?? unlockLevelOf(ctx.world, 'weapon', def.id);
-      state = `<div class="sw-state lock">${level === null ? 'Not in the campaign yet' : `Unlocks after winning level ${level}`}</div>`;
+      const why = level === null ? 'Not in the campaign yet'
+        : levelsReached(p, ctx.world) < level ? `Unlocks after winning level ${level}`
+        : `Its slot opens with castle tier ${slotCastleTier(slot)}`;
+      state = `<div class="sw-state lock">${why}</div>`;
     } else {
       state = `<div class="sw-state">Unlock it with cheese, then upgrade it with gold.</div>`;
       acts = buyBlock(ctx, q, 'Unlock');
@@ -219,11 +226,11 @@ function slotPanel(ctx: ScreenContext, slot: number): string {
   const def = SLOTS[slot];
   const role = slotRole(slot);
   const open = slotOpen(ctx.profile, ctx.world, slot);
-  const level = unlockLevelOf(ctx.world, 'slot', slot) ?? def.unlockLevel;
+  const tier = slotCastleTier(slot);
   const head = open
-    // The King introduces the slot once on the win screen; here only what to do with it.
+    // The King introduces the slot once, right after the castle tier that opens it is built; here only what to do with it.
     ? `<p class="sh-lead">Pick the weapon that sits here. Tiers stay when you swap.</p>`
-    : `<p class="sh-lead lock">This slot opens after winning level ${level}. You can look already.</p>`;
+    : `<p class="sh-lead lock">This slot opens with castle tier ${tier} (${esc(CASTLE_TIERS[tier - 1]?.name ?? '')}). You can look already.</p>`;
   const list = role ? weaponsForRole(role).map((w) => weaponRow(ctx, w, slot)).join('') : '';
   return `<h3 class="sh-title">${esc(def.name)} slot</h3>${head}<div class="sw-list">${list}</div>`;
 }
@@ -288,6 +295,22 @@ function targetOf(el: HTMLElement): Target | null {
   return null;
 }
 
+/**
+ * A castle tier was just built: the King's line, then the introduction of every slot it opened (each
+ * shown once, here and nowhere else), and the shop turns to the newest open slot.
+ */
+function castleBuilt(ctx: ScreenContext, tier: number): void {
+  const lines = [CASTLE_BUILT_LINES[tier] ?? ''];
+  for (const intro of pendingIntros(ctx.profile, ctx.world)) {
+    if (intro.kind !== 'slot') continue;
+    lines.push(slotIntro(intro.slot));
+    markIntroSeen(ctx.profile, intro);
+    selected = `slot${intro.slot}`;
+  }
+  ctx.profile.flushSync();
+  castleNews = lines.filter((l) => l !== '');
+}
+
 export const keepScreen: Screen = {
   id: 'armoury',
   render(ctx, arg) {
@@ -295,6 +318,7 @@ export const keepScreen: Screen = {
     if (slotOf(selected) >= SLOT_COUNT) selected = 'slot0';
     if (!guideStarted && firstUpgradeDue(ctx.profile, ctx.world)) { guideStarted = true; selected = `slot${slotOfRole('damage')}`; }
     const guide = guideHtml(ctx, panelFor(ctx, selected));
+    const news = castleNews.length > 0 ? kingSaysHtml(castleNews, 'castleNews') : '';
     const wheelSpot = `id="spot-slot${slotOfRole('damage')}"`;
     const spotsHtml = spots(ctx).map(spotButton).join('');
     return `<div class="panel shop" id="shop">
@@ -309,7 +333,7 @@ export const keepScreen: Screen = {
           ${guide.due ? spotsHtml.replace(wheelSpot, `${wheelSpot} data-guide="1"`).replace(/(data-guide="1"[^>]*style=")/, `$1${GLOW};`) : spotsHtml}
         </div>
         <div class="sh-side" id="shopSide" data-keep-scroll data-spot="${selected}">
-          ${guide.king}${guide.panel}
+          ${news}${guide.king}${guide.panel}
         </div>
       </div>
     </div>`;
@@ -324,6 +348,7 @@ export const keepScreen: Screen = {
         const s = el.dataset.spot ?? '';
         if (isSpot(s)) {
           selected = s;
+          castleNews = [];
           ctx.show('armoury');
           ctx.query<HTMLElement>('#shopSide')?.scrollTo({ top: 0 });
         }
@@ -339,6 +364,7 @@ export const keepScreen: Screen = {
           ctx.toast(q.action === 'unlock' ? `${q.name} unlocked!` : `${q.name}: tier ${q.toTier}!`);
           // The first purchase ends the tutorial's guide, whatever was bought.
           if (guided && finishFirstUpgrade(p)) guidePraise = true;
+          if (target.kind === 'castle') castleBuilt(ctx, q.toTier);
         }
         ctx.show('armoury');
         break;
@@ -356,7 +382,7 @@ export const keepScreen: Screen = {
         ctx.show('armoury');
         break;
       }
-      case 'main': guidePraise = false; ctx.show('main'); break;
+      case 'main': guidePraise = false; castleNews = []; ctx.show('main'); break;
     }
   },
 };

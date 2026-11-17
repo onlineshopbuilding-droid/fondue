@@ -83,10 +83,9 @@ export const duration = (seconds: number): string => `${Math.floor(seconds / 60)
 
 export function unlockText(u: UnlockDef, d: CampaignData): string {
   switch (u.kind) {
-    case 'slot': return `Slot ${u.slot + 1} (${d.slotNames[u.slot] ?? '?'})`;
     case 'weapon': return `Waffe ${d.weaponNames[u.weapon] ?? u.weapon}`;
     case 'station': return `Station ${d.stationNames[u.station] ?? u.station}`;
-    case 'gate': return `Tor bis ${d.gateNames[u.tier] ?? `Stufe ${u.tier}`}`;
+    case 'castle': return `Burg-Stufe ${u.tier} kaufbar (${d.gateNames[u.tier - 1] ?? '?'})`;
     case 'hand': return `Hand-Stufe ${u.tier}`;
   }
 }

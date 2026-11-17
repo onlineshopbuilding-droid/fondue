@@ -3,20 +3,24 @@
  * (see `slot` in weapons.ts). The index in SLOTS is the slot number used by loadouts and commands.
  *
  * Columns: role = which weapons fit; name = shown to players; x, y = centre of the weapon's art and of
- * its tap zone, in world units; unlockLevel = campaign level whose win opens the slot (0: open from the
- * start). What the King says when a slot opens is world story: `SLOT_INTROS` in
- * src/config/worlds/fondue/story.ts, the only place of those lines.
+ * its tap zone, in world units. castleTier = the castle tier that opens the slot, taken from
+ * CASTLE_TIER_FOR_SLOT (./slotTiers.ts, the only place of that number). What the King says when a slot
+ * opens is world story: `SLOT_INTROS` in src/config/worlds/fondue/story.ts, the only place of those lines.
  */
+import { CASTLE_TIER_FOR_SLOT } from './slotTiers';
+
 export type SlotRole = 'damage' | 'slow' | 'support' | 'passive' | 'gate';
 
-export interface SlotDef { role: SlotRole; name: string; x: number; y: number; unlockLevel: number }
+export interface SlotDef { role: SlotRole; name: string; x: number; y: number; castleTier: number }
+
+const slot = (role: SlotRole, name: string, x: number, y: number): SlotDef => ({ role, name, x, y, castleTier: CASTLE_TIER_FOR_SLOT[role] });
 
 export const SLOTS: SlotDef[] = [
-  { role: 'damage', name: 'Damage', x: 52, y: 590, unlockLevel: 0 },
-  { role: 'slow', name: 'Slow', x: 46, y: 392, unlockLevel: 2 },
-  { role: 'gate', name: 'Gate', x: 146, y: 410, unlockLevel: 4 },
-  { role: 'support', name: 'Support', x: 46, y: 282, unlockLevel: 7 },
-  { role: 'passive', name: 'Passive', x: 136, y: 272, unlockLevel: 11 },
+  slot('damage', 'Damage', 52, 590),
+  slot('slow', 'Slow', 46, 392),
+  slot('gate', 'Gate', 146, 410),
+  slot('support', 'Support', 46, 282),
+  slot('passive', 'Passive', 136, 272),
 ];
 
 export const SLOT_COUNT = SLOTS.length;

@@ -11,7 +11,9 @@
  *               'crowd' (densest group), 'tough' (most hit points)
  *   enabled     false removes the weapon from the game without deleting it
  *   desc        one sentence for the shop
- *   unlockLevel the campaign level from which it can be unlocked with cheese
+ *   unlockLevel the campaign level from which it can be unlocked with cheese; never below the level from
+ *               which the castle tier that opens its slot can be built (CASTLE_TIER_LEVEL, ./slotTiers.ts),
+ *               and its slot must be open to unlock it
  *   cheesePrice cheese to unlock it for good (all weapons + Great Cauldron + Eagle Perch = 500)
  *   goldScale   factor on the gold price of its tiers (src/config/tiers.ts)
  *   tiers       exactly seven tiers. Each has `cooldown` (seconds), `note` (what this tier adds, shown
@@ -137,7 +139,7 @@ export const WEAPONS: WeaponDef[] = [
   },
   {
     id: 'forks', name: 'Fondue Forks', slot: 'damage', kind: 'spikes', target: 'crowd', enabled: true,
-    unlockLevel: 14, cheesePrice: 8, goldScale: 0.9,
+    unlockLevel: 14, cheesePrice: 5, goldScale: 0.9,
     desc: 'Giant forks spring out of the road under the thickest group and pin it.',
     tiers: [
       { cooldown: 12, halfWidth: 100, damage: 110, pin: 1, pulses: 1, note: 'One row of forks.' },
@@ -151,7 +153,7 @@ export const WEAPONS: WeaponDef[] = [
   },
   {
     id: 'stomper', name: 'Stomper', slot: 'damage', kind: 'slam', target: 'crowd', enabled: true,
-    unlockLevel: 29, cheesePrice: 16, goldScale: 1.05,
+    unlockLevel: 29, cheesePrice: 14, goldScale: 1.05,
     desc: 'A heavy block drops on the thickest group.',
     tiers: [
       { cooldown: 10, halfWidth: 90, damage: 260, slams: 1, shockRadius: 0, shockStun: 0, note: 'A timber block on a chain.' },
@@ -195,7 +197,7 @@ export const WEAPONS: WeaponDef[] = [
   // ----- Slow (left middle): hold raiders back -----
   {
     id: 'cheese', name: 'Sticky Fondue', slot: 'slow', kind: 'puddle', target: 'front', enabled: true,
-    unlockLevel: 2, cheesePrice: 3, goldScale: 0.85,
+    unlockLevel: 6, cheesePrice: 3, goldScale: 0.85,
     desc: 'Pours molten cheese on the road. Raiders wade through it slowly.',
     tiers: [
       { cooldown: 15, halfWidth: 140, seconds: 5, slow: 0.5, dps: 0, wholeRoad: false, note: 'Slows everyone in the puddle.' },
@@ -209,7 +211,7 @@ export const WEAPONS: WeaponDef[] = [
   },
   {
     id: 'frost', name: 'Frost Horn', slot: 'slow', kind: 'shell', target: 'crowd', enabled: true,
-    unlockLevel: 17, cheesePrice: 10, goldScale: 1,
+    unlockLevel: 17, cheesePrice: 6, goldScale: 1,
     desc: 'Freezes the thickest group. Tap a frozen raider to shatter it.',
     tiers: [
       { cooldown: 9, effect: 'freeze', radius: 130, damage: 0, seconds: 6, shells: 1, shatterSpread: 0, note: 'A patch of ice.' },
@@ -267,7 +269,7 @@ export const WEAPONS: WeaponDef[] = [
   // ----- Support (left top): help the hands and the gate -----
   {
     id: 'midas', name: 'Golden Fondue', slot: 'support', kind: 'gold', target: 'none', enabled: true,
-    unlockLevel: 7, cheesePrice: 5, goldScale: 0.9,
+    unlockLevel: 20, cheesePrice: 8, goldScale: 0.9,
     desc: 'For a short while every raider you beat pays more gold.',
     tiers: [
       { cooldown: 24, seconds: 6, factor: 1.5, note: 'Half again as much gold.' },
@@ -281,7 +283,7 @@ export const WEAPONS: WeaponDef[] = [
   },
   {
     id: 'beacon', name: 'Ember Beacon', slot: 'support', kind: 'beacon', target: 'none', enabled: true,
-    unlockLevel: 23, cheesePrice: 12, goldScale: 1,
+    unlockLevel: 23, cheesePrice: 10, goldScale: 1,
     desc: 'While the beacon burns, every raider you throw explodes where it lands.',
     tiers: [
       { cooldown: 20, seconds: 6, radius: 70, damage: 130, flameSeconds: 0, note: 'Thrown raiders burst on landing.' },
@@ -339,7 +341,7 @@ export const WEAPONS: WeaponDef[] = [
   // ----- Passive (right top): fire on their own -----
   {
     id: 'sentry', name: 'Marmot Sentry', slot: 'passive', kind: 'sentry', target: 'front', enabled: true,
-    unlockLevel: 11, cheesePrice: 6, goldScale: 0.95,
+    unlockLevel: 28, cheesePrice: 12, goldScale: 0.95,
     desc: 'A marmot with a crossbow shoots on its own. Tap it for a quick burst.',
     tiers: [
       { cooldown: 12, every: 2.4, damage: 45, burst: 4, targets: 1, note: 'Shoots now and then.' },
@@ -353,7 +355,7 @@ export const WEAPONS: WeaponDef[] = [
   },
   {
     id: 'bolter', name: 'Roof Bolter', slot: 'passive', kind: 'volley', target: 'none', enabled: true,
-    unlockLevel: 26, cheesePrice: 14, goldScale: 1,
+    unlockLevel: 30, cheesePrice: 16, goldScale: 1,
     desc: 'Fires a wide fan of bolts over the whole height on its own: balloons above, runners below.',
     tiers: [
       { cooldown: 7, bolts: 6, damage: 90, pierce: false, volleys: 1, note: 'Six bolts.' },
@@ -411,7 +413,7 @@ export const WEAPONS: WeaponDef[] = [
   // ----- Gate (above the gate): close defence -----
   {
     id: 'mortar', name: 'Gate Mortar', slot: 'gate', kind: 'shell', target: 'front', enabled: true,
-    unlockLevel: 4, cheesePrice: 4, goldScale: 0.9,
+    unlockLevel: 12, cheesePrice: 4, goldScale: 0.9,
     desc: 'Lobs a shell at the raider closest to the gate.',
     tiers: [
       { cooldown: 6, effect: 'blast', radius: 95, damage: 150, seconds: 0, shells: 1, shatterSpread: 0, note: 'One shell.' },
@@ -425,7 +427,7 @@ export const WEAPONS: WeaponDef[] = [
   },
   {
     id: 'thorns', name: 'Hedgehog Gate', slot: 'gate', kind: 'thorns', target: 'none', enabled: true,
-    unlockLevel: 20, cheesePrice: 10, goldScale: 0.9,
+    unlockLevel: 21, cheesePrice: 10, goldScale: 0.9,
     desc: 'Spikes on the gate hurt whoever strikes it. Tap to burst them outwards.',
     tiers: [
       { cooldown: 12, reflect: 12, burstDamage: 120, burstReach: 130, burstStun: 0, note: 'Raiders hurt themselves on the gate.' },

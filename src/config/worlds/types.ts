@@ -82,12 +82,14 @@ export interface LevelDef {
   maxAlive: number;
 }
 
-/** What a level unlocks for good once it is won. */
+/**
+ * What a level unlocks for good once it is won. `castle`: that castle tier can now be built (with
+ * gold); the slot it opens follows only from the castle tier, never from the level.
+ */
 export type UnlockDef =
-  | { level: number; kind: 'slot'; slot: number }
   | { level: number; kind: 'weapon'; weapon: string }
   | { level: number; kind: 'station'; station: StationId }
-  | { level: number; kind: 'gate'; tier: number }
+  | { level: number; kind: 'castle'; tier: number }
   | { level: number; kind: 'hand'; tier: number };
 
 /** How one raider type shows up in endless runs. */

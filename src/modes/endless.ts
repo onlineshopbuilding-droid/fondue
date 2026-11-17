@@ -1,7 +1,8 @@
 /**
  * Endless mode: waves without end, played with the permanent keep of the profile (E1). Nothing is
  * bought in the run. It is the place to earn gold (harder difficulties pay more per raider), never
- * cheese; good runs enter the score list. It opens with the fifth slot.
+ * cheese; good runs enter the score list. It opens once campaign level 10 is won (TABLE_UNLOCK_LEVEL),
+ * with whatever slots the castle has opened by then.
  */
 import { ENEMY_TYPES } from '../config/enemies';
 import { QUICK_START_MAX_WAVE, quickStartAt, quickStartFor } from '../config/quickstart';
@@ -20,7 +21,7 @@ import { endlessOpen, openSlots } from './unlocks';
 export class EndlessMode implements GameMode {
   readonly id = 'endless';
 
-  /** Endless opens with the last slot (E1). */
+  /** Endless opens once its campaign level is won (TABLE_UNLOCK_LEVEL.endless). */
   isAvailable(profile: Profile, world: string): boolean {
     return endlessOpen(profile, world);
   }

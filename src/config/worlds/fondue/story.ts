@@ -59,6 +59,37 @@ export const SLOT_INTROS: string[] = [
   "This is your Passive slot. It works all by itself, no tap needed. Watch its ring fill up.",
 ];
 
+/**
+ * King Fridolin announces that a castle tier can now be built (shown when its campaign level is won).
+ * Index = castle tier (2..7); indexes 0 and 1 stay empty (tier 1 is there from the start).
+ * Plain placeholders for now; the final lines come with the text package.
+ */
+export const CASTLE_READY_LINES: string[] = [
+  '',
+  '',
+  'Castle tier 2 can be built now. Visit the Keep Shop!',
+  'Castle tier 3 can be built now. Visit the Keep Shop!',
+  'Castle tier 4 can be built now. Visit the Keep Shop!',
+  'Castle tier 5 can be built now. Visit the Keep Shop!',
+  'Castle tier 6 can be built now. Visit the Keep Shop!',
+  'Castle tier 7 can be built now. Visit the Keep Shop!',
+];
+
+/**
+ * King Fridolin's line when a castle tier has just been built. Index = castle tier (2..7); indexes 0
+ * and 1 stay empty. Plain placeholders for now; the final lines come with the text package.
+ */
+export const CASTLE_BUILT_LINES: string[] = [
+  '',
+  '',
+  'Our castle grows! A new slot is open.',
+  'Our castle grows! A new slot is open.',
+  'Our castle grows! A new slot is open.',
+  'Our castle grows! A new slot is open.',
+  'Our castle grows! The gate is stronger than ever.',
+  'Our castle grows! The gate is stronger than ever.',
+];
+
 /** King Fridolin introduces the two stations the first time they can be unlocked. */
 export const STATION_INTROS: Record<string, string> = {
   cauldron: "My Great Cauldron is ready! Unlock it in the Keep Shop. Every raider you throw in pays double gold.",

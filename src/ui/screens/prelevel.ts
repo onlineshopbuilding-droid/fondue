@@ -5,7 +5,7 @@
 import { SLOTS } from '../../config/slots';
 import { TIER_MAX } from '../../config/tiers';
 import { weaponById } from '../../config/weapons';
-import { equip, slotOpen, slotRole, unlockLevelOf, weaponsForRole } from '../../modes';
+import { equip, slotCastleTier, slotOpen, slotRole, weaponsForRole } from '../../modes';
 import { esc, pipsHtml, weaponUri } from '../html';
 import type { ScreenContext } from './context';
 
@@ -24,7 +24,7 @@ export function loadoutHtml(ctx: ScreenContext): string {
     const def = id ? weaponById(id) : undefined;
     const inner = !open ? '<span class="lo-lock" aria-hidden="true">🔒</span>'
       : def ? `<img src="${weaponUri(def.id, p.weaponTier(def.id) || 1)}" alt="">` : '<span class="lo-empty" aria-hidden="true">+</span>';
-    const label = !open ? `${s.name} slot, opens after level ${unlockLevelOf(ctx.world, 'slot', i) ?? s.unlockLevel}`
+    const label = !open ? `${s.name} slot, opens with castle tier ${slotCastleTier(i)}`
       : `${s.name} slot: ${def ? `${def.name}, tier ${p.weaponTier(def.id)}` : 'empty'}. Tap to change.`;
     return `<button class="lo-tile ${open ? '' : 'locked'} ${openSlot === i ? 'on' : ''}" data-a="loSlot" data-slot="${i}" id="lo-${i}" ${open ? '' : 'disabled'} aria-label="${esc(label)}">${inner}<span class="lo-role">${esc(s.name)}</span></button>`;
   }).join('');

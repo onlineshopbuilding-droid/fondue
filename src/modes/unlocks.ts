@@ -1,15 +1,19 @@
 /**
- * What campaign progress makes available, derived from `levelsDone` and the unlock table; nothing of
- * this is stored, so a changed table can never break a saved profile.
- *   Slots open by won level. Weapons and stations become buyable (with cheese) by won level.
- *   The tier cap rises per campaign section; tier 7 needs the Eagle Perch.
+ * What progress makes available, derived from `levelsDone`, the castle tier and the unlock tables;
+ * nothing of this is stored, so a changed table can never break a saved profile.
+ *   Slots open by castle tier (CASTLE_TIER_FOR_SLOT), never by campaign level.
+ *   Castle tiers become buildable (with gold) by won level (CASTLE_TIER_LEVEL).
+ *   Weapons and stations become buyable (with cheese) by won level; a weapon also needs its slot open.
+ *   The coop and endless tables open by won level (TABLE_UNLOCK_LEVEL).
+ *   The tier cap of weapons and hand rises per campaign section; tier 7 needs the Eagle Perch.
  */
 import { STATIONS, type StationId } from '../config/keep';
-import { SLOTS, SLOT_COUNT } from '../config/slots';
+import { SLOTS, SLOT_COUNT, slotOfRole } from '../config/slots';
+import { CASTLE_TIER_FOR_SLOT, CASTLE_TIER_LEVEL, TABLE_UNLOCK_LEVEL } from '../config/slotTiers';
 import { TIER_CAP_BY_LEVEL, TIER_MAX, TIER_MAX_NEEDS_STATION } from '../config/tiers';
 import { WEAPONS, type WeaponDef } from '../config/weapons';
 import { worldById } from '../config/worlds';
-import { slotIntro, slotUnlockLevel, weaponUnlockLevel } from '../config/worlds/fondue/unlocks';
+import { slotIntro, weaponUnlockLevel } from '../config/worlds/fondue/unlocks';
 import type { UnlockDef } from '../config/worlds/types';
 import type { Profile, ProfileData } from '../profile';
 
@@ -60,12 +64,35 @@ export function levelsReached(p: ProfileLike, world: string): number {
   return w && Object.hasOwn(dataOf(p).worlds, world) ? Math.max(0, ...w.levelsDone) : 0;
 }
 
-/** Is this weapon slot open? Slot 0 opens with the tutorial. */
+/** The castle tier that opens a slot (Infinity for a slot that does not exist). */
+export function slotCastleTier(slot: number): number {
+  const role = slotRole(slot);
+  return role ? CASTLE_TIER_FOR_SLOT[role] : Number.POSITIVE_INFINITY;
+}
+
+/**
+ * Is this weapon slot open? It opens with the castle tier of the slot; the damage slot (castle tier 1)
+ * opens with the tutorial.
+ */
 export function slotOpen(p: ProfileLike, world: string, slot: number): boolean {
   if (slot < 0 || slot >= SLOT_COUNT) return false;
-  const level = slotUnlockLevel(slot);
-  if (level <= 0) return dataOf(p).seen.tutorial || levelsReached(p, world) > 0;
-  return levelsReached(p, world) >= level;
+  const tier = slotCastleTier(slot);
+  if (tier <= 1) return dataOf(p).seen.tutorial || levelsReached(p, world) > 0;
+  return dataOf(p).keep.castleTier >= tier;
+}
+
+/**
+ * The won campaign level from which this castle tier can be built (1..7; tier 1 is there from the
+ * start: 0). Infinity for a tier that does not exist.
+ */
+export function castleTierBuyableAt(tier: number): number {
+  if (!Number.isInteger(tier) || tier < 1 || tier > CASTLE_TIER_LEVEL.length) return Number.POSITIVE_INFINITY;
+  return CASTLE_TIER_LEVEL[tier - 1];
+}
+
+/** Has the campaign reached the level that lets this castle tier be built? (Gold is asked on top.) */
+export function castleTierUnlocked(p: ProfileLike, world: string, tier: number): boolean {
+  return levelsReached(p, world) >= castleTierBuyableAt(tier);
 }
 
 export const openSlots = (p: ProfileLike, world: string): boolean[] =>
@@ -74,10 +101,13 @@ export const openSlots = (p: ProfileLike, world: string): boolean[] =>
 /** The introduction line of a slot (King Fridolin). */
 export { slotIntro };
 
-/** The campaign has reached the level from which this weapon can be unlocked. */
+/** The campaign has reached the level from which this weapon can be unlocked, and its slot is open. */
 export function weaponAvailable(p: ProfileLike, world: string, id: string): boolean {
   const level = weaponUnlockLevel(id);
-  return level !== null && levelsReached(p, world) >= level;
+  if (level === null || levelsReached(p, world) < level) return false;
+  const def = WEAPONS.find((w) => w.id === id);
+  const role = def ? weaponRole(def) : null;
+  return role !== null && slotOpen(p, world, slotOfRole(role));
 }
 
 /** The campaign has reached the level from which this station can be unlocked. */
@@ -85,7 +115,7 @@ export function stationAvailable(p: ProfileLike, world: string, id: StationId): 
   return levelsReached(p, world) >= STATIONS[id].unlockLevel;
 }
 
-/** Highest tier that can be bought for weapons, castle and hand right now. */
+/** Highest tier that can be bought for weapons and hand right now (the castle has CASTLE_TIER_LEVEL). */
 export function tierCap(p: ProfileLike, world: string): number {
   if (dataOf(p).keep.stations[TIER_MAX_NEEDS_STATION] > 0) return TIER_MAX;
   const done = levelsReached(p, world);
@@ -94,9 +124,14 @@ export function tierCap(p: ProfileLike, world: string): number {
   return Math.min(cap, TIER_MAX - 1);
 }
 
-/** Endless opens with the last slot. */
+/** The endless table opens once its campaign level is won (10), whatever slots are open. */
 export function endlessOpen(p: ProfileLike, world: string): boolean {
-  return slotOpen(p, world, SLOT_COUNT - 1);
+  return levelsReached(p, world) >= TABLE_UNLOCK_LEVEL.endless;
+}
+
+/** The coop table opens once its campaign level is won (3). */
+export function coopTableOpen(p: ProfileLike, world: string): boolean {
+  return levelsReached(p, world) >= TABLE_UNLOCK_LEVEL.coop;
 }
 
 /** Weapons that fit a slot. */
@@ -107,11 +142,11 @@ export function unlocksOfLevel(world: string, level: number): UnlockDef[] {
   return worldById(world).unlocks.filter((u) => u.level === level);
 }
 
-/** The won level that makes a weapon, slot or station available; null when nothing does. For "from level N" hints. */
+/** The won level that makes a weapon, station or castle tier available; null when nothing does. For "from level N" hints. */
 export function unlockLevelOf(world: string, kind: UnlockDef['kind'], id: string | number): number | null {
   for (const u of worldById(world).unlocks) {
     if (u.kind !== kind) continue;
-    const key = u.kind === 'slot' ? u.slot : u.kind === 'weapon' ? u.weapon : u.kind === 'station' ? u.station : u.tier;
+    const key = u.kind === 'weapon' ? u.weapon : u.kind === 'station' ? u.station : u.tier;
     if (key === id) return u.level;
   }
   return null;

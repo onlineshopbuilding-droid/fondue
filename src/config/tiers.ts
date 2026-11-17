@@ -16,9 +16,11 @@ export const WEAPON_TIER_GOLD = [0, 300, 900, 3000, 9000, 24000, 50000];
 export const CREST_COST = 50;
 
 /**
- * Highest tier that can be bought for weapons, castle and hand, by campaign progress.
+ * Highest tier that can be bought for weapons and hand, by campaign progress.
  * `afterLevel`: from the moment this level is won. The last step (tier 7) needs the Eagle Perch.
  * This keeps gold from endless runs from rolling over a part of the campaign.
+ * The castle does not use this cap: each castle tier has its own won level (CASTLE_TIER_LEVEL in
+ * ./slotTiers.ts), never below the cap level of the same tier here (unit test).
  */
 export const TIER_CAP_BY_LEVEL: { afterLevel: number; cap: number }[] = [
   { afterLevel: 0, cap: 3 },

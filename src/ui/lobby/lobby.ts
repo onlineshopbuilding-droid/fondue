@@ -7,15 +7,15 @@ import { WEAPONS } from '../../config/weapons';
 // The story texts of the one world there is; a second world would bring its own.
 import { KING_LOBBY_LINES, STORYBOOK } from '../../config/worlds/fondue/story';
 import type { Session } from '../../game/session';
-import { SLOT_COUNT } from '../../config/slots';
-import { ENDLESS, unlockLevelOf } from '../../modes';
+import { TABLE_UNLOCK_LEVEL } from '../../config/slotTiers';
+import { ENDLESS } from '../../modes';
 import type { Profile } from '../../profile';
 import { diveOf, fadeOf, stepLobby } from '../../render/lobby/dive';
 import { linesFor, pagesFor, pickLine, STATIONS, type StationId } from '../../render/lobby/layout';
 import { LobbyScene, type LobbySpot, type LobbyState } from '../../render/lobby/lobbyScene';
 import type { GameScene } from '../../render/scene';
 import type { PendingRun } from '../screens/context';
-import { ENDLESS_LOCKED, pendingWave } from '../screens/main';
+import { pendingWave } from '../screens/main';
 import { htmlMenuWanted, OVER_LOBBY } from './mode';
 import { StorybookWindow } from './storybook';
 
@@ -122,8 +122,7 @@ export class Lobby {
     this.click();
     if (id === 'storybook') { this.openBook(); return; }
     if (id === 'play' && !ENDLESS.isAvailable(this.host.profile, this.host.world)) {
-      const level = unlockLevelOf(this.host.world, 'slot', SLOT_COUNT - 1);
-      this.say(level === null ? ENDLESS_LOCKED : `${ENDLESS_LOCKED} Win level ${level}!`);
+      this.say(`Endless opens once you win level ${TABLE_UNLOCK_LEVEL.endless}.`);
       return;
     }
     this.host.lobbyAction(id);

@@ -6,14 +6,13 @@ import { AudioEngine } from '../audio/audio';
 import { reviewLabels } from '../config/devReview';
 import { quickStartFor } from '../config/quickstart';
 import { FLAG_DEFS } from '../config/flags';
-import { fieldForAspect } from '../config/field';
 import { STATION_IDS } from '../config/keep';
-import { SLOT_COUNT } from '../config/slots';
+import { fieldForAspect } from '../config/field';
 import { TUNING_DEFAULT, type Tuning } from '../config/tuning';
-import { WEAPONS, weaponById } from '../config/weapons';
+import { weaponById } from '../config/weapons';
 import { DEFAULT_WORLD, levelOf, worldById } from '../config/worlds';
 import { HostSession, type Session } from '../game/session';
-import { CAMPAIGN, ENDLESS, MODES, TUTORIAL, cheatCheese, modeOf, syncUnlocks, unlockLevelOf, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from '../modes';
+import { CAMPAIGN, ENDLESS, MODES, TUTORIAL, cheatCheese, modeOf, syncUnlocks, type GameMode, type NextStep, type Reward, type RunChoice, type RunEnv } from '../modes';
 import type { ViewState } from '../net/snapshot';
 import type { RoomPlan } from '../net/protocol';
 import { normalizeRoomCode, type Transport } from '../net/transport';
@@ -32,6 +31,7 @@ import type { PendingRun, ScreenContext } from './screens/context';
 import { ScreenManager, type ScreenId } from './screens/screen';
 import { mainScreen } from './screens/main';
 import { shopAfterWin } from '../modes/tutorial';
+import { unlockEverything } from '../modes/cheats';
 import { Lobby } from './lobby/lobby';
 import { TuningPanel } from './tuningPanel';
 
@@ -193,16 +193,9 @@ export class App implements ScreenContext, CoopRoomHost {
     if (['main', 'armoury', 'campaign', 'options'].includes(this.screen)) this.show(this.screen);
   }
 
-  /** Developer tool: every weapon, slot and station, as if the campaign were far along. */
+  /** Developer tool: every weapon, slot and station, as if the campaign were far along (castle tier 5, levels to 28). */
   private unlockEverything() {
-    // Slots follow from won levels, so the levels that open them are marked as won.
-    for (let i = 0; i < SLOT_COUNT; i++) for (let l = 1; l <= (unlockLevelOf(this.world, 'slot', i) ?? 0); l++) this.profile.markLevelDone(this.world, l);
-    this.profile.edit((d) => {
-      for (const w of WEAPONS) if (w.enabled && !Object.hasOwn(d.keep.weapons, w.id)) d.keep.weapons[w.id] = { tier: 1 };
-      for (const s of STATION_IDS) d.keep.stations[s] = Math.max(1, d.keep.stations[s]);
-    });
-    this.profile.noteCheat('unlock everything');
-    syncUnlocks(this.profile, this.world);
+    unlockEverything(this.profile, this.world);
     this.profile.flushSync();
     this.toast('Everything unlocked');
   }
