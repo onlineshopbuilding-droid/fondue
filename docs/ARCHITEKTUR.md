@@ -2,7 +2,7 @@
 
 Dieses Dokument beschreibt den Aufbau von v0.4 („Burg als Fortschritt“, auf dem Grundaufbau von v0.3 „dauerhafte Burg“): welche Ordner es gibt, welche Klasse welche Aufgabe hat und wie die Daten fließen. Es richtet sich an Tim, Lenny und jede KI, die weiterbaut. Die Rezepte („ich will ein neues Level, eine neue Waffe …“) stehen in `docs/HANDBUCH.md`.
 
-Stand: 17.11.2026, Branch `v0.4-dev`. Angeglichen an v0.4 sind Freischaltung der Slots über die Burg-Stufe, Konfiguration (`slotTiers.ts`, `versions.ts`), Modi, Profil und Speicher, die Tabelle in Abschnitt 11 und Abschnitt 14. Die Abschnitte zu Lobby, Options und Kampagnen-Karte (Abschnitt 8) beschreiben noch den Stand von v0.3 und werden nach dem Umbau der Lobby nachgezogen. Die Grundzerlegung stammt aus dem großen Update (Profil → Modus → Lauf → Sim → Szene); v0.3 hat drei Dinge geändert: **die Burg lebt im Profil statt im Lauf**, **ein Level ist eine Wellenfolge ohne Einkauf**, **Käse, Gold und Räuberwappen** sind die Währungen. Die Begründungen stehen in `docs/ENTSCHEIDUNGEN.md` (E-063 bis E-071 für v0.3, ab E-072 für v0.4), der Bauplan in `docs/v0.3/BAUPLAN.md` und `docs/v0.4/BAUPLAN.md`.
+Stand: 17.11.2026, Branch `v0.4-dev`, an den gebauten Code von v0.4 angeglichen (Lobby, Options, Kampagnen-Karte, Shop und Koop-Raum eingeschlossen; Zahlen der Balance stehen in der Konfiguration und in `docs/balance.md`). Die Grundzerlegung stammt aus dem großen Update (Profil → Modus → Lauf → Sim → Szene); v0.3 hat drei Dinge geändert: **die Burg lebt im Profil statt im Lauf**, **ein Level ist eine Wellenfolge ohne Einkauf**, **Käse, Gold und Räuberwappen** sind die Währungen; v0.4 macht die **Burg-Stufe zum Fortschrittsmaß**. Die Begründungen stehen in `docs/ENTSCHEIDUNGEN.md` (E-063 bis E-071 für v0.3, ab E-072 für v0.4), der Bauplan in `docs/v0.3/BAUPLAN.md` und `docs/v0.4/BAUPLAN.md`.
 
 ## 0. Sechs Begriffe vorab
 
@@ -292,20 +292,20 @@ Beschädigte Daten führen nie zum Absturz: Was sich nicht lesen lässt, wird un
 
 | Datei | Bildschirm |
 |---|---|
-| `screens/main.ts` | Hauptmenü: über der Lobby nur Käse, Gold, Wappen und Fortschritt, mit `?menu=html` das einfache Menü |
-| `screens/campaign.ts` | Kampagnen-Karte mit Level-Karte (Dauer, Landschaft, Besonderheit, Challenges, Käse 0 bis 5, Ausrüstungsleiste); Zeichnung in `ui/campaignArt.ts` |
-| `screens/keep.ts` | **Shop an der Burg** (ersetzt die Waffenkammer, E-065; Bildschirm-Kennung `armoury`): Slots, Burg, Hand, Kessel, Haken; Freischalten, Verbessern, Anlegen |
+| `screens/main.ts` | Hauptmenü: über der Lobby nur Käse, Gold, Wappen, Fortschritt und Burg-Stufe, mit `?menu=html` das einfache Menü |
+| `screens/campaign.ts` | Kampagnen-Karte mit Level-Karte (Dauer, Landschaft, Besonderheit, Challenges, Käse 0 bis 5, Ausrüstungsleiste); Burg-Stufe neben dem Fortschritt, Burg-Zeichen an den Leveln, die eine Stufe kaufbar machen (`castleTierAtLevel`), kleines Buch oben rechts für das Storybook; Zeichnung in `ui/campaignArt.ts` |
+| `screens/keep.ts` (mit `keep.css`) | **Shop an der Burg** (ersetzt die Waffenkammer, E-065; Bildschirm-Kennung `armoury`): Slots, Burg, Hand, Kessel, Haken; Freischalten, Verbessern, Anlegen. Die Burg ist das Hauptziel (Ziel-Leiste mit Satz und Goldbalken); Ausbau einer Burg-Stufe ist ein Ereignis (`castleBuilt`: Animation, Satz des Königs, Einführung der neuen Slots) |
 | `screens/prelevel.ts` | Ausrüstung wechseln vor jedem Level und jeder Endlos-Runde (D2) |
-| `screens/won.ts`, `gameover.ts` | Sieg (fünf Käse, Gold, Wappen, Freischaltungen, Einführungen des Königs) und Niederlage |
-| `screens/play.ts`, `coop.ts`, `host.ts`, `join.ts`, `roomParts.ts` | Endlos, Koop, Räume mit Spielerliste |
+| `screens/won.ts`, `gameover.ts` | Sieg (fünf Käse, Gold, Wappen, Freischaltungen; neu kaufbare Burg-Stufe mit Satz des Königs und Knopf in den Shop; Einführungen von Stationen, nicht mehr von Slots) und Niederlage (der Knopf „Scores“ öffnet den Reiter Scores der Options) |
+| `screens/play.ts`, `coop.ts`, `host.ts`, `join.ts`, `roomParts.ts` | Endlos, Koop, Räume mit Spielerliste und der Burg-Stufe jedes Spielers neben dem Namen |
 | `screens/lostHost.ts`, `lostGuest.ts`, `pause.ts` | Verbindung weg, Pause |
-| `screens/options.ts`, `scores.ts`, `help.ts`, `credits.ts`, `settingsFields.ts` | Options mit Profil-Export, Versionszeile und Entwickler-Knopf, Bestenliste, Hilfe, Credits |
+| `screens/options.ts` (mit `options.css`), `scores.ts`, `help.ts`, `credits.ts`, `settingsFields.ts` | Options mit fünf Reitern (`OPTION_TABS`: Settings, Scores, Help, Credits, Versions); Scores, Help und Credits rendern als Reiter-Inhalt, Versions zeigt `VERSIONS` aus `config/versions.ts`; Profil-Export, Versionszeile und Entwickler-Knopf unten |
 | `enemyPopup.ts` | Popup „New enemy“ |
-| `tuningPanel.ts` | Entwickler-Menü mit Waffen-Editor, Cheats, Reglern, Schaltern (Options, F1, langes Drücken aufs Logo) |
-| `lobby/lobby.ts` | Steuert die Lobby: wann sie zu sehen ist, Kamerafahrt, Sprüche des Königs |
-| `lobby/storybook.ts` | Storybuch-Fenster |
-| `lobby/mode.ts` | `?menu=html` erkennen; welche Bildschirme über der Lobby liegen |
-| `version.ts` | Versionszeile „v0.3 · build …“ |
+| `tuningPanel.ts` | Entwickler-Menü mit Waffen-Editor, Cheats (auch Burg-Stufe über `cheatCastleTier`), Reglern, Schaltern (Options, F1, langes Drücken aufs Logo) |
+| `lobby/lobby.ts` | Steuert die Lobby: wann sie zu sehen ist, Kamerafahrt, Sprüche des Königs, Tipp auf Stationen und kaputte Tische (`TABLE_LOCKED_LINES`); der Zustand für die Szene (`LobbyState`: `castleTier`, `coop`, `endless`, `pending`) kommt aus Profil und `unlocks.ts` |
+| `lobby/storybook.ts` | Storybuch-Fenster; liegt noch im Ordner `lobby/`, wird aber von der Kampagnen-Karte geöffnet (`pagesFor` filtert die Seiten nach gewonnenem Level) |
+| `lobby/mode.ts` | `?menu=html` erkennen; welche Bildschirme über der Lobby liegen (`OVER_LOBBY`: `main`, `play`, `coop`, `campaign`, `armoury`, `options`, `host`, `join`) |
+| `version.ts` | Versionszeile „v0.4 · build …“ |
 | `content.ts`, `html.ts`, `style.css`, `lobby/lobby.css` | Hilfe-Texte, Lade-Tipps, Credits; HTML-Bausteine; Aussehen |
 
 **Szenen und Zeichnen** (`src/render/`):
@@ -313,8 +313,9 @@ Beschädigte Daten führen nie zum Absturz: Was sich nicht lesen lässt, wird un
 | Datei | Aufgabe |
 |---|---|
 | `scene.ts` | `GameScene`: das Schlachtfeld. Hände (auch die zweite), Banner, Effekte zu Ereignissen. |
-| `lobby/lobbyScene.ts` | `LobbyScene`: die Halle in der Burg mit Stationen, König, Schmuck und Waffen an der Wand, als eigene Szene über dem Schlachtfeld. |
-| `lobby/layout.ts` | Wo in der Halle was steht (`STATIONS`, `DECOR`, `WEAPON_PEGS`), welche Sprüche und Storybuch-Seiten zum Fortschritt passen. Reine Daten. |
+| `lobby/lobbyScene.ts` | `LobbyScene`: die Halle in der Burg mit Stationen, König mit zwei Wachen am Kessel, Banner mit Burg-Stufe, Schmuck und Waffen an der Wand, als eigene Szene über dem Schlachtfeld. Welche Halle zu sehen ist, hängt nur an `castleTier`; kaputte Tische zeigen ihre Bilder, bis ihr Level gewonnen ist. |
+| `lobby/layout.ts` | Rechenhilfen der Halle: `hallLook(castleTier)`, `decorFor`, `stationArt` (offene oder kaputte Tisch-Grafik), `bannerText`, `fitRoom`, `stationPos`; Sprüche nach Fortschritt (`linesFor`). Die Daten selbst liegen in `src/config/lobby.ts`: `STATIONS` (Lage, Größe, Tippkreis), `KING_GROUP`, `HALL_PIECES`, `HALL_LOOK` (Aussehen und Schmuck je Burg-Stufe 1 bis 7), `TABLE_LOCKED_LINES`. |
+| `lobby/hallTextures.ts` | Erzeugt die Hallen-Bilder der Burg-Stufe erst bei Bedarf im Hintergrund (`ensureHall`). |
 | `lobby/dive.ts` | Kamerafahrt durch das Tor in die Halle und zurück (0,9 s), reine Rechnung. |
 | `marketCamera.ts` | Kamera mit dem Westflügel der Burg, weiche Fahrt, reine Rechnung. Der Name stammt vom abgeschafften Markt. |
 | `tutorialGuide.ts` | Ablauf der ersten Minuten ohne Zeichnen: `PreludeGuide` (König, Einfrieren, Geste, Rolling Wheel) und `PotHint` (Kessel-Hinweis). |
@@ -322,9 +323,9 @@ Beschädigte Daten führen nie zum Absturz: Was sich nicht lesen lässt, wird un
 | `castleView.ts`, `stations.ts` | Die sieben Burgstufen, Tor, Waffen an der Burg mit Nachladering (auch passive), Kessel und Haken (Haken-Zielring). |
 | `enemyView.ts`, `effects.ts`, `hud.ts`, `background.ts`, `viewport.ts`, `textures.ts`, `glFix.ts` | Figuren, Effekte, HUD, Himmel und Landschaft (die Burg ist in Vorder- und Hintergrund eingebettet), Bildausschnitt, Texturen, Shader-Korrektur. |
 
-**Grafik** (`src/art/`): `registry.ts` (Asset-Verzeichnis), `characters/` (eine Datei je Gegner), `castle/` (sieben Burgstufen `tiers.ts`, `keepStages.ts`, `keepStagesGrand.ts`, Tore, Westflügel `westWing.ts`, Kessel `cauldron.ts` auf dem Hügel `mound.ts`, Haken `perch.ts`, Waffen-Halter `mounts.ts`), `weapons/` (25 Waffen in sieben Stufen), `props/` (Icons, Geschosse, Effekte), `lobby/` (Halle `room.ts`, Möbel `furniture.ts`, Schmuck `decor.ts`, König auf dem Thron `king.ts`), `king.ts` (König auf dem Schlachtfeld), `landscapes.ts`, `shade.ts`, `draw.ts`.
+**Grafik** (`src/art/`): `registry.ts` (Asset-Verzeichnis), `characters/` (eine Datei je Gegner), `castle/` (sieben Burgstufen `tiers.ts`, `keepStages.ts`, `keepStagesGrand.ts`, Tore, Westflügel `westWing.ts`, Kessel `cauldron.ts` auf dem Hügel `mound.ts`, Haken `perch.ts`, Waffen-Halter `mounts.ts`), `weapons/` (25 Waffen in sieben Stufen), `props/` (Icons, Geschosse, Effekte), `lobby/` (Halle `hall.ts` und `room.ts`, Möbel `furniture.ts`, Tische `tables.ts`, Schmuck `decor.ts`, Schätze `treasures.ts`, König auf dem Thron `king.ts`, die zwei Wachen `guards.ts`; je Burg-Stufe eigene Bilder), `king.ts` (König auf dem Schlachtfeld), `landscapes.ts`, `shade.ts`, `draw.ts`.
 
-Die Lobby ist eine echte Szene. Die Kampagnen-Karte und der Shop sind HTML-Bildschirme, weil sich HTML mit dem Finger am besten scrollen und antippen lässt; der Shop zeichnet die Burg aus denselben Bildern wie das Schlachtfeld. Eine eigene Klasse `CameraDirector` gibt es nicht: Die Burg-Kamera rechnet `marketCamera.ts`, die Fahrt in die Lobby `lobby/dive.ts`.
+Die Lobby ist eine echte Szene, die Halle wächst mit der Burg-Stufe. Die Kampagnen-Karte und der Shop sind HTML-Bildschirme, weil sich HTML mit dem Finger am besten scrollen und antippen lässt; der Shop zeichnet die Burg aus denselben Bildern wie das Schlachtfeld. Eine eigene Klasse `CameraDirector` gibt es nicht: Die Burg-Kamera rechnet `marketCamera.ts`, die Fahrt in die Lobby `lobby/dive.ts`.
 
 ## 9. Grafik austauschbar
 
@@ -333,11 +334,11 @@ Die Lobby ist eine echte Szene. Die Kampagnen-Karte und der Shop sind HTML-Bilds
 ## 10. Netz
 
 Der Aufbau bleibt: Der Host rechnet, der Gast sagt Griff und Wurf voraus.
-- `lobby` und `welcome` tragen Modus, Welt, Level und Schwierigkeit.
+- `lobby` und `welcome` tragen Modus, Welt, Level und Schwierigkeit. Seit v0.4 tragen `hello` (`castleTier`), `welcome` und `lobby` (`castleTiers`, je Name eine) zusätzlich die Burg-Stufe des eigenen Profils jedes Spielers; sie wird nur im Raum neben dem Namen gezeigt, denn gespielt wird immer mit der Burg des Hosts. Die Felder sind optional, damit ältere Gegenstellen sie überlesen. Wer über einen Einladungslink beitritt, wird nicht nach Level 3 gefragt; der Koop-Tisch sperrt nur das Eröffnen eines Raums.
 - Der Gast schickt seine Hand-Stufe bei jedem Start eines Laufs.
 - `rules` gehen einmal beim Start zum Gast, der Stand (`loadout`) mit `Meta`.
 - Snapshots kodieren Slots statt fester Waffennamen und die Wirkungsflächen.
-- `PROTOCOL_VERSION` steigt.
+- `PROTOCOL_VERSION` steigt (heute 5).
 
 Was Host und Gast beide rechnen, steht in `src/sim/physics.ts` und wird von `Hands`/`Flight` und von `GuestSession` benutzt: die Wurf-Begrenzung mit Gewicht und Hand-Stufe, der kleine Bogen für flache Würfe, die Haltefeder mit Gewicht. Der Gast liest seine Hand-Stufe aus `Meta.loadout`, das Gewicht aus `ENEMIES`.
 
@@ -407,6 +408,11 @@ Der genaue Stand steht in `docs/v0.3/PROGRESS.md`, `docs/v0.3/UEBERGABE.md` und 
 
 ## 14. Änderungen von v0.4 (Burg als Fortschritt)
 
-Fertig und hier beschrieben: Die Burg-Stufe öffnet die Slots (Abschnitt 4, `slotTiers.ts`, `src/modes/unlocks.ts`); Burg-Stufen brauchen Gold und ein gewonnenes Level (`quote` in `src/modes/progress.ts`); Koop-Tisch und Endlos-Tisch öffnen über Level (`TABLE_UNLOCK_LEVEL`); eigener Speicher `fondue.v4.` mit einmaliger Übernahme des v0.3-Stands (Abschnitt 7); Versionsliste (`versions.ts`) und Deploy aller Versionen nach der Versionsregel (`docs/HANDBUCH.md`, Abschnitt 7; `.github/workflows/deploy.yml`).
+- **Burg-Stufe öffnet Slots** (Abschnitt 4, `slotTiers.ts`, `src/modes/unlocks.ts`). Burg-Stufen brauchen Gold und ein gewonnenes Level (`quote` in `src/modes/progress.ts`, Grund `level`). Koop-Tisch und Endlos-Tisch öffnen über Level (`TABLE_UNLOCK_LEVEL`). Der Stufen-Deckel gilt nur noch für Waffen und Hand.
+- **Speicher:** eigener Schlüssel `fondue.v4.`, einmalige Übernahme des v0.3-Stands mit kostenlos angehobener Burg (Abschnitt 7).
+- **Lobby:** neu angeordnet (Stationen und Halle je Burg-Stufe in `src/config/lobby.ts`), mit kaputtem Koop- und Endlos-Tisch, König mit zwei Wachen am Kessel, Zahnrad für die Options. Storybook, Help, Credits und Scores sind keine Stationen mehr.
+- **Options mit fünf Reitern**, Versionsliste (`versions.ts`), Storybook auf der Kampagnen-Karte, Burg-Stufe in Lobby, Karte, Shop, Sieg-Bildschirm und Koop-Raum.
+- **Shop:** Die Burg ist das Hauptziel, der Ausbau ein Ereignis; die Einführung eines Slots kommt dort, nicht mehr am Sieg-Bildschirm (E-082).
+- **Veröffentlichen:** Versionsregel und Deploy aller Versionen (`docs/HANDBUCH.md`, Abschnitt 7; `.github/workflows/deploy.yml`).
 
-Noch nachzuziehen, wenn die Pakete fertig sind: neue Lobby mit Halle je Burg-Stufe, Options mit Reitern, Storybuch auf der Kampagnen-Karte, Burg-Stufe im Koop-Raum. Der genaue Stand steht in `docs/v0.4/PROGRESS.md`, `docs/v0.4/UEBERGABE.md` und der Abnahmeliste `docs/v0.4/abnahme.json`.
+Der genaue Stand steht in `docs/v0.4/PROGRESS.md`, `docs/v0.4/UEBERGABE.md` und der Abnahmeliste `docs/v0.4/abnahme.json`.
