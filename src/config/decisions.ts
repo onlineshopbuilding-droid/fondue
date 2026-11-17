@@ -1,18 +1,22 @@
 /**
- * The decision list of v0.3 (F3): what the lead decided this round and what Tim and Lenny still
- * have to confirm, plus what became of the 21 decisions D-01 .. D-21 of v0.2.
- * The developer overview (/fondue/next/dev/) shows every entry with its options and a free text
- * field and builds GitHub issues from the answers; the developer menu's rating list uses the same ids.
+ * The decision lists of the developer overview (/fondue/next/dev/).
+ * DECISIONS_V4: what the AI decided provisionally in v0.4 (Auftrag v0.4, Abschnitt 8) and what Tim
+ * and Lenny still have to confirm; shown first and open for answers. DECISIONS_V3: the older list of
+ * v0.3 (F3), still shown below and still answerable; LEGACY_DECISIONS: what became of D-01 .. D-21
+ * of v0.2. The overview shows every entry with its options and a free text field and builds GitHub
+ * issues from the answers; the developer menu's rating list uses the v0.3 ids.
  * docs/OFFENE-ENTSCHEIDUNGEN.md says the same in German; change both together.
  *
  * Columns of an entry:
- *   id       D3-01 ...; stays fixed, the answers in the issues refer to it
+ *   id       D4-01 / D3-01 ...; stays fixed, the answers in the issues refer to it
  *   title    short English name (menu and issue)
  *   question what Tim and Lenny decide, in German (the overview is in German)
  *   options  the choices; `choice` is the option the lead built (null = open, still to test)
  *   reason   why the lead chose it, in German
- *   from     the v0.2 decision it replaces, if any
+ *   from     the older decision it replaces, if any
  */
+import { CASTLE_TIERS } from './keep';
+import { CASTLE_TIER_LEVEL } from './slotTiers';
 
 export interface DecisionOption { id: string; label: string }
 
@@ -28,6 +32,65 @@ export interface Decision {
 
 const keep = (label: string): DecisionOption => ({ id: 'keep', label });
 const other: DecisionOption = { id: 'other', label: 'Anders (bitte im Textfeld beschreiben)' };
+
+/** Castle tiers 2..7 as "Stufe 2 ab Level 6 für 400 Gold", read from the configuration. */
+const castleTierPlan = (): string => CASTLE_TIERS.slice(1).map((c, i) =>
+  `Stufe ${i + 2} ab Level ${CASTLE_TIER_LEVEL[i + 1]} für ${c.gold} Gold${c.crests ? ` und ${c.crests} Wappen` : ''}`).join(', ');
+
+/** Points 4, 6 and 7 are described in the report of this round. */
+const IN_REPORT = 'Vorläufig entschieden; was und warum, wird im Bericht docs/v0.4/BERICHT.md beschrieben.';
+
+export const DECISIONS_V4: Decision[] = [
+  {
+    id: 'D4-01', title: 'Castle tier levels and gold prices',
+    question: 'Passen die Kampagnen-Level und Goldpreise der Burg-Stufen (Tabelle „Burg-Stufen“)? Stufe 2 ab Level 6 und Stufe 7 ab Level 75 sind fest.',
+    options: [keep('So lassen'), { id: 'earlier', label: 'Burg-Stufen früher' }, { id: 'later', label: 'Burg-Stufen später' }, { id: 'cheaper', label: 'Billiger' }, { id: 'dearer', label: 'Teurer' }, other],
+    choice: 'keep',
+    reason: `Vorläufig aus der Konfiguration: ${castleTierPlan()}. Die Stufen 3 bis 6 sind Startwerte für die Balance.`,
+  },
+  {
+    id: 'D4-02', title: 'Taking over a v0.3 save',
+    question: 'Wie wird ein v0.3-Spielstand übernommen, in dem mehr Slots offen sind, als seine Burg-Stufe nach v0.4 erlaubt?',
+    options: [keep('Burg-Stufe kostenlos so weit anheben, dass alle offenen Slots offen bleiben'), { id: 'close', label: 'Slots schließen, bis die Burg ausgebaut ist' }, other],
+    choice: 'keep',
+    reason: 'Niemand verliert beim Wechsel etwas, das er in v0.3 schon hatte; der v0.3-Spielstand selbst bleibt unverändert.',
+  },
+  {
+    id: 'D4-03', title: 'Guest joins by invite link',
+    question: 'Darf ein Gast über einen Einladungslink beitreten, auch wenn er selbst Level 3 noch nicht gewonnen hat?',
+    options: [keep('Ja; die Sperre gilt nur für das Eröffnen eines Raums am Koop-Tisch'), { id: 'locked', label: 'Nein, auch der Gast braucht Level 3' }, other],
+    choice: 'keep',
+    reason: 'Ein Freund soll sofort mitspielen können, wenn er eingeladen wird; selbst einen Raum eröffnen kann man erst ab Level 3.',
+  },
+  {
+    id: 'D4-04', title: 'Hall layout and its seven tiers',
+    question: 'Passen die Anordnung der Halle und die Gestaltung der sieben Hallen-Stufen?',
+    options: [keep('So lassen'), { id: 'change', label: 'Anordnung ändern' }, other],
+    choice: 'keep',
+    reason: IN_REPORT,
+  },
+  {
+    id: 'D4-05', title: 'Tabs of the options',
+    question: 'Welche Tabs haben die Options und in welcher Reihenfolge?',
+    options: [keep('Settings, Scores, Help, Credits, Versions'), { id: 'fewer', label: 'Weniger Tabs (bitte im Textfeld sagen, welche)' }, other],
+    choice: 'keep',
+    reason: 'Die Einstellungen braucht man am häufigsten, also zuerst; Bestenliste, Hilfe und Credits sind nur noch hier erreichbar; die Liste der spielbaren Versionen kommt zuletzt. Das Entwickler-Menü bleibt unten erreichbar.',
+  },
+  {
+    id: 'D4-06', title: 'Early levels with one slot',
+    question: 'Wie bleiben die frühen Level spannend, solange nur der Damage-Slot offen ist?',
+    options: [keep('So lassen'), { id: 'more', label: 'Mehr Abwechslung in den Leveln 1 bis 6' }, other],
+    choice: 'keep',
+    reason: IN_REPORT,
+  },
+  {
+    id: 'D4-07', title: 'Findings left open on purpose',
+    question: 'Welche Befunde der Durchspiel-Prüfung bleiben bewusst offen?',
+    options: [keep('So lassen'), { id: 'fix', label: 'Diese bitte doch beheben (im Textfeld nennen)' }, other],
+    choice: 'keep',
+    reason: IN_REPORT,
+  },
+];
 
 export const DECISIONS_V3: Decision[] = [
   {
@@ -195,7 +258,7 @@ export const LEGACY_DECISIONS: { id: string; title: string; verdict: LegacyVerdi
 /** The road to v1.0 (F4), shown on the developer overview. */
 export const ROADMAP: { version: string; title: string; items: string[] }[] = [
   {
-    version: 'v0.4', title: 'Feinschliff aus den Tests',
+    version: 'v0.5', title: 'Feinschliff aus den Tests',
     items: [
       'Balance nach den Testrunden von Tim und Lenny (Preise, Stufen, Wellen, Koop)',
       'Leistung auf echten Geräten messen und verbessern (iPhone 16, Android)',
